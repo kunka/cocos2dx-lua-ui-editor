@@ -1,0 +1,2 @@
+local proto = {}
+return proto
