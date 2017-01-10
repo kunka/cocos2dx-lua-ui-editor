@@ -2,12 +2,12 @@ local MainLayer = class("MainLayer", gk.Layer)
 
 function MainLayer:ctor()
     MainLayer.super.ctor(self)
+end
 
-    local layerColor = cc.LayerColor:create(cc.c4b(100, 0, 0, 100))
-    self:addChild(layerColor)
-
-    local sprite = gk.create_sprite("hello")
-    self:addChild(sprite)
+function MainLayer:onEnter()
+    if self.Sprite1 then
+        self.Sprite1:runAction(cc.RepeatForever:create(cc.ScaleTo:create(0.5, self.Sprite1:getScale() * 1.1, cc.ScaleTo:create(0.5, self.Sprite1:getScale()))))
+    end
 end
 
 return MainLayer

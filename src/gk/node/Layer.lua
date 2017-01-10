@@ -20,7 +20,7 @@ function Layer:createScene(sceneType, ...)
     local scene = cc.Scene:create()
     local layer = require(sceneType):create(...)
     scene:addChild(layer)
---    scene.layer = layer
+    scene.layer = layer
     return scene
 end
 

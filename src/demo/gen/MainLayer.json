@@ -1,0 +1,39 @@
+{
+  "children": [
+    {
+      "pos": {
+        "y": 248,
+        "x": 201
+      },
+      "id": "Sprite1"
+    },
+    {
+      "children": [
+        {
+          "pos": {
+            "y": 130,
+            "x": 31
+          },
+          "id": "ZoomButton3"
+        }
+      ],
+      "pos": {
+        "y": 229,
+        "x": 221
+      },
+      "id": "ZoomButton1"
+    },
+    {
+      "pos": {
+        "y": 142,
+        "x": 122
+      },
+      "id": "ZoomButton2"
+    }
+  ],
+  "pos": {
+    "y": 0,
+    "x": 0
+  },
+  "id": "MainLayer"
+}

@@ -8,7 +8,8 @@
 local id2label = {}
 
 local function create_label(id)
-    return cc.Label:createWithSystemFont(string.format("undefined_%s", id), "SimHei", 20)
+    local label= cc.Label:createWithSystemFont(string.format("undefined_%s", id), "SimHei", 20)
+    label.__id = id
 end
 
 gk.create_label = create_label

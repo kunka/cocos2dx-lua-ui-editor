@@ -36,7 +36,11 @@ end
 
 -- name : sprite name or spriteFrame name
 local function CREATE_SCALE9_SPRITE(name, capInsets)
-    return ccui.Scale9Sprite:createWithSpriteFrame(CREATE_SPRITE_FRAME(name), capInsets)
+    local sprite = ccui.Scale9Sprite:createWithSpriteFrame(CREATE_SPRITE_FRAME(name))
+    if capInsets then
+        sprite:setCapInsets(capInsets)
+    end
+    return sprite
 end
 
 gk.exports.CREATE_SPRITE = CREATE_SPRITE

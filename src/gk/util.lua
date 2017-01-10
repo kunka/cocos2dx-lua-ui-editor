@@ -41,35 +41,47 @@ function util:restartGame(callback)
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
     scene:runAction(cc.CallFunc:create(function()
-        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
-            gk.log("removeResBeforeRestartGame")
-            cc.Director:getInstance():purgeCachedData()
-            gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-            collectgarbage("collect")
-            gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-        end
+        --        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
+        gk.log("removeResBeforeRestartGame")
+        cc.Director:getInstance():purgeCachedData()
+        gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+        collectgarbage("collect")
+        gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+        --        end
         if callback then
             callback()
         end
     end))
 end
 
-function util:drawNodeRect(node, c4f, drawNode)
-    local draw
-    if drawNode then
-        draw = drawNode
+function util:clearDrawNode(node)
+    local draw = node:getChildByTag(util.tags.rectTag)
+    if draw then
+        draw:clear()
+        draw:stopAllActions()
+    end
+end
+
+function util:drawNodeRect(node, c4f)
+    util.tags = util.tags and util.tags or {
+        rectTag = 0xFFF0,
+        fontSizeTag = 0xFFF1,
+    }
+    local draw = node:getChildByTag(util.tags.rectTag)
+    if draw then
+        draw:clear()
     else
         draw = cc.DrawNode:create()
-        node:add(draw, 999)
+        node:add(draw, 999, util.tags.rectTag)
         draw:setPosition(cc.p(0, 0))
     end
 
     local size = node:getContentSize()
     -- bounds
-    draw:drawRect(cc.p(0, 0),
-        cc.p(0, size.height),
-        cc.p(size.width, size.height),
-        cc.p(size.width, 0), c4f and c4f or cc.c4f(1, 1, 0, 0.5))
+    draw:drawRect(cc.p(0.5, 0.5),
+        cc.p(0.5, size.height - 0.5),
+        cc.p(size.width - 0.5, size.height - 0.5),
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
 
     -- anchor point
     local p = node:getAnchorPoint()
@@ -81,17 +93,17 @@ function util:drawNodeRect(node, c4f, drawNode)
     if tolua.type(node) == "cc.Label" then
         local fontSize = node:getTTFConfig().fontFilePath ~= "" and node:getTTFConfig().fontSize or 0
         if fontSize <= 0 then
-            -- 中文
-            fontSize = node:getBMFontSize() / 0.839
+            -- bmfont
+            fontSize = node:getBMFontSize()
         end
         if fontSize > 0 then
             local lb = cc.Label:createWithSystemFont(string.format("%d", fontSize), "Arial", 15)
             lb:enableUnderline()
-            local child = node:getChildByTag(-2)
+            local child = node:getChildByTag(-0x2333)
             if child then
                 child:removeFromParent()
             end
-            node:addChild(lb, 9999, -2)
+            node:addChild(lb, 9999, -0x2333)
             lb:setPosition(size.width, size.height)
         end
     end
@@ -101,10 +113,22 @@ function util:drawNodeRect(node, c4f, drawNode)
         draw:stopAllActions()
         draw:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
             draw:clear()
-            debug:drawNodeRect(node, c4f, draw)
+            util:drawNodeRect(node, c4f)
         end)))
     end
     return draw
+end
+
+function util.getGolbalScale(node)
+    local scaleX, scaleY = 1, 1
+    local c = node
+    while c ~= nil do
+        local s = c:getScale()
+        scaleX = scaleX * s
+        scaleY = scaleY * s
+        c = c:getParent()
+    end
+    return scaleX, scaleY
 end
 
 return util

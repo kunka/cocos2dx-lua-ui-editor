@@ -8,11 +8,12 @@
 import(".List")
 import(".log")
 gk.event = import(".event")
+gk.event:init()
 
 require("gk.node.init")
 
+import(".id2sprite")
 import(".id2button")
 import(".id2label")
-import(".id2sprite")
 import(".util")
 

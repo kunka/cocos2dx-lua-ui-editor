@@ -11,6 +11,7 @@ local protos = require("demo.gen.sprite")
 local function create_sprite(id)
     local proto = id2sprite.id2proto(id)
     local sprite = CREATE_SPRITE(proto.file)
+    sprite.__id = id
     sprite:setPosition(proto.pos)
     sprite:setScale(proto.scale)
     return sprite

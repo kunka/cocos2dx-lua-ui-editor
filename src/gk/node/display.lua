@@ -2,7 +2,7 @@ local display = {}
 
 function display.initWithDesignSize(size)
     local winSize = cc.Director:getInstance():getWinSize()
-    display.winSize = cc.size(winSize.width * 3 / 4, winSize.height)
+    display.winSize = cc.size(winSize.width * 3 / 4, winSize.height * 3 / 4)
     display.width = size.width
     display.height = size.height
     display.xScale = display.winSize.width / display.width
@@ -29,7 +29,7 @@ end
 function display.addEditorPanel(scene)
     gk.log("display.addEditorPanel")
     local panel = require("gk.editor.panel")
-    scene:addChild(panel:create(), 9999999)
+    scene:addChild(panel:create(scene), 9999999)
 end
 
 return display

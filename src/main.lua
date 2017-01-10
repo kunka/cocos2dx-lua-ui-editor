@@ -11,10 +11,17 @@ local function nativeHotUpdateInit()
     local target = app:getTargetPlatform()
     if target == 2 then
         -- mac 使用本地资源路径
-        local filepath = "../../../../../"
+        local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
+        path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
+        print("mac project path = " .. path)
         cc.FileUtils:getInstance():setSearchPaths({})
-        cc.FileUtils:getInstance():addSearchPath(filepath .. "src/")
-        cc.FileUtils:getInstance():addSearchPath(filepath .. "res/")
+        cc.FileUtils:getInstance():addSearchPath(path .. "src/")
+        cc.FileUtils:getInstance():addSearchPath(path .. "res/")
+        local searchPath = cc.FileUtils:getInstance():getSearchPaths()
+        print("search path:")
+        for i, v in ipairs(searchPath) do
+            print(v)
+        end
     end
 end
 

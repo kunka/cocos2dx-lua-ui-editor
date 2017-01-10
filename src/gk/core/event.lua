@@ -1,6 +1,7 @@
 local event = {}
 
 function event:init()
+    gk.log("event:init")
     self._listeners = {}
 end
 
@@ -26,6 +27,7 @@ function event:unsubscribe(target, eventName)
 end
 
 function event:post(eventName, args)
+--    gk.log("event:post --> %s", eventName)
     local listeners = self._listeners[eventName]
     if listeners and #listeners > 0 then
         for _, l in ipairs(listeners) do
@@ -34,7 +36,7 @@ function event:post(eventName, args)
             end
         end
     else
-        gk.log("event:post(%s), no target to receive event!", eventName)
+--        gk.log("event:post(%s), no target to receive event!", eventName)
     end
 end
 

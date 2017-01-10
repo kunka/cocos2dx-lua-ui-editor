@@ -5,51 +5,76 @@
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
 
-local function replace_layer_create(type)
-    local meta = getmetatable(type)
-    local create = meta.create
-    local __create = function(...)
-        local node = create(...)
-        local vars = { ... }
-        local count = #vars
-        if count <= 2 then
-            node:setContentSize(gk.display.winSize)
+local util = {}
+function util.layer_method_swizz(type, methodName)
+    if not type.__swizzed then
+        local meta = getmetatable(type)
+        local method = meta[methodName]
+        local __method = function(...)
+            local node = method(...)
+            local vars = { ... }
+            local count = #vars
+            if count <= 2 then
+                node:setContentSize(gk.display.winSize)
+            end
+            gk.event:post("onNodeCreate", node)
+            return node
         end
-        return node
+        meta[methodName] = __method
+        type.__swizzed = true
     end
-    meta.create = __create
 end
 
-replace_layer_create(cc.Layer)
-replace_layer_create(cc.LayerColor)
+util.layer_method_swizz(cc.Layer, "create")
+util.layer_method_swizz(cc.LayerColor, "create")
 
-local function replace_scene_create(type)
-    local meta = getmetatable(type)
-    local create = meta.create
-    local __create = function(...)
-        local node = create(...)
-        gk.display.addEditorPanel(node)
-        return node
+function util.scene_method_swizz(type, methodName)
+    if not type.__swizzed then
+        local meta = getmetatable(type)
+        local method = meta[methodName]
+        local __method = function(...)
+            local node = method(...)
+            gk.display.addEditorPanel(node)
+            return node
+        end
+        meta[methodName] = __method
+        type.__swizzed = true
     end
-    meta.create = __create
 end
 
-replace_scene_create(cc.Scene)
+util.scene_method_swizz(cc.Scene, "create")
 
---local function replace_sprite_create(type)
---    local meta = getmetatable(type)
---    local create = meta.create
---    local __create = function(...)
---        local node = create(...)
---        node:setScale(gk.display.minScale)
---        return node
---    end
---    meta.create = __create
---end
---
---replace_sprite_create(cc.Sprite)
+function util.sprite_method_swizz(type, methodName)
+    if not type.__swizzed then
+        local meta = getmetatable(type)
+        local method = meta[methodName]
+        local __method = function(...)
+            local node = method(...)
+            gk.event:post("onNodeCreate", node)
+            return node
+        end
+        meta[methodName] = __method
+        type.__swizzed = true
+    end
+end
 
---local meta = getmetatable(cc.Sprite)
---local meta = getmetatable(cc.LayerColor)
---dump(meta)
---director:getWinSize()
+util.sprite_method_swizz(cc.Sprite, "create")
+util.sprite_method_swizz(cc.Sprite, "createWithSpriteFrame")
+util.sprite_method_swizz(cc.Sprite, "createWithTexture")
+
+function util.node_method_swizz(type, methodName)
+    if not type.__swizzed then
+        local meta = getmetatable(type)
+        local method = meta[methodName]
+        local __method = function(...)
+            local node = method(...)
+            gk.event:post("onNodeCreate", node)
+            return node
+        end
+        meta[methodName] = __method
+        type.__swizzed = true
+    end
+end
+
+util.node_method_swizz(cc.Node, "create")
+

@@ -12,6 +12,13 @@ require "gk.init"
 gk.config.defaultSprite = "HelloWorld.png"
 gk.display.initWithDesignSize(cc.size(960, 720))
 
+local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
+path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
+path = path .. "src/demo/gen/"
+print("gen res path = " .. path)
+gk.config.genPath = path
+cc.FileUtils:getInstance():createDirectory(gk.config.genPath)
+
 local init = {}
 
 function init.startGame()
