@@ -16,6 +16,7 @@ gk.ZoomButton = import(".ZoomButton")
 
 -- name : sprite name or spriteFrame name
 local function CREATE_SPRITE(name)
+    name = name and name or ""
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame)

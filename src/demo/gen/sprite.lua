@@ -1,2 +1,0 @@
-local proto = {}
-return proto

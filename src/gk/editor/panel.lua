@@ -37,8 +37,7 @@ end
 function panel:onNodeCreate(node)
     node:onNodeEvent("enter", function()
         if node == self.scene.layer then
-            node.__id = node.__cname
-            return
+            self:initLayer(node)
         end
         if not node.__id then
             return
@@ -106,13 +105,12 @@ function panel:displayNode(panel, node)
     title:setPosition(10, size.height - 20)
 
     -- sprite file
-    local protos = require("demo.gen.sprite")
-    local id2sprite = require("gk.core.id2sprite")
-    local proto = id2sprite.id2proto(node.__id)
-    local title = cc.Label:createWithSystemFont(string.format("file: %s", proto.file), fontName, fontSize)
-    self.displayInfoNode:addChild(title)
-    title:setAnchorPoint(0, 0.5)
-    title:setPosition(10, size.height - 20 - 20)
+    --    local id2sprite = require("gk.core.id2sprite")
+    --    local proto = id2sprite.id2proto(node.__id)
+    --    local title = cc.Label:createWithSystemFont(string.format("file: %s", proto.file), fontName, fontSize)
+    --    self.displayInfoNode:addChild(title)
+    --    title:setAnchorPoint(0, 0.5)
+    --    title:setPosition(10, size.height - 20 - 20)
 
     --    local node = ccui.EditBox:create(cc.size(150, 20), CREATE_SCALE9_SPRITE("edbox_bg_2.png", cc.rect(20, 8, 10, 5)))
     --    self.displayInfoNode:addChild(node)
@@ -132,22 +130,32 @@ end
 
 function panel:handleKeyboardEvent()
     local function onKeyReleased(keyCode, event)
-        gk.log("%s:onKeypad %d", "EditorPanel", keyCode)
+        local key = cc.KeyCodeKey[keyCode + 1]
+        gk.log("%s:onKeypad %s", "EditorPanel", key)
         if self.displayingNode then
             local x, y = self.displayingNode:getPosition()
-            if table.indexof(cc.KeyCodeKey, "KEY_LEFT_ARROW") - 1 == keyCode then
+            if key == "KEY_LEFT_ARROW" then
                 x = x - 1
-            elseif table.indexof(cc.KeyCodeKey, "KEY_RIGHT_ARROW") - 1 == keyCode then
+            elseif key == "KEY_RIGHT_ARROW" then
                 x = x + 1
-            elseif table.indexof(cc.KeyCodeKey, "KEY_UP_ARROW") - 1 == keyCode then
+            elseif key == "KEY_UP_ARROW" then
                 y = y + 1
-            elseif table.indexof(cc.KeyCodeKey, "KEY_DOWN_ARROW") - 1 == keyCode then
+            elseif key == "KEY_DOWN_ARROW" then
                 y = y - 1
-            elseif table.indexof(cc.KeyCodeKey, "KEY_S") - 1 == keyCode then
-                -- save
-                self:sync()
             end
             self.displayingNode:setPosition(cc.p(x, y))
+        end
+
+        if key == "KEY_S" then
+            -- save
+            self:sync()
+        elseif key == "KEY_BACKSPACE" then
+            -- delete node
+            gk.log("delete")
+            if self.displayingNode and self.displayingNode.__id then
+                self.displayingNode:removeFromParent()
+                self.displayingNode = nil
+            end
         end
     end
 
@@ -158,9 +166,15 @@ end
 
 function panel:addTopPanel()
     local size = self.topPanel:getContentSize()
-    self.widgets = { { file = "?", type = "Layer", index = 1 }, { file = "?", type = "ZoomButton", index = 1 }, { file = "?", type = "Sprite", index = 1 } }
+    self.widgets = {
+        { type = "cc.Layer", },
+        { type = "cc.Sprite", file = "?", },
+        { type = "ZoomButton", file = "?", },
+    }
     for i = 1, #self.widgets do
+        self.widgets[i].index = 1
         local node = CREATE_SPRITE(self.widgets[i].file)
+        node.__id = self.widgets[i].type
         local originPos = cc.p(50 + 80 * (i - 1), size.height / 2)
         node:setPosition(originPos)
         node:setScale(0.3)
@@ -198,7 +212,7 @@ function panel:addTopPanel()
 
             -- find dest container
             if self.sortedChildren == nil then
-                self:sortEventListenersOfSceneGraphPriority(self.scene.layer, true)
+                self:sortChildrenOfSceneGraphPriority(self.scene.layer, true)
             end
             local children = self.sortedChildren
             for i = #children, 1, -1 do
@@ -229,17 +243,22 @@ function panel:addTopPanel()
                 --            local p = self.scene.layer:convertToNodeSpace(cc.pSub(location, self._touchBegainLocation))
                 if cc.rectContainsPoint(rect, p) then
                     local type = self.widgets[i].type
-                    gk.log("put node %s", type)
-                    local node = gk.create_sprite(string.format("%s%d", self.widgets[i].type, self.widgets[i].index))
-                    self.widgets[i].index = self.widgets[i].index + 1
-                    node:setPosition(p)
-                    local sx, sy = gk.util.getGolbalScale(self._containerNode)
-                    if sx == 1 and sy == 1 then
-                        node:setScale(0.3)
+                    local node = generator.createNode(self.widgets[i])
+                    if node then
+                        self.widgets[i].index = self.widgets[i].index or 1
+                        self.widgets[i].index = self.widgets[i].index + 1
+                        node:setPosition(p)
+                        local sx, sy = gk.util.getGolbalScale(self._containerNode)
+                        if sx == 1 and sy == 1 then
+                            node:setScale(0.3)
+                        else
+                            node:setScale(0.3 / sx, 0.3 / sy)
+                        end
+                        self._containerNode:addChild(node)
+                        gk.log("put node %s, id = %s", type, node.__id)
                     else
-                        node:setScale(0.3 / sx, 0.3 / sy)
+                        gk.log("cannot create node %s", type)
                     end
-                    self._containerNode:addChild(node)
                 else
                     gk.log("cancel put node")
                 end
@@ -262,7 +281,7 @@ function panel:addTopPanel()
     end
 end
 
-function panel:sortEventListenersOfSceneGraphPriority(node, isRootNode)
+function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     if isRootNode then
         self.sortedChildren = {}
     end
@@ -273,7 +292,7 @@ function panel:sortEventListenersOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child and child:getLocalZOrder() < 0 then
-                panel:sortEventListenersOfSceneGraphPriority(child, false)
+                panel:sortChildrenOfSceneGraphPriority(child, false)
             else
                 break
             end
@@ -284,7 +303,7 @@ function panel:sortEventListenersOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child then
-                panel:sortEventListenersOfSceneGraphPriority(child, false)
+                panel:sortChildrenOfSceneGraphPriority(child, false)
             end
         end
     else
@@ -297,13 +316,31 @@ end
 function panel:sync()
     gk.log("sync")
     local info = generator.serialize(self.scene.layer)
-    local ret = json.encode(info)
-    if type(ret) == "string" then
-        local file = gk.config.genPath .. self.scene.layer.__cname .. ".json"
-        gk.log(file)
-        gk.log(ret)
-        io.writefile(file, ret)
+    local table2lua = require("gk.util.table2lua")
+    local file = gk.config.genPath .. "_" .. self.scene.layer.__cname:lower() .. ".lua"
+    gk.log(file)
+    io.writefile(file, table2lua.encode_pretty(info))
+    --    local ret = json.encode(info)
+    --    if type(ret) == "string" then
+    --        local file = gk.config.genPath .. self.scene.layer.__cname .. ".json"
+    --        gk.log(file)
+    --        gk.log(ret)
+    --        io.writefile(file, ret)
+    --    end
+end
+
+function panel:initLayer(layer)
+    layer.__id = "root"
+    local file = gk.config.genRelativePath .. "_" .. layer.__cname:lower()
+    gk.log("initLayer with %s", file)
+    local status, info = pcall(require, file)
+    if status then
+        --    local ret = io.readfile(file)
+        --    if ret then
+        --        local info = json.decode(ret)
+        generator.deserialize(info, layer)
     end
+    --    end
 end
 
 return panel

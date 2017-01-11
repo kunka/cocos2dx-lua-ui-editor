@@ -6,43 +6,41 @@
 -- To change this template use File | Settings | File Templates.
 
 local id2button = {}
-local protos = require("demo.gen.button")
 
-local function create_button(id)
-    local proto = id2button.id2proto(id)
-    local button = gk.ZoomButton.new(CREATE_SPRITE(proto.file))
-    button.__id = id
-    button:setPosition(proto.pos)
-    button:setScale(proto.scale)
+local function create_button(info)
+    local info = id2button.id2proto(info)
+    local button = gk.ZoomButton.new(CREATE_SPRITE(info.file))
     return button
 end
 
 gk.create_button = create_button
 
 function id2button.default()
-    return {
+    id2button._default = id2button._default and id2button._default or {
         file = "?",
         pos = gk.display.scaleXY(gk.display.width / 2, gk.display.height / 2),
-        scale = gk.display.minScale,
+        scaleX = gk.display.minScale,
+        scaleY = gk.display.minScale,
     }
+    return id2button._default
 end
 
-function id2button.id2proto(id)
-    local proto = protos[id]
-    if not proto then
-        proto = {}
-        local default = {
-            __index = function(_, key)
-                local defaultProto = id2button.default()
-                local var = defaultProto[key]
-                if var then
-                    return var
-                end
-                error(string.format("try get undefine property %s", key))
+function id2button.id2proto(info)
+    local proto = {}
+    local default = {
+        __index = function(_, key)
+            local var = info[key] or id2button.default()[key]
+            if var then
+                return var
             end
-        }
-        setmetatable(proto, default)
-    end
+            if key == "id" then
+                proto.id = string.format("sprite%d", id2button.id and id2button.id + 1 or 1)
+                return proto.id
+            end
+            error(string.format("try get undefine property %s", key))
+        end
+    }
+    setmetatable(proto, default)
     return proto
 end
 

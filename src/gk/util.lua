@@ -15,8 +15,9 @@ function util.registerRestartGameCallback(callback)
         util.restartLayer:retain()
 
         local function onKeyReleased(keyCode, event)
-            gk.log("RestartLayer: onKeypad %d", keyCode)
-            if keyCode == 141 then
+            local key = cc.KeyCodeKey[keyCode + 1]
+            --            gk.log("RestartLayer: onKeypad %s", key)
+            if key == "KEY_R" then
                 util:restartGame(callback)
             end
         end
@@ -129,6 +130,16 @@ function util.getGolbalScale(node)
         c = c:getParent()
     end
     return scaleX, scaleY
+end
+
+function math.shrink(f, bit)
+    if bit >= 1 and bit <= 6 then
+        local e = 1 / math.pow(10, bit + 1)
+        local v = math.pow(10, bit)
+        return math.floor((f + e) * v) / v
+    else
+        return f
+    end
 end
 
 return util
