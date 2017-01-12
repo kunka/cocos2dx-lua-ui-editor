@@ -129,3 +129,4 @@ src_raw_android
 *.iml
 **/*.iml
 tools/tiny_png_tmp
+res/

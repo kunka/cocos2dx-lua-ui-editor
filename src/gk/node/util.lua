@@ -7,7 +7,7 @@
 
 local util = {}
 function util.layer_method_swizz(type, methodName)
-    if not type.__swizzed then
+    if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
         local __method = function(...)
@@ -21,7 +21,7 @@ function util.layer_method_swizz(type, methodName)
             return node
         end
         meta[methodName] = __method
-        type.__swizzed = true
+        type[methodName .. "__swizzed"] = true
     end
 end
 
@@ -29,7 +29,7 @@ util.layer_method_swizz(cc.Layer, "create")
 util.layer_method_swizz(cc.LayerColor, "create")
 
 function util.scene_method_swizz(type, methodName)
-    if not type.__swizzed then
+    if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
         local __method = function(...)
@@ -38,14 +38,14 @@ function util.scene_method_swizz(type, methodName)
             return node
         end
         meta[methodName] = __method
-        type.__swizzed = true
+        type[methodName .. "__swizzed"] = true
     end
 end
 
 util.scene_method_swizz(cc.Scene, "create")
 
 function util.sprite_method_swizz(type, methodName)
-    if not type.__swizzed then
+    if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
         local __method = function(...)
@@ -54,7 +54,7 @@ function util.sprite_method_swizz(type, methodName)
             return node
         end
         meta[methodName] = __method
-        type.__swizzed = true
+        type[methodName .. "__swizzed"] = true
     end
 end
 
@@ -63,7 +63,7 @@ util.sprite_method_swizz(cc.Sprite, "createWithSpriteFrame")
 util.sprite_method_swizz(cc.Sprite, "createWithTexture")
 
 function util.node_method_swizz(type, methodName)
-    if not type.__swizzed then
+    if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
         local __method = function(...)
@@ -72,9 +72,30 @@ function util.node_method_swizz(type, methodName)
             return node
         end
         meta[methodName] = __method
-        type.__swizzed = true
+        type[methodName .. "__swizzed"] = true
     end
 end
 
 util.node_method_swizz(cc.Node, "create")
+
+function util.node_method_swizz(type, methodName)
+    if not type[methodName .. "__swizzed"] then
+        local meta = getmetatable(type)
+        local method = meta[methodName]
+        local __method = function(...)
+            local node = method(...)
+            if node.__info then
+                gk.event:post("onNodePropertyChanged", node, methodName, ...)
+                local args = { ... }
+                node.__info.opacity = args[2]
+            end
+            return node
+        end
+        meta[methodName] = __method
+        type[methodName .. "__swizzed"] = true
+    end
+end
+
+util.node_method_swizz(cc.Node, "setPosition")
+util.node_method_swizz(cc.Node, "setOpacity")
 

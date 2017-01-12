@@ -6,3 +6,4 @@
 -- To change this template use File | Settings | File Templates.
 
 gk.SceneManager = import(".SceneManager")
+gk.resource = import(".resource")

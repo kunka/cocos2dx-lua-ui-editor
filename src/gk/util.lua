@@ -55,25 +55,27 @@ function util:restartGame(callback)
     end))
 end
 
-function util:clearDrawNode(node)
-    local draw = node:getChildByTag(util.tags.rectTag)
+function util:clearDrawNode(node, tag)
+    local tg = tag or util.tags.rectTag
+    local draw = node:getChildByTag(tg)
     if draw then
         draw:clear()
         draw:stopAllActions()
     end
 end
 
-function util:drawNodeRect(node, c4f)
+function util:drawNodeRect(node, c4f, tag)
     util.tags = util.tags and util.tags or {
         rectTag = 0xFFF0,
         fontSizeTag = 0xFFF1,
     }
-    local draw = node:getChildByTag(util.tags.rectTag)
+    local tg = tag or util.tags.rectTag
+    local draw = node:getChildByTag(tg)
     if draw then
         draw:clear()
     else
         draw = cc.DrawNode:create()
-        node:add(draw, 999, util.tags.rectTag)
+        node:add(draw, 999, tg)
         draw:setPosition(cc.p(0, 0))
     end
 
@@ -84,11 +86,13 @@ function util:drawNodeRect(node, c4f)
         cc.p(size.width - 0.5, size.height - 0.5),
         cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
 
-    -- anchor point
-    local p = node:getAnchorPoint()
-    p.x = p.x * size.width
-    p.y = p.y * size.height
-    draw:drawDot(p, 4, cc.c4f(1, 0, 0, 1))
+    if tolua.type(node) ~= "cc.Layer" then
+        -- anchor point
+        local p = node:getAnchorPoint()
+        p.x = p.x * size.width
+        p.y = p.y * size.height
+        draw:drawDot(p, 4, cc.c4f(1, 0, 0, 1))
+    end
 
     -- draw text size
     if tolua.type(node) == "cc.Label" then
@@ -110,7 +114,7 @@ function util:drawNodeRect(node, c4f)
     end
 
     -- refresh draw, only in test mode
-    if DEBUG then
+    if DEBUG and not tag then
         draw:stopAllActions()
         draw:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
             draw:clear()
@@ -140,6 +144,14 @@ function math.shrink(f, bit)
     else
         return f
     end
+end
+
+function util:hitTest(node, touch)
+    local location = touch:getLocation()
+    local s = node:getContentSize()
+    local rect = { x = 0, y = 0, width = s.width, height = s.height }
+    local touchP = node:convertToNodeSpace(cc.p(location.x, location.y))
+    return cc.rectContainsPoint(rect, touchP)
 end
 
 return util

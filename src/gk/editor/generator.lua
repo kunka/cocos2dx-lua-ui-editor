@@ -10,13 +10,16 @@ local generator = {}
 
 function generator.serialize(node)
     local root = {}
-    root.id = node.__id
-    root.pos = cc.p(math.shrink(node:getPositionX(), 1), math.shrink(node:getPositionY(), 1))
-    root.scaleX, root.scaleY = math.shrink(node:getScaleX(), 3), math.shrink(node:getScaleY(), 3)
-    root.type = node.__cname
-    if not root.type then
-        root.type = tolua.type(node)
-    end
+    root.id = node.__info.id
+    root.type = node.__info.type
+    root.x = node.__info.x --cc.p(math.shrink(node:getPositionX(), 1), math.shrink(node:getPositionY(), 1))
+    root.y = node.__info.y --cc.p(math.shrink(node:getPositionX(), 1), math.shrink(node:getPositionY(), 1))
+    root.scaleX, root.scaleY = node.__info.scaleX, node.__info.scaleY
+    --math.shrink(node:getScaleX(), 3), math.shrink(node:getScaleY(), 3)
+    root.file = node.__info.file
+    root.ap = node.__info.ap --node:getAnchorPoint()
+    root.rotation = node.__info.rotation --node:getRotation()
+    root.opacity = node.__info.opacity --node:getOpacity()
 
     local children = node:getChildren()
     for i = 1, #children do
@@ -30,18 +33,19 @@ function generator.serialize(node)
     return root
 end
 
-function generator.deserialize(info, rootNode)
+function generator.deserialize(info, rootNode, rootTable)
     if rootNode then
-        if rootNode.__id ~= info.id then
-            gk.log("deserialize error, not the same type!")
-        end
+        rootNode.__info = info
+        --        if rootNode.__id ~= info.id then
+        --            gk.log("deserialize error, not the same type!")
+        --        end
     end
-    local node = generator.createNode(info, rootNode)
+    local node = generator.createNode(info, rootNode, rootTable)
     if node and info.children then
         for i = 1, #info.children do
             local child = info.children[i]
             if child and child.id then
-                local c = generator.deserialize(child)
+                local c = generator.deserialize(child, nil, rootTable)
                 if c then
                     node:addChild(c)
                 end
@@ -51,20 +55,14 @@ function generator.deserialize(info, rootNode)
     return node
 end
 
-function generator.createNode(info, rootNode)
+function generator.createNode(info, rootNode, rootTable)
+--    info = clone(info)
+    info = generator.wrap(info)
     local node
     if rootNode then
         node = rootNode
         node.__id = info.id
     else
-        --        if info.__canme then
-        --            local clazz = require("demo." .. info.__cname)
-        --            if clazz then
-        --                node = clazz:create()
-        --            else
-        --                gk.log("createNode error, cannot find class to create node, class = %s!", info.__cname)
-        --                return nil
-        --            end
         if info.type then
             if info.type == "cc.Sprite" then
                 node = gk.create_sprite(info)
@@ -96,16 +94,112 @@ function generator.createNode(info, rootNode)
             return nil
         end
     end
-    if info.pos then
-        node:setPosition(info.pos)
-    end
-    if info.scaleX then
-        node:setScaleX(info.scaleX)
-    end
-    if info.scaleY then
-        node:setScaleY(info.scaleY)
-    end
+    generator.updateNode(node, info, rootTable, false)
     return node
 end
+
+function generator.updateNode(node, info, rootTable, sync)
+    if info.x and info.y then
+        node:setPosition(cc.p(info.x, info.y))
+    end
+    if info.rotation then
+        node:setRotation(info.rotation)
+    end
+    if info.scaleX then
+        if type(info.scaleX) == "number" then
+            node:setScaleX(info.scaleX)
+        else
+            node:setScaleX(gk.display[info.scaleX])
+        end
+    end
+    if info.scaleY then
+        if type(info.scaleY) == "number" then
+            node:setScaleY(info.scaleY)
+        else
+            node:setScaleY(gk.display[info.scaleY])
+        end
+    end
+    if info.ap then
+        node:setAnchorPoint(info.ap)
+    end
+    if info.opacity then
+        node:setOpacity(info.opacity)
+    end
+    -- file
+    if info.type == "cc.Sprite" then
+        node:setTexture(CREATE_SPRITE(info.file):getTexture())
+    elseif info.type == "ZoomButton" then
+        node.node:setTexture(CREATE_SPRITE(info.file):getTexture())
+    end
+
+    node.__info = info
+    if rootTable then
+        local pre = rootTable[node.__id]
+        if not pre then
+            gk.log("index %s", node.__id)
+        elseif node.__id ~= info.id then
+            rootTable[node.__id] = nil
+            node.__id = info.id
+            rootTable[node.__id] = node
+            gk.log("reindex %s", node.__id)
+        end
+    end
+    if sync then
+        gk.event:post("sync")
+    end
+
+    return node
+end
+
+function generator.default()
+    generator._default = generator._default and generator._default or {
+        file = "?",
+        rotation = 0,
+        opacity = 255,
+        ap = { x = 0.5, y = 0.5 },
+        x = gk.display.scaleX(gk.display.width / 2),
+        y = gk.display.scaleY(gk.display.height / 2),
+        scaleX = gk.display.minScale,
+        scaleY = gk.display.minScale,
+    }
+    return generator._default
+end
+
+function generator.wrap(info, name)
+    local default = {
+        __index = function(_, key)
+            local var = generator.default()[key]
+            if var then
+                return var
+            end
+            if key == "id" then
+                return nil
+            end
+            error(string.format("try get undefine property %s", key))
+        end,
+        __newindex = function(_, name, value)
+        end,
+    }
+    setmetatable(info, default)
+    return info
+end
+
+gk.event:subscribe(generator, "onNodePropertyChanged", function(node, methodName, ...)
+    local args = { ... }
+    generator.switch = generator.switch or switch {
+        ["setOpacity"] = function()
+            node.__info[methodName] = args[2]
+        end,
+        ["setPosition"] = function()
+            if #args == 2 then
+                node.__info.x = args[2].x
+                node.__info.y = args[2].y
+            elseif #args == 3 then
+                node.__info.x = args[2]
+                node.__info.y = args[3]
+            end
+        end,
+    }
+end)
 
 return generator

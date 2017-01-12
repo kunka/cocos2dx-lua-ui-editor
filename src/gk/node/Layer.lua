@@ -35,6 +35,7 @@ function Layer:ctor()
     self:enableNodeEvents()
     -- dialog堆栈
     self.dialogsStack = {}
+    gk.event:post("onNodeCreate", self)
 end
 
 function Layer:showDialog(dialogType, ...)
@@ -82,9 +83,13 @@ function Layer:onEnter()
 
     if self.enableKeyPad then
         local function onKeyReleased(keyCode, event)
+            if gk.focusNode then
+                return
+            end
             if not (event and event:isStopped()) then
-                gk.log("%s:onKeypad %d", self.__cname, keyCode)
-                if keyCode == 6 then
+                local key = cc.KeyCodeKey[keyCode + 1]
+                gk.log("%s:onKeypad %s", self.__cname, key)
+                if key == "KEY_ESCAPE" then
                     if #self.dialogsStack > 0 then
                         for i = #self.dialogsStack, 1, -1 do
                             local d = self.dialogsStack[i]
@@ -118,8 +123,7 @@ end
 function Layer:onKeyBack()
     if self.popOnBack then
         gk.log("%s:pop onKeyBack", self.__cname)
-        local sceneManager = require("app.controller.SceneManager")
-        sceneManager:pop()
+        gk.SceneManager:pop()
     else
         gk.log("%s:pop onKeyBack is disabled", self.__cname)
     end

@@ -11,7 +11,10 @@ require "gk.init"
 
 gk.config.defaultSprite = "HelloWorld.png"
 gk.display.initWithDesignSize(cc.size(960, 720))
+gk.resource:setTextureRelativePath("texture/")
+gk.resource:setAtlasRelativePath("atlas/")
 
+-- set gen path
 local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
 path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
 path = path .. "src/demo/gen/"

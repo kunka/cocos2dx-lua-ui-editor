@@ -10,24 +10,40 @@ import(".util")
 gk.Scene = import(".Scene")
 gk.Layer = import(".Layer")
 gk.Button = import(".Button")
+gk.EditBox = import(".EditBox")
 gk.ZoomButton = import(".ZoomButton")
 
 ----------------------------------------- create sprite  -------------------------------------------------
 
 -- name : sprite name or spriteFrame name
 local function CREATE_SPRITE(name)
-    name = name and name or ""
-    local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(name)
+    name = name or ""
+    local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(gk.resource.atlasRelativePath .. name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame)
-    else
-        local texture = cc.Director:getInstance():getTextureCache():addImage(name)
-        if texture then
-            return cc.Sprite:createWithTexture(texture)
-        end
+    end
+    -- absolute path
+    spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(name)
+    if spriteFrame then
+        return cc.Sprite:createWithSpriteFrame(spriteFrame)
+    end
+    local texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. name)
+    if texture then
+        return cc.Sprite:createWithTexture(texture)
+    end
+    -- absolute path
+    texture = cc.Director:getInstance():getTextureCache():addImage(name)
+    if texture then
+        return cc.Sprite:createWithTexture(texture)
     end
     gk.log("CREATE_SPRITE(%s) file not found, use default sprite!", name)
+    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.config.defaultSprite)
+    if texture then
+        return cc.Sprite:createWithTexture(texture)
+    end
+    -- absolute path
     return cc.Sprite:create(gk.config.defaultSprite)
+    -- even god cannot save u here!
 end
 
 -- name : sprite name or spriteFrame name

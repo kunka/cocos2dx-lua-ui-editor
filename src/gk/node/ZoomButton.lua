@@ -43,7 +43,7 @@ end
 
 function ZoomButton:selected()
     if self.enabled and not self.isSelected then
-        gk.log("ZoomButton:selected")
+        --        gk.log("ZoomButton:selected")
         local action = self:getActionByTag(kZoomActionTag)
         if action then
             self:stopAction(action)
@@ -64,7 +64,7 @@ end
 
 function ZoomButton:unselected()
     if self.enabled and self.isSelected then
-        gk.log("ZoomButton:unselected")
+        --        gk.log("ZoomButton:unselected")
         self:stopActionByTagSafe(kZoomActionTag)
         local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.selectedScale) / 2), self.originalScaleY * (1 + (1 - self.selectedScale) / 2))
         local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.selectedScale + 1), 0.5 * self.originalScaleY * (self.selectedScale + 1))

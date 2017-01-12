@@ -80,8 +80,7 @@ function Button:setContentNode(node)
     -- test draw
     if CR_DRAW_BUTTON then
         self:runAction(cc.CallFunc:create(function()
-            local debug = require("debugutil")
-            debug:drawNodeRect(self)
+            gk.util:drawNodeRect(self)
         end))
     end
 end
@@ -101,7 +100,7 @@ end
 function Button:activate()
     if self.enabled then
         if self.callback then
-            gk.log("Button:activate")
+            --            gk.log("Button:activate")
             self.callback(self)
         end
     end

@@ -1,8 +1,19 @@
+--
+-- Created by IntelliJ IDEA.
+-- User: huangkun
+-- Date: 16/12/29
+-- Time: 上午10:12
+-- To change this template use File | Settings | File Templates.
+
 local display = {}
 
+display.topHeight = 80
+display.leftWidth = 140
+display.rightWidth = 180
+display.bottomHeight = 20
 function display.initWithDesignSize(size)
     local winSize = cc.Director:getInstance():getWinSize()
-    display.winSize = cc.size(winSize.width * 3 / 4, winSize.height * 3 / 4)
+    display.winSize = cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight)
     display.width = size.width
     display.height = size.height
     display.xScale = display.winSize.width / display.width
@@ -14,6 +25,12 @@ function display.initWithDesignSize(size)
         local x = posY and pos or pos.x
         local p = cc.p(display.minScale * x, display.minScale * y)
         return p
+    end
+    display.scaleX = function(x)
+        return x * display.xScale
+    end
+    display.scaleY = function(y)
+        return y * display.yScale
     end
     display.scaleXY = function(pos, posY)
         local y = posY and posY or pos.y
