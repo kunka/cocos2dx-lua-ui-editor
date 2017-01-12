@@ -65,10 +65,10 @@ function panel:onNodeCreate(node)
     self:initLayer(node)
     --    end
     node:onNodeEvent("enter", function()
-        if not node.__id then
+        if not node.__info or not node.__info.id then
             return
         end
-        gk.log("onNodeCreate %s", node.__id)
+        gk.log("onNodeCreate %s", node.__info.id)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
@@ -78,7 +78,7 @@ function panel:onNodeCreate(node)
                 self._touchBegainPos = cc.p(p)
                 self._originPos = cc.p(node:getPosition())
                 local type = node.__cname and node.__cname or tolua.type(node)
-                gk.log("click node %s, id = %s", type, node.__id)
+                gk.log("click node %s, id = %s", type, node.__info.id)
                 self._containerNode = node:getParent()
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(1)
@@ -100,7 +100,7 @@ function panel:onNodeCreate(node)
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if nd.__id and nd ~= node then
+                if nd.__info and nd.__info.id and nd ~= node then
                     local s = nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
@@ -108,9 +108,10 @@ function panel:onNodeCreate(node)
                         local type = nd.__cname and nd.__cname or tolua.type(nd)
                         if self._containerNode ~= nd then
                             self._containerNode = nd
-                            gk.log("find container node %s, id = %s", type, nd.__id)
+                            gk.log("find container node %s, id = %s", type, nd.__info.id)
+                            gk.event:post("displayNode", nd)
+                            gk.event:post("displayDomTree")
                         end
-                        gk.event:post("displayNode", nd)
                         break
                     end
                 end
@@ -138,11 +139,12 @@ function panel:onNodeCreate(node)
                 node:release()
             else
                 node:setPosition(destPos)
+                node.__info.x, node.__info.y = destPos.x, destPos.y
             end
             --            self:undisplayNode()
+            gk.event:post("sync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
-            gk.event:post("sync")
         end, cc.Handler.EVENT_TOUCH_ENDED)
         listener:registerScriptHandler(function(touch, event)
             cc.Director:getInstance():setDepthTest(false)
@@ -158,6 +160,10 @@ function panel:undisplayNode()
     if self.displayingNode then
         gk.util:clearDrawNode(self.displayingNode)
         self.displayingNode = nil
+    end
+    if self.displayInfoNode then
+        self.displayInfoNode:removeFromParent()
+        self.displayInfoNode = nil
     end
 end
 
@@ -212,14 +218,14 @@ function panel:displayNode(panel, node)
         return node
     end
     if not node.__info then
-        createLabel("Type: " .. node.__id, leftX, topY)
+        createLabel("Type: " .. node.type, leftX, topY)
         return
     end
 
     local yIndex = 0
     -- id
     createLabel("id", leftX, topY)
-    createInput(node.__id, leftX2, topY, inputWidth1, function(input) end)
+    createInput(node.__info.id, leftX2, topY, inputWidth1, function(input) end)
     yIndex = yIndex + 1
     -- position
     createLabel("pos", leftX, topY - stepY * yIndex)
@@ -231,7 +237,6 @@ function panel:displayNode(panel, node)
         else
             node.__info.x = tonumber(input)
         end
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     createInput(string.format("%.2f", node:getPositionY()), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
         if #input > 0 and input[1] == "$" then
@@ -239,14 +244,12 @@ function panel:displayNode(panel, node)
         else
             node.__info.y = tonumber(input)
         end
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
     -- rotation
     createLabel("rotation", leftX, topY - stepY * yIndex)
     createInput(string.format("%.2f", node:getRotation()), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
         node.__info.rotation = tonumber(input)
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
     -- scale
@@ -257,7 +260,6 @@ function panel:displayNode(panel, node)
         else
             node.__info.scaleX = tonumber(input)
         end
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     createInput(string.format("%.2f", node:getScaleY()), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
         if #input > 0 and input[1] == "$" then
@@ -265,18 +267,15 @@ function panel:displayNode(panel, node)
         else
             node.__info.scaleY = tonumber(input)
         end
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
     -- anchor
     createLabel("anchor", leftX, topY - stepY * yIndex)
     createInput(string.format("%.1f", node:getAnchorPoint().x), leftX2, topY - stepY * yIndex, inputWidth2, function(input)
         node.__info.ap.x = tonumber(input)
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     createInput(string.format("%.1f", node:getAnchorPoint().y), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
         node.__info.ap.y = tonumber(input)
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
     -- size
@@ -291,14 +290,12 @@ function panel:displayNode(panel, node)
     createLabel("opacity", leftX, topY - stepY * yIndex)
     createInput(string.format("%d", node:getOpacity()), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
         node.__info.opacity = tonumber(input)
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
     -- file
     createLabel("file", leftX, topY - stepY * yIndex)
     createInput(string.format("%s", node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
         node.__info.file = input
-        generator.updateNode(node, node.__info, self.scene.layer, true)
     end)
     yIndex = yIndex + 1
 end
@@ -330,9 +327,12 @@ function panel:handleKeyboardEvent()
         elseif key == "KEY_BACKSPACE" then
             -- delete node
             gk.log("delete")
-            if self.displayingNode and self.displayingNode.__id then
+            if self.displayingNode and self.displayingNode.__info.id then
                 self.displayingNode:removeFromParent()
                 self.displayingNode = nil
+                gk.event:post("sync")
+                gk.event:post("displayDomTree")
+                self:undisplayNode()
             end
         end
     end
@@ -352,7 +352,7 @@ function panel:addTopPanel()
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = CREATE_SPRITE(self.widgets[i].file)
-        node.__id = self.widgets[i].type
+        node.type = self.widgets[i].type
         node:setScale(0.2)
         local originPos = cc.p(gk.display.leftWidth + node:getScale() * node:getContentSize().width / 2 + 50 * (i - 1), size.height / 2)
         node:setPosition(originPos)
@@ -402,7 +402,7 @@ function panel:addTopPanel()
                     local type = node.__cname and node.__cname or tolua.type(node)
                     if self._containerNode ~= node then
                         self._containerNode = node
-                        gk.log("find container node %s, id = %s", type, node.__id)
+                        gk.log("find container node %s, id = %s", type, node.__info.id)
                     end
                     gk.event:post("displayNode", node)
                     break
@@ -421,7 +421,7 @@ function panel:addTopPanel()
                 --            local p = self.scene.layer:convertToNodeSpace(cc.pSub(location, self._touchBegainLocation))
                 if cc.rectContainsPoint(rect, p) then
                     local type = self.widgets[i].type
-                    local node = generator.createNode(self.widgets[i], nil, self.scene.layer)
+                    local node = generator.createNode(clone(self.widgets[i]), nil, self.scene.layer)
                     if node then
                         node:setPosition(p)
                         if tolua.type(node) ~= "cc.Layer" then
@@ -435,10 +435,10 @@ function panel:addTopPanel()
                             gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
                         end
                         self._containerNode:addChild(node)
-                        gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__id, p.x, p.y)
+                        gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
+                        gk.event:post("sync")
                         gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
-                        gk.event:post("sync")
                     else
                         gk.log("cannot create node %s", type)
                     end
@@ -498,10 +498,11 @@ end
 
 function panel:sync()
     gk.log("sync")
-    local info = generator.serialize(self.scene.layer)
+    local info = generator.deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
     local file = gk.config.genPath .. "_" .. self.scene.layer.__cname:lower() .. ".lua"
     gk.log(file)
+    --    gk.log(table2lua.encode_pretty(info))
     io.writefile(file, table2lua.encode_pretty(info))
 end
 
@@ -509,16 +510,17 @@ function panel:initLayer(layer)
     if tolua.type(layer) == "cc.Layer" and layer.__cname then
         local file = gk.config.genRelativePath .. "_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
+        layer.__info = generator.wrap({ id = "root" }, layer)
         if status then
             gk.log("initLayer with %s", file)
-            layer.__id = "root"
-            generator.deserialize(info, layer, layer)
-
-            local winSize = cc.Director:getInstance():getWinSize()
-            layer:setPosition(gk.display.leftWidth, gk.display.bottomHeight)
-            gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
-            gk.event:post("displayDomTree", layer)
+            --            layer.__info.id = "root"
+            generator.inflate(info, layer, layer)
+            --            dump(info)
         end
+        local winSize = cc.Director:getInstance():getWinSize()
+        layer:setPosition(gk.display.leftWidth, gk.display.bottomHeight)
+        gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
+        gk.event:post("displayDomTree", layer)
     end
 end
 
@@ -531,11 +533,11 @@ function panel:displayDomTree(rootLayer)
         self.displayDomInfoNode = cc.Node:create()
         self.leftPanel:addChild(self.displayDomInfoNode)
         self.domDepth = 0
-        panel:addLeaf(rootLayer, 0)
+        panel:displayDomNode(rootLayer, 0)
     end
 end
 
-function panel:addLeaf(node, layer)
+function panel:displayDomNode(node, layer)
     local size = self.leftPanel:getContentSize()
     local fontSize = 12 * 4
     local fontName = "Consolas"
@@ -570,15 +572,15 @@ function panel:addLeaf(node, layer)
     for i = 1, layer do
         whiteSpace = whiteSpace .. " "
     end
-    createButton(whiteSpace .. node.__id, leftX, topY - stepY * self.domDepth)
+    createButton(whiteSpace .. node.__info.id, leftX, topY - stepY * self.domDepth)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
     local children = node:getChildren()
     if children then
         for i = 1, #children do
             local child = children[i]
-            if child and child.__id then
-                panel:addLeaf(child, layer)
+            if child and child.__info and child.__info.id then
+                panel:displayDomNode(child, layer)
             end
         end
     end
