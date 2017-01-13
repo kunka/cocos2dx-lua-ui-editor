@@ -152,7 +152,7 @@ function EditBox:focus()
         local str = self:getInput()
         self.label:setString(str .. self.cursorChar)
         if self.onEditBeganCallback then
-            self.onEditBeganCallback(self:getInput())
+            self.onEditBeganCallback(self, self:getInput())
         end
     end
 end
@@ -164,7 +164,7 @@ function EditBox:unfocus()
         local str = self:getInput()
         self.label:setString(str)
         if self.onEditEndedCallback then
-            self.onEditEndedCallback(self:getInput())
+            self.onEditEndedCallback(self, self:getInput())
         end
     end
 end
@@ -226,7 +226,7 @@ function EditBox:handleKeyboardEvent()
                 local str = self:getInput()
                 self.label:setString(str .. keyTable[key] .. self.cursorChar)
                 if self.onInputChangedCallback then
-                    self.onInputChangedCallback(self:getInput())
+                    self.onInputChangedCallback(self, self:getInput())
                 end
             elseif keyCode == delete then
                 local str = self:getInput()
@@ -234,7 +234,7 @@ function EditBox:handleKeyboardEvent()
                     str = string.sub(str, 1, #str - 1)
                     self.label:setString(str .. self.cursorChar)
                     if self.onInputChangedCallback then
-                        self.onInputChangedCallback(self:getInput())
+                        self.onInputChangedCallback(self, self:getInput())
                     end
                 end
             elseif keyCode == enter then

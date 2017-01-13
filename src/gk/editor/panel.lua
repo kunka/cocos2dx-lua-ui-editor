@@ -55,8 +55,16 @@ function panel:subscribeEvent(node)
     gk.event:subscribe(self, "displayDomTree", function(node)
         self:displayDomTree(node or self.scene.layer)
     end)
-    gk.event:subscribe(self, "sync", function(node)
-        self:sync()
+    gk.event:subscribe(self, "postSync", function(node)
+        local action = self.editorPanel:getActionByTag(-234)
+        if action then
+            self.editorPanel:stopAction(action)
+        end
+        action = cc.CallFunc:create(function()
+            self:sync()
+        end)
+        action:setTag(-234)
+        self.editorPanel:runAction(action)
     end)
 end
 
@@ -128,21 +136,24 @@ function panel:onNodeCreate(node)
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()
-                node:setPosition(p)
-                local sx, sy = gk.util.getGolbalScale(self._containerNode)
+                node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
+                --                node:setPosition(p)
+                local sx, sy = gk.util.getGlobalScale(self._containerNode)
                 if sx == 1 and sy == 1 then
-                    node:setScale(0.2)
+                    node.__info.scaleX, node.__info.scaleY = 0.2, 0.2
+                    --                    node:setScale(0.2)
                 else
-                    node:setScale(0.2 / sx, 0.2 / sy)
+                    node.__info.scaleX, node.__info.scaleY = math.shrink(0.2 / sx, 3), math.shrink(0.2 / sy, 3)
+                    --                    node:setScale(0.2 / sx, 0.2 / sy)
                 end
                 self._containerNode:addChild(node)
                 node:release()
             else
-                node:setPosition(destPos)
-                node.__info.x, node.__info.y = destPos.x, destPos.y
+                --                node:setPosition(destPos)
+                node.__info.x, node.__info.y = math.shrink(destPos.x, 3), math.shrink(destPos.y, 3)
             end
             --            self:undisplayNode()
-            gk.event:post("sync")
+            gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
         end, cc.Handler.EVENT_TOUCH_ENDED)
@@ -211,8 +222,8 @@ function panel:displayNode(panel, node)
         self.displayInfoNode:addChild(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
-        node:onEditEnded(function(input)
-            callback(input)
+        node:onEditEnded(function(...)
+            callback(...)
         end)
         node:setPosition(x, y)
         return node
@@ -229,73 +240,55 @@ function panel:displayNode(panel, node)
     yIndex = yIndex + 1
     -- position
     createLabel("pos", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.2f", node:getPositionX()), leftX2, topY - stepY * yIndex, inputWidth2, function(input)
-        --        node.__info.pos.x = tonumber(input)
-        --        generator.updateNode(node, node.__info, self.scene.layer, true)
-        if #input > 0 and input[1] == "$" then
-            node.__info.x = string.sub(input, 1, #input)
-        else
-            node.__info.x = tonumber(input)
-        end
+    createInput(tostring(node.__info.x), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "x", input))
     end)
-    createInput(string.format("%.2f", node:getPositionY()), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
-        if #input > 0 and input[1] == "$" then
-            node.__info.y = string.sub(input, 1, #input)
-        else
-            node.__info.y = tonumber(input)
-        end
+    createInput(tostring(node.__info.y), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "y", input))
     end)
     yIndex = yIndex + 1
     -- rotation
     createLabel("rotation", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.2f", node:getRotation()), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
-        node.__info.rotation = tonumber(input)
+    createInput(tostring(node.__info.rotation), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        editBox:setInput(generator.modify(node, "rotation", input))
     end)
     yIndex = yIndex + 1
     -- scale
     createLabel("scale", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.2f", node:getScaleX()), leftX2, topY - stepY * yIndex, inputWidth2, function(input)
-        if #input > 0 and input[1] == "$" then
-            node.__info.scaleX = string.sub(input, 1, #input)
-        else
-            node.__info.scaleX = tonumber(input)
-        end
+    createInput(tostring(node.__info.scaleX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "scaleX", input))
     end)
-    createInput(string.format("%.2f", node:getScaleY()), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
-        if #input > 0 and input[1] == "$" then
-            node.__info.scaleY = string.sub(input, 1, #input)
-        else
-            node.__info.scaleY = tonumber(input)
-        end
+    createInput(tostring(node.__info.scaleY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "scaleY", input))
     end)
     yIndex = yIndex + 1
     -- anchor
     createLabel("anchor", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.1f", node:getAnchorPoint().x), leftX2, topY - stepY * yIndex, inputWidth2, function(input)
-        node.__info.ap.x = tonumber(input)
+    createInput(tostring(node.__info.ap.x), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        --        editBox:setInput(generator.modify(node, "ap.x", input))
     end)
-    createInput(string.format("%.1f", node:getAnchorPoint().y), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
-        node.__info.ap.y = tonumber(input)
+    createInput(tostring(node.__info.ap.y), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        --        node.__info.ap.y = tonumber(input)
     end)
     yIndex = yIndex + 1
     -- size
     createLabel("size", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.1f", node:getContentSize().width), leftX2, topY - stepY * yIndex, inputWidth2, function(input) end)
-    createInput(string.format("%.1f", node:getContentSize().height), leftX3, topY - stepY * yIndex, inputWidth2, function(input)
+    createInput(string.format("%.1f", node:getContentSize().width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input) end)
+    createInput(string.format("%.1f", node:getContentSize().height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
         --        node.__info.size = tonumber(input)
         --        generator.updateNode(node, node.__info, self.scene.layer)
     end)
     yIndex = yIndex + 1
     -- opacity
     createLabel("opacity", leftX, topY - stepY * yIndex)
-    createInput(string.format("%d", node:getOpacity()), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
-        node.__info.opacity = tonumber(input)
+    createInput(tostring(node.__info.opacity), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        editBox:setInput(generator.modify(node, "opacity", input))
     end)
     yIndex = yIndex + 1
     -- file
     createLabel("file", leftX, topY - stepY * yIndex)
-    createInput(string.format("%s", node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(input)
-        node.__info.file = input
+    createInput(tostring(node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        editBox:setInput(generator.modify(node, "file", input))
     end)
     yIndex = yIndex + 1
 end
@@ -323,14 +316,14 @@ function panel:handleKeyboardEvent()
 
         if key == "KEY_S" then
             -- save
-            gk.event:post("sync")
+            gk.event:post("postSync")
         elseif key == "KEY_BACKSPACE" then
             -- delete node
             gk.log("delete")
             if self.displayingNode and self.displayingNode.__info.id then
                 self.displayingNode:removeFromParent()
                 self.displayingNode = nil
-                gk.event:post("sync")
+                gk.event:post("postSync")
                 gk.event:post("displayDomTree")
                 self:undisplayNode()
             end
@@ -421,22 +414,23 @@ function panel:addTopPanel()
                 --            local p = self.scene.layer:convertToNodeSpace(cc.pSub(location, self._touchBegainLocation))
                 if cc.rectContainsPoint(rect, p) then
                     local type = self.widgets[i].type
-                    local node = generator.createNode(clone(self.widgets[i]), nil, self.scene.layer)
+                    local info = clone(self.widgets[i])
+                    local node = generator.createNode(info, nil, self.scene.layer)
                     if node then
-                        node:setPosition(p)
+                        node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
                         if tolua.type(node) ~= "cc.Layer" then
-                            local sx, sy = gk.util.getGolbalScale(self._containerNode)
+                            local sx, sy = gk.util.getGlobalScale(self._containerNode)
                             if sx == 1 and sy == 1 then
-                                node:setScale(0.2)
+                                node.__info.scaleX, node.__info.scaleY = 0.2, 0.2
                             else
-                                node:setScale(0.2 / sx, 0.2 / sy)
+                                node.__info.scaleX, node.__info.scaleY = math.shrink(0.2 / sx, 3), math.shrink(0.2 / sy, 3)
                             end
                         else
                             gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
                         end
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
-                        gk.event:post("sync")
+                        gk.event:post("postSync")
                         gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
                     else
@@ -497,11 +491,10 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
 end
 
 function panel:sync()
-    gk.log("sync")
     local info = generator.deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
     local file = gk.config.genPath .. "_" .. self.scene.layer.__cname:lower() .. ".lua"
-    gk.log(file)
+    gk.log("save to file: " .. file)
     --    gk.log(table2lua.encode_pretty(info))
     io.writefile(file, table2lua.encode_pretty(info))
 end

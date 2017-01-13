@@ -124,13 +124,12 @@ function util:drawNodeRect(node, c4f, tag)
     return draw
 end
 
-function util.getGolbalScale(node)
+function util.getGlobalScale(node)
     local scaleX, scaleY = 1, 1
     local c = node
     while c ~= nil do
-        local s = c:getScale()
-        scaleX = scaleX * s
-        scaleY = scaleY * s
+        scaleX = scaleX * c:getScaleX()
+        scaleY = scaleY * c:getScaleY()
         c = c:getParent()
     end
     return scaleX, scaleY
