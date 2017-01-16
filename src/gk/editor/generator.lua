@@ -13,14 +13,10 @@ function generator.deflate(node)
     node.__info.__self.children = {}
     local info = clone(node.__info.__self)
 
-    info.x = info.x or math.shrink(node:getPositionX(), 3)
-    info.y = info.y or math.shrink(node:getPositionY(), 3)
-    info.scaleX = info.scaleX or math.shrink(node:getScaleX(), 3)
-    info.scaleY = info.scaleY or math.shrink(node:getScaleY(), 3)
-    info.type = node.__cname or tolua.type(node)
-    info.ap = info.ap or node:getAnchorPoint()
-    info.rotation = info.rotation or node:getRotation()
-    info.opacity = info.opacity or node:getOpacity()
+    -- force set value
+    for k, func in pairs(generator.nodeGetFuncs) do
+        info[k] = func(node)
+    end
 
     -- rescan children
     local children = node:getChildren()
@@ -63,20 +59,9 @@ function generator.createNode(info, rootNode, rootTable)
     if rootNode then
         node = rootNode
     else
-        if info.type == "cc.Sprite" then
-            node = gk.create_sprite(info)
-            generator.spriteid = generator.spriteid and generator.spriteid + 1 or 1
-            info.id = info.id or string.format("sprite%d", generator.spriteid)
-            gk.log("createNode %s", info.id)
-        elseif info.type == "ZoomButton" then
-            node = gk.create_button(info)
-            generator.buttonid = generator.buttonid and generator.buttonid + 1 or 1
-            info.id = info.id or string.format("button%d", generator.buttonid)
-            gk.log("createNode %s", info.id)
-        elseif info.type == "cc.Layer" then
-            node = cc.Layer:create()
-            generator.layerid = generator.layerid and generator.layerid + 1 or 1
-            info.id = info.id or string.format("layer%d", generator.layerid)
+        local creator = generator.nodeCreator[info.type]
+        if creator then
+            node = creator(info, rootTable)
             gk.log("createNode %s", info.id)
         else
             gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
@@ -103,11 +88,17 @@ function generator.default()
         file = "?",
         rotation = 0,
         opacity = 255,
-        ap = { x = 0.5, y = 0.5 },
-        x = gk.display.scaleX(gk.display.width / 2),
-        y = gk.display.scaleY(gk.display.height / 2),
-        scaleX = gk.display.minScale,
-        scaleY = gk.display.minScale,
+        anchorX = 0.5,
+        anchorY = 0.5,
+        width = 0,
+        height = 0,
+        x = gk.display.scaleX(gk.display.width() / 2),
+        y = gk.display.scaleY(gk.display.height() / 2),
+        scaleX = gk.display.minScale(),
+        scaleY = gk.display.minScale(),
+        content = "label",
+        fontFile = "gk/res/font/Consolas.ttf",
+        fontSize = "32",
     }
     return generator._default
 end
@@ -128,29 +119,6 @@ function generator.wrap(info, rootTable)
                 return
             end
             proxy[key] = value
-            generator.infoChangedSwitch = generator.infoChangedSwitch or switch {
-                ["opacity"] = function(node, value)
-                    node:setOpacity(value)
-                end,
-                ["x"] = function(node, value)
-                    node:setPositionX(value)
-                end,
-                ["y"] = function(node, value)
-                    node:setPositionY(value)
-                end,
-                ["scaleX"] = function(node, value)
-                    node:setScaleX(value)
-                end,
-                ["scaleY"] = function(node, value)
-                    node:setScaleY(value)
-                end,
-                ["ap"] = function(node, value)
-                    node:setAnchorPoint(value)
-                end,
-                ["rotation"] = function(node, value)
-                    node:setRotation(value)
-                end,
-            }
             --            gk.log("set %s,%s", key, tostring(value))
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
@@ -161,11 +129,12 @@ function generator.wrap(info, rootTable)
                     v = v()
                 end
                 v = v or value
-                --                generator.infoChangedSwitch:case(key, node, v)
-                local func = generator.nodeFuncs[key]
+                local func = generator.nodeSetFuncs[key]
                 if func then
                     func(node, v)
                     gk.event:post("postSync")
+                    --                elseif key ~= "id" and key ~= "children" and key ~= "type" then
+                    --                    error(string.format("cannot find node func to set property %s", key))
                 end
             end
         end,
@@ -179,7 +148,6 @@ function generator.modify(node, property, input)
     local numValue
     if string.len(input) > 0 and input:sub(1, 1) == "$" then
         local macro = input:sub(2, #input)
-        print(macro)
         -- contains
         if generator.macroFuncs[macro] then
             strValue = input
@@ -188,48 +156,146 @@ function generator.modify(node, property, input)
         numValue = tonumber(input)
     end
     if strValue then
-        node.__info[property] = strValue
+        node.__info[props[1]] = strValue
     elseif numValue then
-        node.__info[property] = numValue
+        node.__info[props[1]] = numValue
     end
     gk.log("modify(%s)\'s property(%s) with value(%s)", node.__info.id, property, input)
     return tostring(node.__info[property])
 end
 
 generator.macroFuncs = {
-    minScale = function()
-        return gk.display.minScale
-    end,
-    maxScale = function()
-        return gk.display.maxScale
-    end,
-    xScale = function()
-        return gk.display.xScale
-    end,
-    yScale = function()
-        return gk.display.yScale
-    end
+    minScale = gk.display.minScale,
+    maxScale = gk.display.maxScale,
+    xScale = gk.display.xScale,
+    yScale = gk.display.yScale,
 }
 
-generator.nodeFuncs = {
+generator.nodeSetFuncs = {
     x = function(node, ...)
-        node["setPositionX"](node, ...)
+        node:setPositionX(...)
     end,
     y = function(node, ...)
-        node["setPositionY"](node, ...)
+        node:setPositionY(...)
     end,
     scaleX = function(node, ...)
-        node["setScaleX"](node, ...)
+        node:setScaleX(...)
     end,
     scaleY = function(node, ...)
-        node["setScaleY"](node, ...)
+        node:setScaleY(...)
+    end,
+    anchorX = function(node, anchorX)
+        local ap = node:getAnchorPoint()
+        node:setAnchorPoint(cc.p(anchorX, ap.y))
+    end,
+    anchorY = function(node, anchorY)
+        local ap = node:getAnchorPoint()
+        node:setAnchorPoint(cc.p(ap.x, anchorY))
+    end,
+    width = function(node, width)
+        local size = node:getContentSize()
+        size.width = width
+        node:setContentSize(size)
+    end,
+    height = function(node, height)
+        local size = node:getContentSize()
+        size.height = height
+        node:setContentSize(size)
     end,
     rotation = function(node, ...)
-        node["setRotation"](node, ...)
+        node:setRotation(...)
     end,
     opacity = function(node, ...)
-        node["setOpacity"](node, ...)
+        node:setOpacity(...)
     end,
 }
+
+generator.nodeGetFuncs = {
+    id = function(node)
+        return node.__info.id
+    end,
+    type = function(node)
+        return node.__cname or tolua.type(node)
+    end,
+    anchorX = function(node)
+        return node.__info.anchorX or node:getAnchorPoint().x
+    end,
+    anchorY = function(node)
+        return node.__info.anchorY or node:getAnchorPoint().y
+    end,
+    x = function(node)
+        return node.__info.x or math.shrink(node:getPositionX(), 3)
+    end,
+    y = function(node)
+        return node.__info.y or math.shrink(node:getPositionY(), 3)
+    end,
+    scaleX = function(node)
+        return node.__info.scaleX or math.shrink(node:getScaleX(), 3)
+    end,
+    scaleY = function(node)
+        return node.__info.scaleY or math.shrink(node:getScaleY(), 3)
+    end,
+    rotation = function(node)
+        return node.__info.rotation or math.shrink(node:getRotation(), 3)
+    end,
+    opacity = function(node)
+        return node.__info.opacity or node:getOpacity()
+    end,
+    width = function(node)
+        return node.__info.width or node:getContentSize().width
+    end,
+    height = function(node)
+        return node.__info.height or node:getContentSize().height
+    end,
+}
+
+generator.nodeCreator = {
+    ["cc.Sprite"] = function(info, rootTable)
+        local node = CREATE_SPRITE(info.file)
+        info.id = info.id or generator.genID("sprite", rootTable)
+        return node
+    end,
+    ["ZoomButton"] = function(info, rootTable)
+        local node = gk.ZoomButton.new(CREATE_SPRITE(info.file))
+        info.id = info.id or generator.genID("button", rootTable)
+        return node
+    end,
+    ["cc.Layer"] = function(info, rootTable)
+        local node = cc.Layer:create()
+        info.id = info.id or generator.genID("layer", rootTable)
+        return node
+    end,
+    ["cc.Label"] = function(info, rootTable)
+        local node = gk.create_label(info)
+        info.id = info.id or generator.genID("label", rootTable)
+        return node
+    end,
+}
+
+function generator.genID(type, rootTable)
+    --    generator.genIDTable = generator.genIDTable or {}
+    --    if not generator.genIDTable[type] then
+    --        generator.genIDTable[type] = 1
+    --    end
+    --    local index = generator.genIDTable[type]
+    --    while true do
+    --        if rootTable[string.format("%s%d", type, index)] == nil then
+    --            generator.genIDTable[type] = index
+    --            break
+    --        else
+    --            index = index + 1
+    --        end
+    --    end
+    --    return string.format("%s%d", type, index)
+    local index = 1
+    while true do
+        if rootTable[string.format("%s%d", type, index)] == nil then
+            break
+        else
+            index = index + 1
+        end
+    end
+    return string.format("%s%d", type, index)
+end
 
 return generator

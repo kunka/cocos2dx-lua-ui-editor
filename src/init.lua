@@ -9,7 +9,7 @@ CC_SHOW_FPS = false
 require "cocos.init"
 require "gk.init"
 
-gk.config.defaultSprite = "HelloWorld.png"
+gk.config.defaultSprite = "gk/res/texture/default.png"
 gk.display.initWithDesignSize(cc.size(960, 720))
 gk.resource:setTextureRelativePath("texture/")
 gk.resource:setAtlasRelativePath("atlas/")

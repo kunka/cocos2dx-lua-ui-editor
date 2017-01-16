@@ -51,7 +51,7 @@ function EditBox:setInputLabel(label)
 end
 
 function EditBox:getInput()
-    return string.gsub(self.label:getString(), self.cursorChar, "")
+    return (string.gsub(self.label:getString(), self.cursorChar, ""))
 end
 
 function EditBox:setInput(str)
@@ -151,6 +151,7 @@ function EditBox:focus()
         gk.util:drawNodeRect(self, cc.c4f(1, 0, 0, 1), -2)
         local str = self:getInput()
         self.label:setString(str .. self.cursorChar)
+        self:startBlinkCursor()
         if self.onEditBeganCallback then
             self.onEditBeganCallback(self, self:getInput())
         end
@@ -161,12 +162,30 @@ function EditBox:unfocus()
     if gk.focusNode == self then
         gk.focusNode = nil
         gk.util:clearDrawNode(self, -2)
+        self:stopBlinkCursor()
         local str = self:getInput()
         self.label:setString(str)
         if self.onEditEndedCallback then
             self.onEditEndedCallback(self, self:getInput())
         end
     end
+end
+
+function EditBox:startBlinkCursor()
+    self.label:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
+        local input = self:getInput()
+        if self.cursorChar == "" then
+            self.cursorChar = "|"
+        else
+            self.cursorChar = ""
+        end
+        self.label:setString(input .. self.cursorChar)
+    end))))
+end
+
+function EditBox:stopBlinkCursor()
+    self.cursorChar = "|"
+    self.label:stopAllActions()
 end
 
 function EditBox:stopTracking()
@@ -178,20 +197,11 @@ function EditBox:handleKeyboardEvent()
     local function onKeyPressed(keyCode, event)
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
+            --            gk.log("%s:onKeyPressed %s", "EditBox", key)
             if key == "KEY_SHIFT" then
                 self.shiftPressed = true
-            end
-        end
-    end
-
-    local function onKeyReleased(keyCode, event)
-        if gk.focusNode == self then
-            local key = cc.KeyCodeKey[keyCode + 1]
-            if key == "KEY_SHIFT" then
-                self.shiftPressed = false
                 return
             end
-            gk.log("%s:onKeypad %s", "EditBox", key)
             local keyTable = {}
             if self.shiftPressed then
                 local cs = ")!@#$%^&*("
@@ -211,12 +221,6 @@ function EditBox:handleKeyboardEvent()
                 end
                 keyTable["KEY_MINUS"] = "-"
             end
-            --            for i = 65, 65 + 25 do
-            --                keyTable[string.format("KEY_CAPITAL_%s", string.char(i))] = string.char(i)
-            --            end
-            --            for i = 97, 97 + 25 do
-            --                keyTable[string.format("KEY_%s", string.char(i - 32))] = string.char(i)
-            --            end
             keyTable["KEY_PERIOD"] = "."
             keyTable["KEY_SLASH"] = "/"
             --            dump(keyTable)
@@ -225,6 +229,8 @@ function EditBox:handleKeyboardEvent()
             if keyTable[key] then
                 local str = self:getInput()
                 self.label:setString(str .. keyTable[key] .. self.cursorChar)
+                self:stopBlinkCursor()
+                self:startBlinkCursor()
                 if self.onInputChangedCallback then
                     self.onInputChangedCallback(self, self:getInput())
                 end
@@ -233,12 +239,24 @@ function EditBox:handleKeyboardEvent()
                 if #str >= 1 then
                     str = string.sub(str, 1, #str - 1)
                     self.label:setString(str .. self.cursorChar)
+                    self:stopBlinkCursor()
+                    self:startBlinkCursor()
                     if self.onInputChangedCallback then
                         self.onInputChangedCallback(self, self:getInput())
                     end
                 end
             elseif keyCode == enter then
                 self:unselected()
+            end
+        end
+    end
+
+    local function onKeyReleased(keyCode, event)
+        if gk.focusNode == self then
+            local key = cc.KeyCodeKey[keyCode + 1]
+            --            gk.log("%s:onKeyReleased %s", "EditBox", key)
+            if key == "KEY_SHIFT" then
+                self.shiftPressed = false
             end
         end
     end

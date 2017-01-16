@@ -64,14 +64,6 @@ gk.exports.CREATE_SPRITE = CREATE_SPRITE
 gk.exports.CREATE_SPRITE_FRAME = CREATE_SPRITE_FRAME
 gk.exports.CREATE_SCALE9_SPRITE = CREATE_SCALE9_SPRITE
 
------------------------------------------ create button  -------------------------------------------------
-
--- node : contentNode
-local function CREATE_ZOOM_BUTTON(node)
-    local ZoomButton = require("gk.node.ZoomButton")
-    return ZoomButton.new(node)
-end
-
 ----------------------------------------- create label  -------------------------------------------------
 local function CREATE_LABEL(id)
     local id2label = require("gk.core.id2label")

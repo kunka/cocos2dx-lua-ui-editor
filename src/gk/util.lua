@@ -95,23 +95,23 @@ function util:drawNodeRect(node, c4f, tag)
     end
 
     -- draw text size
-    if tolua.type(node) == "cc.Label" then
-        local fontSize = node:getTTFConfig().fontFilePath ~= "" and node:getTTFConfig().fontSize or 0
-        if fontSize <= 0 then
-            -- bmfont
-            fontSize = node:getBMFontSize()
-        end
-        if fontSize > 0 then
-            local lb = cc.Label:createWithSystemFont(string.format("%d", fontSize), "Arial", 15)
-            lb:enableUnderline()
-            local child = node:getChildByTag(-0x2333)
-            if child then
-                child:removeFromParent()
-            end
-            node:addChild(lb, 9999, -0x2333)
-            lb:setPosition(size.width, size.height)
-        end
-    end
+    --    if tolua.type(node) == "cc.Label" then
+    --        local fontSize = node:getTTFConfig().fontFilePath ~= "" and node:getTTFConfig().fontSize or 0
+    --        if fontSize <= 0 then
+    --            -- bmfont
+    --            fontSize = node:getBMFontSize()
+    --        end
+    --        if fontSize > 0 then
+    --            local lb = cc.Label:createWithSystemFont(string.format("%d", fontSize), "Arial", 15)
+    --            lb:enableUnderline()
+    --            local child = node:getChildByTag(-0x2333)
+    --            if child then
+    --                child:removeFromParent()
+    --            end
+    --            node:addChild(lb, 9999, -0x2333)
+    --            lb:setPosition(size.width, size.height)
+    --        end
+    --    end
 
     -- refresh draw, only in test mode
     if DEBUG and not tag then
@@ -151,6 +151,13 @@ function util:hitTest(node, touch)
     local rect = { x = 0, y = 0, width = s.width, height = s.height }
     local touchP = node:convertToNodeSpace(cc.p(location.x, location.y))
     return cc.rectContainsPoint(rect, touchP)
+end
+
+function util:stopActionByTagSafe(node, tag)
+    local action = node:getActionByTag(tag)
+    if action then
+        node:stopAction(action)
+    end
 end
 
 return util

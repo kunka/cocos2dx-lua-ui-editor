@@ -30,8 +30,8 @@ function panel:create(scene)
     self.bottomPanel = layerColor
 
     -- size label
-    local label = cc.Label:createWithSystemFont(string.format("winSize(%.0fx%.0f) designSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f)", gk.display.winSize.width,
-        gk.display.winSize.height, gk.display.width, gk.display.height, gk.display.xScale, gk.display.yScale),
+    local label = cc.Label:createWithSystemFont(string.format("winSize(%.0fx%.0f) designSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f)", gk.display.winSize().width,
+        gk.display.winSize().height, gk.display.width(), gk.display.height(), gk.display.xScale(), gk.display.yScale()),
         "Consolas", 48)
     label:setScale(0.2)
     self.bottomPanel:addChild(label)
@@ -39,7 +39,7 @@ function panel:create(scene)
     label:setPosition(0, gk.display.bottomHeight / 2)
 
     self:addTopPanel()
-    self:handleKeyboardEvent()
+    self:handleEvent()
     self:subscribeEvent()
 
     return editorPanel
@@ -56,11 +56,8 @@ function panel:subscribeEvent(node)
         self:displayDomTree(node or self.scene.layer)
     end)
     gk.event:subscribe(self, "postSync", function(node)
-        local action = self.editorPanel:getActionByTag(-234)
-        if action then
-            self.editorPanel:stopAction(action)
-        end
-        action = cc.CallFunc:create(function()
+        gk.util:stopActionByTagSafe(self.editorPanel, -234)
+        local action = cc.CallFunc:create(function()
             self:sync()
         end)
         action:setTag(-234)
@@ -128,7 +125,6 @@ function panel:onNodeCreate(node)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
-            gk.log("move node to %.2f, %.2f", p.x, p.y)
             local destPos = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
@@ -137,22 +133,18 @@ function panel:onNodeCreate(node)
                 node:retain()
                 node:removeFromParent()
                 node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
-                --                node:setPosition(p)
                 local sx, sy = gk.util.getGlobalScale(self._containerNode)
                 if sx == 1 and sy == 1 then
                     node.__info.scaleX, node.__info.scaleY = 0.2, 0.2
-                    --                    node:setScale(0.2)
                 else
                     node.__info.scaleX, node.__info.scaleY = math.shrink(0.2 / sx, 3), math.shrink(0.2 / sy, 3)
-                    --                    node:setScale(0.2 / sx, 0.2 / sy)
                 end
                 self._containerNode:addChild(node)
                 node:release()
             else
-                --                node:setPosition(destPos)
                 node.__info.x, node.__info.y = math.shrink(destPos.x, 3), math.shrink(destPos.y, 3)
             end
-            --            self:undisplayNode()
+            gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
@@ -161,7 +153,6 @@ function panel:onNodeCreate(node)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
             node:setPosition(self._originPos)
-            --            self:undisplayNode()
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end)
@@ -195,13 +186,13 @@ function panel:displayNode(panel, node)
     local size = panel:getContentSize()
 
     local fontSize = 12 * 4
-    local fontName = "Consolas"
-    local scale = "0.25"
+    local fontName = "gk/res/font/Consolas.ttf"
+    local scale = 0.25
     local topY = size.height - 15
     local leftX = 10
     local leftX2 = 70
     local leftX3 = 130
-    local stepY = 30
+    local stepY = 22
     local stepX = 40
     local inputWidth1 = 100
     local inputWidth2 = 40
@@ -216,7 +207,8 @@ function panel:displayNode(panel, node)
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 20 / scale))
         node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("edbox_bg_2.png", cc.rect(20, 8, 10, 5)))
-        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        local label = gk.create_label({ content = content, fontFile = fontName, fontSize = fontSize })
+        --                local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
         self.displayInfoNode:addChild(node)
@@ -264,19 +256,20 @@ function panel:displayNode(panel, node)
     yIndex = yIndex + 1
     -- anchor
     createLabel("anchor", leftX, topY - stepY * yIndex)
-    createInput(tostring(node.__info.ap.x), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        --        editBox:setInput(generator.modify(node, "ap.x", input))
+    createInput(tostring(node.__info.anchorX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "anchorX", input))
     end)
-    createInput(tostring(node.__info.ap.y), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        --        node.__info.ap.y = tonumber(input)
+    createInput(tostring(node.__info.anchorY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "anchorY", input))
     end)
     yIndex = yIndex + 1
     -- size
     createLabel("size", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.1f", node:getContentSize().width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input) end)
-    createInput(string.format("%.1f", node:getContentSize().height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        --        node.__info.size = tonumber(input)
-        --        generator.updateNode(node, node.__info, self.scene.layer)
+    createInput(string.format("%.2f", node.__info.width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "width", input))
+    end)
+    createInput(string.format("%.2f", node.__info.height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator.modify(node, "height", input))
     end)
     yIndex = yIndex + 1
     -- opacity
@@ -285,33 +278,53 @@ function panel:displayNode(panel, node)
         editBox:setInput(generator.modify(node, "opacity", input))
     end)
     yIndex = yIndex + 1
-    -- file
-    createLabel("file", leftX, topY - stepY * yIndex)
-    createInput(tostring(node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-        editBox:setInput(generator.modify(node, "file", input))
-    end)
-    yIndex = yIndex + 1
+    if node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton" then
+        -- file
+        createLabel("file", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "file", input))
+        end)
+        yIndex = yIndex + 1
+    end
+    if node.__info.type == "cc.Label" then
+        -- font size
+        createLabel("fontSize", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.fontSize), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "fontSize", input))
+        end)
+        yIndex = yIndex + 1
+        -- font file
+        createLabel("fontFile", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.fontFile), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "fontFile", input))
+        end)
+        yIndex = yIndex + 1
+    end
 end
 
-function panel:handleKeyboardEvent()
-    local function onKeyReleased(keyCode, event)
+function panel:handleEvent()
+    local function onKeyPressed(keyCode, event)
         if gk.focusNode then
             return
         end
         local key = cc.KeyCodeKey[keyCode + 1]
-        gk.log("%s:onKeypad %s", "EditorPanel", key)
+        --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode then
             local x, y = self.displayingNode:getPosition()
             if key == "KEY_LEFT_ARROW" then
                 x = math.floor(x - 1)
+                self.displayingNode.__info.x = x
             elseif key == "KEY_RIGHT_ARROW" then
                 x = math.floor(x + 1)
+                self.displayingNode.__info.x = x
             elseif key == "KEY_UP_ARROW" then
                 y = math.floor(y + 1)
+                self.displayingNode.__info.y = y
             elseif key == "KEY_DOWN_ARROW" then
                 y = math.floor(y - 1)
+                self.displayingNode.__info.y = y
             end
-            self.displayingNode:setPosition(cc.p(x, y))
+            gk.event:post("displayNode", self.displayingNode)
         end
 
         if key == "KEY_S" then
@@ -321,6 +334,10 @@ function panel:handleKeyboardEvent()
             -- delete node
             gk.log("delete")
             if self.displayingNode and self.displayingNode.__info.id then
+                local parent = self.displayingNode:getParent()
+                if parent and parent[self.displayingNode.__info.id] == self.displayingNode then
+                    parent[self.displayingNode.__info.id] = nil
+                end
                 self.displayingNode:removeFromParent()
                 self.displayingNode = nil
                 gk.event:post("postSync")
@@ -331,8 +348,43 @@ function panel:handleKeyboardEvent()
     end
 
     local listener = cc.EventListenerKeyboard:create()
-    listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
+    listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.editorPanel)
+
+    local listener = cc.EventListenerMouse:create()
+    --    listener:registerScriptHandler(function(touch, event)
+    --    end, cc.Handler.EVENT_MOUSE_DOWN)
+    --    listener:registerScriptHandler(function(touch, event)
+    --    end, cc.Handler.EVENT_MOUSE_UP)
+    listener:registerScriptHandler(function(touch, event)
+        local location = touch:getLocationInView()
+        location.y = cc.Director:getInstance():getWinSize().height + location.y
+        -- find node
+        if self.sortedChildren == nil then
+            self:sortChildrenOfSceneGraphPriority(self.scene.layer, true)
+        end
+        local children = self.sortedChildren
+        for i = #children, 1, -1 do
+            local node = children[i]
+            if node then
+                local s = node:getContentSize()
+                local rect = { x = 0, y = 0, width = s.width, height = s.height }
+                local p = node:convertToNodeSpace(location)
+                if cc.rectContainsPoint(rect, p) then
+                    local type = node.__cname and node.__cname or tolua.type(node)
+                    if self._mouseHoverNode ~= node then
+                        self._mouseHoverNode = node
+                        --                    gk.event:post("displayNode", node)
+                        --                    gk.event:post("displayDomTree")
+                    end
+                    break
+                end
+            end
+        end
+    end, cc.Handler.EVENT_MOUSE_MOVE)
+    --    listener:registerScriptHandler(function(touch, event)
+    --    end, cc.Handler.EVENT_MOUSE_SCROLL)
+    --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.editorPanel)
 end
 
 function panel:addTopPanel()
@@ -341,12 +393,13 @@ function panel:addTopPanel()
         { type = "cc.Layer", },
         { type = "cc.Sprite", file = "?", },
         { type = "ZoomButton", file = "?", },
+        { type = "cc.Label", },
     }
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = CREATE_SPRITE(self.widgets[i].file)
         node.type = self.widgets[i].type
-        node:setScale(0.2)
+        node:setScale(gk.display.minScale())
         local originPos = cc.p(gk.display.leftWidth + node:getScale() * node:getContentSize().width / 2 + 50 * (i - 1), size.height / 2)
         node:setPosition(originPos)
         self.topPanel:addChild(node)
@@ -375,7 +428,7 @@ function panel:addTopPanel()
             if not self.draggingNode then
                 local node = CREATE_SPRITE(self.widgets[i].file)
                 node:setPosition(originPos)
-                node:setScale(0.2)
+                node:setScale(gk.display.minScale())
                 self.topPanel:addChild(node)
                 self.draggingNode = node
             end
@@ -420,10 +473,10 @@ function panel:addTopPanel()
                         node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
                         if tolua.type(node) ~= "cc.Layer" then
                             local sx, sy = gk.util.getGlobalScale(self._containerNode)
-                            if sx == 1 and sy == 1 then
-                                node.__info.scaleX, node.__info.scaleY = 0.2, 0.2
+                            if sx ~= 1 or sy ~= 1 then
+                                node.__info.scaleX, node.__info.scaleY = 1, 1
                             else
-                                node.__info.scaleX, node.__info.scaleY = math.shrink(0.2 / sx, 3), math.shrink(0.2 / sy, 3)
+                                node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale" --gk.display.minScale() ,gk.display.minScale() --math.shrink(gk.display
                             end
                         else
                             gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
@@ -468,7 +521,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     if childrenCount > 0 then
         for i = 1, childrenCount do
             local child = children[i]
-            if child and child:getLocalZOrder() < 0 then
+            if child and child:getLocalZOrder() < 0 and child.__info then
                 panel:sortChildrenOfSceneGraphPriority(child, false)
             else
                 break
@@ -479,7 +532,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         end
         for i = 1, childrenCount do
             local child = children[i]
-            if child then
+            if child and child.__info then
                 panel:sortChildrenOfSceneGraphPriority(child, false)
             end
         end
@@ -534,7 +587,7 @@ function panel:displayDomNode(node, layer)
     local size = self.leftPanel:getContentSize()
     local fontSize = 12 * 4
     local fontName = "Consolas"
-    local scale = "0.25"
+    local scale = 0.25
     local topY = size.height - 15
     local leftX = 5
     local stepY = 20

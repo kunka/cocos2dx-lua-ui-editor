@@ -7,9 +7,14 @@
 
 local id2label = {}
 
-local function create_label(id)
-    local label= cc.Label:createWithSystemFont(string.format("undefined_%s", id), "SimHei", 20)
-    label.__id = id
+local function create_label(info)
+    if info.labelType == "ttf" then
+    elseif info.labelType == "bmfont" then
+    else
+        info.labelType = "systemfont"
+    end
+    local label = cc.Label:createWithTTF(info.content, info.fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+    return label
 end
 
 gk.create_label = create_label
@@ -33,6 +38,11 @@ function id2label:getLan()
         cc.UserDefault:getInstance():flush()
     end
     return lc
+end
+
+function id2label:setLan(lc)
+    cc.UserDefault:getInstance():setStringForKey("app_language", lc)
+    cc.UserDefault:getInstance():flush()
 end
 
 return id2label
