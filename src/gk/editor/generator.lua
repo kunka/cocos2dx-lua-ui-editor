@@ -15,7 +15,10 @@ function generator.deflate(node)
 
     -- force set value
     for k, func in pairs(generator.nodeGetFuncs) do
-        info[k] = func(node)
+        local ret = func(node)
+        if ret then
+            info[k] = ret
+        end
     end
 
     -- rescan children
@@ -76,27 +79,26 @@ function generator.createNode(info, rootNode, rootTable)
     end
 
     -- force set value
-    for k, v in pairs(info.__self) do
-        info[k] = nil
-        info[k] = v
+    --    for k, v in pairs(info.__self) do
+    --        info[k] = nil
+    --        info[k] = v
+    --    end
+    -- force set value
+    for k, func in pairs(generator.nodeGetFuncs) do
+        local ret = func(node)
+        if ret then
+            info[k] = ret
+        end
     end
     return node
 end
 
 function generator.default()
     generator._default = generator._default and generator._default or {
-        file = "?",
+        file = "",
         rotation = 0,
         opacity = 255,
-        anchorX = 0.5,
-        anchorY = 0.5,
-        width = 0,
-        height = 0,
-        x = gk.display.scaleX(gk.display.width() / 2),
-        y = gk.display.scaleY(gk.display.height() / 2),
-        scaleX = gk.display.minScale(),
-        scaleY = gk.display.minScale(),
-        content = "label",
+        string = "label",
         fontFile = "gk/res/font/Consolas.ttf",
         fontSize = "32",
     }
@@ -108,16 +110,12 @@ function generator.wrap(info, rootTable)
     info = {}
     local mt = {
         __index = function(_, key)
-            --            gk.log("get %s", key)
             if key == "__self" then
                 return proxy
             end
             return proxy[key] or generator.default()[key]
         end,
         __newindex = function(_, key, value)
-            if proxy[key] == value then
-                return
-            end
             proxy[key] = value
             --            gk.log("set %s,%s", key, tostring(value))
             local node = rootTable and rootTable[proxy["id"]] or nil
@@ -146,108 +144,28 @@ end
 function generator.modify(node, property, input)
     local strValue
     local numValue
-    if string.len(input) > 0 and input:sub(1, 1) == "$" then
-        local macro = input:sub(2, #input)
-        -- contains
-        if generator.macroFuncs[macro] then
-            strValue = input
-        end
+    if node.__info.type == "cc.Label" then
+        strValue = input
     else
-        numValue = tonumber(input)
+        if string.len(input) > 0 and input:sub(1, 1) == "$" then
+            local macro = input:sub(2, #input)
+            -- contains
+            if generator.macroFuncs[macro] then
+                strValue = input
+            end
+        else
+            numValue = tonumber(input)
+        end
     end
     if strValue then
-        node.__info[props[1]] = strValue
+        node.__info[property] = strValue
     elseif numValue then
-        node.__info[props[1]] = numValue
+        node.__info[property] = numValue
     end
     gk.log("modify(%s)\'s property(%s) with value(%s)", node.__info.id, property, input)
     return tostring(node.__info[property])
 end
 
-generator.macroFuncs = {
-    minScale = gk.display.minScale,
-    maxScale = gk.display.maxScale,
-    xScale = gk.display.xScale,
-    yScale = gk.display.yScale,
-}
-
-generator.nodeSetFuncs = {
-    x = function(node, ...)
-        node:setPositionX(...)
-    end,
-    y = function(node, ...)
-        node:setPositionY(...)
-    end,
-    scaleX = function(node, ...)
-        node:setScaleX(...)
-    end,
-    scaleY = function(node, ...)
-        node:setScaleY(...)
-    end,
-    anchorX = function(node, anchorX)
-        local ap = node:getAnchorPoint()
-        node:setAnchorPoint(cc.p(anchorX, ap.y))
-    end,
-    anchorY = function(node, anchorY)
-        local ap = node:getAnchorPoint()
-        node:setAnchorPoint(cc.p(ap.x, anchorY))
-    end,
-    width = function(node, width)
-        local size = node:getContentSize()
-        size.width = width
-        node:setContentSize(size)
-    end,
-    height = function(node, height)
-        local size = node:getContentSize()
-        size.height = height
-        node:setContentSize(size)
-    end,
-    rotation = function(node, ...)
-        node:setRotation(...)
-    end,
-    opacity = function(node, ...)
-        node:setOpacity(...)
-    end,
-}
-
-generator.nodeGetFuncs = {
-    id = function(node)
-        return node.__info.id
-    end,
-    type = function(node)
-        return node.__cname or tolua.type(node)
-    end,
-    anchorX = function(node)
-        return node.__info.anchorX or node:getAnchorPoint().x
-    end,
-    anchorY = function(node)
-        return node.__info.anchorY or node:getAnchorPoint().y
-    end,
-    x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX(), 3)
-    end,
-    y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY(), 3)
-    end,
-    scaleX = function(node)
-        return node.__info.scaleX or math.shrink(node:getScaleX(), 3)
-    end,
-    scaleY = function(node)
-        return node.__info.scaleY or math.shrink(node:getScaleY(), 3)
-    end,
-    rotation = function(node)
-        return node.__info.rotation or math.shrink(node:getRotation(), 3)
-    end,
-    opacity = function(node)
-        return node.__info.opacity or node:getOpacity()
-    end,
-    width = function(node)
-        return node.__info.width or node:getContentSize().width
-    end,
-    height = function(node)
-        return node.__info.height or node:getContentSize().height
-    end,
-}
 
 generator.nodeCreator = {
     ["cc.Sprite"] = function(info, rootTable)
@@ -297,5 +215,136 @@ function generator.genID(type, rootTable)
     end
     return string.format("%s%d", type, index)
 end
+
+generator.macroFuncs = {
+    minScale = gk.display.minScale,
+    maxScale = gk.display.maxScale,
+    xScale = gk.display.xScale,
+    yScale = gk.display.yScale,
+}
+
+generator.nodeSetFuncs = {
+    x = function(node, ...)
+        node:setPositionX(...)
+    end,
+    y = function(node, ...)
+        node:setPositionY(...)
+    end,
+    scaleX = function(node, ...)
+        node:setScaleX(...)
+    end,
+    scaleY = function(node, ...)
+        node:setScaleY(...)
+    end,
+    anchorX = function(node, anchorX)
+        local ap = node:getAnchorPoint()
+        node:setAnchorPoint(cc.p(anchorX, ap.y))
+    end,
+    anchorY = function(node, anchorY)
+        local ap = node:getAnchorPoint()
+        node:setAnchorPoint(cc.p(ap.x, anchorY))
+    end,
+    width = function(node, width)
+        if node.__info.type == "cc.Label" then
+            node:setWidth(width)
+        else
+            local size = node:getContentSize()
+            size.width = width
+            node:setContentSize(size)
+        end
+    end,
+    height = function(node, height)
+        if node.__info.type == "cc.Label" then
+            node:setHeight(height)
+        else
+            local size = node:getContentSize()
+            size.height = height
+            node:setContentSize(size)
+        end
+    end,
+    rotation = function(node, ...)
+        node:setRotation(...)
+    end,
+    opacity = function(node, ...)
+        node:setOpacity(...)
+    end,
+    string = function(node, string)
+        node:setString(string)
+    end,
+    hAlign = function(node, align)
+        node:setHorizontalAlignment(align)
+    end,
+    vAlign = function(node, align)
+        node:setVerticalAlignment(align)
+    end,
+    overflow = function(node, var)
+        node:setOverflow(var)
+    end,
+    lineHeight = function(node, var)
+        node:setLineHeight(var)
+    end,
+}
+
+generator.nodeGetFuncs = {
+    id = function(node)
+        return node.__info.id
+    end,
+    type = function(node)
+        return node.__cname or tolua.type(node)
+    end,
+    anchorX = function(node)
+        return node.__info.anchorX or node:getAnchorPoint().x
+    end,
+    anchorY = function(node)
+        return node.__info.anchorY or node:getAnchorPoint().y
+    end,
+    x = function(node)
+        return node.__info.x or math.shrink(node:getPositionX(), 1)
+    end,
+    y = function(node)
+        return node.__info.y or math.shrink(node:getPositionY(), 1)
+    end,
+    scaleX = function(node)
+        return node.__info.scaleX or math.shrink(node:getScaleX(), 3)
+    end,
+    scaleY = function(node)
+        return node.__info.scaleY or math.shrink(node:getScaleY(), 3)
+    end,
+    rotation = function(node)
+        return node.__info.rotation or math.shrink(node:getRotation(), 2)
+    end,
+    opacity = function(node)
+        return node.__info.opacity or node:getOpacity()
+    end,
+    width = function(node)
+        if node.__info.type == "cc.Label" then
+            return node.__info.width or node:getWidth()
+        else
+            return node:getContentSize().width
+        end
+    end,
+    height = function(node)
+        if node.__info.type == "cc.Label" then
+            return node.__info.height or node:getHeight()
+        else
+            return node:getContentSize().height
+        end
+    end,
+    string = function(node)
+        return node.__info.type == "cc.Label" and (node.__info.string or node:getString())
+    end,
+    hAlign = function(node)
+        return node.__info.type == "cc.Label" and (node.__info.hAlign or node:getHorizontalAlignment())
+    end,
+    vAlign = function(node)
+        return node.__info.type == "cc.Label" and (node.__info.vAlign or node:getVerticalAlignment())
+    end,
+    overflow = function(node)
+        return node.__info.type == "cc.Label" and (node.__info.overflow or node:getOverflow())
+    end,
+    lineHeight = function(node)
+        return node.__info.type == "cc.Label" and (node.__info.lineHeight or node:getLineHeight())
+    end,
+}
 
 return generator

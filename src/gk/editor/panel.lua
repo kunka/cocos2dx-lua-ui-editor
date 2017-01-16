@@ -132,17 +132,17 @@ function panel:onNodeCreate(node)
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()
-                node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
+                node.__info.x, node.__info.y = math.shrink(p.x, 1), math.shrink(p.y, 1)
                 local sx, sy = gk.util.getGlobalScale(self._containerNode)
-                if sx == 1 and sy == 1 then
-                    node.__info.scaleX, node.__info.scaleY = 0.2, 0.2
+                if sx ~= 1 or sy ~= 1 then
+                    node.__info.scaleX, node.__info.scaleY = 1, 1
                 else
-                    node.__info.scaleX, node.__info.scaleY = math.shrink(0.2 / sx, 3), math.shrink(0.2 / sy, 3)
+                    node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale" --gk.display.minScale() ,gk.display.minScale() --math.shrink(gk.display
                 end
-                self._containerNode:addChild(node)
+                                self._containerNode:addChild(node)
                 node:release()
             else
-                node.__info.x, node.__info.y = math.shrink(destPos.x, 3), math.shrink(destPos.y, 3)
+                node.__info.x, node.__info.y = math.shrink(destPos.x, 1), math.shrink(destPos.y, 1)
             end
             gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
             gk.event:post("postSync")
@@ -188,11 +188,11 @@ function panel:displayNode(panel, node)
     local fontSize = 12 * 4
     local fontName = "gk/res/font/Consolas.ttf"
     local scale = 0.25
-    local topY = size.height - 15
+    local topY = size.height - 12
     local leftX = 10
-    local leftX2 = 70
-    local leftX3 = 130
-    local stepY = 22
+    local leftX2 = 90
+    local leftX3 = 150
+    local stepY = 25
     local stepX = 40
     local inputWidth1 = 100
     local inputWidth2 = 40
@@ -207,10 +207,13 @@ function panel:displayNode(panel, node)
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 20 / scale))
         node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("edbox_bg_2.png", cc.rect(20, 8, 10, 5)))
-        local label = gk.create_label({ content = content, fontFile = fontName, fontSize = fontSize })
+        local label = gk.create_label({ string = content, fontFile = fontName, fontSize = fontSize })
         --                local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
+        local contentSize = node:getContentSize()
+        label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
+        label:setDimensions(contentSize.width - 25, contentSize.height)
         self.displayInfoNode:addChild(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
@@ -263,14 +266,25 @@ function panel:displayNode(panel, node)
         editBox:setInput(generator.modify(node, "anchorY", input))
     end)
     yIndex = yIndex + 1
-    -- size
-    createLabel("size", leftX, topY - stepY * yIndex)
-    createInput(string.format("%.2f", node.__info.width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "width", input))
-    end)
-    createInput(string.format("%.2f", node.__info.height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "height", input))
-    end)
+    if node.__info.type == "cc.Label" then
+        -- dimensions
+        createLabel("dimensions", leftX, topY - stepY * yIndex)
+        createInput(string.format("%.2f", node.__info.width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "width", input))
+        end)
+        createInput(string.format("%.2f", node.__info.height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "height", input))
+        end)
+    else
+        -- size
+        createLabel("size", leftX, topY - stepY * yIndex)
+        createInput(string.format("%.2f", node:getContentSize().width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "width", input))
+        end)
+        createInput(string.format("%.2f", node:getContentSize().height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "height", input))
+        end)
+    end
     yIndex = yIndex + 1
     -- opacity
     createLabel("opacity", leftX, topY - stepY * yIndex)
@@ -287,6 +301,12 @@ function panel:displayNode(panel, node)
         yIndex = yIndex + 1
     end
     if node.__info.type == "cc.Label" then
+        -- string
+        createLabel("string", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.string), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "string", input))
+        end)
+        yIndex = yIndex + 1
         -- font size
         createLabel("fontSize", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontSize), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
@@ -297,6 +317,27 @@ function panel:displayNode(panel, node)
         createLabel("fontFile", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontFile), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
             editBox:setInput(generator.modify(node, "fontFile", input))
+        end)
+        yIndex = yIndex + 1
+        -- alignment
+        createLabel("Alignment", leftX, topY - stepY * yIndex)
+        createInput(string.format("%d", node.__info.hAlign), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "hAlign", input))
+        end)
+        createInput(string.format("%d", node.__info.vAlign), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "vAlign", input))
+        end)
+        yIndex = yIndex + 1
+        -- overflow
+        createLabel("overflow", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.overflow), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "overflow", input))
+        end)
+        yIndex = yIndex + 1
+        -- lineHeight
+        createLabel("lineHeight", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.lineHeight), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "lineHeight", input))
         end)
         yIndex = yIndex + 1
     end
@@ -470,7 +511,7 @@ function panel:addTopPanel()
                     local info = clone(self.widgets[i])
                     local node = generator.createNode(info, nil, self.scene.layer)
                     if node then
-                        node.__info.x, node.__info.y = math.shrink(p.x, 3), math.shrink(p.y, 3)
+                        node.__info.x, node.__info.y = math.shrink(p.x, 1), math.shrink(p.y, 1)
                         if tolua.type(node) ~= "cc.Layer" then
                             local sx, sy = gk.util.getGlobalScale(self._containerNode)
                             if sx ~= 1 or sy ~= 1 then

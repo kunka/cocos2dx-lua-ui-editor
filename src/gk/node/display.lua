@@ -9,7 +9,7 @@ local display = {}
 
 display.topHeight = 80
 display.leftWidth = 140
-display.rightWidth = 180
+display.rightWidth = 200
 display.bottomHeight = 20
 function display.initWithDesignSize(size)
     local winSize = cc.Director:getInstance():getWinSize()

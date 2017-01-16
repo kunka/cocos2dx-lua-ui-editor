@@ -13,7 +13,7 @@ local function create_label(info)
     else
         info.labelType = "systemfont"
     end
-    local label = cc.Label:createWithTTF(info.content, info.fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+    local label = cc.Label:createWithTTF(info.string, info.fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     return label
 end
 

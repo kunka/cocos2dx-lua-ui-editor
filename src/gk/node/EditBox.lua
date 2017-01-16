@@ -45,7 +45,7 @@ function EditBox:setInputLabel(label)
     label:setOverflow(2)
     local contentSize = self:getContentSize()
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
-    label:setDimensions(contentSize.width - 20, contentSize.height)
+    label:setDimensions(contentSize.width, contentSize.height)
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
 end
