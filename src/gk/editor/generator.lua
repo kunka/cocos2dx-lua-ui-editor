@@ -319,6 +319,8 @@ generator.nodeGetFuncs = {
     width = function(node)
         if node.__info.type == "cc.Label" then
             return node.__info.width or node:getWidth()
+        elseif node.__info.type == "cc.Layer" then
+            return node.__info.width or node:getContentSize().width
         else
             return node:getContentSize().width
         end
@@ -326,6 +328,8 @@ generator.nodeGetFuncs = {
     height = function(node)
         if node.__info.type == "cc.Label" then
             return node.__info.height or node:getHeight()
+        elseif node.__info.type == "cc.Layer" then
+            return node.__info.height or node:getContentSize().height
         else
             return node:getContentSize().height
         end

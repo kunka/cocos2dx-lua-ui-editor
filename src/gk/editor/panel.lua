@@ -139,7 +139,7 @@ function panel:onNodeCreate(node)
                 else
                     node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale" --gk.display.minScale() ,gk.display.minScale() --math.shrink(gk.display
                 end
-                                self._containerNode:addChild(node)
+                self._containerNode:addChild(node)
                 node:release()
             else
                 node.__info.x, node.__info.y = math.shrink(destPos.x, 1), math.shrink(destPos.y, 1)
@@ -242,12 +242,6 @@ function panel:displayNode(panel, node)
         editBox:setInput(generator.modify(node, "y", input))
     end)
     yIndex = yIndex + 1
-    -- rotation
-    createLabel("rotation", leftX, topY - stepY * yIndex)
-    createInput(tostring(node.__info.rotation), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-        editBox:setInput(generator.modify(node, "rotation", input))
-    end)
-    yIndex = yIndex + 1
     -- scale
     createLabel("scale", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.scaleX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
@@ -257,15 +251,17 @@ function panel:displayNode(panel, node)
         editBox:setInput(generator.modify(node, "scaleY", input))
     end)
     yIndex = yIndex + 1
-    -- anchor
-    createLabel("anchor", leftX, topY - stepY * yIndex)
-    createInput(tostring(node.__info.anchorX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "anchorX", input))
-    end)
-    createInput(tostring(node.__info.anchorY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "anchorY", input))
-    end)
-    yIndex = yIndex + 1
+    if node.__info.type ~= "cc.Layer" then
+        -- anchor
+        createLabel("anchor", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.anchorX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "anchorX", input))
+        end)
+        createInput(tostring(node.__info.anchorY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "anchorY", input))
+        end)
+        yIndex = yIndex + 1
+    end
     if node.__info.type == "cc.Label" then
         -- dimensions
         createLabel("dimensions", leftX, topY - stepY * yIndex)
@@ -285,6 +281,12 @@ function panel:displayNode(panel, node)
             editBox:setInput(generator.modify(node, "height", input))
         end)
     end
+    yIndex = yIndex + 1
+    -- rotation
+    createLabel("rotation", leftX, topY - stepY * yIndex)
+    createInput(tostring(node.__info.rotation), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        editBox:setInput(generator.modify(node, "rotation", input))
+    end)
     yIndex = yIndex + 1
     -- opacity
     createLabel("opacity", leftX, topY - stepY * yIndex)
@@ -520,7 +522,7 @@ function panel:addTopPanel()
                                 node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale" --gk.display.minScale() ,gk.display.minScale() --math.shrink(gk.display
                             end
                         else
-                            gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
+                            --                            gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
                         end
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
@@ -597,7 +599,7 @@ function panel:initLayer(layer)
     if tolua.type(layer) == "cc.Layer" and layer.__cname then
         local file = gk.config.genRelativePath .. "_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
-        layer.__info = generator.wrap({ id = "root" }, layer)
+        layer.__info = generator.wrap({ id = layer.__cname }, layer)
         if status then
             gk.log("initLayer with %s", file)
             --            layer.__info.id = "root"
