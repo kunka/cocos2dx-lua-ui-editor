@@ -31,7 +31,7 @@ function Button:ctor(callback)
     self:setCascadeColorEnabled(true)
     self:setCascadeOpacityEnabled(true)
     self:setAnchorPoint(0.5, 0.5)
-    self.delaySelect = false
+    self.delaySelect = false -- delay select in ScrollView
     self.cacheProgram = {}
     self.trackingTouch = false
     self.swallowTouches = false

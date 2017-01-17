@@ -128,6 +128,9 @@ function panel:onNodeCreate(node)
             local destPos = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
+            if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
+                return
+            end
             if self._containerNode ~= node:getParent() then
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
@@ -167,6 +170,55 @@ function panel:undisplayNode()
         self.displayInfoNode:removeFromParent()
         self.displayInfoNode = nil
     end
+    if self.nodePosNode then
+        self.nodePosNode:removeFromParent()
+        self.nodePosNode = nil
+    end
+end
+
+function panel:drawNodePos(node)
+    if self.nodePosNode then
+        self:undisplayNode()
+    end
+    if node.__info and node.__info.id then
+        local parent = node:getParent()
+        local x, y = node:getPositionX(), node:getPositionY()
+        self.nodePosNode = cc.Node:create()
+        parent:addChild(self.nodePosNode, 99999)
+        self.nodePosNode:setCascadeOpacityEnabled(true)
+        self.nodePosNode:setOpacity(128)
+
+        local sx, sy = gk.util.getGlobalScale(parent)
+        sx = 0.2 / sx
+        sy = 0.2 / sy
+
+        local createArrow = function(width, scale, p, rotation, ap)
+            local arrow = CREATE_SCALE9_SPRITE("texture/arrow.png", cc.rect(0, 13, 40, 5))
+            arrow:setContentSize(cc.size(width / scale, 57))
+            arrow:setScale(scale)
+            arrow:setPosition(x, y)
+            arrow:setRotation(rotation)
+            arrow:setAnchorPoint(cc.p(0, 0.5))
+            self.nodePosNode:addChild(arrow)
+            -- label
+            local label = cc.Label:createWithSystemFont(tostring(math.floor(width)), "Arial", 50)
+            label:setScale(scale)
+            label:setColor(cc.c3b(200, 100, 200))
+            label:setAnchorPoint(ap.x, ap.y)
+            label:setPosition(p)
+            self.nodePosNode:addChild(label)
+        end
+        local size = parent:getContentSize()
+
+        -- left
+        createArrow(x, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
+        -- down
+        createArrow(y, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
+        -- right
+        createArrow(size.width - x, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
+        -- top
+        createArrow(size.height - y, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
+    end
 end
 
 function panel:displayNode(panel, node)
@@ -176,6 +228,7 @@ function panel:displayNode(panel, node)
     self:undisplayNode()
     self.displayingNode = node
     gk.util:drawNodeRect(node)
+    self:drawNodePos(node)
 
     -- right panel
     if self.displayInfoNode then
@@ -223,6 +276,19 @@ function panel:displayNode(panel, node)
         node:setPosition(x, y)
         return node
     end
+
+    local createCheckBox = function(selected, x, y, callback)
+        local node = ccui.CheckBox:create("texture/check_box_normal.png", "texture/check_box_selected.png")
+        node:setPosition(x, y)
+        node:setScale(scale * 2)
+        node:setSelected(selected)
+        self.displayInfoNode:addChild(node)
+        node:setAnchorPoint(0, 0.5)
+        node:addEventListener(function(sender, eventType)
+            callback(eventType)
+        end)
+        return node
+    end
     if not node.__info then
         createLabel("Type: " .. node.type, leftX, topY)
         return
@@ -231,118 +297,126 @@ function panel:displayNode(panel, node)
     local yIndex = 0
     -- id
     createLabel("id", leftX, topY)
-    createInput(node.__info.id, leftX2, topY, inputWidth1, function(input) end)
+    createInput(node.__info.id, leftX2, topY, inputWidth1, function(editBox, input)
+        editBox:setInput(generator.modify(node, "id", input, "string"))
+    end)
     yIndex = yIndex + 1
     -- position
     createLabel("pos", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.x), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "x", input))
+        editBox:setInput(generator.modify(node, "x", input, "number"))
     end)
     createInput(tostring(node.__info.y), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "y", input))
+        editBox:setInput(generator.modify(node, "y", input, "number"))
     end)
     yIndex = yIndex + 1
     -- scale
     createLabel("scale", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.scaleX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "scaleX", input))
+        editBox:setInput(generator.modify(node, "scaleX", input, "number"))
     end)
     createInput(tostring(node.__info.scaleY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "scaleY", input))
+        editBox:setInput(generator.modify(node, "scaleY", input, "number"))
     end)
     yIndex = yIndex + 1
-    if node.__info.type ~= "cc.Layer" then
+    if not iskindof(node, "cc.Layer") then
         -- anchor
         createLabel("anchor", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.anchorX), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "anchorX", input))
+            editBox:setInput(generator.modify(node, "anchorX", input, "number"))
         end)
         createInput(tostring(node.__info.anchorY), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "anchorY", input))
+            editBox:setInput(generator.modify(node, "anchorY", input, "number"))
         end)
         yIndex = yIndex + 1
     end
-    if node.__info.type == "cc.Label" then
+    if iskindof(node, "cc.Label") then
         -- dimensions
         createLabel("dimensions", leftX, topY - stepY * yIndex)
         createInput(string.format("%.2f", node.__info.width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "width", input))
+            editBox:setInput(generator.modify(node, "width", input, "number"))
         end)
         createInput(string.format("%.2f", node.__info.height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "height", input))
+            editBox:setInput(generator.modify(node, "height", input, "number"))
         end)
     else
         -- size
         createLabel("size", leftX, topY - stepY * yIndex)
         createInput(string.format("%.2f", node:getContentSize().width), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "width", input))
+            editBox:setInput(generator.modify(node, "width", input, "number"))
         end)
         createInput(string.format("%.2f", node:getContentSize().height), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "height", input))
+            editBox:setInput(generator.modify(node, "height", input, "number"))
         end)
     end
     yIndex = yIndex + 1
     -- rotation
     createLabel("rotation", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.rotation), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-        editBox:setInput(generator.modify(node, "rotation", input))
+        editBox:setInput(generator.modify(node, "rotation", input, "number"))
     end)
     yIndex = yIndex + 1
     -- opacity
     createLabel("opacity", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.opacity), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-        editBox:setInput(generator.modify(node, "opacity", input))
+        editBox:setInput(generator.modify(node, "opacity", input, "number"))
     end)
     yIndex = yIndex + 1
-    if node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton" then
+    if iskindof(node, "cc.Sprite") or node.__info.type == "ZoomButton" then
         -- file
         createLabel("file", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.file), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "file", input))
+            editBox:setInput(generator.modify(node, "file", input, "string"))
         end)
         yIndex = yIndex + 1
     end
-    if node.__info.type == "cc.Label" then
+    if iskindof(node, "cc.Label") then
         -- string
         createLabel("string", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.string), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "string", input))
+            editBox:setInput(generator.modify(node, "string", input, "string"))
         end)
         yIndex = yIndex + 1
         -- font size
         createLabel("fontSize", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontSize), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "fontSize", input))
+            editBox:setInput(generator.modify(node, "fontSize", input, "number"))
         end)
         yIndex = yIndex + 1
         -- font file
         createLabel("fontFile", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontFile), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "fontFile", input))
+            editBox:setInput(generator.modify(node, "fontFile", input, "string"))
         end)
         yIndex = yIndex + 1
         -- alignment
         createLabel("Alignment", leftX, topY - stepY * yIndex)
         createInput(string.format("%d", node.__info.hAlign), leftX2, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "hAlign", input))
+            editBox:setInput(generator.modify(node, "hAlign", input, "number"))
         end)
         createInput(string.format("%d", node.__info.vAlign), leftX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "vAlign", input))
+            editBox:setInput(generator.modify(node, "vAlign", input, "number"))
         end)
         yIndex = yIndex + 1
         -- overflow
         createLabel("overflow", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.overflow), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "overflow", input))
+            editBox:setInput(generator.modify(node, "overflow", input, "number"))
         end)
         yIndex = yIndex + 1
         -- lineHeight
         createLabel("lineHeight", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.lineHeight), leftX2, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "lineHeight", input))
+            editBox:setInput(generator.modify(node, "lineHeight", input, "number"))
         end)
         yIndex = yIndex + 1
     end
+    -- visible
+    createLabel("visible", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.visible == 0, leftX2, topY - stepY * yIndex, function(selected)
+        generator.modify(node, "visible", selected, "number")
+    end)
+    yIndex = yIndex + 1
 end
 
 function panel:handleEvent()
@@ -590,7 +664,7 @@ function panel:sync()
     local info = generator.deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
     local file = gk.config.genPath .. "_" .. self.scene.layer.__cname:lower() .. ".lua"
-    gk.log("save to file: " .. file)
+    gk.log("sync to file: " .. file)
     --    gk.log(table2lua.encode_pretty(info))
     io.writefile(file, table2lua.encode_pretty(info))
 end
@@ -642,6 +716,9 @@ function panel:displayDomNode(node, layer)
         label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        if not gk.util:isGlobalVisible(node) then
+            label:setOpacity(100)
+        end
         local button = gk.ZoomButton.new(label)
         button:setScale(scale)
         self.displayDomInfoNode:addChild(button)

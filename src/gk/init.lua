@@ -20,18 +20,17 @@ setmetatable(gk.exports, {
     end
 })
 
-
 ----------------------------------------- switch function  -------------------------------------------------
 -- function to simulate a switch
 local function switch(t)
     t.case = function(self, x, ...)
         local f = self[x] or self.default
         if f then
-            --            if type(f) == "function" then
-            return f(...)
-            --            else
-            --                error("case " .. tostring(x) .. " not a function")
-            --            end
+            if type(f) == "function" then
+                return f(...)
+            else
+                error("case " .. tostring(x) .. " not a function")
+            end
         end
         return nil
     end

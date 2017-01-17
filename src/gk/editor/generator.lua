@@ -77,12 +77,6 @@ function generator.createNode(info, rootNode, rootTable)
     if rootTable then
         rootTable[info.id] = node
     end
-
-    -- force set value
-    --    for k, v in pairs(info.__self) do
-    --        info[k] = nil
-    --        info[k] = v
-    --    end
     -- force set value
     for k, func in pairs(generator.nodeGetFuncs) do
         local ret = func(node)
@@ -110,14 +104,38 @@ function generator.wrap(info, rootTable)
     info = {}
     local mt = {
         __index = function(_, key)
+            local var
             if key == "__self" then
-                return proxy
+                var = proxy
+            else
+                var = proxy[key] or generator.default()[key]
             end
-            return proxy[key] or generator.default()[key]
+            --            gk.log("get %s,%s", key, var)
+            return var
         end,
         __newindex = function(_, key, value)
-            proxy[key] = value
             --            gk.log("set %s,%s", key, tostring(value))
+            if key == "id" and string.len(value) > 0 then
+                local b = string.byte(value:sub(1, 1))
+                if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
+                    if rootTable[value] == nil then
+                        local node = rootTable and rootTable[proxy["id"]] or nil
+                        if node then
+                            -- change id
+                            rootTable[value] = node
+                            proxy[key] = value
+                            gk.event:post("postSync")
+                            gk.event:post("displayDomTree")
+                        else
+                            proxy[key] = value
+                        end
+                    end
+                else
+                    gk.log("error set invalid id %s", value)
+                end
+                return
+            end
+            proxy[key] = value
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
                 local input = tostring(value)
@@ -131,6 +149,7 @@ function generator.wrap(info, rootTable)
                 if func then
                     func(node, v)
                     gk.event:post("postSync")
+                    gk.event:post("displayDomTree")
                     --                elseif key ~= "id" and key ~= "children" and key ~= "type" then
                     --                    error(string.format("cannot find node func to set property %s", key))
                 end
@@ -141,31 +160,33 @@ function generator.wrap(info, rootTable)
     return info
 end
 
-function generator.modify(node, property, input)
-    local strValue
-    local numValue
-    if node.__info.type == "cc.Label" then
-        strValue = input
+function generator.modify(node, property, input, valueType)
+    local value
+    if property == "string" then
+        value = input
     else
-        if string.len(input) > 0 and input:sub(1, 1) == "$" then
-            local macro = input:sub(2, #input)
-            -- contains
-            if generator.macroFuncs[macro] then
-                strValue = input
+        if type(input) == "number" and valueType == "number" then
+            value = tonumber(input)
+        elseif type(input) == "string" then
+            if string.len(input) > 0 and input:sub(1, 1) == "$" then
+                local macro = input:sub(2, #input)
+                -- contains
+                if generator.macroFuncs[macro] then
+                    value = input
+                end
+            elseif valueType == "number" then
+                value = tonumber(input)
+            elseif valueType == "string" then
+                value = input
             end
-        else
-            numValue = tonumber(input)
         end
     end
-    if strValue then
-        node.__info[property] = strValue
-    elseif numValue then
-        node.__info[property] = numValue
+    if value then
+        node.__info[property] = value
     end
     gk.log("modify(%s)\'s property(%s) with value(%s)", node.__info.id, property, input)
     return tostring(node.__info[property])
 end
-
 
 generator.nodeCreator = {
     ["cc.Sprite"] = function(info, rootTable)
@@ -185,7 +206,9 @@ generator.nodeCreator = {
     end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
+        dump(info.__self)
         info.id = info.id or generator.genID("label", rootTable)
+        dump(info.id)
         return node
     end,
 }
@@ -245,7 +268,7 @@ generator.nodeSetFuncs = {
         node:setAnchorPoint(cc.p(ap.x, anchorY))
     end,
     width = function(node, width)
-        if node.__info.type == "cc.Label" then
+        if iskindof(node, "cc.Label") then
             node:setWidth(width)
         else
             local size = node:getContentSize()
@@ -254,7 +277,7 @@ generator.nodeSetFuncs = {
         end
     end,
     height = function(node, height)
-        if node.__info.type == "cc.Label" then
+        if iskindof(node, "cc.Label") then
             node:setHeight(height)
         else
             local size = node:getContentSize()
@@ -268,20 +291,23 @@ generator.nodeSetFuncs = {
     opacity = function(node, ...)
         node:setOpacity(...)
     end,
-    string = function(node, string)
-        node:setString(string)
+    string = function(node, ...)
+        node:setString(...)
     end,
-    hAlign = function(node, align)
-        node:setHorizontalAlignment(align)
+    hAlign = function(node, ...)
+        node:setHorizontalAlignment(...)
     end,
-    vAlign = function(node, align)
-        node:setVerticalAlignment(align)
+    vAlign = function(node, ...)
+        node:setVerticalAlignment(...)
     end,
-    overflow = function(node, var)
-        node:setOverflow(var)
+    overflow = function(node, ...)
+        node:setOverflow(...)
     end,
-    lineHeight = function(node, var)
-        node:setLineHeight(var)
+    lineHeight = function(node, ...)
+        node:setLineHeight(...)
+    end,
+    visible = function(node, var)
+        node:setVisible(var == 0)
     end,
 }
 
@@ -317,37 +343,40 @@ generator.nodeGetFuncs = {
         return node.__info.opacity or node:getOpacity()
     end,
     width = function(node)
-        if node.__info.type == "cc.Label" then
+        if iskindof(node, "cc.Label") then
             return node.__info.width or node:getWidth()
-        elseif node.__info.type == "cc.Layer" then
+        elseif iskindof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
         else
             return node:getContentSize().width
         end
     end,
     height = function(node)
-        if node.__info.type == "cc.Label" then
+        if iskindof(node, "cc.Label") then
             return node.__info.height or node:getHeight()
-        elseif node.__info.type == "cc.Layer" then
+        elseif iskindof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height
         else
             return node:getContentSize().height
         end
     end,
     string = function(node)
-        return node.__info.type == "cc.Label" and (node.__info.string or node:getString())
+        return iskindof(node, "cc.Label") and (node.__info.string or node:getString())
     end,
     hAlign = function(node)
-        return node.__info.type == "cc.Label" and (node.__info.hAlign or node:getHorizontalAlignment())
+        return iskindof(node, "cc.Label") and (node.__info.hAlign or node:getHorizontalAlignment())
     end,
     vAlign = function(node)
-        return node.__info.type == "cc.Label" and (node.__info.vAlign or node:getVerticalAlignment())
+        return iskindof(node, "cc.Label") and (node.__info.vAlign or node:getVerticalAlignment())
     end,
     overflow = function(node)
-        return node.__info.type == "cc.Label" and (node.__info.overflow or node:getOverflow())
+        return iskindof(node, "cc.Label") and (node.__info.overflow or node:getOverflow())
     end,
     lineHeight = function(node)
-        return node.__info.type == "cc.Label" and (node.__info.lineHeight or node:getLineHeight())
+        return iskindof(node, "cc.Label") and (node.__info.lineHeight or node:getLineHeight())
+    end,
+    visible = function(node)
+        return node.__info.visible or (node:isVisible() and 0 or 1)
     end,
 }
 

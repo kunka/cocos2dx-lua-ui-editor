@@ -86,7 +86,7 @@ function util:drawNodeRect(node, c4f, tag)
         cc.p(size.width - 0.5, size.height - 0.5),
         cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
 
-    if tolua.type(node) ~= "cc.Layer" then
+    if not iskindof(node, "cc.Layer") then
         -- anchor point
         local p = node:getAnchorPoint()
         p.x = p.x * size.width
@@ -158,6 +158,17 @@ function util:stopActionByTagSafe(node, tag)
     if action then
         node:stopAction(action)
     end
+end
+
+function util:isGlobalVisible(node)
+    local c = node
+    while c ~= nil do
+        if not c:isVisible() then
+            return false
+        end
+        c = c:getParent()
+    end
+    return true
 end
 
 return util
