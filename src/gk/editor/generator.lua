@@ -92,6 +92,7 @@ function generator.default()
         file = "",
         rotation = 0,
         opacity = 255,
+        color = cc.c3b(255, 255, 255),
         string = "label",
         fontFile = "gk/res/font/Consolas.ttf",
         fontSize = "32",
@@ -161,8 +162,16 @@ function generator.wrap(info, rootTable)
 end
 
 function generator.modify(node, property, input, valueType)
+    local props = string.split(property, ".")
+    local prop1, prop2
+    if #props == 2 then
+        prop1 = props[1]
+        prop2 = props[2]
+    else
+        prop1 = property
+    end
     local value
-    if property == "string" then
+    if prop1 == "string" then
         value = input
     else
         if type(input) == "number" and valueType == "number" then
@@ -182,10 +191,22 @@ function generator.modify(node, property, input, valueType)
         end
     end
     if value then
-        node.__info[property] = value
+        if prop2 then
+            local p = node.__info[prop1]
+            if p then
+                p[prop2] = value
+                node.__info[prop1] = p
+            end
+        else
+            node.__info[prop1] = value
+        end
     end
     gk.log("modify(%s)\'s property(%s) with value(%s)", node.__info.id, property, input)
-    return tostring(node.__info[property])
+    if prop2 then
+        return tostring(node.__info[prop1][prop2])
+    else
+        return tostring(node.__info[prop1])
+    end
 end
 
 generator.nodeCreator = {
@@ -206,9 +227,7 @@ generator.nodeCreator = {
     end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
-        dump(info.__self)
         info.id = info.id or generator.genID("label", rootTable)
-        dump(info.id)
         return node
     end,
 }
@@ -309,6 +328,9 @@ generator.nodeSetFuncs = {
     visible = function(node, var)
         node:setVisible(var == 0)
     end,
+    color = function(node, var)
+        node:setColor(var)
+    end,
 }
 
 generator.nodeGetFuncs = {
@@ -377,6 +399,9 @@ generator.nodeGetFuncs = {
     end,
     visible = function(node)
         return node.__info.visible or (node:isVisible() and 0 or 1)
+    end,
+    color = function(node)
+        return node.__info.color or node:getColor()
     end,
 }
 

@@ -64,6 +64,20 @@ function util:clearDrawNode(node, tag)
     end
 end
 
+function util:drawLineOnNode(node, p1, p2, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:drawLine(p1, p2, c4f)
+    return draw
+end
+
 function util:drawNodeRect(node, c4f, tag)
     util.tags = util.tags and util.tags or {
         rectTag = 0xFFF0,
