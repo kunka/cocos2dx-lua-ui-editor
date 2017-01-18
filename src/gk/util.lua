@@ -9,6 +9,7 @@ local util = {}
 
 ----------------------------------------- restart game  -------------------------------------------------
 function util.registerRestartGameCallback(callback)
+    util.restartGameCallback = callback
     if not util.restartLayer then
         gk.log("init.registerRestartGameCallback")
         util.restartLayer = cc.Layer:create()
@@ -18,7 +19,7 @@ function util.registerRestartGameCallback(callback)
             local key = cc.KeyCodeKey[keyCode + 1]
             --            gk.log("RestartLayer: onKeypad %s", key)
             if key == "KEY_R" then
-                util:restartGame(callback)
+                util:restartGame()
             end
         end
 
@@ -29,7 +30,7 @@ function util.registerRestartGameCallback(callback)
     end
 end
 
-function util:restartGame(callback)
+function util:restartGame()
     gk.log("===================================================================")
     gk.log("=====================    restart game    ==========================")
     gk.log("===================================================================")
@@ -49,8 +50,8 @@ function util:restartGame(callback)
         collectgarbage("collect")
         gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         --        end
-        if callback then
-            callback()
+        if util.restartGameCallback then
+            util.restartGameCallback()
         end
     end))
 end

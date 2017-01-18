@@ -30,8 +30,7 @@ function panel:create(scene)
     self.bottomPanel = layerColor
 
     -- size label
-    local label = cc.Label:createWithSystemFont(string.format("winSize(%.0fx%.0f) designSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f)", gk.display.winSize().width,
-        gk.display.winSize().height, gk.display.width(), gk.display.height(), gk.display.xScale(), gk.display.yScale()),
+    local label = cc.Label:createWithSystemFont(string.format("winSize(%.0fx%.0f) designSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f) minScale(%.2f)", gk.display.winSize().width, gk.display.winSize().height, gk.display.width(), gk.display.height(), gk.display.xScale(), gk.display.yScale(), gk.display.minScale()),
         "Consolas", 48)
     label:setScale(0.2)
     self.bottomPanel:addChild(label)
@@ -365,10 +364,7 @@ function panel:displayNode(panel, node)
     createLabel("Color", leftX, topY - stepY * yIndex)
     createLabel("R", leftX2, topY - stepY * yIndex)
     createInput(string.format("%d", node.__info.color.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-        --        editBox:setInput(generator.modify(node, "color.r", input, "number"))
-        local director = cc.Director:getInstance()
-        local view = director:getOpenGLView()
-        view:setFrameSize(800, 400)
+        editBox:setInput(generator.modify(node, "color.r", input, "number"))
     end)
     createLabel("G", leftX4_1, topY - stepY * yIndex)
     createInput(string.format("%d", node.__info.color.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
@@ -610,13 +606,13 @@ function panel:addTopPanel()
 
     local yIndex = 0
     -- id
-    createLabel("WinSize", leftX, topY)
-    --    createInput("500x320", leftX2, topY, inputWidth1, function(editBox, input)
-    --    end)
-    local items = { "400", "200", "300" }
-    local node = gk.SelectBox:create(cc.size(inputWidth1 / scale, 16 / scale), items)
+    createLabel("Size", leftX, topY)
+    local items = gk.display.deviceSizesDesc
+    local sizeItems = gk.display.deviceSizes
+    local index = cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex")
+    local node = gk.SelectBox:create(cc.size(inputWidth1 / scale, 16 / scale), items, index)
     node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
-    local label = gk.create_label({ string = "400", fontFile = fontName, fontSize = fontSize })
+    local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
     label:setTextColor(cc.c3b(0, 0, 0))
     node:setDisplayLabel(label)
     node:onCreatePopupLabel(function()
@@ -625,13 +621,13 @@ function panel:addTopPanel()
         return label
     end)
     local contentSize = node:getContentSize()
-    node:didCreatePopupLabel(function(label)
-        local pos = cc.p(label:getPosition())
-        pos.x = pos.x - 5
-        pos.y = pos.y - 5
-        label:setPosition(pos)
-        label:setDimensions(contentSize.width - 25, contentSize.height)
-    end)
+    --    node:didCreatePopupLabel(function(label)
+    --        local pos = cc.p(label:getPosition())
+    --        pos.x = pos.x - 5
+    --        pos.y = pos.y - 5
+    --        label:setPosition(pos)
+    --        --        label:setDimensions(contentSize.width - 25, contentSize.height)
+    --    end)
     label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
     label:setDimensions(contentSize.width - 25, contentSize.height)
     self.topPanel:addChild(node)
@@ -639,7 +635,16 @@ function panel:addTopPanel()
     node:setAnchorPoint(0, 0.5)
     node:setPosition(leftX2, topY)
     node:onSelectChanged(function(index)
-        local item = items[index]
+        local size = sizeItems[index]
+        cc.UserDefault:getInstance():setIntegerForKey("deviceSizeIndex", index)
+        cc.UserDefault:getInstance():flush()
+        -- set editor win size
+        size.width = size.width + gk.display.leftWidth + gk.display.rightWidth
+        size.height = size.height + gk.display.topHeight + gk.display.bottomHeight
+        local director = cc.Director:getInstance()
+        local view = director:getOpenGLView()
+        view:setFrameSize(size.width, size.height)
+        gk.util:restartGame()
     end)
 
     -- widgets

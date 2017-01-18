@@ -11,6 +11,32 @@ display.topHeight = 80
 display.leftWidth = 140
 display.rightWidth = 200
 display.bottomHeight = 20
+local displayScale = 0.4
+display.deviceSizes = {
+    cc.size(1280 * displayScale, 720 * displayScale),
+    cc.size(1280 * displayScale, 960 * displayScale),
+    cc.size(1280 * displayScale, 640 * displayScale)
+}
+
+display.deviceSizesDesc = {
+    "1280x720(16:9)",
+    "1280x960(4:3)",
+    "1280x640(2:1)"
+}
+
+-- start first time
+if cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 0) == 0 then
+    local size = display.deviceSizes[1]
+    cc.UserDefault:getInstance():setIntegerForKey("deviceSizeIndex", 1)
+    cc.UserDefault:getInstance():flush()
+    -- set editor win size
+    size.width = size.width + display.leftWidth + display.rightWidth
+    size.height = size.height + display.topHeight + display.bottomHeight
+    local director = cc.Director:getInstance()
+    local view = director:getOpenGLView()
+    view:setFrameSize(size.width, size.height)
+end
+
 function display.initWithDesignSize(size)
     local winSize = cc.Director:getInstance():getWinSize()
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
