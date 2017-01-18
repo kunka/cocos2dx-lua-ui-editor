@@ -165,6 +165,7 @@ function Button:onTouchBegan(touch, event)
         end
         self.trackingTouch = true
         Button.trackingButton = true
+        gk.log("Button.tracking true")
         self.touchBeginPoint = self:convertTouchToNodeSpace(touch)
         return true
     end
@@ -224,6 +225,7 @@ function Button:stopTracking()
     --    gk.log("Button:stopTracking")
     self.trackingTouch = false
     Button.trackingButton = false
+    gk.log("Button.tracking false")
     self:stopActionByTagSafe(kDelaySelectActionTag)
     self:stopActionByTagSafe(kLongPressedActionTag)
 end

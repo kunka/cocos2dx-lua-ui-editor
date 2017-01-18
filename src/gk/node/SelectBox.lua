@@ -62,6 +62,7 @@ function SelectBox:setSelectItem(item)
 end
 
 function SelectBox:openPopup()
+    gk.log("openPopup")
     self:closePopup()
     local bg = CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5))
     local size = self:getContentSize()
@@ -110,9 +111,6 @@ function SelectBox:openPopup()
     listener:registerScriptHandler(function(touch, event)
         if self.popup and not gk.util:hitTest(self.popup, touch) then
             self:closePopup()
-            if event then
-                event:stopPropagation()
-            end
             return true
         else
             return false
@@ -124,6 +122,7 @@ end
 
 function SelectBox:closePopup()
     if self.popup then
+        gk.log("closePopup")
         self.popup:removeFromParent()
         self.popup = nil
     end

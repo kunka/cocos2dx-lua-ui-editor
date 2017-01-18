@@ -14,14 +14,14 @@ display.bottomHeight = 20
 local displayScale = 0.4
 display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
+    cc.size(1280 * displayScale, 640 * displayScale),
     cc.size(1280 * displayScale, 960 * displayScale),
-    cc.size(1280 * displayScale, 640 * displayScale)
 }
 
 display.deviceSizesDesc = {
     "1280x720(16:9)",
+    "1280x640(2:1)",
     "1280x960(4:3)",
-    "1280x640(2:1)"
 }
 
 -- start first time

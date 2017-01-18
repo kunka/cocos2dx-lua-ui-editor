@@ -96,6 +96,7 @@ function generator.default()
         string = "label",
         fontFile = "gk/res/font/Consolas.ttf",
         fontSize = "32",
+        scaleXY = { x = 1, y = 1 },
     }
     return generator._default
 end
@@ -139,13 +140,7 @@ function generator.wrap(info, rootTable)
             proxy[key] = value
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
-                local input = tostring(value)
-                local macro = input:sub(2, #input)
-                local v = generator.macroFuncs[macro]
-                if v then
-                    v = v()
-                end
-                v = v or value
+                local v = generator.parseValue(value)
                 local func = generator.nodeSetFuncs[key]
                 if func then
                     func(node, v)
@@ -159,6 +154,18 @@ function generator.wrap(info, rootTable)
     }
     setmetatable(info, mt)
     return info
+end
+
+function generator.parseValue(input)
+    local v
+    if type(input) == "string" and string.len(input) > 1 then
+        local macro = input:sub(2, #input)
+        v = generator.macroFuncs[macro]
+        if v then
+            v = v()
+        end
+    end
+    return v or input
 end
 
 function generator.modify(node, property, input, valueType)
@@ -266,11 +273,13 @@ generator.macroFuncs = {
 }
 
 generator.nodeSetFuncs = {
-    x = function(node, ...)
-        node:setPositionX(...)
+    x = function(node, x)
+        local scaleX = generator.parseValue(node.__info.scaleXY.x)
+        node:setPositionX(x * scaleX)
     end,
-    y = function(node, ...)
-        node:setPositionY(...)
+    y = function(node, y)
+        local scaleY = generator.parseValue(node.__info.scaleXY.y)
+        node:setPositionY(y * scaleY)
     end,
     scaleX = function(node, ...)
         node:setScaleX(...)
@@ -330,6 +339,15 @@ generator.nodeSetFuncs = {
     end,
     color = function(node, var)
         node:setColor(var)
+    end,
+    --    np = function(node, var)
+    --        node:setNormalizedPosition(var)
+    --    end,
+    scaleXY = function(node, var)
+        local scaleX = generator.parseValue(var.x)
+        local scaleY = generator.parseValue(var.y)
+        local x, y = node.__info.x, node.__info.y
+        node:setPosition(cc.p(x * scaleX, y * scaleY))
     end,
 }
 
@@ -402,6 +420,18 @@ generator.nodeGetFuncs = {
     end,
     color = function(node)
         return node.__info.color or node:getColor()
+    end,
+    x = function(node)
+        return node.__info.x or math.shrink(node:getPositionX() / generator.parseValue(node.__info.scaleXY.x), 1)
+    end,
+    y = function(node)
+        return node.__info.y or math.shrink(node:getPositionY() / generator.parseValue(node.__info.scaleXY.y), 1)
+    end,
+    --    np = function(node)
+    --        return node.__info.np or node:getNormalizedPosition()
+    --    end,
+    scaleXY = function(node)
+        return node.__info.scaleXY
     end,
 }
 

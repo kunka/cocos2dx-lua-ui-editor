@@ -16,6 +16,9 @@ function util.registerRestartGameCallback(callback)
         util.restartLayer:retain()
 
         local function onKeyReleased(keyCode, event)
+            if gk.focusNode then
+                return
+            end
             local key = cc.KeyCodeKey[keyCode + 1]
             --            gk.log("RestartLayer: onKeypad %s", key)
             if key == "KEY_R" then
@@ -154,7 +157,7 @@ function math.shrink(f, bit)
     if bit >= 1 and bit <= 6 then
         local e = 1 / math.pow(10, bit + 1)
         local v = math.pow(10, bit)
-        return math.floor((f + e) * v) / v
+        return math.round((f + e) * v) / v
     else
         return f
     end

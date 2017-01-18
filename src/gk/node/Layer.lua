@@ -95,16 +95,10 @@ function Layer:onEnter()
                             local d = self.dialogsStack[i]
                             d:onKeyBack()
                             -- 不能back的dialog,阻塞整个UI
-                            if event then
-                                event:stopPropagation()
-                            end
                             return
                         end
                     end
                     self:onKeyBack()
-                    if event then
-                        event:stopPropagation()
-                    end
                 end
             end
         end
