@@ -365,7 +365,10 @@ function panel:displayNode(panel, node)
     createLabel("Color", leftX, topY - stepY * yIndex)
     createLabel("R", leftX2, topY - stepY * yIndex)
     createInput(string.format("%d", node.__info.color.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-        editBox:setInput(generator.modify(node, "color.r", input, "number"))
+        --        editBox:setInput(generator.modify(node, "color.r", input, "number"))
+        local director = cc.Director:getInstance()
+        local view = director:getOpenGLView()
+        view:setFrameSize(800, 400)
     end)
     createLabel("G", leftX4_1, topY - stepY * yIndex)
     createInput(string.format("%d", node.__info.color.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
@@ -547,6 +550,99 @@ end
 
 function panel:addTopPanel()
     local size = self.topPanel:getContentSize()
+    -- winSize
+    local fontSize = 10 * 4
+    local fontName = "gk/res/font/Consolas.ttf"
+    local scale = 0.25
+    local topY = size.height - 15
+    local leftX = 10
+    local leftX2 = 50
+    local leftX2_1 = 80
+    local leftX3 = 135
+    local leftX3_1 = 145
+    local leftX4_1 = 110 + 2.5
+    local leftX4_2 = 120 + 2.5
+    local leftX5_1 = 155
+    local leftX5_2 = 165
+    local stepY = 25
+    local stepX = 40
+    local inputWidth1 = 80
+    local createLabel = function(content, x, y)
+        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        label:setScale(scale)
+        label:setTextColor(cc.c3b(189, 189, 189))
+        self.topPanel:addChild(label)
+        label:setAnchorPoint(0, 0.5)
+        label:setPosition(x, y)
+        return label
+    end
+    local createInput = function(content, x, y, width, callback)
+        local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
+        node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        local label = gk.create_label({ string = content, fontFile = fontName, fontSize = fontSize })
+        label:setTextColor(cc.c3b(0, 0, 0))
+        node:setInputLabel(label)
+        local contentSize = node:getContentSize()
+        label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
+        label:setDimensions(contentSize.width - 25, contentSize.height)
+        self.topPanel:addChild(node)
+        node:setScale(scale)
+        node:setAnchorPoint(0, 0.5)
+        node:onEditEnded(function(...)
+            callback(...)
+        end)
+        node:setPosition(x, y)
+        node.enabled = false
+        return node
+    end
+    local createCheckBox = function(selected, x, y, callback)
+        local node = ccui.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
+        node:setPosition(x, y)
+        node:setScale(scale * 2)
+        node:setSelected(selected)
+        self.displayInfoNode:addChild(node)
+        node:setAnchorPoint(0, 0.5)
+        node:addEventListener(function(sender, eventType)
+            callback(eventType)
+        end)
+        return node
+    end
+
+    local yIndex = 0
+    -- id
+    createLabel("WinSize", leftX, topY)
+    --    createInput("500x320", leftX2, topY, inputWidth1, function(editBox, input)
+    --    end)
+    local items = { "400", "200", "300" }
+    local node = gk.SelectBox:create(cc.size(inputWidth1 / scale, 16 / scale), items)
+    node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+    local label = gk.create_label({ string = "400", fontFile = fontName, fontSize = fontSize })
+    label:setTextColor(cc.c3b(0, 0, 0))
+    node:setDisplayLabel(label)
+    node:onCreatePopupLabel(function()
+        local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
+        label:setTextColor(cc.c3b(0, 0, 0))
+        return label
+    end)
+    local contentSize = node:getContentSize()
+    node:didCreatePopupLabel(function(label)
+        local pos = cc.p(label:getPosition())
+        pos.x = pos.x - 5
+        pos.y = pos.y - 5
+        label:setPosition(pos)
+        label:setDimensions(contentSize.width - 25, contentSize.height)
+    end)
+    label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
+    label:setDimensions(contentSize.width - 25, contentSize.height)
+    self.topPanel:addChild(node)
+    node:setScale(scale)
+    node:setAnchorPoint(0, 0.5)
+    node:setPosition(leftX2, topY)
+    node:onSelectChanged(function(index)
+        local item = items[index]
+    end)
+
+    -- widgets
     self.widgets = {
         { type = "cc.Layer", },
         { type = "cc.Sprite", file = "?", },
@@ -711,7 +807,7 @@ function panel:sync()
 end
 
 function panel:initLayer(layer)
-    if tolua.type(layer) == "cc.Layer" and layer.__cname then
+    if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" then
         local file = gk.config.genRelativePath .. "_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
         layer.__info = generator.wrap({ id = layer.__cname }, layer)

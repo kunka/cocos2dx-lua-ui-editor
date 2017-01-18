@@ -45,14 +45,14 @@ return {
 	      opacity = 100},
 	   {
 	      anchorY = 0.5,
-	      x = 86.2,
+	      x = 1.1,
 	      scaleX = "$minScale",
 	      color = {
 	         r = 255,
 	         b = 255,
 	         g = 255},
 	      visible = 0,
-	      y = 242,
+	      y = 116.3,
 	      children = {},
 	      id = "button2",
 	      scaleY = "$minScale",

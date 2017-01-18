@@ -110,4 +110,8 @@ function Dialog:onKeyBack()
     end
 end
 
+function Dialog:show()
+    return gk.SceneManager:showDialogNode(self)
+end
+
 return Dialog

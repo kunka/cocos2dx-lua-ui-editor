@@ -87,4 +87,14 @@ function SceneManager:printSceneStack()
     end
 end
 
+function SceneManager:showDialogNode(dialogNode)
+    local scene = SceneManager:getRunningScene()
+    if scene and scene.layer and scene.layer.showDialogNode then
+        return scene.layer:showDialogNode(dialogNode)
+    else
+        gk.log("SceneManager:showDialogNode error, cannot find root layer")
+        return nil
+    end
+end
+
 return SceneManager

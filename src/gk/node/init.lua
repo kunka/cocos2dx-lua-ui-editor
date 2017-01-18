@@ -9,8 +9,10 @@ gk.display = import(".display")
 import(".util")
 gk.Scene = import(".Scene")
 gk.Layer = import(".Layer")
+gk.Dialog = import(".Dialog")
 gk.Button = import(".Button")
 gk.EditBox = import(".EditBox")
+gk.SelectBox = import(".SelectBox")
 gk.ZoomButton = import(".ZoomButton")
 
 ----------------------------------------- create sprite  -------------------------------------------------

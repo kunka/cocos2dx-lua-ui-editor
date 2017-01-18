@@ -15,6 +15,7 @@ function EditBox:ctor(size)
     self:setContentSize(size)
     self:handleKeyboardEvent()
     self.cursorChar = "|"
+    self.enabled = true
 end
 
 function EditBox:onInputChanged(callback)
@@ -41,7 +42,6 @@ function EditBox:setInputLabel(label)
     assert(label:getParent() == nil, "EditBox's input label cannot be added again!")
     self.label = label
     self:addChild(label)
-
     label:setOverflow(2)
     local contentSize = self:getContentSize()
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
@@ -71,7 +71,7 @@ end
 
 function EditBox:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self:isVisible() or not camera then
+    if not self.enabled or not self:isVisible() or not camera then
         self:unselected()
         return false
     end
