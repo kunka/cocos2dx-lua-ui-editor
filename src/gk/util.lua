@@ -186,4 +186,14 @@ function util:isGlobalVisible(node)
     return true
 end
 
+function util:getRootNode(node)
+    local c = node:getParent()
+    local root
+    while c ~= nil do
+        root = c
+        c = c:getParent()
+    end
+    return root
+end
+
 return util

@@ -67,10 +67,16 @@ function SelectBox:openPopup()
     local size = self:getContentSize()
     local height = size.height * (#self.selectItems)
     bg:setContentSize(cc.size(size.width, height))
-    bg:setPosition(cc.p(0, 0))
     bg:setAnchorPoint(cc.p(0, 1))
-    self:addChild(bg)
     self.popup = bg
+
+    -- add to the top layer
+    local root = gk.util:getRootNode(self)
+    root:addChild(bg, 9999999)
+    local p = self:convertToWorldSpace(cc.p(0, 0))
+    local p = root:convertToNodeSpace(p)
+    bg:setPosition(p)
+    bg:setScale(gk.util.getGlobalScale(self))
 
     if self.popupLabelCreator then
         for i = 1, #self.selectItems do
@@ -121,6 +127,10 @@ function SelectBox:closePopup()
         self.popup:removeFromParent()
         self.popup = nil
     end
+end
+
+function SelectBox:onExit()
+    self:closePopup()
 end
 
 return SelectBox

@@ -128,6 +128,7 @@ function panel:onNodeCreate(node)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
+                gk.event:post("displayDomTree")
                 return
             end
             if self._containerNode ~= node:getParent() then
@@ -282,6 +283,27 @@ function panel:displayNode(panel, node)
         node:setPosition(x, y)
         return node
     end
+    local createSelectBox = function(items, index, x, y, width, callback)
+        local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
+        node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
+        label:setTextColor(cc.c3b(0, 0, 0))
+        node:setDisplayLabel(label)
+        node:onCreatePopupLabel(function()
+            local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
+            label:setTextColor(cc.c3b(0, 0, 0))
+            return label
+        end)
+        local contentSize = node:getContentSize()
+        label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
+        label:setDimensions(contentSize.width - 25, contentSize.height)
+        self.displayInfoNode:addChild(node)
+        node:setScale(scale)
+        node:setAnchorPoint(0, 0.5)
+        node:setPosition(x, y)
+        node:onSelectChanged(callback)
+        return node
+    end
 
     local createCheckBox = function(selected, x, y, callback)
         local node = ccui.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
@@ -312,17 +334,19 @@ function panel:displayNode(panel, node)
         editBox:setInput(generator.modify(node, "id", input, "string"))
     end)
     yIndex = yIndex + 1
-    -- position
-    createLabel("Position", leftX, topY - stepY * yIndex)
-    createLabel("X", leftX2, topY - stepY * yIndex)
-    createInput(tostring(node.__info.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "x", input, "number"))
-    end)
-    createLabel("Y", leftX3, topY - stepY * yIndex)
-    createInput(tostring(node.__info.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator.modify(node, "y", input, "number"))
-    end)
-    yIndex = yIndex + 1
+    if node ~= self.scene.layer then
+        -- position
+        createLabel("Position", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "x", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "y", input, "number"))
+        end)
+        yIndex = yIndex + 1
+    end
     -- scale
     createLabel("Scale", leftX, topY - stepY * yIndex)
     createLabel("X", leftX2, topY - stepY * yIndex)
@@ -416,6 +440,11 @@ function panel:displayNode(panel, node)
         createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
             editBox:setInput(generator.modify(node, "fontSize", input, "number"))
         end)
+        -- lineHeight
+        createLabel("LineHeight", leftX4_1, topY - stepY * yIndex)
+        createInput(tostring(node.__info.lineHeight), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            editBox:setInput(generator.modify(node, "lineHeight", input, "number"))
+        end)
         yIndex = yIndex + 1
         -- dimensions
         createLabel("Dimensions", leftX, topY - stepY * yIndex)
@@ -430,24 +459,22 @@ function panel:displayNode(panel, node)
         yIndex = yIndex + 1
         -- alignment
         createLabel("Alignment", leftX, topY - stepY * yIndex)
-        createLabel("W", leftX2, topY - stepY * yIndex)
-        createInput(string.format("%d", node.__info.hAlign), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "hAlign", input, "number"))
+        createLabel("H", leftX2, topY - stepY * yIndex)
+        local hAligns = { "LEFT", "CENTER", "RIGHT" }
+        createSelectBox(hAligns, node.__info.hAlign + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator.modify(node, "hAlign", index - 1, "number")
         end)
-        createLabel("H", leftX3, topY - stepY * yIndex)
-        createInput(string.format("%d", node.__info.vAlign), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "vAlign", input, "number"))
+        createLabel("V", leftX3, topY - stepY * yIndex)
+        local vAligns = { "TOP", "CENTER", "BOTTOM" }
+        createSelectBox(vAligns, node.__info.vAlign + 1, leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator.modify(node, "vAlign", index - 1, "number")
         end)
         yIndex = yIndex + 1
-        -- lineHeight
-        createLabel("LineHeight", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.lineHeight), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-            editBox:setInput(generator.modify(node, "lineHeight", input, "number"))
-        end)
         -- overflow
-        createLabel("Overflow", leftX4_1, topY - stepY * yIndex)
-        createInput(tostring(node.__info.overflow), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-            editBox:setInput(generator.modify(node, "overflow", input, "number"))
+        createLabel("Overflow", leftX, topY - stepY * yIndex)
+        local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
+        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator.modify(node, "overflow", index - 1, "number")
         end)
         yIndex = yIndex + 1
     end
@@ -550,7 +577,7 @@ function panel:addTopPanel()
     local fontSize = 10 * 4
     local fontName = "gk/res/font/Consolas.ttf"
     local scale = 0.25
-    local topY = size.height - 15
+    local topY = size.height - 15 - 15
     local leftX = 10
     local leftX2 = 50
     local leftX2_1 = 80
@@ -561,7 +588,8 @@ function panel:addTopPanel()
     local leftX5_1 = 155
     local leftX5_2 = 165
     local stepY = 25
-    local stepX = 40
+    local stepX = 50
+    local leftX_widget = 10
     local inputWidth1 = 80
     local createLabel = function(content, x, y)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
@@ -603,10 +631,16 @@ function panel:addTopPanel()
         end)
         return node
     end
+    local size = self.topPanel:getContentSize()
+    local createLine = function(x)
+        gk.util:drawLineOnNode(self.topPanel, cc.p(x, 10), cc.p(x, size.height - 10), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1))
+    end
+    createLine(gk.display.leftWidth)
+    createLine(gk.display.leftWidth + gk.display.winSize().width)
 
     local yIndex = 0
     -- id
-    createLabel("Size", leftX, topY)
+    createLabel("Device", leftX, topY)
     local items = gk.display.deviceSizesDesc
     local sizeItems = gk.display.deviceSizes
     local index = cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex")
@@ -659,7 +693,7 @@ function panel:addTopPanel()
         local node = CREATE_SPRITE(self.widgets[i].file)
         node.type = self.widgets[i].type
         node:setScale(0.35)
-        local originPos = cc.p(gk.display.leftWidth + node:getScale() * node:getContentSize().width / 2 + 50 * (i - 1), size.height / 2)
+        local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
         node:setPosition(originPos)
         self.topPanel:addChild(node)
 
