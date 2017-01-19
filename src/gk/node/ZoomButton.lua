@@ -1,12 +1,11 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/11/25
 -- Time: 上午10:48
 -- To change this template use File | Settings | File Templates.
 --
 
--- ZoomButton点击时带zoom效果
 local Button = import(".Button")
 local ZoomButton = class("ZoomButton", Button)
 local kZoomActionTag = -872738
@@ -14,7 +13,7 @@ local kZoomActionTag = -872738
 function ZoomButton:ctor(node, callback)
     ZoomButton.super.ctor(self, callback)
     self:setContentNode(node)
-    -- 默认缩放大小
+    -- default scale
     local width = self:getContentSize().width
     if width <= 100 then
         self.selectedScale = 0.9
@@ -65,7 +64,7 @@ end
 function ZoomButton:unselected()
     if self.enabled and self.isSelected then
         --        gk.log("ZoomButton:unselected")
-        self:stopActionByTagSafe(kZoomActionTag)
+        gk.util:stopActionByTagSafe(self, kZoomActionTag)
         local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.selectedScale) / 2), self.originalScaleY * (1 + (1 - self.selectedScale) / 2))
         local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.selectedScale + 1), 0.5 * self.originalScaleY * (self.selectedScale + 1))
         local action3 = cc.ScaleTo:create(0.06, self.originalScaleX, self.originalScaleY)

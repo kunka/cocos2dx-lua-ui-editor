@@ -1,12 +1,11 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/4/8
 -- Time: 上午11:22
 -- To change this template use File | Settings | File Templates.
 --
 
--- 只是个空壳,没实际作用
 local Scene = class("Scene", function()
     return cc.Scene:create()
 end)

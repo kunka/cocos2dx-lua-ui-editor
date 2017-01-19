@@ -1,65 +1,37 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/7/7
 -- Time: 下午5:21
 -- To change this template use File | Settings | File Templates.
 --
 
--- 弹窗类,默认响应Android back键自动pop自己
+-- Pop up dialog, default pop self when click Android back
 local Layer = import(".Layer")
 local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
     Dialog.super.ctor(self)
-    -- 不监听keyPad事件,不要修改,让Layer来处理
     self.enableKeyPad = false
-    -- dialog内容bg容器,设置后可以对内容部分做弹出动画
+    -- set dialog bg, use to animate out
     self.dialogBg = nil
-    -- 点击到内容bg外自动pop
     self.popOnTouchOutsideBg = false
-    -- 点击到内容bg内自动pop
     self.popOnTouchInsideBg = false
-    -- pop动画淡出
-    self.popFadeOut = false
-    -- 回调
-    self.onPop = nil
+    self.onPopCallback = nil
 end
 
--- 黑色背景
 function Dialog:addMaskLayer(opacity)
+    -- black cover bg
     local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, 0))
     self:addChild(layerColor, -1)
-    layerColor:runAction(cc.FadeTo:create(0.15, opacity and opacity or CR_BLACK_COVER_OPACITY))
+    layerColor:runAction(cc.FadeTo:create(0.15, opacity and opacity or 156))
     self.maskLayer = layerColor
 end
 
--- 使用动画弹出来
 function Dialog:animateOut()
     if self.dialogBg then
         self.dialogBg:setScale(0)
-        self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, FIX_SCALE)))
-    end
-end
-
-function Dialog:removeMaskLayer()
-    if self.popFadeOut then
-        if self.dialogBg then
-            self.dialogBg:hide()
-        end
-        if self.maskLayer then
-            self.maskLayer:runAction(cc.Sequence:create(cc.FadeTo:create(0.1, 0), cc.CallFunc:create(function()
-                self:removeFromParent()
-            end)))
-        else
-            self:runAction(cc.CallFunc:create(function()
-                self:removeFromParent()
-            end))
-        end
-    else
-        self:runAction(cc.CallFunc:create(function()
-            self:removeFromParent()
-        end))
+        self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display.minScale())))
     end
 end
 
@@ -94,11 +66,13 @@ end
 
 function Dialog:pop()
     gk.log("%s:popDialog --> %s", self.parent.__cname, self.__cname)
-    removeValue(self.parent.dialogsStack, self)
+    table.removebyvalue(self.parent.dialogsStack, self)
     -- remove on next tick
-    self:removeMaskLayer()
-    if self.onPop then
-        self.onPop()
+    self:runAction(cc.CallFunc:create(function()
+        self:removeFromParent()
+    end))
+    if self.onPopCallback then
+        self.onPopCallback()
     end
 end
 

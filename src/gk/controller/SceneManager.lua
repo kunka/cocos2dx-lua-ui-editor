@@ -1,6 +1,6 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/12/29
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
@@ -13,7 +13,7 @@ end
 
 SceneManager:init()
 
--- layerName:必须继承至Layer
+-- layerName:must inherit from Layer
 function SceneManager:push(layerName, ...)
     gk.log("SceneManager:push --> %s", layerName)
     local Layer = require(layerName)

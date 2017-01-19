@@ -50,9 +50,7 @@ function panel:subscribeEvent(node)
 end
 
 function panel:onNodeCreate(node)
-    --    if node == self.scene.layer then
     self:initLayer(node)
-    --    end
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
@@ -130,7 +128,7 @@ function panel:onNodeCreate(node)
                 end
                 local scaleX = generator.parseValue(node.__info.scaleXY.x)
                 local scaleY = generator.parseValue(node.__info.scaleXY.y)
-                node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
+                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
             else
@@ -142,6 +140,7 @@ function panel:onNodeCreate(node)
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
+            self.sortedChildren = nil
         end, cc.Handler.EVENT_TOUCH_ENDED)
         listener:registerScriptHandler(function(touch, event)
             cc.Director:getInstance():setDepthTest(false)

@@ -1,22 +1,19 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/6/2
 -- Time: 下午2:50
 -- To change this template use File | Settings | File Templates.
 --
 
---- 所有的Scene都是基于Layer,可单独作为scene也可以单独作为layer使用
---- 默认响应Android back键自动popScene,有Dialog先pop Dialog
---- swallowTouchEvent:默认Touch事件不会传递到下一层
---- 子类必须调用父类的ctor,onEnter,onExit等
+--- Use as Layer or Scene
+--- As Scene: default popDialog when click Android back(keyboard ESC), otherwise popScene
 local Layer = class("Layer", function()
     return cc.Layer:create()
 end)
 
--- 作为Scene使用
+-- Use as scene
 function Layer:createScene(sceneType, ...)
-    --    local scene = require("gk.node.Scene"):create(sceneType)
     local scene = cc.Scene:create()
     local layer = require(sceneType):create(...)
     scene:addChild(layer)
@@ -26,14 +23,10 @@ end
 
 function Layer:ctor()
     gk.log("Layer(%s:ctor)", self.__cname)
-    -- 默认禁止事件穿透到下层
     self.swallowTouchEvent = true
-    -- 默认监听keyPad事件,Android的back键,MAC的ESC键
     self.enableKeyPad = true
-    -- 默认按back键时自动popScene
-    self.popOnBack = true
+    self.popOnBack = true -- popScene on back
     self:enableNodeEvents()
-    -- dialog堆栈
     self.dialogsStack = {}
     gk.event:post("onNodeCreate", self)
 end
@@ -94,7 +87,6 @@ function Layer:onEnter()
                         for i = #self.dialogsStack, 1, -1 do
                             local d = self.dialogsStack[i]
                             d:onKeyBack()
-                            -- 不能back的dialog,阻塞整个UI
                             return
                         end
                     end

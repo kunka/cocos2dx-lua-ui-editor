@@ -1,6 +1,6 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/12/29
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
@@ -158,6 +158,8 @@ function math.shrink(f, bit)
         local e = 1 / math.pow(10, bit + 1)
         local v = math.pow(10, bit)
         return math.round((f + e) * v) / v
+    elseif bit == 0 then
+        return math.round(f)
     else
         return f
     end

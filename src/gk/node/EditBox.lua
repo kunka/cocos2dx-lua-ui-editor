@@ -1,6 +1,6 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 17/1/12
 -- Time: 上午10:22
 -- To change this template use File | Settings | File Templates.
@@ -202,6 +202,7 @@ function EditBox:handleKeyboardEvent()
                 self.shiftPressed = true
                 return
             end
+            -- TODO: optimize table create
             local keyTable = {}
             if self.shiftPressed then
                 local cs = ")!@#$%^&*("

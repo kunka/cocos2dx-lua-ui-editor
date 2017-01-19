@@ -1,6 +1,6 @@
 print("main")
 
---初始化搜索路径
+-- init default search path
 cc.FileUtils:getInstance():addSearchPath("src/")
 cc.FileUtils:getInstance():addSearchPath("res/")
 cc.FileUtils:getInstance():setPopupNotify(false)
@@ -10,7 +10,7 @@ local function nativeHotUpdateInit()
     local app = cc.Application:getInstance()
     local target = app:getTargetPlatform()
     if target == 2 then
-        -- mac 使用本地资源路径
+        -- mac app use local search path for restart instantly
         local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
         path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
         print("mac project path = " .. path)
@@ -18,7 +18,7 @@ local function nativeHotUpdateInit()
         cc.FileUtils:getInstance():addSearchPath(path .. "src/")
         cc.FileUtils:getInstance():addSearchPath(path .. "res/")
         local searchPath = cc.FileUtils:getInstance():getSearchPaths()
-        print("search path:")
+        print("mac search path:")
         for i, v in ipairs(searchPath) do
             print(v)
         end

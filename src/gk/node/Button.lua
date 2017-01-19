@@ -1,18 +1,11 @@
 --
 -- Created by IntelliJ IDEA.
--- User: huangkun
+-- User: Kunkka Huang
 -- Date: 16/11/25
 -- Time: 上午10:37
 -- To change this template use File | Settings | File Templates.
 --
 
--- Button虚基类
--- disabledProgram:设置disabled状态时的shader效果,跳过Label类型
--- setContentNode:必须设置子节点
--- delaySelect:延迟选中,在ScrollView中的按钮需要设置,优化拖动效果
--- onClicked:点击回调
--- onLongPressed:长按回调
--- TODO:可以设置selected shader效果
 local Button = class("Button", function()
     return cc.Node:create()
 end)
@@ -25,13 +18,14 @@ function Button:ctor(callback)
     self.callback = callback
     self.enabled = true
     self.isSelected = false
-    self.cascadeProgramEnable = true -- 默认对所有子节点应用shader
-    self.disabledProgram = nil
-    self.node = nil -- content node,必须设置
+    -- TODO: set selected shader
+    self.disabledProgram = nil -- set shader of disabled state
+    self.cascadeProgramEnable = true -- set shader of all children(not Label child)
+    self.node = nil -- content node, must be set
     self:setCascadeColorEnabled(true)
     self:setCascadeOpacityEnabled(true)
     self:setAnchorPoint(0.5, 0.5)
-    self.delaySelect = false -- delay select in ScrollView
+    self.delaySelect = false -- optimize for button in ScrollView
     self.cacheProgram = {}
     self.trackingTouch = false
     self.swallowTouches = false
@@ -78,7 +72,7 @@ function Button:setContentNode(node)
     self:setContentSize(contentSize)
 
     -- test draw
-    if CR_DRAW_BUTTON then
+    if GK_DRAW_BUTTON then
         self:runAction(cc.CallFunc:create(function()
             gk.util:drawNodeRect(self)
         end))
@@ -137,7 +131,7 @@ function Button:onTouchBegan(touch, event)
     end
     assert(self.node, "Button's content node is necessary!")
     -- hit test
-    if not Button.trackingButton and self:hitTest(touch) then
+    if not Button.trackingButton and gk.util:hitTest(self, touch) then
         --        gk.log("Button:onTouchBegan")
         if self.delaySelect then
             local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
@@ -171,14 +165,6 @@ function Button:onTouchBegan(touch, event)
     end
 
     return false
-end
-
-function Button:hitTest(touch)
-    local location = touch:getLocation()
-    local s = self:getContentSize()
-    local rect = { x = 0, y = 0, width = s.width, height = s.height }
-    local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
-    return cc.rectContainsPoint(rect, touchP)
 end
 
 function Button:onTouchMoved(touch, event)
@@ -226,8 +212,8 @@ function Button:stopTracking()
     self.trackingTouch = false
     Button.trackingButton = false
     gk.log("Button.tracking false")
-    self:stopActionByTagSafe(kDelaySelectActionTag)
-    self:stopActionByTagSafe(kLongPressedActionTag)
+    gk.util:stopActionByTagSafe(self, kDelaySelectActionTag)
+    gk.util:stopActionByTagSafe(self, kLongPressedActionTag)
 end
 
 function Button:setEnabled(enabled)
@@ -281,13 +267,6 @@ function Button:restoreCascadeProgram(node)
         for _, c in pairs(children) do
             self:restoreCascadeProgram(c)
         end
-    end
-end
-
-function Button:stopActionByTagSafe(tag)
-    local action = self:getActionByTag(tag)
-    if action then
-        self:stopAction(action)
     end
 end
 
