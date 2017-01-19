@@ -61,7 +61,7 @@ function panel:displayNode(node)
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
         node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
-        local label = gk.create_label({ string = content, fontFile = fontName, fontSize = fontSize })
+        local label = cc.Label:createWithTTF(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
         local contentSize = node:getContentSize()
@@ -79,11 +79,11 @@ function panel:displayNode(node)
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
         node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
-        local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
+        local label = cc.Label:createWithTTF("", fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setDisplayLabel(label)
         node:onCreatePopupLabel(function()
-            local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
+            local label = cc.Label:createWithTTF("", fontName, fontSize)
             label:setTextColor(cc.c3b(0, 0, 0))
             return label
         end)
@@ -205,12 +205,12 @@ function panel:displayNode(node)
         -- anchor
         createLabel("Anchor", leftX, topY - stepY * yIndex)
         createLabel("X", leftX2, topY - stepY * yIndex)
-        createInput(tostring(node.__info.anchorX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "anchorX", input, "number"))
+        createInput(tostring(node.__info.anchor.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "anchor.x", input, "number"))
         end)
         createLabel("Y", leftX3, topY - stepY * yIndex)
-        createInput(tostring(node.__info.anchorY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator.modify(node, "anchorY", input, "number"))
+        createInput(tostring(node.__info.anchor.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator.modify(node, "anchor.y", input, "number"))
         end)
         yIndex = yIndex + 1
     end
@@ -274,8 +274,9 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
         -- font file
         createLabel("FontFile", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.fontFile), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-            editBox:setInput(generator.modify(node, "fontFile", input, "string"))
+        local lan = gk.resource:getLan()
+        createInput(tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+            editBox:setInput(generator.modify(node, "fontFile." .. lan, input, "string"))
         end)
         yIndex = yIndex + 1
         -- font size
@@ -321,6 +322,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
+
     -- visible
     createLabel("Visible", leftX, topY - stepY * yIndex)
     createCheckBox(node.__info.visible == 0, leftX2_1, topY - stepY * yIndex, function(selected)

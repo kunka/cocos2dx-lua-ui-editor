@@ -25,6 +25,7 @@ function panel:create(parent)
     local leftX = 10
     local leftX2 = 50
     local stepX = 50
+    local stepY = 25
     local leftX_widget = 10
     local inputWidth1 = 80
     local createLabel = function(content, x, y)
@@ -39,7 +40,7 @@ function panel:create(parent)
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
         node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
-        local label = gk.create_label({ string = content, fontFile = fontName, fontSize = fontSize })
+        local label = cc.Label:createWithTTF(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
         local contentSize = node:getContentSize()
@@ -60,7 +61,7 @@ function panel:create(parent)
         node:setPosition(x, y)
         node:setScale(scale * 2)
         node:setSelected(selected)
-        self.displayInfoNode:addChild(node)
+        self.panel:addChild(node)
         node:setAnchorPoint(0, 0.5)
         node:addEventListener(function(sender, eventType)
             callback(eventType)
@@ -71,40 +72,38 @@ function panel:create(parent)
     local createLine = function(x)
         gk.util:drawLineOnNode(self.panel, cc.p(x, 10), cc.p(x, size.height - 10), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1))
     end
+    local createSelectBox = function(items, index, x, y, width, callback)
+        local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
+        node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        local label = cc.Label:createWithTTF("", fontName, fontSize)
+        label:setTextColor(cc.c3b(0, 0, 0))
+        node:setDisplayLabel(label)
+        node:onCreatePopupLabel(function()
+            local label = cc.Label:createWithTTF("", fontName, fontSize)
+            label:setTextColor(cc.c3b(0, 0, 0))
+            return label
+        end)
+        local contentSize = node:getContentSize()
+        label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
+        label:setDimensions(contentSize.width - 25, contentSize.height)
+        self.panel:addChild(node)
+        node:setScale(scale)
+        node:setAnchorPoint(0, 0.5)
+        node:setPosition(x, y)
+        node:onSelectChanged(callback)
+        return node
+    end
+
     createLine(gk.display.leftWidth)
     createLine(gk.display.leftWidth + gk.display.winSize().width)
 
     local yIndex = 0
-    -- id
-    createLabel("Device", leftX, topY)
+    -- device size
+    createLabel("Device", leftX, topY - yIndex * stepY)
     local items = gk.display.deviceSizesDesc
     local sizeItems = gk.display.deviceSizes
     local index = cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex")
-    local node = gk.SelectBox:create(cc.size(inputWidth1 / scale, 16 / scale), items, index)
-    node:setScale9SpriteBg(CREATE_SCALE9_SPRITE("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
-    local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
-    label:setTextColor(cc.c3b(0, 0, 0))
-    node:setDisplayLabel(label)
-    node:onCreatePopupLabel(function()
-        local label = gk.create_label({ string = "", fontFile = fontName, fontSize = fontSize })
-        label:setTextColor(cc.c3b(0, 0, 0))
-        return label
-    end)
-    local contentSize = node:getContentSize()
-    --    node:didCreatePopupLabel(function(label)
-    --        local pos = cc.p(label:getPosition())
-    --        pos.x = pos.x - 5
-    --        pos.y = pos.y - 5
-    --        label:setPosition(pos)
-    --        --        label:setDimensions(contentSize.width - 25, contentSize.height)
-    --    end)
-    label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
-    label:setDimensions(contentSize.width - 25, contentSize.height)
-    self.panel:addChild(node)
-    node:setScale(scale)
-    node:setAnchorPoint(0, 0.5)
-    node:setPosition(leftX2, topY)
-    node:onSelectChanged(function(index)
+    local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local size = sizeItems[index]
         cc.UserDefault:getInstance():setIntegerForKey("deviceSizeIndex", index)
         cc.UserDefault:getInstance():flush()
@@ -116,6 +115,18 @@ function panel:create(parent)
         view:setFrameSize(size.width, size.height)
         gk.util:restartGame()
     end)
+    yIndex = yIndex + 1
+
+    -- Language
+    createLabel("Lanuage", leftX, topY - yIndex * stepY)
+    local items = gk.resource.lans
+    local index = table.indexof(gk.resource.lans, gk.resource:getLan())
+    local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local lan = items[index]
+        gk.resource:setLan(lan)
+        gk.util:restartGame()
+    end)
+    yIndex = yIndex + 1
 
     -- widgets
     self.widgets = {

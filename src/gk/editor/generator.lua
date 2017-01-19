@@ -35,12 +35,6 @@ function generator.deflate(node)
 end
 
 function generator.inflate(info, rootNode, rootTable)
-    if rootNode then
-        --        rootNode.__info = info
-        --        if rootNode.__id ~= info.id then
-        --            gk.log("inflate error, not the same type!")
-        --        end
-    end
     local node = generator.createNode(info, rootNode, rootTable)
     if node and info.children then
         for i = 1, #info.children do
@@ -90,11 +84,11 @@ end
 function generator.default()
     generator._default = generator._default and generator._default or {
         file = "",
-        rotation = 0,
-        opacity = 255,
-        color = cc.c3b(255, 255, 255),
         string = "label",
-        fontFile = "gk/res/font/Consolas.ttf",
+        fontFile = {
+            en = "gk/res/font/Consolas.ttf",
+            cn = "gk/res/font/msyh.ttf",
+        },
         fontSize = "32",
         scaleXY = { x = 1, y = 1 },
     }
@@ -178,23 +172,19 @@ function generator.modify(node, property, input, valueType)
         prop1 = property
     end
     local value
-    if prop1 == "string" then
-        value = input
-    else
-        if type(input) == "number" and valueType == "number" then
-            value = tonumber(input)
-        elseif type(input) == "string" then
-            if string.len(input) > 0 and input:sub(1, 1) == "$" then
-                local macro = input:sub(2, #input)
-                -- contains
-                if generator.macroFuncs[macro] then
-                    value = input
-                end
-            elseif valueType == "number" then
-                value = tonumber(input)
-            elseif valueType == "string" then
+    if type(input) == "number" and valueType == "number" then
+        value = tonumber(input)
+    elseif type(input) == "string" then
+        if string.len(input) > 0 and input:sub(1, 1) == "$" then
+            local macro = input:sub(2, #input)
+            -- contains
+            if generator.macroFuncs[macro] then
                 value = input
             end
+        elseif valueType == "string" then
+            value = input
+        elseif valueType == "number" then
+            value = tonumber(input)
         end
     end
     if value then
@@ -273,6 +263,7 @@ generator.macroFuncs = {
 }
 
 generator.nodeSetFuncs = {
+    --------------------------- cc.Node   ---------------------------
     x = function(node, x)
         local scaleX = generator.parseValue(node.__info.scaleXY.x)
         node:setPositionX(x * scaleX)
@@ -281,19 +272,20 @@ generator.nodeSetFuncs = {
         local scaleY = generator.parseValue(node.__info.scaleXY.y)
         node:setPositionY(y * scaleY)
     end,
+    scaleXY = function(node, var)
+        local scaleX = generator.parseValue(var.x)
+        local scaleY = generator.parseValue(var.y)
+        local x, y = node.__info.x, node.__info.y
+        node:setPosition(cc.p(x * scaleX, y * scaleY))
+    end,
     scaleX = function(node, ...)
         node:setScaleX(...)
     end,
     scaleY = function(node, ...)
         node:setScaleY(...)
     end,
-    anchorX = function(node, anchorX)
-        local ap = node:getAnchorPoint()
-        node:setAnchorPoint(cc.p(anchorX, ap.y))
-    end,
-    anchorY = function(node, anchorY)
-        local ap = node:getAnchorPoint()
-        node:setAnchorPoint(cc.p(ap.x, anchorY))
+    anchor = function(node, anchor)
+        node:setAnchorPoint(anchor)
     end,
     width = function(node, width)
         if iskindof(node, "cc.Label") then
@@ -319,8 +311,20 @@ generator.nodeSetFuncs = {
     opacity = function(node, ...)
         node:setOpacity(...)
     end,
-    string = function(node, ...)
-        node:setString(...)
+    color = function(node, var)
+        node:setColor(var)
+    end,
+    visible = function(node, var)
+        node:setVisible(var == 0)
+    end,
+    --------------------------- cc.Label   ---------------------------
+    string = function(node, string)
+        local value = string
+        if string.len(string) > 0 and string:sub(1, 1) == "@" then
+            local key = string:sub(2, #string)
+            value = gk.resource.stringGetter(key, gk.resource:getLan())
+        end
+        node:setString(value)
     end,
     hAlign = function(node, ...)
         node:setHorizontalAlignment(...)
@@ -334,21 +338,16 @@ generator.nodeSetFuncs = {
     lineHeight = function(node, ...)
         node:setLineHeight(...)
     end,
-    visible = function(node, var)
-        node:setVisible(var == 0)
-    end,
-    color = function(node, var)
-        node:setColor(var)
+    fontFile = function(node, var)
+        -- recreate node
+        local lan = gk.resource:getLan()
+        local font = var[lan]
+        gk.log("set fontFile_%s %s", lan, font)
+        --        node:setLineHeight(...)
     end,
     --    np = function(node, var)
     --        node:setNormalizedPosition(var)
     --    end,
-    scaleXY = function(node, var)
-        local scaleX = generator.parseValue(var.x)
-        local scaleY = generator.parseValue(var.y)
-        local x, y = node.__info.x, node.__info.y
-        node:setPosition(cc.p(x * scaleX, y * scaleY))
-    end,
 }
 
 generator.nodeGetFuncs = {
@@ -358,17 +357,15 @@ generator.nodeGetFuncs = {
     type = function(node)
         return node.__cname or tolua.type(node)
     end,
-    anchorX = function(node)
-        return node.__info.anchorX or node:getAnchorPoint().x
-    end,
-    anchorY = function(node)
-        return node.__info.anchorY or node:getAnchorPoint().y
-    end,
+    --------------------------- cc.Node   ---------------------------
     x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX(), 1)
+        return node.__info.x or math.shrink(node:getPositionX() / generator.parseValue(node.__info.scaleXY.x), 1)
     end,
     y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY(), 1)
+        return node.__info.y or math.shrink(node:getPositionY() / generator.parseValue(node.__info.scaleXY.y), 1)
+    end,
+    anchor = function(node)
+        return node.__info.anchor or node:getAnchorPoint()
     end,
     scaleX = function(node)
         return node.__info.scaleX or math.shrink(node:getScaleX(), 3)
@@ -400,6 +397,13 @@ generator.nodeGetFuncs = {
             return node:getContentSize().height
         end
     end,
+    color = function(node)
+        return node.__info.color or node:getColor()
+    end,
+    visible = function(node)
+        return node.__info.visible or (node:isVisible() and 0 or 1)
+    end,
+    --------------------------- cc.Label   ---------------------------
     string = function(node)
         return iskindof(node, "cc.Label") and (node.__info.string or node:getString())
     end,
@@ -415,24 +419,12 @@ generator.nodeGetFuncs = {
     lineHeight = function(node)
         return iskindof(node, "cc.Label") and (node.__info.lineHeight or node:getLineHeight())
     end,
-    visible = function(node)
-        return node.__info.visible or (node:isVisible() and 0 or 1)
-    end,
-    color = function(node)
-        return node.__info.color or node:getColor()
-    end,
-    x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX() / generator.parseValue(node.__info.scaleXY.x), 1)
-    end,
-    y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY() / generator.parseValue(node.__info.scaleXY.y), 1)
+    fontFile = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.fontFile)
     end,
     --    np = function(node)
     --        return node.__info.np or node:getNormalizedPosition()
     --    end,
-    scaleXY = function(node)
-        return node.__info.scaleXY
-    end,
 }
 
 return generator

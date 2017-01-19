@@ -13,36 +13,14 @@ local function create_label(info)
     else
         info.labelType = "systemfont"
     end
-    local label = cc.Label:createWithTTF(info.string, info.fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+    dump(info)
+    local lan = gk.resource:getLan()
+    local label = cc.Label:createWithTTF(info.string, info.fontFile[lan], info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc
+    .VERTICAL_TEXT_ALIGNMENT_CENTER)
+    --    local label = cc.Label:createWithSystemFont(info.string, info.fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_CENTER, cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
     return label
 end
 
 gk.create_label = create_label
-
-function id2label:getLan()
-    local lc = cc.UserDefault:getInstance():getStringForKey("app_language")
-    if lc == "" then
-        if device.language == "cn" then
-            lc = "cn"
-        elseif device.language == "cht" then
-            lc = "cht"
-        elseif device.language == "de" then
-            lc = "de"
-        elseif device.language == "ru" then
-            lc = "ru"
-        else
-            lc = "en"
-        end
-
-        cc.UserDefault:getInstance():setStringForKey("app_language", lc)
-        cc.UserDefault:getInstance():flush()
-    end
-    return lc
-end
-
-function id2label:setLan(lc)
-    cc.UserDefault:getInstance():setStringForKey("app_language", lc)
-    cc.UserDefault:getInstance():flush()
-end
 
 return id2label

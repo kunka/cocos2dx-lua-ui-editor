@@ -334,6 +334,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
 end
 
 function panel:sync()
+    gk.log("start sync")
     local info = generator.deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
     local file = gk.config.genPath .. "layout/_" .. self.scene.layer.__cname:lower() .. ".lua"
@@ -343,7 +344,7 @@ function panel:sync()
 end
 
 function panel:initLayer(layer)
-    if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" then
+    if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" and not layer.__info then
         local file = gk.config.genPath .. "layout/_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
         layer.__info = generator.wrap({ id = layer.__cname }, layer)

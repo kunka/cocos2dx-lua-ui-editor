@@ -13,6 +13,14 @@ gk.config.defaultSprite = "gk/res/texture/default.png"
 gk.display.initWithDesignSize(cc.size(960, 720))
 gk.resource:setTextureRelativePath("texture/")
 gk.resource:setAtlasRelativePath("atlas/")
+local strings = {
+    en = require("demo.gen.value.strings"),
+    cn = require("demo.gen.value.strings_cn"),
+}
+gk.resource:setStringGetter(function(key, lan)
+    return strings[lan][key] or "undefined"
+end)
+gk.resource:setLans(table.keys(strings))
 
 -- set gen path
 local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
