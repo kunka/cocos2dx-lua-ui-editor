@@ -337,7 +337,7 @@ end
 function panel:sync()
     local info = generator.deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
-    local file = gk.config.genPath .. "_" .. self.scene.layer.__cname:lower() .. ".lua"
+    local file = gk.config.genPath .. "layout/_" .. self.scene.layer.__cname:lower() .. ".lua"
     gk.log("sync to file: " .. file)
     --    gk.log(table2lua.encode_pretty(info))
     io.writefile(file, table2lua.encode_pretty(info))
@@ -345,7 +345,7 @@ end
 
 function panel:initLayer(layer)
     if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" then
-        local file = gk.config.genRelativePath .. "_" .. layer.__cname:lower()
+        local file = gk.config.genPath .. "layout/_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
         layer.__info = generator.wrap({ id = layer.__cname }, layer)
         if status then
