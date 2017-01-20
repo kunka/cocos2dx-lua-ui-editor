@@ -9,14 +9,14 @@
 local generator = import(".generator")
 local panel = {}
 
-function panel:create(parent)
-    self.parent = parent
+function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local layerColor = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), winSize.width, gk.display.topHeight)
-    layerColor:setPosition(0, winSize.height - gk.display.topHeight)
-    self.panel = layerColor
+    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), winSize.width, gk.display.topHeight)
+    setmetatableindex(self, panel)
+    self.parent = parent
+    self:setPosition(0, winSize.height - gk.display.topHeight)
 
-    local size = self.panel:getContentSize()
+    local size = self:getContentSize()
     -- winSize
     local fontSize = 10 * 4
     local fontName = "gk/res/font/Consolas.ttf"
@@ -32,7 +32,7 @@ function panel:create(parent)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setScale(scale)
         label:setTextColor(cc.c3b(189, 189, 189))
-        self.panel:addChild(label)
+        self:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
         return label
@@ -46,7 +46,7 @@ function panel:create(parent)
         local contentSize = node:getContentSize()
         label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
         label:setDimensions(contentSize.width - 25, contentSize.height)
-        self.panel:addChild(node)
+        self:addChild(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
         node:onEditEnded(function(...)
@@ -61,16 +61,16 @@ function panel:create(parent)
         node:setPosition(x, y)
         node:setScale(scale * 2)
         node:setSelected(selected)
-        self.panel:addChild(node)
+        self:addChild(node)
         node:setAnchorPoint(0, 0.5)
         node:addEventListener(function(sender, eventType)
             callback(eventType)
         end)
         return node
     end
-    local size = self.panel:getContentSize()
+    local size = self:getContentSize()
     local createLine = function(x)
-        gk.util:drawLineOnNode(self.panel, cc.p(x, 10), cc.p(x, size.height - 10), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1))
+        gk.util:drawLineOnNode(self, cc.p(x, 10), cc.p(x, size.height - 10), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1))
     end
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
@@ -86,7 +86,7 @@ function panel:create(parent)
         local contentSize = node:getContentSize()
         label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
         label:setDimensions(contentSize.width - 25, contentSize.height)
-        self.panel:addChild(node)
+        self:addChild(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
         node:setPosition(x, y)
@@ -142,7 +142,7 @@ function panel:create(parent)
         node:setScale(0.35)
         local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
         node:setPosition(originPos)
-        self.panel:addChild(node)
+        self:addChild(node)
 
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
@@ -164,15 +164,15 @@ function panel:create(parent)
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
-            local p = self.panel:convertToNodeSpace(location)
+            local p = self:convertToNodeSpace(location)
             if not self.draggingNode then
                 local node = gk.create_sprite(self.widgets[i].file)
                 node:setPosition(originPos)
                 node:setScale(gk.display.minScale())
-                self.panel:addChild(node)
+                self:addChild(node)
                 self.draggingNode = node
             end
-            self.draggingNode:setPosition(cc.pAdd(originPos, cc.pSub(p, self.panel:convertToNodeSpace(self._touchBegainLocation))))
+            self.draggingNode:setPosition(cc.pAdd(originPos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
 
             -- find dest container
             if self.parent.sortedChildren == nil then
@@ -199,19 +199,17 @@ function panel:create(parent)
             if self._containerNode then
                 local s = self.parent.scene.layer:getContentSize()
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
-                --            local p = self.scene.layer:convertTouchToNodeSpace(touch)
                 local location = touch:getLocation()
-                local p = self.panel:convertToNodeSpace(location)
-                local p = cc.pAdd(originPos, cc.pSub(p, self.panel:convertToNodeSpace(self._touchBegainLocation)))
-                p = self._containerNode:convertToNodeSpace(self.panel:convertToWorldSpace(p))
-                --            local p = self.scene.layer:convertToNodeSpace(cc.pSub(location, self._touchBegainLocation))
+                local p = self:convertToNodeSpace(location)
+                local p = cc.pAdd(originPos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
+                p = self._containerNode:convertToNodeSpace(self:convertToWorldSpace(p))
                 if cc.rectContainsPoint(rect, p) then
                     local type = self.widgets[i].type
                     local info = clone(self.widgets[i])
                     local node = generator.createNode(info, nil, self.parent.scene.layer)
                     if node then
                         if tolua.type(node) ~= "cc.Layer" then
-                            local sx, sy = gk.util.getGlobalScale(self._containerNode)
+                            local sx, sy = gk.util:getGlobalScale(self._containerNode)
                             if sx ~= 1 or sy ~= 1 then
                                 node.__info.scaleX, node.__info.scaleY = 1, 1
                             else
@@ -253,7 +251,7 @@ function panel:create(parent)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end
 
-    return layerColor
+    return self
 end
 
 return panel

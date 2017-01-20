@@ -1,29 +1,33 @@
 local panel = {}
 local generator = import(".generator")
-panel.leftPanel = import(".leftPanel")
-panel.rightPanel = import(".rightPanel")
-panel.topPanel = import(".topPanel")
-panel.bottomPanel = import(".bottomPanel")
 
-function panel:create(scene)
+function panel.create(scene)
+    local self = cc.Layer:create()
+    setmetatableindex(self, panel)
     self.scene = scene
+    local leftPanelModule = require("gk.editor.leftPanel")
+    local rightPanelModule = require("gk.editor.rightPanel")
+    local topPanelModule = require("gk.editor.topPanel")
+    local bottomPanelModule = require("gk.editor.bottomPanel")
     -- whole
     local winSize = cc.Director:getInstance():getWinSize()
-    local editorPanel = cc.Layer:create()
-    self.editorPanel = editorPanel
     -- left
-    editorPanel:addChild(self.leftPanel:create(self))
+    self.leftPanel = leftPanelModule.create(self)
+    self:addChild(self.leftPanel)
     -- right
-    editorPanel:addChild(self.rightPanel:create(self))
+    self.rightPanel = rightPanelModule.create(self)
+    self:addChild(self.rightPanel)
     -- top
-    editorPanel:addChild(self.topPanel:create(self))
+    self.topPanel = topPanelModule.create(self)
+    self:addChild(self.topPanel)
     -- bottom
-    editorPanel:addChild(self.bottomPanel:create(self))
+    self.bottomPanel = bottomPanelModule.create(self)
+    self:addChild(self.bottomPanel)
 
     self:handleEvent()
     self:subscribeEvent()
 
-    return editorPanel
+    return self
 end
 
 function panel:subscribeEvent(node)
@@ -40,12 +44,12 @@ function panel:subscribeEvent(node)
         self.leftPanel:displayDomTree(node or self.scene.layer)
     end)
     gk.event:subscribe(self, "postSync", function(node)
-        gk.util:stopActionByTagSafe(self.editorPanel, -234)
+        gk.util:stopActionByTagSafe(self, -234)
         local action = cc.CallFunc:create(function()
             self:sync()
         end)
         action:setTag(-234)
-        self.editorPanel:runAction(action)
+        self:runAction(action)
     end)
 end
 
@@ -118,7 +122,7 @@ function panel:onNodeCreate(node)
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()
-                local sx, sy = gk.util.getGlobalScale(self._containerNode)
+                local sx, sy = gk.util:getGlobalScale(self._containerNode)
                 if sx ~= 1 or sy ~= 1 then
                     node.__info.scaleX, node.__info.scaleY = 1, 1
                     node.__info.scaleXY = { x = "1", y = "1" }
@@ -172,7 +176,7 @@ function panel:drawNodeCoordinate(node)
         parent:addChild(self.coordinateNode, 99999)
         self.coordinateNode:setCascadeOpacityEnabled(true)
 
-        local sx, sy = gk.util.getGlobalScale(parent)
+        local sx, sy = gk.util:getGlobalScale(parent)
         sx = 0.2 / sx
         sy = 0.2 / sy
 
@@ -264,7 +268,7 @@ function panel:handleEvent()
 
     local listener = cc.EventListenerKeyboard:create()
     listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
-    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.editorPanel)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 
     -- TODO: mouse move event
     local listener = cc.EventListenerMouse:create()
@@ -300,7 +304,7 @@ function panel:handleEvent()
     end, cc.Handler.EVENT_MOUSE_MOVE)
     --    listener:registerScriptHandler(function(touch, event)
     --    end, cc.Handler.EVENT_MOUSE_SCROLL)
-    --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.editorPanel)
+    --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)

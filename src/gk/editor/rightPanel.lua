@@ -9,12 +9,13 @@
 local generator = import(".generator")
 local panel = {}
 
-function panel:create()
+function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local layerColor = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.rightWidth, winSize.height - gk.display.topHeight)
-    layerColor:setPosition(winSize.width - gk.display.rightWidth, 0)
-    self.panel = layerColor
-    return layerColor
+    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.rightWidth, winSize.height - gk.display.topHeight)
+    setmetatableindex(self, panel)
+    self.parent = parent
+    self:setPosition(winSize.width - gk.display.rightWidth, 0)
+    return self
 end
 
 function panel:undisplayNode()
@@ -28,8 +29,8 @@ function panel:displayNode(node)
     panel:undisplayNode()
 
     self.displayInfoNode = cc.Node:create()
-    self.panel:addChild(self.displayInfoNode)
-    local size = self.panel:getContentSize()
+    self:addChild(self.displayInfoNode)
+    local size = self:getContentSize()
 
     local fontSize = 10 * 4
     local fontName = "gk/res/font/Consolas.ttf"

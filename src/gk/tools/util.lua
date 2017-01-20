@@ -44,10 +44,10 @@ function math.shrink(f, bit)
 end
 
 ----------------------------------------- restart game  -------------------------------------------------
-function util.registerRestartGameCallback(callback)
+function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
     if not util.restartLayer then
-        gk.log("init.registerRestartGameCallback")
+        gk.log("init:registerRestartGameCallback")
         util.restartLayer = cc.Layer:create()
         util.restartLayer:retain()
 
@@ -178,7 +178,7 @@ function util:drawNodeRect(node, c4f, tag)
     return draw
 end
 
-function util.getGlobalScale(node)
+function util:getGlobalScale(node)
     local scaleX, scaleY = 1, 1
     local c = node
     while c ~= nil do

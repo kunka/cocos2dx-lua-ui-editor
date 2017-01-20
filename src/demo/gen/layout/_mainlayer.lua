@@ -5,12 +5,12 @@ return {
 	   b = 255,
 	   g = 255},
 	children = {	   {
-	      x = 53,
+	      width = 108,
 	      id = "sprite1",
 	      children = {},
 	      anchorX = 0.5,
 	      scaleX = "$minScale",
-	      width = 108,
+	      rotation = 0,
 	      file = "?",
 	      color = {
 	         r = 255,
@@ -22,7 +22,7 @@ return {
 	      scaleXY = {
 	         y = "$yScale",
 	         x = "$xScale"},
-	      rotation = 0,
+	      x = 53,
 	      anchor = {
 	         y = 0.5,
 	         x = 0.5},
@@ -31,12 +31,12 @@ return {
 	      height = 150,
 	      opacity = 255},
 	   {
-	      x = 940,
+	      rotation = 0,
 	      id = "sprite2",
 	      children = {},
 	      anchorX = 0.5,
 	      scaleX = "$minScale",
-	      rotation = 0,
+	      width = 108,
 	      file = "?",
 	      color = {
 	         r = 255,
@@ -53,7 +53,7 @@ return {
 	         y = 0.5,
 	         x = 1},
 	      type = "cc.Sprite",
-	      width = 108,
+	      x = 940,
 	      height = 150,
 	      opacity = 255},
 	   {

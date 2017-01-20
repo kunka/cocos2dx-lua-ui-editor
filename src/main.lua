@@ -60,9 +60,9 @@ end
 function restartGame()
     print("restartGame")
     clearModules()
-    require("init").startGame()
+    require("init"):startGame()
 end
 
 nativeHotUpdateInit()
-require("init").startGame()
+require("init"):startGame()
 

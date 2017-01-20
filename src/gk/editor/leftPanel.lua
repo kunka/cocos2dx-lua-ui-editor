@@ -8,13 +8,13 @@
 
 local panel = {}
 
-function panel:create(panel)
-    self.parent = panel
+function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local layerColor = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.leftWidth, winSize.height - gk.display.topHeight)
-    layerColor:setPosition(0, 0)
-    self.panel = layerColor
-    return layerColor
+    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.leftWidth, winSize.height - gk.display.topHeight)
+    setmetatableindex(self, panel)
+    self.parent = parent
+    self:setPosition(0, 0)
+    return self
 end
 
 function panel:undisplayNode()
@@ -28,10 +28,10 @@ function panel:displayDomTree(rootLayer)
     if rootLayer then
         self:undisplayNode()
         self.displayDomInfoNode = cc.Node:create()
-        self.panel:addChild(self.displayDomInfoNode)
+        self:addChild(self.displayDomInfoNode)
         self.domDepth = 0
         self:displayDomNode(rootLayer, 0)
-        local size = self.panel:getContentSize()
+        local size = self:getContentSize()
         local createLine = function(y)
             gk.util:drawLineOnNode(self.displayDomInfoNode, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
         end
@@ -40,7 +40,7 @@ function panel:displayDomTree(rootLayer)
 end
 
 function panel:displayDomNode(node, layer)
-    local size = self.panel:getContentSize()
+    local size = self:getContentSize()
     local fontSize = 11 * 4
     local fontName = "Consolas"
     local scale = 0.25

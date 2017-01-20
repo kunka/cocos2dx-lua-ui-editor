@@ -10,7 +10,7 @@ require "cocos.init"
 require "gk.init"
 
 gk.config.defaultSprite = "gk/res/texture/default.png"
-gk.display.initWithDesignSize(cc.size(960, 720))
+gk.display:initWithDesignSize(cc.size(960, 720))
 gk.resource:setTextureRelativePath("texture/")
 gk.resource:setAtlasRelativePath("atlas/")
 local strings = {
@@ -32,11 +32,11 @@ cc.FileUtils:getInstance():createDirectory(gk.config.genPath)
 
 local init = {}
 
-function init.startGame()
-    gk.log("init.startGame")
+function init:startGame()
+    gk.log("init:startGame")
     gk.SceneManager:init()
     gk.SceneManager:replace("demo.MainLayer")
-    gk.util.registerRestartGameCallback(function()
+    gk.util:registerRestartGameCallback(function()
         restartGame()
     end)
 end

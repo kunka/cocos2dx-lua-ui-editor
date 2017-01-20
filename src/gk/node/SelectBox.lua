@@ -77,7 +77,7 @@ function SelectBox:openPopup()
     local p = self:convertToWorldSpace(cc.p(0, 0))
     local p = root:convertToNodeSpace(p)
     bg:setPosition(p)
-    bg:setScale(gk.util.getGlobalScale(self))
+    bg:setScale(gk.util:getGlobalScale(self))
 
     if self.popupLabelCreator then
         for i = 1, #self.selectItems do

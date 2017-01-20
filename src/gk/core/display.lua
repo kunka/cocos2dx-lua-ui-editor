@@ -37,7 +37,7 @@ if cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 0) == 0 then
     view:setFrameSize(size.width, size.height)
 end
 
-function display.initWithDesignSize(size)
+function display:initWithDesignSize(size)
     local winSize = cc.Director:getInstance():getWinSize()
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
     display.width = function() return size.width end
@@ -72,7 +72,7 @@ end
 function display.addEditorPanel(scene)
     gk.log("display.addEditorPanel")
     local panel = require("gk.editor.panel")
-    scene:addChild(panel:create(scene), 9999999)
+    scene:addChild(panel.create(scene), 9999999)
 end
 
 return display

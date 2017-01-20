@@ -7,7 +7,7 @@
 
 local inject = {}
 
-function inject.layer_method_swizz(type, methodName)
+function inject:layer_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
@@ -26,10 +26,10 @@ function inject.layer_method_swizz(type, methodName)
     end
 end
 
-inject.layer_method_swizz(cc.Layer, "create")
-inject.layer_method_swizz(cc.LayerColor, "create")
+inject:layer_method_swizz(cc.Layer, "create")
+inject:layer_method_swizz(cc.LayerColor, "create")
 
-function inject.scene_method_swizz(type, methodName)
+function inject:scene_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
@@ -43,9 +43,9 @@ function inject.scene_method_swizz(type, methodName)
     end
 end
 
-inject.scene_method_swizz(cc.Scene, "create")
+inject:scene_method_swizz(cc.Scene, "create")
 
-function inject.sprite_method_swizz(type, methodName)
+function inject:sprite_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
@@ -59,11 +59,11 @@ function inject.sprite_method_swizz(type, methodName)
     end
 end
 
-inject.sprite_method_swizz(cc.Sprite, "create")
-inject.sprite_method_swizz(cc.Sprite, "createWithSpriteFrame")
-inject.sprite_method_swizz(cc.Sprite, "createWithTexture")
+inject:sprite_method_swizz(cc.Sprite, "create")
+inject:sprite_method_swizz(cc.Sprite, "createWithSpriteFrame")
+inject:sprite_method_swizz(cc.Sprite, "createWithTexture")
 
-function inject.node_method_swizz(type, methodName)
+function inject:node_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
         local method = meta[methodName]
@@ -77,9 +77,9 @@ function inject.node_method_swizz(type, methodName)
     end
 end
 
-inject.node_method_swizz(cc.Node, "create")
-inject.node_method_swizz(cc.Label, "createWithSystemFont")
-inject.node_method_swizz(cc.Label, "createWithTTF")
-inject.node_method_swizz(cc.Label, "createWithBMFont")
+inject:node_method_swizz(cc.Node, "create")
+inject:node_method_swizz(cc.Label, "createWithSystemFont")
+inject:node_method_swizz(cc.Label, "createWithTTF")
+inject:node_method_swizz(cc.Label, "createWithBMFont")
 
 return inject
