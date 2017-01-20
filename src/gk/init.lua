@@ -20,26 +20,7 @@ setmetatable(gk.exports, {
     end
 })
 
------------------------------------------ switch function  -------------------------------------------------
--- function to simulate a switch
-local function switch(t)
-    t.case = function(self, x, ...)
-        local f = self[x] or self.default
-        if f then
-            if type(f) == "function" then
-                return f(...)
-            else
-                error("case " .. tostring(x) .. " not a function")
-            end
-        end
-        return nil
-    end
-
-    return t
-end
-
-gk.exports.switch = switch
-
 require "gk.core.init"
+require "gk.node.init"
 require "gk.controller.init"
-gk.util = require "gk.util"
+gk.util = require "gk.tools.util"

@@ -5,8 +5,6 @@
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
 
-gk.display = import(".display")
-import(".util")
 gk.Scene = import(".Scene")
 gk.Layer = import(".Layer")
 gk.Dialog = import(".Dialog")
@@ -18,8 +16,11 @@ gk.ZoomButton = import(".ZoomButton")
 ----------------------------------------- create sprite  -------------------------------------------------
 
 -- name : sprite name or spriteFrame name
-local function CREATE_SPRITE(name)
+local function create_sprite(name)
     name = name or ""
+    if name == "" then
+        return cc.Sprite:create(gk.config.defaultSprite)
+    end
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(gk.resource.atlasRelativePath .. name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame)
@@ -38,7 +39,7 @@ local function CREATE_SPRITE(name)
     if texture then
         return cc.Sprite:createWithTexture(texture)
     end
-    gk.log("CREATE_SPRITE(%s) file not found, use default sprite!", name)
+    gk.log("gk.create_sprite(%s) file not found, use default sprite!", name)
     texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.config.defaultSprite)
     if texture then
         return cc.Sprite:createWithTexture(texture)
@@ -49,25 +50,50 @@ local function CREATE_SPRITE(name)
 end
 
 -- name : sprite name or spriteFrame name
-local function CREATE_SPRITE_FRAME(name)
-    return CREATE_SPRITE(name):getSpriteFrame()
+local function create_sprite_frame(name)
+    return gk.create_sprite(name):getSpriteFrame()
 end
 
 -- name : sprite name or spriteFrame name
-local function CREATE_SCALE9_SPRITE(name, capInsets)
-    local sprite = ccui.Scale9Sprite:createWithSpriteFrame(CREATE_SPRITE_FRAME(name))
+local function create_scale9_sprite(name, capInsets)
+    local sprite = ccui.Scale9Sprite:createWithSpriteFrame(create_sprite_frame(name))
     if capInsets then
         sprite:setCapInsets(capInsets)
     end
     return sprite
 end
 
-gk.exports.CREATE_SPRITE = CREATE_SPRITE
-gk.exports.CREATE_SPRITE_FRAME = CREATE_SPRITE_FRAME
-gk.exports.CREATE_SCALE9_SPRITE = CREATE_SCALE9_SPRITE
+gk.create_sprite = create_sprite
+gk.create_sprite_frame = create_sprite_frame
+gk.create_scale9_sprite = create_scale9_sprite
 
 ----------------------------------------- create label  -------------------------------------------------
-local function CREATE_LABEL(id)
-    local id2label = require("gk.core.id2label")
-    return id2label:createLabel(id)
+local function isTTF(fontFile)
+    return string.lower(tostring(fontFile)):ends(".ttf")
 end
+
+local function isBMFont(fontFile)
+    return string.lower(tostring(fontFile)):ends(".fnt")
+end
+
+gk.isTTF = isTTF
+gk.isBMFont = isBMFont
+
+local function create_label(info)
+    local lan = gk.resource:getLan()
+    local fontFile = info.fontFile[lan]
+    local label
+    if isTTF(fontFile) then
+        label = cc.Label:createWithTTF(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+    elseif isBMFont(fontFile) then
+        label = cc.Label:createWithBMFont(fontFile, info.string, cc.TEXT_ALIGNMENT_LEFT)
+        label:setBMFontSize(info.fontSize)
+    else
+        -- TODO: createWithCharMap
+        label = cc.Label:createWithSystemFont(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+    end
+    return label
+end
+
+gk.create_label = create_label
+

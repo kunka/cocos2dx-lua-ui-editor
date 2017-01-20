@@ -5,12 +5,11 @@
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
 
+import(".inject")
+gk.display = import(".display")
 import(".List")
 import(".log")
 gk.event = import(".event")
 gk.event:init()
 
-require("gk.node.init")
-
-import(".id2label")
 

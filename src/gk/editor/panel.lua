@@ -177,7 +177,7 @@ function panel:drawNodeCoordinate(node)
         sy = 0.2 / sy
 
         local createArrow = function(width, scale, p, rotation, ap)
-            local arrow = CREATE_SCALE9_SPRITE("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
+            local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
             arrow:setContentSize(cc.size(width / scale, 57))
             arrow:setScale(scale)
             arrow:setPosition(x, y)
@@ -228,6 +228,7 @@ function panel:handleEvent()
         local key = cc.KeyCodeKey[keyCode + 1]
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode then
+            -- TODO: hold
             local x, y = self.displayingNode.__info.x, self.displayingNode.__info.y
             if key == "KEY_LEFT_ARROW" then
                 self.displayingNode.__info.x = x - 1
@@ -265,6 +266,7 @@ function panel:handleEvent()
     listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.editorPanel)
 
+    -- TODO: mouse move event
     local listener = cc.EventListenerMouse:create()
     --    listener:registerScriptHandler(function(touch, event)
     --    end, cc.Handler.EVENT_MOUSE_DOWN)

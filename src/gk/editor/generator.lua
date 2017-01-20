@@ -208,12 +208,12 @@ end
 
 generator.nodeCreator = {
     ["cc.Sprite"] = function(info, rootTable)
-        local node = CREATE_SPRITE(info.file)
+        local node = gk.create_sprite(info.file)
         info.id = info.id or generator.genID("sprite", rootTable)
         return node
     end,
     ["ZoomButton"] = function(info, rootTable)
-        local node = gk.ZoomButton.new(CREATE_SPRITE(info.file))
+        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
         info.id = info.id or generator.genID("button", rootTable)
         return node
     end,

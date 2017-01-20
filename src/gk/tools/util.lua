@@ -7,6 +7,42 @@
 
 local util = {}
 
+----------------------------------------- switch function  -------------------------------------------------
+-- function to simulate a switch
+local function switch(t)
+    t.case = function(self, x, ...)
+        local f = self[x] or self.default
+        if f then
+            if type(f) == "function" then
+                return f(...)
+            else
+                error("case " .. tostring(x) .. " not a function")
+            end
+        end
+        return nil
+    end
+
+    return t
+end
+
+gk.exports.switch = switch
+
+function string.ends(String, End)
+    return End == '' or string.sub(String, -string.len(End)) == End
+end
+
+function math.shrink(f, bit)
+    if bit >= 1 and bit <= 6 then
+        local e = 1 / math.pow(10, bit + 1)
+        local v = math.pow(10, bit)
+        return math.round((f + e) * v) / v
+    elseif bit == 0 then
+        return math.round(f)
+    else
+        return f
+    end
+end
+
 ----------------------------------------- restart game  -------------------------------------------------
 function util.registerRestartGameCallback(callback)
     util.restartGameCallback = callback
@@ -151,18 +187,6 @@ function util.getGlobalScale(node)
         c = c:getParent()
     end
     return scaleX, scaleY
-end
-
-function math.shrink(f, bit)
-    if bit >= 1 and bit <= 6 then
-        local e = 1 / math.pow(10, bit + 1)
-        local v = math.pow(10, bit)
-        return math.round((f + e) * v) / v
-    elseif bit == 0 then
-        return math.round(f)
-    else
-        return f
-    end
 end
 
 function util:hitTest(node, touch)
