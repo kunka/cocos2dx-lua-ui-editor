@@ -76,8 +76,13 @@ local function isBMFont(fontFile)
     return string.lower(tostring(fontFile)):ends(".fnt")
 end
 
+local function isSystemFont(fontFile)
+    return not isTTF(fontFile) and not isBMFont(fontFile)
+end
+
 gk.isTTF = isTTF
 gk.isBMFont = isBMFont
+gk.isSystemFont = isSystemFont
 
 local function create_label(info)
     local lan = gk.resource:getLan()

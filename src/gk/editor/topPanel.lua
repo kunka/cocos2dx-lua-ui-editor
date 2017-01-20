@@ -206,7 +206,7 @@ function panel.create(parent)
                 if cc.rectContainsPoint(rect, p) then
                     local type = self.widgets[i].type
                     local info = clone(self.widgets[i])
-                    local node = generator.createNode(info, nil, self.parent.scene.layer)
+                    local node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         if tolua.type(node) ~= "cc.Layer" then
                             local sx, sy = gk.util:getGlobalScale(self._containerNode)
@@ -219,8 +219,8 @@ function panel.create(parent)
                         else
                             --                            gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
                         end
-                        local scaleX = generator.parseValue(node.__info.scaleXY.x)
-                        local scaleY = generator.parseValue(node.__info.scaleXY.y)
+                        local scaleX = generator:parseValue(node.__info.scaleXY.x)
+                        local scaleY = generator:parseValue(node.__info.scaleXY.y)
                         node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)

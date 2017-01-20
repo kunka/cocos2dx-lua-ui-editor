@@ -8,13 +8,13 @@
 
 local generator = {}
 
-function generator.deflate(node)
+function generator:deflate(node)
     -- copy
     node.__info.__self.children = {}
     local info = clone(node.__info.__self)
 
     -- force set value
-    for k, func in pairs(generator.nodeGetFuncs) do
+    for k, func in pairs(self.nodeGetFuncs) do
         local ret = func(node)
         if ret then
             info[k] = ret
@@ -27,20 +27,20 @@ function generator.deflate(node)
         local child = children[i]
         if child and child.__info and child.__info.id then
             info.children = info.children or {}
-            local c = generator.deflate(child)
+            local c = self:deflate(child)
             table.insert(info.children, c)
         end
     end
     return info
 end
 
-function generator.inflate(info, rootNode, rootTable)
-    local node = generator.createNode(info, rootNode, rootTable)
+function generator:inflate(info, rootNode, rootTable)
+    local node = self:createNode(info, rootNode, rootTable)
     if node and info.children then
         for i = 1, #info.children do
             local child = info.children[i]
             if child and child.id then
-                local c = generator.inflate(child, nil, rootTable)
+                local c = self:inflate(child, nil, rootTable)
                 if c then
                     node:addChild(c)
                 end
@@ -50,13 +50,13 @@ function generator.inflate(info, rootNode, rootTable)
     return node
 end
 
-function generator.createNode(info, rootNode, rootTable)
-    info = generator.wrap(info, rootTable)
+function generator:createNode(info, rootNode, rootTable)
+    info = self:wrap(info, rootTable)
     local node
     if rootNode then
         node = rootNode
     else
-        local creator = generator.nodeCreator[info.type]
+        local creator = self.nodeCreator[info.type]
         if creator then
             node = creator(info, rootTable)
             gk.log("createNode %s", info.id)
@@ -72,7 +72,7 @@ function generator.createNode(info, rootNode, rootTable)
         rootTable[info.id] = node
     end
     -- force set value
-    for k, func in pairs(generator.nodeGetFuncs) do
+    for k, func in pairs(self.nodeGetFuncs) do
         local ret = func(node)
         if ret then
             info[k] = ret
@@ -81,8 +81,8 @@ function generator.createNode(info, rootNode, rootTable)
     return node
 end
 
-function generator.default()
-    generator._default = generator._default and generator._default or {
+function generator:default()
+    self._default = self._default and self._default or {
         file = "",
         string = "label",
         fontFile = {
@@ -92,10 +92,10 @@ function generator.default()
         fontSize = "32",
         scaleXY = { x = 1, y = 1 },
     }
-    return generator._default
+    return self._default
 end
 
-function generator.wrap(info, rootTable)
+function generator:wrap(info, rootTable)
     local proxy = info
     info = {}
     local mt = {
@@ -104,7 +104,7 @@ function generator.wrap(info, rootTable)
             if key == "__self" then
                 var = proxy
             else
-                var = proxy[key] or generator.default()[key]
+                var = proxy[key] or self:default()[key]
             end
             --            gk.log("get %s,%s", key, var)
             return var
@@ -134,8 +134,8 @@ function generator.wrap(info, rootTable)
             proxy[key] = value
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
-                local v = generator.parseValue(value)
-                local func = generator.nodeSetFuncs[key]
+                local v = self:parseValue(value)
+                local func = self.nodeSetFuncs[key]
                 if func then
                     func(node, v)
                     gk.event:post("postSync")
@@ -150,11 +150,11 @@ function generator.wrap(info, rootTable)
     return info
 end
 
-function generator.parseValue(input)
+function generator:parseValue(input)
     local v
     if type(input) == "string" and string.len(input) > 1 then
         local macro = input:sub(2, #input)
-        v = generator.macroFuncs[macro]
+        v = self.macroFuncs[macro]
         if v then
             v = v()
         end
@@ -162,7 +162,7 @@ function generator.parseValue(input)
     return v or input
 end
 
-function generator.modify(node, property, input, valueType)
+function generator:modify(node, property, input, valueType)
     local props = string.split(property, ".")
     local prop1, prop2
     if #props == 2 then
@@ -178,7 +178,7 @@ function generator.modify(node, property, input, valueType)
         if string.len(input) > 0 and input:sub(1, 1) == "$" then
             local macro = input:sub(2, #input)
             -- contains
-            if generator.macroFuncs[macro] then
+            if self.macroFuncs[macro] then
                 value = input
             end
         elseif valueType == "string" then
@@ -209,35 +209,35 @@ end
 generator.nodeCreator = {
     ["cc.Sprite"] = function(info, rootTable)
         local node = gk.create_sprite(info.file)
-        info.id = info.id or generator.genID("sprite", rootTable)
+        info.id = info.id or generator:genID("sprite", rootTable)
         return node
     end,
     ["ZoomButton"] = function(info, rootTable)
         local node = gk.ZoomButton.new(gk.create_sprite(info.file))
-        info.id = info.id or generator.genID("button", rootTable)
+        info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
     ["cc.Layer"] = function(info, rootTable)
         local node = cc.Layer:create()
-        info.id = info.id or generator.genID("layer", rootTable)
+        info.id = info.id or generator:genID("layer", rootTable)
         return node
     end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
-        info.id = info.id or generator.genID("label", rootTable)
+        info.id = info.id or generator:genID("label", rootTable)
         return node
     end,
 }
 
-function generator.genID(type, rootTable)
-    --    generator.genIDTable = generator.genIDTable or {}
-    --    if not generator.genIDTable[type] then
-    --        generator.genIDTable[type] = 1
+function generator:genID(type, rootTable)
+    --    generator:genIDTable = generator:genIDTable or {}
+    --    if not generator:genIDTable[type] then
+    --        generator:genIDTable[type] = 1
     --    end
-    --    local index = generator.genIDTable[type]
+    --    local index = generator:genIDTable[type]
     --    while true do
     --        if rootTable[string.format("%s%d", type, index)] == nil then
-    --            generator.genIDTable[type] = index
+    --            generator:genIDTable[type] = index
     --            break
     --        else
     --            index = index + 1
@@ -265,16 +265,16 @@ generator.macroFuncs = {
 generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
     x = function(node, x)
-        local scaleX = generator.parseValue(node.__info.scaleXY.x)
+        local scaleX = generator:parseValue(node.__info.scaleXY.x)
         node:setPositionX(x * scaleX)
     end,
     y = function(node, y)
-        local scaleY = generator.parseValue(node.__info.scaleXY.y)
+        local scaleY = generator:parseValue(node.__info.scaleXY.y)
         node:setPositionY(y * scaleY)
     end,
     scaleXY = function(node, var)
-        local scaleX = generator.parseValue(var.x)
-        local scaleY = generator.parseValue(var.y)
+        local scaleX = generator:parseValue(var.x)
+        local scaleY = generator:parseValue(var.y)
         local x, y = node.__info.x, node.__info.y
         node:setPosition(cc.p(x * scaleX, y * scaleY))
     end,
@@ -336,7 +336,9 @@ generator.nodeSetFuncs = {
         node:setOverflow(...)
     end,
     lineHeight = function(node, ...)
-        node:setLineHeight(...)
+        if not gk.isSystemFont(node.__info.fontFile[gk.resource:getLan()]) then
+            node:setLineHeight(...)
+        end
     end,
     fontFile = function(node, var)
         -- recreate node
@@ -359,10 +361,10 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Node   ---------------------------
     x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX() / generator.parseValue(node.__info.scaleXY.x), 1)
+        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue(node.__info.scaleXY.x), 1)
     end,
     y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY() / generator.parseValue(node.__info.scaleXY.y), 1)
+        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue(node.__info.scaleXY.y), 1)
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()

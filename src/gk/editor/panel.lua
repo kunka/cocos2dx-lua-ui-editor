@@ -130,14 +130,14 @@ function panel:onNodeCreate(node)
                     node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
                     node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
                 end
-                local scaleX = generator.parseValue(node.__info.scaleXY.x)
-                local scaleY = generator.parseValue(node.__info.scaleXY.y)
+                local scaleX = generator:parseValue(node.__info.scaleXY.x)
+                local scaleY = generator:parseValue(node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
             else
-                local scaleX = generator.parseValue(node.__info.scaleXY.x)
-                local scaleY = generator.parseValue(node.__info.scaleXY.y)
+                local scaleX = generator:parseValue(node.__info.scaleXY.x)
+                local scaleY = generator:parseValue(node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
             end
             gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
@@ -199,8 +199,8 @@ function panel:drawNodeCoordinate(node)
         end
         local size = parent:getContentSize()
 
-        local scaleX = generator.parseValue(node.__info.scaleXY.x)
-        local scaleY = generator.parseValue(node.__info.scaleXY.y)
+        local scaleX = generator:parseValue(node.__info.scaleXY.x)
+        local scaleY = generator:parseValue(node.__info.scaleXY.y)
         -- left
         createArrow(x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down
@@ -318,7 +318,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child and child:getLocalZOrder() < 0 and child.__info then
-                panel:sortChildrenOfSceneGraphPriority(child, false)
+                self:sortChildrenOfSceneGraphPriority(child, false)
             else
                 break
             end
@@ -329,7 +329,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child and child.__info then
-                panel:sortChildrenOfSceneGraphPriority(child, false)
+                self:sortChildrenOfSceneGraphPriority(child, false)
             end
         end
     else
@@ -341,7 +341,7 @@ end
 
 function panel:sync()
     gk.log("start sync")
-    local info = generator.deflate(self.scene.layer)
+    local info = generator:deflate(self.scene.layer)
     local table2lua = require("gk.tools.table2lua")
     local file = gk.config.genPath .. "layout/_" .. self.scene.layer.__cname:lower() .. ".lua"
     gk.log("sync to file: " .. file)
@@ -353,11 +353,11 @@ function panel:initLayer(layer)
     if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" and not layer.__info then
         local file = gk.config.genPath .. "layout/_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
-        layer.__info = generator.wrap({ id = layer.__cname }, layer)
+        layer.__info = generator:wrap({ id = layer.__cname }, layer)
         if status then
             gk.log("initLayer with %s", file)
             --            layer.__info.id = "root"
-            generator.inflate(info, layer, layer)
+            generator:inflate(info, layer, layer)
             layer.__info.width = gk.display.winSize().width
             layer.__info.height = gk.display.winSize().height
             --            dump(info)
