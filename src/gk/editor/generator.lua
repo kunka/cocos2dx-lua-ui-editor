@@ -11,7 +11,7 @@ local generator = {}
 function generator:deflate(node)
     -- copy
     node.__info.__self.children = {}
-    local info = clone(node.__info.__self)
+    local info = node.__info.__self
 
     -- force set value
     for k, func in pairs(self.nodeGetFuncs) do
@@ -29,6 +29,14 @@ function generator:deflate(node)
             info.children = info.children or {}
             local c = self:deflate(child)
             table.insert(info.children, c)
+        end
+    end
+
+    -- filter useless properties
+    local keys = table.keys(info)
+    for _, key in ipairs(keys) do
+        if string.len(key) > 0 and key:sub(1, 1) == "_" then
+            info[key] = nil
         end
     end
     return info
@@ -322,7 +330,7 @@ generator.nodeSetFuncs = {
         local value = string
         if string.len(string) > 0 and string:sub(1, 1) == "@" then
             local key = string:sub(2, #string)
-            value = gk.resource.stringGetter(key, gk.resource:getLan())
+            value = gk.resource.stringGetter(key, gk.resource:getCurrentLan())
         end
         node:setString(value)
     end,
@@ -336,13 +344,13 @@ generator.nodeSetFuncs = {
         node:setOverflow(...)
     end,
     lineHeight = function(node, ...)
-        if not gk.isSystemFont(node.__info.fontFile[gk.resource:getLan()]) then
+        if not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
             node:setLineHeight(...)
         end
     end,
     fontFile = function(node, var)
         -- recreate node
-        local lan = gk.resource:getLan()
+        local lan = gk.resource:getCurrentLan()
         local font = var[lan]
         gk.log("set fontFile_%s %s", lan, font)
         --        node:setLineHeight(...)

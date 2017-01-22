@@ -118,12 +118,12 @@ function panel.create(parent)
     yIndex = yIndex + 1
 
     -- Language
-    createLabel("Lanuage", leftX, topY - yIndex * stepY)
+    createLabel("Lans", leftX, topY - yIndex * stepY)
     local items = gk.resource.lans
-    local index = table.indexof(gk.resource.lans, gk.resource:getLan())
+    local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local lan = items[index]
-        gk.resource:setLan(lan)
+        gk.resource:setCurrentLan(lan)
         gk.util:restartGame()
     end)
     yIndex = yIndex + 1

@@ -35,7 +35,7 @@ function inject:scene_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            gk.display.addEditorPanel(node)
+            gk.display:addEditorPanel(node)
             return node
         end
         meta[methodName] = __method

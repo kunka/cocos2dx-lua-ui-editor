@@ -275,7 +275,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
         -- font file
         createLabel("FontFile", leftX, topY - stepY * yIndex)
-        local lan = gk.resource:getLan()
+        local lan = gk.resource:getCurrentLan()
         createInput(tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
             editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
         end)

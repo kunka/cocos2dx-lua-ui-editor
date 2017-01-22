@@ -69,8 +69,8 @@ function display:initWithDesignSize(size)
         display.xScale(), display.yScale(), display.minScale(), display.maxScale())
 end
 
-function display.addEditorPanel(scene)
-    gk.log("display.addEditorPanel")
+function display:addEditorPanel(scene)
+    gk.log("display:addEditorPanel")
     local panel = require("gk.editor.panel")
     scene:addChild(panel.create(scene), 9999999)
 end

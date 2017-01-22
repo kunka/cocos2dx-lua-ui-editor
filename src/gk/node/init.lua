@@ -19,7 +19,7 @@ gk.ZoomButton = import(".ZoomButton")
 local function create_sprite(name)
     name = name or ""
     if name == "" then
-        return cc.Sprite:create(gk.config.defaultSprite)
+        return cc.Sprite:create(gk.resource.defaultSprite)
     end
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrameByName(gk.resource.atlasRelativePath .. name)
     if spriteFrame then
@@ -40,12 +40,12 @@ local function create_sprite(name)
         return cc.Sprite:createWithTexture(texture)
     end
     gk.log("gk.create_sprite(%s) file not found, use default sprite!", name)
-    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.config.defaultSprite)
+    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.resource.defaultSprite)
     if texture then
         return cc.Sprite:createWithTexture(texture)
     end
     -- absolute path
-    return cc.Sprite:create(gk.config.defaultSprite)
+    return cc.Sprite:create(gk.resource.defaultSprite)
     -- even god cannot save u here!
 end
 
@@ -85,7 +85,7 @@ gk.isBMFont = isBMFont
 gk.isSystemFont = isSystemFont
 
 local function create_label(info)
-    local lan = gk.resource:getLan()
+    local lan = gk.resource:getCurrentLan()
     local fontFile = info.fontFile[lan]
     local label
     if isTTF(fontFile) then

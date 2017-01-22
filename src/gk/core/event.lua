@@ -33,17 +33,30 @@ function event:unsubscribe(target, eventName)
     end
 end
 
+function event:unsubscribeAll(target)
+    for _, listeners in pairs(self._listeners) do
+        if listeners and #listeners > 0 then
+            for _, l in ipairs(listeners) do
+                if l.tg == target then
+                    l.valid = false
+                end
+            end
+        end
+    end
+end
+
 function event:post(eventName, args)
---    gk.log("event:post --> %s", eventName)
+    --    gk.log("event:post --> %s", eventName)
     local listeners = self._listeners[eventName]
     if listeners and #listeners > 0 then
-        for _, l in ipairs(listeners) do
+        local copy = clone(listeners)
+        for _, l in ipairs(copy) do
             if l.valid and l.cb then
                 l.cb(args)
             end
         end
     else
---        gk.log("event:post(%s), no target to receive event!", eventName)
+        --        gk.log("event:post(%s), no target to receive event!", eventName)
     end
 end
 

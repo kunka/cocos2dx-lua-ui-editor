@@ -24,7 +24,7 @@ function resource:setStringGetter(func)
     resource.stringGetter = func
 end
 
-function resource:getLan()
+function resource:getCurrentLan()
     local lan = cc.UserDefault:getInstance():getStringForKey("app_language")
     if lan == "" then
         if device.language == "cn" then
@@ -39,19 +39,38 @@ function resource:getLan()
             lan = "en"
         end
 
-        resource:setLan(lan)
+        resource:setCurrentLan(lan)
     end
     return lan
 end
 
-function resource:setLan(lan)
-    gk.log("resource.setLan %s", lan)
+function resource:setCurrentLan(lan)
+    gk.log("resource.setCurrentLan %s", lan)
     cc.UserDefault:getInstance():setStringForKey("app_language", lan)
     cc.UserDefault:getInstance():flush()
 end
 
-function resource:setLans(lans)
+function resource:setSupportLans(lans)
     resource.lans = lans
+end
+
+function resource:setGenNodePath(path)
+    gk.log("resource:setGenNodePath %s", path)
+    resource.genNodePath = path
+    resource.genNodes = {}
+    -- scan files
+    local f = io.popen('ls ' .. path)
+    for name in f:lines() do
+        if name:ends(".lua") then
+            local status, clazz = pcall(require, path .. name)
+            if status then
+                -- TODO: other types
+                if iskindof(clazz, "Layer") then
+                    resource.genNodes[clazz.__cname] = path .. name
+                end
+            end
+        end
+    end
 end
 
 return resource

@@ -43,6 +43,14 @@ function panel:subscribeEvent(node)
     gk.event:subscribe(self, "displayDomTree", function(node)
         self.leftPanel:displayDomTree(node or self.scene.layer)
     end)
+    gk.event:subscribe(self, "changeRootLayout", function(clazz)
+        local layer = gk.resource.genNodes[clazz]
+        if gk.resource.genNodes[clazz] then
+            gk.event:unsubscribeAll(self)
+            gk.SceneManager:replace(layer)
+        end
+    end)
+
     gk.event:subscribe(self, "postSync", function(node)
         gk.util:stopActionByTagSafe(self, -234)
         local action = cc.CallFunc:create(function()
@@ -339,31 +347,40 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     end
 end
 
-function panel:sync()
-    gk.log("start sync")
-    local info = generator:deflate(self.scene.layer)
+function panel:sync(node)
+    local nd = node or self.scene.layer
+    gk.log("start sync %s", nd.__info.id)
+    local info = generator:deflate(nd)
     local table2lua = require("gk.tools.table2lua")
-    local file = gk.config.genPath .. "layout/_" .. self.scene.layer.__cname:lower() .. ".lua"
+    local file = gk.resource.genPath .. "layout/_" .. nd.__cname:lower() .. ".lua"
     gk.log("sync to file: " .. file)
     --    gk.log(table2lua.encode_pretty(info))
     io.writefile(file, table2lua.encode_pretty(info))
 end
 
 function panel:initLayer(layer)
-    if tolua.type(layer) == "cc.Layer" and layer.__cname == "MainLayer" and not layer.__info then
-        local file = gk.config.genPath .. "layout/_" .. layer.__cname:lower()
+    if gk.resource.genNodes[layer.__cname] and not layer.__info then
+        local file = gk.resource.genPath .. "layout/_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
-        layer.__info = generator:wrap({ id = layer.__cname }, layer)
         if status then
-            gk.log("initLayer with %s", file)
+            gk.log("initLayer with file %s", file)
+            layer.__info = generator:wrap({}, layer)
             --            layer.__info.id = "root"
             generator:inflate(info, layer, layer)
+            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
             layer.__info.width = gk.display.winSize().width
             layer.__info.height = gk.display.winSize().height
             --            dump(info)
+        else
+            -- init first time
+            gk.log("initLayer first time %s ", file)
+            layer.__info = generator:wrap({}, layer)
+            layer.__info.id = layer.__cname
+            layer[layer.__info.id] = layer
+            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+            self:sync(layer)
         end
         local winSize = cc.Director:getInstance():getWinSize()
-        layer:setPosition(gk.display.leftWidth, gk.display.bottomHeight)
         gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
         gk.event:post("displayDomTree", layer)
     end

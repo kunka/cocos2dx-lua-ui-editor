@@ -6,7 +6,6 @@
 -- To change this template use File | Settings | File Templates.
 
 gk = {}
-gk.config = {}
 
 -- export global variable
 local __g = _G
