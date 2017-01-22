@@ -179,6 +179,9 @@ end
 function panel:drawNodeCoordinate(node)
     if node.__info and node.__info.id then
         local parent = node:getParent()
+        if not parent then
+            return
+        end
         local x, y = node:getPositionX(), node:getPositionY()
         self.coordinateNode = cc.Node:create()
         parent:addChild(self.coordinateNode, 99999)
@@ -383,6 +386,10 @@ function panel:initLayer(layer)
         local winSize = cc.Director:getInstance():getWinSize()
         gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
         gk.event:post("displayDomTree", layer)
+        layer:runAction(cc.CallFunc:create(function()
+            gk.event:post("displayNode", layer)
+            gk.event:post("displayDomTree")
+        end))
     end
 end
 

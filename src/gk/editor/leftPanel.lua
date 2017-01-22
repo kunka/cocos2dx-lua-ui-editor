@@ -14,6 +14,13 @@ function panel.create(parent)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(0, 0)
+
+    local size = self:getContentSize()
+    local createLine = function(y)
+        gk.util:drawLineOnNode(self, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
+    end
+    createLine(size.height)
+
     return self
 end
 
@@ -31,17 +38,17 @@ function panel:displayDomTree(rootLayer)
         self.displayDomInfoNode = cc.Node:create()
         self:addChild(self.displayDomInfoNode)
         self.domDepth = 0
-        self:displayDomNode(rootLayer, 0)
-        local size = self:getContentSize()
-        local createLine = function(y)
-            gk.util:drawLineOnNode(self.displayDomInfoNode, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
-        end
-        createLine(size.height)
 
         -- other layout
         local keys = table.keys(gk.resource.genNodes)
-        table.removebyvalue(keys, rootLayer.__cname)
-        self:displayOthers(keys)
+        table.sort(keys, function(k1, k2) return k1 < k2 end)
+        for _, key in ipairs(keys) do
+            if key == rootLayer.__cname then
+                self:displayDomNode(rootLayer, 0)
+            else
+                self:displayOthers({ key })
+            end
+        end
     end
 end
 

@@ -7,11 +7,11 @@
 --
 
 local LuaTable = {
-    _VERSION     = 'LuaTable v1.0.1 2016/08/27',
-    _AUTHOR      = 'RamiLego4Game',
-    _URL         = 'https://gist.github.com/RamiLego4Game/f656f5c1a118f77c3b7a08f4c65efaaf',
+    _VERSION = 'LuaTable v1.0.1 2016/08/27',
+    _AUTHOR = 'RamiLego4Game',
+    _URL = 'https://gist.github.com/RamiLego4Game/f656f5c1a118f77c3b7a08f4c65efaaf',
     _DESCRIPTION = 'A library that converts tables to Lua code that can be saved',
-    _LICENSE     = [[
+    _LICENSE = [[
     MIT LICENSE
 
     Copyright (c) 2016 Rami Sabbagh
@@ -88,44 +88,45 @@ note: all Userdata variables can't be dumped so they will be ignored.
 
 ]]
 
-local function combine(t1,t2) for k,v in pairs(t2) do t1[k] = v end return t1 end
+local function combine(t1, t2) for k, v in pairs(t2) do t1[k] = v end return t1 end
 
 --Config--
 local prettyTabbing = "\t"
 
 --Change the global vars here--
-local normalGVars = {pairs=pairs,ipairs=ipairs,c=combine} --Used when smart argument is false or nil
-local smartGVars = {pairs=pairs,ipairs=ipairs,string=string,table=table,bit=bit,math=math,c=combine} --Used when smart argument is true
-if love and love.math then smartGVars.love = {math=love.math} end
+local normalGVars = { pairs = pairs, ipairs = ipairs, c = combine } --Used when smart argument is false or nil
+local smartGVars = { pairs = pairs, ipairs = ipairs, string = string, table = table, bit = bit, math = math, c = combine } --Used when smart argument is true
+if love and love.math then smartGVars.love = { math = love.math } end
 
 --Library code starts here--
 
-function LuaTable.encode(var,funcBehave,standalone)
-    if not (type(funcBehave)=="string" or type(funcBehave)=="nil") then return error("Bad argument #2 to 'LuaTable.encode' (string/nil expected, got"..type(funcBehave)..")") end
-    if not (type(standalone)=="boolean" or type(standalone)=="nil") then return error("Bad argument #3 to 'LuaTable.encode' (boolean/nil expected, got"..type(funcBehave)..")") end
+function LuaTable.encode(var, funcBehave, standalone)
+    if not (type(funcBehave) == "string" or type(funcBehave) == "nil") then return error("Bad argument #2 to 'LuaTable.encode' (string/nil expected, got" .. type(funcBehave) .. ")") end
+    if not (type(standalone) == "boolean" or type(standalone) == "nil") then return error("Bad argument #3 to 'LuaTable.encode' (boolean/nil expected, got" .. type(funcBehave) .. ")") end
     local code = "return "
-    if standalone then code = "local function c(t1,t2) for k,v in pairs(t2) do t1[k] = v end return t1 end\n"..code end
-    local vx = "nil" if LuaTable["encode_"..type(var)] then vx = LuaTable["encode_"..type(var)](var) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
-    code = code..vx
+    if standalone then code = "local function c(t1,t2) for k,v in pairs(t2) do t1[k] = v end return t1 end\n" .. code end
+    local vx = "nil" if LuaTable["encode_" .. type(var)] then vx = LuaTable["encode_" .. type(var)](var) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
+    code = code .. vx
     return code
 end
 
-function LuaTable.encode_pretty(var,funcBehave,standalone)
-    if not (type(funcBehave)=="string" or type(funcBehave)=="nil") then return error("Bad argument #2 to 'LuaTable.encode_pretty' (string/nil expected, got"..type(funcBehave)..")") end
-    if not (type(standalone)=="boolean" or type(standalone)=="nil") then return error("Bad argument #3 to 'LuaTable.encode_pretty' (boolean/nil expected, got"..type(funcBehave)..")") end
+function LuaTable.encode_pretty(var, funcBehave, standalone)
+    if not (type(funcBehave) == "string" or type(funcBehave) == "nil") then return error("Bad argument #2 to 'LuaTable.encode_pretty' (string/nil expected, got" .. type(funcBehave) .. ")") end
+    if not (type(standalone) == "boolean" or type(standalone) == "nil") then return error("Bad argument #3 to 'LuaTable.encode_pretty' (boolean/nil expected, got" .. type(funcBehave) .. ")") end
     local code = "return "
-    if standalone then code = "local function c(t1,t2)\n   for k,v in pairs(t2) do\n      t1[k] = v\n   end\n   return t1\nend\n\n"..code end
-    local vx = "nil" if LuaTable["encode_"..type(var)] then vx = LuaTable["encode_"..type(var)](var,prettyTabbing,funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
-    code = code..vx
+    if standalone then code = "local function c(t1,t2)\n   for k,v in pairs(t2) do\n      t1[k] = v\n   end\n   return t1\nend\n\n" .. code end
+    local vx = "nil" if LuaTable["encode_" .. type(var)] then vx = LuaTable["encode_" .. type(var)](var, prettyTabbing, funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
+    code = code .. vx
     return code
 end
 
-function LuaTable.decode(codeString,smart)
-    if not (type(codeString)=="string") then return error("Bad argument #1 to 'LuaTable.decode' (string expected, got"..type(codeString)..")") end
-    if not (type(smart)=="boolean" or type(smart)=="nil") then return error("Bad argument #2 to 'LuaTable.decode' (boolean/nil expected, got"..type(smart)..")") end
-    local function combine(t1,t2) for k,v in pairs(t2) do t1[k] = v end return t1 end
+function LuaTable.decode(codeString, smart)
+    if not (type(codeString) == "string") then return error("Bad argument #1 to 'LuaTable.decode' (string expected, got" .. type(codeString) .. ")") end
+    if not (type(smart) == "boolean" or type(smart) == "nil") then return error("Bad argument #2 to 'LuaTable.decode' (boolean/nil expected, got" .. type(smart) .. ")") end
+    local function combine(t1, t2) for k, v in pairs(t2) do t1[k] = v end return t1 end
+
     local codeFunc = loadstring(code)
-    if smart then setfenv(codeFunc,smartGVars) else setfenv(codeFunc,normalGVars) end
+    if smart then setfenv(codeFunc, smartGVars) else setfenv(codeFunc, normalGVars) end
     return codeFunc()
 end
 
@@ -140,76 +141,96 @@ end
 --[[Here you can add your own variable types.
 Array is a numeric table.]]
 
-function LuaTable.encode_array(table,pretty,funcBehave)
+function LuaTable.encode_array(table, pretty, funcBehave)
     local s = "{"
-    for i=1,#table do
+    for i = 1, #table do
         if pretty then
-            local vx = "nil" if LuaTable["encode_"..type(table[i])] then vx = LuaTable["encode_"..type(table[i])](table[i],pretty.."   ",funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
-            if i==1 then
-                s = s..pretty..vx
+            local vx = "nil" if LuaTable["encode_" .. type(table[i])] then vx = LuaTable["encode_" .. type(table[i])](table[i], pretty .. "   ", funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
+            if i == 1 then
+                s = s .. pretty .. vx
             else
-                s = s..",\n"..pretty..vx
+                s = s .. ",\n" .. pretty .. vx
             end
         else
-            local vx = "nil" if LuaTable["encode_"..type(table[i])] then vx = LuaTable["encode_"..type(table[i])](table[i],nil,funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
-            if i==1 then
-                s = s..vx
+            local vx = "nil" if LuaTable["encode_" .. type(table[i])] then vx = LuaTable["encode_" .. type(table[i])](table[i], nil, funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
+            if i == 1 then
+                s = s .. vx
             else
-                s = s..","..vx
+                s = s .. "," .. vx
             end
         end
     end
-    return s.."}"
+    return s .. "}"
 end
 
-function LuaTable.encode_table(table,pretty,funcBehave)
-    if LuaTable.isArray(table) then return LuaTable.encode_array(table,pretty) end
+function LuaTable.encode_table(tbl, pretty, funcBehave)
+    if LuaTable.isArray(tbl) then return LuaTable.encode_array(tbl, pretty) end
     local nums, first = {}, true
     local s = "{"
-    for k,v in pairs(table) do
+    local keys = {}
+    for k, v in pairs(tbl) do
+        keys[#keys + 1] = k
+    end
+    if pretty then
+        -- sort table
+        table.sort(keys, function(k1, k2)
+            local t1, t2 = type(tbl[k1]) == "table", type(tbl[k2]) == "table"
+            if (t1 and t2) then
+                return #tbl[k1] < #tbl[k2] or (#tbl[k1] == #tbl[k2] and k1 < k2)
+            elseif (not t1 and not t2) then
+                return k1 < k2
+            else
+                return t2
+            end
+        end)
+    end
+    for _, k in ipairs(keys) do
+        local v = tbl[k]
+        --        for k,v in pairs(table) do
         if pretty then
-            local vx = "nil" if LuaTable["encode_"..type(v)] then vx = LuaTable["encode_"..type(v)](v,pretty.."   ",funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
+            local vx = "nil" if LuaTable["encode_" .. type(v)] then vx = LuaTable["encode_" .. type(v)](v, pretty .. "   ", funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
             if type(k) == "number" then
                 nums[k] = v
             elseif first then
-                s = s.."\n"..pretty..tostring(k).." = "..vx
+                s = s .. "\n" .. pretty .. tostring(k) .. " = " .. vx
                 first = false
             else
-                s = s..",\n"..pretty..tostring(k).." = "..vx
+                s = s .. ",\n" .. pretty .. tostring(k) .. " = " .. vx
             end
         else
-            local vx = "nil" if LuaTable["encode_"..type(v)] then vx = LuaTable["encode_"..type(v)](v,nil,funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support "..type(var)) end
+            local vx = "nil" if LuaTable["encode_" .. type(v)] then vx = LuaTable["encode_" .. type(v)](v, nil, funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
             if type(k) == "number" then
                 nums[k] = v
             elseif first then
-                s = s..tostring(k).."="..vx
+                s = s .. tostring(k) .. "=" .. vx
                 first = false
             else
-                s = s..","..tostring(k).."="..vx
+                s = s .. "," .. tostring(k) .. "=" .. vx
             end
         end
     end
     if #nums > 0 then
         if pretty then
-            s = "c("..s.."},"..LuaTable.encode_array(nums,pretty.."   ")..")"
+            s = "c(" .. s .. "}," .. LuaTable.encode_array(nums, pretty .. "   ") .. ")"
         else
-            s = "c("..s.."},"..LuaTable.encode_array(nums)..")"
+            s = "c(" .. s .. "}," .. LuaTable.encode_array(nums) .. ")"
         end
     else
-        s = s.."}"
+        s = s .. "}"
     end
     return s
 end
 
-function LuaTable.encode_function(func,pretty,funcBehave)
+function LuaTable.encode_function(func, pretty, funcBehave)
     local fmode = funcBehave or "skip"
     if fmode == "dump" then return string.dump(func)
-    elseif fmode == "name" then return '"'..tostring(func)..'"'
-    else return "nil" end
+    elseif fmode == "name" then return '"' .. tostring(func) .. '"'
+    else return "nil"
+    end
 end
 
-function LuaTable.encode_userdata(ud,pretty,funcBehave)
-    if funcBehave and (funcBehave == "name" or funcBehave == "dump") then return '"'..tostring(ud)..'"' else return "nil" end
+function LuaTable.encode_userdata(ud, pretty, funcBehave)
+    if funcBehave and (funcBehave == "name" or funcBehave == "dump") then return '"' .. tostring(ud) .. '"' else return "nil" end
 end
 
 function LuaTable.encode_nil()

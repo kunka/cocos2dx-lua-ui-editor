@@ -143,20 +143,19 @@ function Button:onTouchBegan(touch, event)
         else
             self:selected()
         end
-        if self.longPressdCallback then
-            self.longPressdTriggled = false
-            local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
-                if self.trackingTouch then
-                    if self.longPressdCallback then
-                        self.longPressdTriggled = true
-                        self:retain()
-                        self.longPressdCallback()
-                        self:release()
-                    end
+        self.longPressdTriggled = false
+        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
+            if self.trackingTouch then
+                self:retain()
+                self:stopTracking()
+                if self.longPressdCallback then
+                    self.longPressdTriggled = true
+                    self.longPressdCallback()
                 end
-            end)))
-            action:setTag(kLongPressedActionTag)
-        end
+                self:release()
+            end
+        end)))
+        action:setTag(kLongPressedActionTag)
         self.trackingTouch = true
         Button.trackingButton = true
         --        gk.log("Button.tracking true")
@@ -169,15 +168,13 @@ end
 
 function Button:onTouchMoved(touch, event)
     if self.trackingTouch then
-        if self:hitTest(touch) then
+        if gk.util:hitTest(self, touch) then
             -- cancel select item when touch moved too much
             local p = self:convertTouchToNodeSpace(touch)
             if cc.pDistanceSQ(p, self.touchBeginPoint) > 225 then
-                self:unselected()
                 self:stopTracking()
             end
         else
-            self:unselected()
             self:stopTracking()
         end
     end
@@ -187,7 +184,6 @@ function Button:onTouchEnded(touch, event)
     if self.trackingTouch then
         --        gk.log("Button:onTouchEnded")
         self:retain()
-        self:unselected()
         -- must before the callback, callback maybe crash, then touch state will be locked forever.
         self:stopTracking()
         if not self.longPressdTriggled then
@@ -201,7 +197,6 @@ function Button:onTouchCancelled(touch, event)
     if self.trackingTouch then
         --        gk.log("Button:onTouchCancelled")
         self:retain()
-        self:unselected()
         self:stopTracking()
         self:release()
     end
@@ -209,6 +204,9 @@ end
 
 function Button:stopTracking()
     --    gk.log("Button:stopTracking")
+    if self.isSelected then
+        self:unselected()
+    end
     self.trackingTouch = false
     Button.trackingButton = false
     --    gk.log("Button.tracking false")
@@ -233,7 +231,6 @@ function Button:onExit()
     if self.trackingTouch then
         --        gk.log("Button:onExit when tracking")
         self:retain()
-        self:unselected()
         self:stopTracking()
         self:release()
     end
