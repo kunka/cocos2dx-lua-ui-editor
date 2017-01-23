@@ -113,6 +113,7 @@ function panel.create(parent)
         local director = cc.Director:getInstance()
         local view = director:getOpenGLView()
         view:setFrameSize(size.width, size.height)
+        gk.log("set OpenGLView size(%.1f,%.1f)", size.width, winSize.height)
         gk.util:restartGame()
     end)
     yIndex = yIndex + 1

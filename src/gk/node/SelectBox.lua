@@ -122,9 +122,14 @@ end
 
 function SelectBox:closePopup()
     if self.popup then
-        gk.log("closePopup")
-        self.popup:removeFromParent()
-        self.popup = nil
+        local root = gk.util:getRootNode(self)
+        if not root then
+            self.popup = nil
+        else
+            gk.log("closePopup")
+            self.popup:removeFromParent()
+            self.popup = nil
+        end
     end
 end
 

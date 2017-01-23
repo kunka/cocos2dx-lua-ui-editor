@@ -14,31 +14,29 @@ display.bottomHeight = 20
 local displayScale = 0.4
 display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
-    cc.size(1280 * displayScale, 640 * displayScale),
+    cc.size(1280 * displayScale, 853 * displayScale),
     cc.size(1280 * displayScale, 960 * displayScale),
 }
 
 display.deviceSizesDesc = {
     "1280x720(16:9)",
-    "1280x640(2:1)",
+    "1280x853(1.5:1)",
     "1280x960(4:3)",
 }
 
--- start first time
-if cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 0) == 0 then
-    local size = display.deviceSizes[1]
-    cc.UserDefault:getInstance():setIntegerForKey("deviceSizeIndex", 1)
-    cc.UserDefault:getInstance():flush()
+function display:initWithDesignSize(size)
     -- set editor win size
-    size.width = size.width + display.leftWidth + display.rightWidth
-    size.height = size.height + display.topHeight + display.bottomHeight
+    local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
+    local winSize = {}
+    winSize.width = s.width + display.leftWidth + display.rightWidth
+    winSize.height = s.height + display.topHeight + display.bottomHeight
     local director = cc.Director:getInstance()
     local view = director:getOpenGLView()
-    view:setFrameSize(size.width, size.height)
-end
+    view:setFrameSize(winSize.width, winSize.height)
+    gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
 
-function display:initWithDesignSize(size)
-    local winSize = cc.Director:getInstance():getWinSize()
+    local winSize = cc.Director:getInstance():getOpenGLView():getFrameSize()
+    gk.log("display init with OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
     display.width = function() return size.width end
     display.height = function() return size.height end
@@ -64,7 +62,7 @@ function display:initWithDesignSize(size)
         local p = cc.p(display.xScale() * x, display.yScale() * y)
         return p
     end
-    gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.1f), yScale(%.1f), minScale(%.1f), maxScale(%.1f)",
+    gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.2f), yScale(%.2f), minScale(%.2f), maxScale(%.2f)",
         size.width, size.height, display.winSize().width, display.winSize().height,
         display.xScale(), display.yScale(), display.minScale(), display.maxScale())
 end

@@ -1,5 +1,5 @@
 return {
-	height = 320,
+	height = 288,
 	id = "LoadingLayer",
 	opacity = 255,
 	rotation = 0,
@@ -7,7 +7,7 @@ return {
 	scaleY = 1,
 	type = "LoadingLayer",
 	visible = 0,
-	width = 500,
+	width = 512,
 	x = 140,
 	y = 20,
 	anchor = {

@@ -242,7 +242,7 @@ function panel:handleEvent()
         end
         local key = cc.KeyCodeKey[keyCode + 1]
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
-        if self.displayingNode then
+        if self.displayingNode and self.displayingNode.__info then
             -- TODO: hold
             local x, y = self.displayingNode.__info.x, self.displayingNode.__info.y
             if key == "KEY_LEFT_ARROW" then
