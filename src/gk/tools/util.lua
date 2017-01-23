@@ -58,7 +58,9 @@ function util:registerRestartGameCallback(callback)
             local key = cc.KeyCodeKey[keyCode + 1]
             --            gk.log("RestartLayer: onKeypad %s", key)
             if key == "KEY_R" then
-                util:restartGame()
+                util:restartGame(1)
+            elseif key == "KEY_T" then
+                util:restartGame(2)
             end
         end
 
@@ -69,7 +71,7 @@ function util:registerRestartGameCallback(callback)
     end
 end
 
-function util:restartGame()
+function util:restartGame(mode)
     gk.log("===================================================================")
     gk.log("=====================    restart game    ==========================")
     gk.log("===================================================================")
@@ -90,7 +92,7 @@ function util:restartGame()
         gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         --        end
         if util.restartGameCallback then
-            util.restartGameCallback()
+            util.restartGameCallback(mode)
         end
     end))
 end

@@ -53,6 +53,10 @@ function panel:displayDomTree(rootLayer)
 end
 
 function panel:displayDomNode(node, layer)
+    if tolua.type(node) == "cc.DrawNode" or node:getTag() == -99 then
+        return
+    end
+    local fixChild = node.__info == nil
     local size = self:getContentSize()
     local fontSize = 11 * 4
     local fontName = "Consolas"
@@ -67,22 +71,22 @@ function panel:displayDomNode(node, layer)
         if children then
             for i = 1, #children do
                 local child = children[i]
-                if child and child.__info and child.__info.id then
-                    group = true
-                    break
+                if child then --and child.__info and child.__info.id then
+                group = true
+                break
                 end
             end
         end
         if group then
             local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
             label:setTextColor(cc.c3b(200, 200, 200))
-            if not node.__info._flod then
+            if fixChild or not node.__info._flod then
                 label:setRotation(90)
             end
             label:setDimensions(10 / scale, 10 / scale)
             label:setContentSize(10 / scale, 10 / scale)
             local button = gk.ZoomButton.new(label)
-            if not node.__info._flod then
+            if fixChild or not node.__info._flod then
                 button:setScale(scale, scale * 0.6)
                 button:setPosition(x - 3, y)
             else
@@ -92,6 +96,9 @@ function panel:displayDomNode(node, layer)
             self.displayDomInfoNode:addChild(button)
             button:setAnchorPoint(0, 0.5)
             button:onClicked(function()
+                if fixChild then
+                    return
+                end
                 gk.log("fold container %s", node.__info.id)
                 node.__info._flod = not node.__info._flod
                 gk.event:post("displayDomTree")
@@ -106,7 +113,7 @@ function panel:displayDomNode(node, layer)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(200, 200, 200))
-        if not gk.util:isGlobalVisible(node) then
+        if fixChild or not gk.util:isGlobalVisible(node) then
             label:setOpacity(100)
         end
         local button = gk.ZoomButton.new(label)
@@ -115,6 +122,9 @@ function panel:displayDomNode(node, layer)
         button:setAnchorPoint(0, 0.5)
         button:setPosition(x, y)
         button:onClicked(function()
+            if fixChild then
+                return
+            end
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
         end)
@@ -128,16 +138,16 @@ function panel:displayDomNode(node, layer)
     for i = 1, layer do
         whiteSpace = whiteSpace .. " "
     end
-    createButton(whiteSpace .. node.__info.id, leftX + 11 * layer, topY - stepY * self.domDepth)
+    createButton(whiteSpace .. (fixChild and tolua.type(node) or node.__info.id), leftX + 11 * layer, topY - stepY * self.domDepth)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
-    if not node.__info._flod then
+    if fixChild or not node.__info._flod then
         local children = node:getChildren()
         if children then
             for i = 1, #children do
                 local child = children[i]
-                if child and child.__info and child.__info.id then
-                    self:displayDomNode(child, layer)
+                if child then --and child.__info and child.__info.id then
+                self:displayDomNode(child, layer)
                 end
             end
         end

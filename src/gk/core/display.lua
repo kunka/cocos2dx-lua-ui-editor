@@ -7,10 +7,6 @@
 
 local display = {}
 
-display.topHeight = 80
-display.leftWidth = 140
-display.rightWidth = 200
-display.bottomHeight = 20
 local displayScale = 0.4
 display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
@@ -25,18 +21,29 @@ display.deviceSizesDesc = {
 }
 
 function display:initWithDesignSize(size)
-    -- set editor win size
-    local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
-    local winSize = {}
-    winSize.width = s.width + display.leftWidth + display.rightWidth
-    winSize.height = s.height + display.topHeight + display.bottomHeight
-    local director = cc.Director:getInstance()
-    local view = director:getOpenGLView()
-    view:setFrameSize(winSize.width, winSize.height)
-    gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
+    if gk.MODE == 1 then
+        display.topHeight = 80
+        display.leftWidth = 140
+        display.rightWidth = 200
+        display.bottomHeight = 20
+        -- set editor win size
+        local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
+        local winSize = {}
+        winSize.width = s.width + display.leftWidth + display.rightWidth
+        winSize.height = s.height + display.topHeight + display.bottomHeight
+        local director = cc.Director:getInstance()
+        local view = director:getOpenGLView()
+        view:setFrameSize(winSize.width, winSize.height)
+        gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
+    else
+        display.topHeight = 0
+        display.leftWidth = 0
+        display.rightWidth = 0
+        display.bottomHeight = 0
+    end
 
-    local winSize = cc.Director:getInstance():getOpenGLView():getFrameSize()
-    gk.log("display init with OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
+    local winSize = cc.Director:getInstance():getWinSize()
+    gk.log("display init with winSize(%.1f,%.1f)", winSize.width, winSize.height)
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
     display.width = function() return size.width end
     display.height = function() return size.height end

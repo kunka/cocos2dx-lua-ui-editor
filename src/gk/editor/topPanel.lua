@@ -131,10 +131,12 @@ function panel.create(parent)
 
     -- widgets
     self.widgets = {
-        { type = "cc.Layer", },
+        { type = "cc.Node", },
         { type = "cc.Sprite", file = "?", },
         { type = "ZoomButton", file = "?", },
         { type = "cc.Label", },
+        { type = "cc.Layer", },
+        { type = "cc.ScrollView" },
     }
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
@@ -209,7 +211,9 @@ function panel.create(parent)
                     local info = clone(self.widgets[i])
                     local node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
-                        if tolua.type(node) ~= "cc.Layer" then
+                        if tolua.type(node) == "cc.ScrollView" or tolua.type(node) == "cc.Layer" then
+                            node.__info.scaleX, node.__info.scaleY = 1, 1
+                        else
                             local sx, sy = gk.util:getGlobalScale(self._containerNode)
                             if sx ~= 1 or sy ~= 1 then
                                 node.__info.scaleX, node.__info.scaleY = 1, 1
@@ -217,11 +221,9 @@ function panel.create(parent)
                                 node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
                                 node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
                             end
-                        else
-                            --                            gk.util:drawNodeRect(node, cc.c4f(1, 200 / 255, 0, 1), -2)
                         end
-                        local scaleX = generator:parseValue(node.__info.scaleXY.x)
-                        local scaleY = generator:parseValue(node.__info.scaleXY.y)
+                        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+                        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                         node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)

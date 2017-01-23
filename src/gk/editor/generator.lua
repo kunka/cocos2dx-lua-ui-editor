@@ -142,7 +142,7 @@ function generator:wrap(info, rootTable)
             proxy[key] = value
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
-                local v = self:parseValue(value)
+                local v = self:parseValue(node, value)
                 local func = self.nodeSetFuncs[key]
                 if func then
                     func(node, v)
@@ -158,13 +158,13 @@ function generator:wrap(info, rootTable)
     return info
 end
 
-function generator:parseValue(input)
+function generator:parseValue(node, input)
     local v
     if type(input) == "string" and string.len(input) > 1 then
         local macro = input:sub(2, #input)
         v = self.macroFuncs[macro]
         if v then
-            v = v()
+            v = v(node)
         end
     end
     return v or input
@@ -185,9 +185,11 @@ function generator:modify(node, property, input, valueType)
     elseif type(input) == "string" then
         if string.len(input) > 0 and input:sub(1, 1) == "$" then
             local macro = input:sub(2, #input)
+            dump(macro)
             -- contains
             if self.macroFuncs[macro] then
                 value = input
+                dump(value)
             end
         elseif valueType == "string" then
             value = input
@@ -196,6 +198,7 @@ function generator:modify(node, property, input, valueType)
         end
     end
     if value then
+        dump(value)
         if prop2 then
             local p = node.__info[prop1]
             if p then
@@ -215,6 +218,11 @@ function generator:modify(node, property, input, valueType)
 end
 
 generator.nodeCreator = {
+    ["cc.Node"] = function(info, rootTable)
+        local node = cc.Node:create()
+        info.id = info.id or generator:genID("node", rootTable)
+        return node
+    end,
     ["cc.Sprite"] = function(info, rootTable)
         local node = gk.create_sprite(info.file)
         info.id = info.id or generator:genID("sprite", rootTable)
@@ -233,6 +241,11 @@ generator.nodeCreator = {
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
         info.id = info.id or generator:genID("label", rootTable)
+        return node
+    end,
+    ["cc.ScrollView"] = function(info, rootTable)
+        local node = cc.ScrollView:create(cc.size(100, 150))
+        info.id = info.id or generator:genID("scrollView", rootTable)
         return node
     end,
 }
@@ -268,21 +281,25 @@ generator.macroFuncs = {
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
+    ["winSize.width"] = function() return gk.display.winSize().width end,
+    ["winSize.height"] = function() return gk.display.winSize().height end,
+    fill_w = function(node) return node:getParent() and node:getParent():getContentSize().width or gk.display.winSize().width end,
+    fill_h = function(node) return node:getParent() and node:getParent():getContentSize().height or gk.display.winSize().height end,
 }
 
 generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
     x = function(node, x)
-        local scaleX = generator:parseValue(node.__info.scaleXY.x)
+        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
         node:setPositionX(x * scaleX)
     end,
     y = function(node, y)
-        local scaleY = generator:parseValue(node.__info.scaleXY.y)
+        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
         node:setPositionY(y * scaleY)
     end,
     scaleXY = function(node, var)
-        local scaleX = generator:parseValue(var.x)
-        local scaleY = generator:parseValue(var.y)
+        local scaleX = generator:parseValue(node, var.x)
+        local scaleY = generator:parseValue(node, var.y)
         local x, y = node.__info.x, node.__info.y
         node:setPosition(cc.p(x * scaleX, y * scaleY))
     end,
@@ -296,6 +313,7 @@ generator.nodeSetFuncs = {
         node:setAnchorPoint(anchor)
     end,
     width = function(node, width)
+        width = generator:parseValue(node, width)
         if iskindof(node, "cc.Label") then
             node:setWidth(width)
         else
@@ -305,6 +323,7 @@ generator.nodeSetFuncs = {
         end
     end,
     height = function(node, height)
+        height = generator:parseValue(node, height)
         if iskindof(node, "cc.Label") then
             node:setHeight(height)
         else
@@ -358,6 +377,19 @@ generator.nodeSetFuncs = {
     --    np = function(node, var)
     --        node:setNormalizedPosition(var)
     --    end,
+    --------------------------- cc.ScrollView   ---------------------------
+    viewSize = function(node, var)
+        node:setViewSize(var)
+    end,
+    direction = function(node, ...)
+        node:setDirection(...)
+    end,
+    bounceable = function(node, var)
+        node:setBounceable(var == 0)
+    end,
+    clipToBD = function(node, var)
+        node:setClippingToBounds(var == 0)
+    end,
 }
 
 generator.nodeGetFuncs = {
@@ -369,10 +401,10 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Node   ---------------------------
     x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue(node.__info.scaleXY.x), 1)
+        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue(node, node.__info.scaleXY.x), 1)
     end,
     y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue(node.__info.scaleXY.y), 1)
+        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue(node, node.__info.scaleXY.y), 1)
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()
@@ -394,6 +426,8 @@ generator.nodeGetFuncs = {
             return node.__info.width or node:getWidth()
         elseif iskindof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
+        elseif iskindof(node, "cc.ScrollView") then
+            return node.__info.width or node:getViewSize().width
         else
             return node:getContentSize().width
         end
@@ -403,6 +437,8 @@ generator.nodeGetFuncs = {
             return node.__info.height or node:getHeight()
         elseif iskindof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height
+        elseif iskindof(node, "cc.ScrollView") then
+            return node.__info.height or node:getViewSize().height
         else
             return node:getContentSize().height
         end
@@ -435,6 +471,22 @@ generator.nodeGetFuncs = {
     --    np = function(node)
     --        return node.__info.np or node:getNormalizedPosition()
     --    end,
+    --------------------------- cc.ScrollView   ---------------------------
+    viewSize = function(node)
+        return iskindof(node, "cc.ScrollView") and (node.__info.viewSize or node:getViewSize())
+    end,
+    direction = function(node)
+        return iskindof(node, "cc.ScrollView") and (node.__info.direction or node:getDirection())
+    end,
+    visible = function(node)
+        return node.__info.visible or (node:isVisible() and 0 or 1)
+    end,
+    clipToBD = function(node)
+        return iskindof(node, "cc.ScrollView") and (node.__info.clipToBD or (node:isClippingToBounds() and 0 or 1))
+    end,
+    bounceable = function(node)
+        return iskindof(node, "cc.ScrollView") and (node.__info.bounceable or (node:isBounceable() and 0 or 1))
+    end,
 }
 
 return generator

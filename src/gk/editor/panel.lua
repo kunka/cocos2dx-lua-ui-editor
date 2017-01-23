@@ -138,14 +138,14 @@ function panel:onNodeCreate(node)
                     node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
                     node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
                 end
-                local scaleX = generator:parseValue(node.__info.scaleXY.x)
-                local scaleY = generator:parseValue(node.__info.scaleXY.y)
+                local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+                local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
             else
-                local scaleX = generator:parseValue(node.__info.scaleXY.x)
-                local scaleY = generator:parseValue(node.__info.scaleXY.y)
+                local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+                local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
             end
             gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
@@ -184,6 +184,7 @@ function panel:drawNodeCoordinate(node)
         end
         local x, y = node:getPositionX(), node:getPositionY()
         self.coordinateNode = cc.Node:create()
+        self.coordinateNode:setTag(-99)
         parent:addChild(self.coordinateNode, 99999)
         self.coordinateNode:setCascadeOpacityEnabled(true)
 
@@ -210,8 +211,8 @@ function panel:drawNodeCoordinate(node)
         end
         local size = parent:getContentSize()
 
-        local scaleX = generator:parseValue(node.__info.scaleXY.x)
-        local scaleY = generator:parseValue(node.__info.scaleXY.y)
+        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
         -- left
         createArrow(x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down

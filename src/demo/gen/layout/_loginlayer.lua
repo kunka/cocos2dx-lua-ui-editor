@@ -1,5 +1,5 @@
 return {
-	height = 320,
+	height = 288,
 	id = "LoginLayer",
 	opacity = 255,
 	rotation = 0,
@@ -7,7 +7,7 @@ return {
 	scaleY = 1,
 	type = "LoginLayer",
 	visible = 0,
-	width = 500,
+	width = 512,
 	x = 140,
 	y = 20,
 	anchor = {
@@ -20,16 +20,16 @@ return {
 	children = {	   {
 	      file = "?",
 	      height = 150,
-	      id = "button1",
+	      id = "sprite1",
 	      opacity = 255,
 	      rotation = 0,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
-	      type = "ZoomButton",
+	      type = "cc.Sprite",
 	      visible = 0,
 	      width = 108,
-	      x = 290,
-	      y = 342,
+	      x = 375,
+	      y = 408,
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},

@@ -40,11 +40,13 @@ function panel:displayNode(node)
     local leftX2 = 70
     local leftX2_1 = 80
     local leftX3 = 135
+    local leftX3_0 = 110
     local leftX3_1 = 145
     local leftX4_1 = 110 + 2.5
     local leftX4_2 = 120 + 2.5
     local leftX5_1 = 155
     local leftX5_2 = 165
+    local leftX5_3 = 175
     local stepY = 25
     local stepX = 40
     local inputWidth1 = 110
@@ -128,7 +130,7 @@ function panel:displayNode(node)
         editBox:setInput(generator:modify(node, "id", input, "string"))
     end)
     yIndex = yIndex + 1
-    local isRoot = node:getParent().__info == nil
+    local isRoot = gk.util:getRootNode(node) == node
     -- not root
     if not isRoot then
         -- position
@@ -219,11 +221,11 @@ function panel:displayNode(node)
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
-        createInput(string.format("%.2f", node:getContentSize().width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
         end)
         createLabel("H", leftX3, topY - stepY * yIndex)
-        createInput(string.format("%.2f", node:getContentSize().height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        createInput(node.__info.height or string.format("%.2f", node:getContentSize().height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
@@ -322,6 +324,39 @@ function panel:displayNode(node)
         local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
         createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
             generator:modify(node, "overflow", index - 1, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+    if iskindof(node, "cc.ScrollView") then
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        -- viewSize
+        createLabel("ViewSize", leftX, topY - stepY * yIndex)
+        createLabel("W", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.viewSize.width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "viewSize.width", input, "number"))
+        end)
+        createLabel("H", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.viewSize.height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "viewSize.height", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- Direction
+        createLabel("Direction", leftX, topY - stepY * yIndex)
+        local overflows = { "HORIZONTAL", "VERTICAL", "BOTH" }
+        createSelectBox(overflows, node.__info.direction + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "direction", index - 1, "number")
+        end)
+        yIndex = yIndex + 1
+        -- ClipToBD
+        createLabel("ClipToBD", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.clipToBD == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "clipToBD", selected, "number")
+        end)
+        -- Bounceable
+        createLabel("Bounceable", leftX3_0, topY - stepY * yIndex)
+        createCheckBox(node.__info.bounceable == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "bounceable", selected, "number")
         end)
         yIndex = yIndex + 1
     end

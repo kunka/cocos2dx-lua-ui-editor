@@ -13,12 +13,14 @@ function inject:layer_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            local vars = { ... }
-            local count = #vars
-            if count <= 2 then
-                node:setContentSize(gk.display.winSize())
+            if gk.MODE == 1 then
+                local vars = { ... }
+                local count = #vars
+                if count <= 2 then
+                    node:setContentSize(gk.display.winSize())
+                end
+                gk.event:post("onNodeCreate", node)
             end
-            gk.event:post("onNodeCreate", node)
             return node
         end
         meta[methodName] = __method
@@ -35,7 +37,9 @@ function inject:scene_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            gk.display:addEditorPanel(node)
+            if gk.MODE == 1 then
+                gk.display:addEditorPanel(node)
+            end
             return node
         end
         meta[methodName] = __method
@@ -51,7 +55,9 @@ function inject:sprite_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            gk.event:post("onNodeCreate", node)
+            if gk.MODE == 1 then
+                gk.event:post("onNodeCreate", node)
+            end
             return node
         end
         meta[methodName] = __method
@@ -69,7 +75,9 @@ function inject:node_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            gk.event:post("onNodeCreate", node)
+            if gk.MODE == 1 then
+                gk.event:post("onNodeCreate", node)
+            end
             return node
         end
         meta[methodName] = __method
