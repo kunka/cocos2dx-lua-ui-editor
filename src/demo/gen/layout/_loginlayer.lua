@@ -1,6 +1,7 @@
 return {
 	height = 288,
 	id = "LoginLayer",
+	localZOrder = 0,
 	opacity = 255,
 	rotation = 0,
 	scaleX = 1,
@@ -20,7 +21,8 @@ return {
 	children = {	   {
 	      file = "?",
 	      height = 150,
-	      id = "sprite1",
+	      id = "sprite2",
+	      localZOrder = 0,
 	      opacity = 255,
 	      rotation = 0,
 	      scaleX = "$minScale",
@@ -28,8 +30,33 @@ return {
 	      type = "cc.Sprite",
 	      visible = 0,
 	      width = 108,
-	      x = 375,
-	      y = 408,
+	      x = 419,
+	      y = 441,
+	      anchor = {
+	         x = 0.5,
+	         y = 0.5},
+	      children = {},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
+	      scaleXY = {
+	         x = "$xScale",
+	         y = "$yScale"}},
+	   {
+	      file = "?",
+	      height = 150,
+	      id = "sprite1",
+	      localZOrder = 0,
+	      opacity = 255,
+	      rotation = 0,
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      type = "cc.Sprite",
+	      visible = 0,
+	      width = 108,
+	      x = 258,
+	      y = 300,
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},

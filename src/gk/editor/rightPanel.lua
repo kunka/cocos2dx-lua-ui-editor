@@ -359,11 +359,21 @@ function panel:displayNode(node)
             generator:modify(node, "bounceable", selected, "number")
         end)
         yIndex = yIndex + 1
+        -- touchEnabled
+        createLabel("Enabled", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.touchEnabled == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "touchEnabled", selected, "number")
+        end)
+        yIndex = yIndex + 1
     end
-
+    -- localZOrder
+    createLabel("ZOrder", leftX, topY - stepY * yIndex)
+    createInput(tostring(node.__info.localZOrder), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+        editBox:setInput(generator:modify(node, "localZOrder", input, "number"))
+    end)
     -- visible
-    createLabel("Visible", leftX, topY - stepY * yIndex)
-    createCheckBox(node.__info.visible == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+    createLabel("Visible", leftX4_2, topY - stepY * yIndex)
+    createCheckBox(node.__info.visible == 0, leftX5_3, topY - stepY * yIndex, function(selected)
         generator:modify(node, "visible", selected, "number")
     end)
     yIndex = yIndex + 1

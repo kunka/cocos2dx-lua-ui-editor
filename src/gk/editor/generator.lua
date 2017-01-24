@@ -22,6 +22,7 @@ function generator:deflate(node)
     end
 
     -- rescan children
+    node:sortAllChildren()
     local children = node:getChildren()
     if iskindof(node, "cc.ScrollView") then
         children = node:getContainer():getChildren()
@@ -345,6 +346,9 @@ generator.nodeSetFuncs = {
     visible = function(node, var)
         node:setVisible(var == 0)
     end,
+    localZOrder = function(node, var)
+        node:setLocalZOrder(var)
+    end,
     --------------------------- cc.Label   ---------------------------
     string = function(node, string)
         local value = string
@@ -392,6 +396,9 @@ generator.nodeSetFuncs = {
     end,
     clipToBD = function(node, var)
         node:setClippingToBounds(var == 0)
+    end,
+    touchEnabled = function(node, var)
+        node:setTouchEnabled(var == 0)
     end,
 }
 
@@ -452,6 +459,9 @@ generator.nodeGetFuncs = {
     visible = function(node)
         return node.__info.visible or (node:isVisible() and 0 or 1)
     end,
+    localZOrder = function(node, var)
+        return node.__info.localZOrder or node:getLocalZOrder()
+    end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)
         return iskindof(node, "cc.Label") and (node.__info.string or node:getString())
@@ -489,6 +499,9 @@ generator.nodeGetFuncs = {
     end,
     bounceable = function(node)
         return iskindof(node, "cc.ScrollView") and (node.__info.bounceable or (node:isBounceable() and 0 or 1))
+    end,
+    touchEnabled = function(node)
+        return iskindof(node, "cc.ScrollView") and (node.__info.touchEnabled or (node:isTouchEnabled() and 0 or 1))
     end,
 }
 

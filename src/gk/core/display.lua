@@ -26,21 +26,21 @@ function display:initWithDesignSize(size)
         display.leftWidth = 140
         display.rightWidth = 200
         display.bottomHeight = 20
-        -- set editor win size
-        local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
-        local winSize = {}
-        winSize.width = s.width + display.leftWidth + display.rightWidth
-        winSize.height = s.height + display.topHeight + display.bottomHeight
-        local director = cc.Director:getInstance()
-        local view = director:getOpenGLView()
-        view:setFrameSize(winSize.width, winSize.height)
-        gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     else
         display.topHeight = 0
         display.leftWidth = 0
         display.rightWidth = 0
         display.bottomHeight = 0
     end
+    -- set editor win size
+    local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
+    local winSize = {}
+    winSize.width = s.width + display.leftWidth + display.rightWidth
+    winSize.height = s.height + display.topHeight + display.bottomHeight
+    local director = cc.Director:getInstance()
+    local view = director:getOpenGLView()
+    view:setFrameSize(winSize.width, winSize.height)
+    gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
 
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f)", winSize.width, winSize.height)

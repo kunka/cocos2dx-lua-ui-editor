@@ -90,4 +90,58 @@ inject:node_method_swizz(cc.Label, "createWithSystemFont")
 inject:node_method_swizz(cc.Label, "createWithTTF")
 inject:node_method_swizz(cc.Label, "createWithBMFont")
 
+function inject:init()
+    gk.event:subscribe(self, "onNodeCreate", function(node)
+        self:initLayer(node)
+    end)
+end
+
+function inject:initLayer(layer)
+    if layer and gk.resource.genNodes[layer.__cname] and not layer.__info then
+        local generator = require("gk.editor.generator")
+        local file = gk.resource.genPath .. "layout/_" .. layer.__cname:lower()
+        local status, info = pcall(require, file)
+        if status then
+            gk.log("initLayer with file %s", file)
+            layer.__info = generator:wrap({}, layer)
+            --            layer.__info.id = "root"
+            generator:inflate(info, layer, layer)
+            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+            layer.__info.width = gk.display.winSize().width
+            layer.__info.height = gk.display.winSize().height
+            --            dump(info)
+        else
+            -- init first time
+            gk.log("initLayer first time %s ", file)
+            layer.__info = generator:wrap({}, layer)
+            layer.__info.id = layer.__cname
+            layer[layer.__info.id] = layer
+            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+            self:sync(layer)
+        end
+        if gk.MODE == 1 then
+            gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
+            gk.event:post("displayDomTree", layer)
+            layer:runAction(cc.CallFunc:create(function()
+                gk.event:post("displayNode", layer)
+                gk.event:post("displayDomTree")
+            end))
+        end
+    end
+end
+
+function inject:sync(node)
+    if node and gk.resource.genNodes[node.__cname] then
+        local generator = require("gk.editor.generator")
+        local nd = node or self.scene.layer
+        gk.log("start sync %s", nd.__info.id)
+        local info = generator:deflate(nd)
+        local table2lua = require("gk.tools.table2lua")
+        local file = gk.resource.genPath .. "layout/_" .. nd.__cname:lower() .. ".lua"
+        gk.log("sync to file: " .. file)
+        --    gk.log(table2lua.encode_pretty(info))
+        io.writefile(file, table2lua.encode_pretty(info))
+    end
+end
+
 return inject

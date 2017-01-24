@@ -1,6 +1,7 @@
 return {
 	height = 288,
 	id = "LoadingLayer",
+	localZOrder = 0,
 	opacity = 255,
 	rotation = 0,
 	scaleX = 1,
@@ -22,6 +23,7 @@ return {
 	      height = 0,
 	      id = "label1",
 	      lineHeight = 37,
+	      localZOrder = 0,
 	      opacity = 255,
 	      overflow = 0,
 	      rotation = 0,

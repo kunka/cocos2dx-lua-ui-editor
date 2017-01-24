@@ -106,20 +106,6 @@ function util:clearDrawNode(node, tag)
     end
 end
 
-function util:drawLineOnNode(node, p1, p2, c4f, tg)
-    local draw
-    if tg then
-        draw = node:getChildByTag(tg)
-    end
-    if not draw then
-        draw = cc.DrawNode:create()
-        node:add(draw, 999, tg)
-        draw:setPosition(cc.p(0, 0))
-    end
-    draw:drawLine(p1, p2, c4f)
-    return draw
-end
-
 function util:drawNodeRect(node, c4f, tag)
     util.tags = util.tags and util.tags or {
         rectTag = 0xFFF0,
@@ -161,7 +147,7 @@ function util:drawNodeRect(node, c4f, tag)
         -- bg
         local p1 = cc.p(0, 0)
         local p2 = cc.p(size.width, size.height)
-        draw:drawSolidRect(p1, p2, cc.c4f(0.5, 0.5, 0.5, 0.5))
+        draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
     end
 
     -- draw text size
@@ -191,6 +177,34 @@ function util:drawNodeRect(node, c4f, tag)
             util:drawNodeRect(node, c4f)
         end)))
     end
+    return draw
+end
+
+function util:drawLineOnNode(node, p1, p2, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:drawLine(p1, p2, c4f)
+    return draw
+end
+
+function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:drawSolidRect(p1, p2, c4f)
     return draw
 end
 
@@ -239,6 +253,17 @@ function util:getRootNode(node)
         c = c:getParent()
     end
     return root
+end
+
+function util:isAncestorOf(ancestor, child)
+    local c = child
+    while c ~= nil do
+        if c == ancestor then
+            return true
+        end
+        c = c:getParent()
+    end
+    return false
 end
 
 return util

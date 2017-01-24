@@ -30,6 +30,10 @@ function panel:undisplayNode()
         self.displayDomInfoNode:removeFromParent()
         self.displayDomInfoNode = nil
     end
+    self.draggingNode = nil
+    self.sortedChildren = nil
+    self._containerNode = nil
+    self.selectedNode = nil
 end
 
 function panel:displayDomTree(rootLayer)
@@ -63,22 +67,23 @@ function panel:displayDomNode(node, layer)
     local fontName = "Consolas"
     local scale = 0.25
     local topY = size.height - 15
-    local leftX = 10
+    local leftX = 16
     local stepY = 20
-    local stepX = 40
+    local stepX = 11
     local createButton = function(content, x, y)
         local group = false
         local children = node:getChildren()
         if children then
             for i = 1, #children do
                 local child = children[i]
-                if child then --and child.__info and child.__info.id then
+                if child and tolua.type(child) ~= "cc.DrawNode" and child:getTag() ~= -99 then --and child.__info and child.__info.id then
                 group = true
                 break
                 end
             end
         end
         if group then
+            x = x - 11
             local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
             label:setTextColor(cc.c3b(200, 200, 200))
             if fixChild or not node.__info._flod then
@@ -107,9 +112,8 @@ function panel:displayDomNode(node, layer)
             x = x + 11
         end
 
-        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        local label = cc.Label:createWithSystemFont(string.format("%s(%d", content, node:getLocalZOrder()), fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
-        label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
         label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -136,12 +140,13 @@ function panel:displayDomNode(node, layer)
         -- select
         if self.parent.displayingNode == node then
             gk.util:drawNodeRect(label, nil)
+            self.selectedNode = label
         end
         -- drag button
         if not fixChild then
             label:setTag(1)
-            content = string.trim(content)
             label.content = content
+            local nodePre = node
             local node = label
             local listener = cc.EventListenerTouchOneByOne:create()
             listener:setSwallowTouches(true)
@@ -152,12 +157,22 @@ function panel:displayDomNode(node, layer)
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
                 local p = node:convertToNodeSpace(location)
                 if not self.draggingNode and cc.rectContainsPoint(rect, p) then
-                    gk.log("choose node %s", content)
+                    gk.log("dom:choose node %s", content)
                     local nd = self.parent.scene.layer[content]
                     if nd then
+                        --                        if self.parent.displayingNode == nodePre then
+                        --                            gk.util:clearDrawNode(label)
+                        --                        end
+                        if self.selectedNode ~= node then
+                            if self.selectedNode then
+                                gk.util:clearDrawNode(self.selectedNode)
+                            end
+                        end
+                        self.selectedNode = node
+                        gk.util:drawNodeRect(node)
                         gk.event:post("displayNode", nd)
                     end
-                    gk.event:post("displayDomTree")
+                    --                    gk.event:post("displayDomTree")
                     return true
                 else
                     return false
@@ -167,25 +182,31 @@ function panel:displayDomNode(node, layer)
                 local location = touch:getLocation()
                 local p = self:convertToNodeSpace(location)
                 if not self.draggingNode then
+                    gk.log("dom:create dragging node %s", content)
                     local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
                     local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
-                    label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
                     label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
                     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
                     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
                     label:setTextColor(cc.c3b(200, 200, 200))
-                    label:setPosition(x, y)
                     label:setAnchorPoint(0, 0.5)
                     label:setScale(scale)
-                    self:addChild(label)
+                    self.displayDomInfoNode:addChild(label)
                     self.draggingNode = label
                 end
-                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
+                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self.displayDomInfoNode:convertToNodeSpace(self._touchBegainLocation))))
 
                 -- find dest container
                 if self.sortedChildren == nil then
                     self:sortChildrenOfSceneGraphPriority(self.displayDomInfoNode, true)
                 end
+                if self._containerNode then
+                    gk.util:clearDrawNode(self._containerNode, -2)
+                end
+                if self.selectedNode then
+                    gk.util:clearDrawNode(self.selectedNode)
+                end
+                self._containerNode = nil
                 local children = self.sortedChildren
                 for i = #children, 1, -1 do
                     local node = children[i]
@@ -193,47 +214,111 @@ function panel:displayDomNode(node, layer)
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)
                     if cc.rectContainsPoint(rect, p) then
-                        if self._containerNode ~= node and node.content ~= content then
-                            self._containerNode = node
-                            gk.log("find container node %s", self._containerNode.content)
-                            local nd = self.parent.scene.layer[self._containerNode.content]
-                            if nd then
-                                gk.event:post("displayNode", nd)
-                            end
+                        --                        if self._containerNode ~= node and node.content ~= content then
+                        local nd1 = self.parent.scene.layer[node.content]
+                        local nd2 = self.parent.scene.layer[content]
+                        if nd1 == nd2 or nd1:getParent() == nd2 or nd2:getParent() == nd1 then
+                            break
                         end
+                        --                        if self._containerNode then
+                        --                            gk.util:clearDrawNode(self._containerNode, -2)
+                        --                        end
+                        self._containerNode = node
+                        if p.y < s.height / 2 and nd1 and nd2 and nd1:getParent() == nd2:getParent() then
+                            -- reorder mode
+                            local size = self._containerNode:getContentSize()
+                            gk.util:drawSolidRectOnNode(self._containerNode, cc.p(0, 5), cc.p(size.width, 0), cc.c4f(0, 1, 0, 1), -2)
+                            self.mode = 1
+                        else
+                            -- change container mode
+                            gk.util:drawNodeRect(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
+                            self.mode = 2
+                        end
+                        --                            gk.log("dom:find container node %s", self._containerNode.content)
+                        local nd = self.parent.scene.layer[self._containerNode.content]
+                        if nd then
+                            gk.event:post("displayNode", nd)
+                        end
+                        --                        end
                         break
                     end
                 end
             end, cc.Handler.EVENT_TOUCH_MOVED)
             listener:registerScriptHandler(function(touch, event)
                 if self._containerNode then
-                    local container = self.parent.scene.layer[self._containerNode.content]
-                    local node = self.parent.scene.layer[content]
-                    if node and container then
-                        node:retain()
-                        node:removeFromParent()
-                        local p = cc.p(0, 0)
-                        local sx, sy = gk.util:getGlobalScale(self._containerNode)
-                        if sx ~= 1 or sy ~= 1 then
-                            node.__info.scaleX, node.__info.scaleY = 1, 1
-                            node.__info.scaleXY = { x = "1", y = "1" }
-                        else
-                            node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
-                            node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
+                    if self.mode == 2 then
+                        local container = self.parent.scene.layer[self._containerNode.content]
+                        local node = self.parent.scene.layer[content]
+                        if node and container then
+                            local p = cc.p(node:getPosition())
+                            p = container:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
+                            node:retain()
+                            node:removeFromParent()
+                            local sx, sy = gk.util:getGlobalScale(container)
+                            if sx ~= 1 or sy ~= 1 then
+                                node.__info.scaleX, node.__info.scaleY = 1, 1
+                                node.__info.scaleXY = { x = "1", y = "1" }
+                            else
+                                node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
+                                node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
+                            end
+                            local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+                            local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+                            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                            container:addChild(node)
+                            node:release()
+                            gk.log("dom:move node to %.2f, %.2f", node.__info.x, node.__info.y)
+                            gk.event:post("displayDomTree")
+                            return
                         end
-                        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
-                        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
-                        node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
-                        container:addChild(node)
-                        node:release()
-                        gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
+                    elseif self.mode == 1 then
+                        local bro = self.parent.scene.layer[self._containerNode.content]
+                        local node = self.parent.scene.layer[content]
+                        if node and bro and node:getParent() == bro:getParent() then
+                            local parent = node:getParent()
+                            local z1, z2 = bro:getLocalZOrder(), node:getLocalZOrder()
+                            if z2 < z1 then
+                                -- promotion
+                                z2 = z1
+                            end
+                            parent:sortAllChildren()
+                            local reorder = false
+                            local children = parent:getChildren()
+                            for i = 1, #children do
+                                local child = children[i]
+                                if child and child.__info then
+                                    if z2 > z1 then
+                                        if child:getLocalZOrder() == z2 and node ~= child then
+                                            parent:reorderChild(child, z2)
+                                        end
+                                    else
+                                        if child:getLocalZOrder() == z1 then
+                                            if child == bro then
+                                                reorder = true
+                                                parent:reorderChild(node, z2)
+                                            elseif reorder and child ~= node then
+                                                parent:reorderChild(child, z1)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                            node.__info.localZOrder = z2
+                            gk.log("dom:reorder node %s after %s", node.__info.id, bro.__info.id)
+                            gk.event:post("displayDomTree")
+                            gk.event:post("postSync")
+                        end
                     end
+                end
+                if self._containerNode then
+                    gk.util:clearDrawNode(self._containerNode, -2)
                 end
                 if self.draggingNode then
                     self.draggingNode:removeFromParent()
                     self.draggingNode = nil
                 end
                 self.sortedChildren = nil
+                self._containerNode = nil
             end, cc.Handler.EVENT_TOUCH_ENDED)
             listener:registerScriptHandler(function(touch, event)
                 if self.draggingNode then
@@ -241,19 +326,17 @@ function panel:displayDomNode(node, layer)
                     self.draggingNode = nil
                 end
                 self.sortedChildren = nil
+                self._containerNode = nil
             end, cc.Handler.EVENT_TOUCH_CANCELLED)
             cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
         end
-        return button
+        return label
     end
-    local whiteSpace = ""
-    for i = 1, layer do
-        whiteSpace = whiteSpace .. " "
-    end
-    createButton(whiteSpace .. (fixChild and tolua.type(node) or node.__info.id), leftX + 11 * layer, topY - stepY * self.domDepth)
+    createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
     if fixChild or not node.__info._flod then
+        node:sortAllChildren()
         local children = node:getChildren()
         if children then
             for i = 1, #children do
@@ -272,9 +355,10 @@ function panel:displayOthers(keys)
     local fontName = "Consolas"
     local scale = 0.25
     local topY = size.height - 15
-    local leftX = 10
+    local leftX = 16
     local stepY = 20
     local createButton = function(content, x, y)
+        x = x - 11
         local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
         label:setTextColor(cc.c3b(200, 200, 200))
         label:setDimensions(10 / scale, 10 / scale)

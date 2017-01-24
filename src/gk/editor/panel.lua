@@ -30,7 +30,7 @@ function panel.create(scene)
     return self
 end
 
-function panel:subscribeEvent(node)
+function panel:subscribeEvent()
     gk.event:subscribe(self, "onNodeCreate", function(node)
         self:onNodeCreate(node)
     end)
@@ -50,11 +50,11 @@ function panel:subscribeEvent(node)
             gk.SceneManager:replace(layer)
         end
     end)
-
     gk.event:subscribe(self, "postSync", function(node)
         gk.util:stopActionByTagSafe(self, -234)
         local action = cc.CallFunc:create(function()
-            self:sync()
+            local inject = require("gk.core.inject")
+            inject:sync(node or self.scene.layer)
         end)
         action:setTag(-234)
         self:runAction(action)
@@ -62,7 +62,6 @@ function panel:subscribeEvent(node)
 end
 
 function panel:onNodeCreate(node)
-    self:initLayer(node)
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
@@ -79,10 +78,10 @@ function panel:onNodeCreate(node)
                 local type = node.__cname and node.__cname or tolua.type(node)
                 gk.log("click node %s, id = %s", type, node.__info.id)
                 self._containerNode = node:getParent()
-                if self._containerNode and not self._containerNode.__info then
-                    gk.event:post("displayNode", node)
-                    return false
-                end
+                --                if self._containerNode and not self._containerNode.__info then
+                --                    gk.event:post("displayNode", node)
+                --                    return false
+                --                end
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(1)
                 gk.event:post("displayNode", node)
@@ -130,7 +129,8 @@ function panel:onNodeCreate(node)
                 gk.event:post("displayDomTree")
                 return
             end
-            if self._containerNode ~= node:getParent() then
+            local type = tolua.type(self._containerNode)
+            if self._containerNode and self._containerNode ~= node:getParent() and (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()
@@ -147,12 +147,13 @@ function panel:onNodeCreate(node)
                 node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
+                gk.log("change node's container %s", node.__info.id)
             else
                 local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
+                gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
             end
-            gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
@@ -197,6 +198,9 @@ function panel:drawNodeCoordinate(node)
         sy = 0.2 / sy
 
         local createArrow = function(width, scale, p, rotation, ap)
+            if width < 0 then
+                return
+            end
             local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
             arrow:setContentSize(cc.size(width / scale, 57))
             arrow:setScale(scale)
@@ -215,16 +219,14 @@ function panel:drawNodeCoordinate(node)
         end
         local size = parent:getContentSize()
 
-        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
-        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
         -- left
-        createArrow(x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
+        createArrow(x, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down
-        createArrow(y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
+        createArrow(y, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
         -- right
-        createArrow((size.width - x) / scaleX, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
+        createArrow((size.width - x), sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
         -- top
-        createArrow((size.height - y) / scaleY, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
+        createArrow((size.height - y), sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
     end
 end
 
@@ -352,49 +354,6 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         if not table.indexof(self.sortedChildren, node) then
             table.insert(self.sortedChildren, node)
         end
-    end
-end
-
-function panel:sync(node)
-    local nd = node or self.scene.layer
-    gk.log("start sync %s", nd.__info.id)
-    local info = generator:deflate(nd)
-    local table2lua = require("gk.tools.table2lua")
-    local file = gk.resource.genPath .. "layout/_" .. nd.__cname:lower() .. ".lua"
-    gk.log("sync to file: " .. file)
-    --    gk.log(table2lua.encode_pretty(info))
-    io.writefile(file, table2lua.encode_pretty(info))
-end
-
-function panel:initLayer(layer)
-    if gk.resource.genNodes[layer.__cname] and not layer.__info then
-        local file = gk.resource.genPath .. "layout/_" .. layer.__cname:lower()
-        local status, info = pcall(require, file)
-        if status then
-            gk.log("initLayer with file %s", file)
-            layer.__info = generator:wrap({}, layer)
-            --            layer.__info.id = "root"
-            generator:inflate(info, layer, layer)
-            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            layer.__info.width = gk.display.winSize().width
-            layer.__info.height = gk.display.winSize().height
-            --            dump(info)
-        else
-            -- init first time
-            gk.log("initLayer first time %s ", file)
-            layer.__info = generator:wrap({}, layer)
-            layer.__info.id = layer.__cname
-            layer[layer.__info.id] = layer
-            layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            self:sync(layer)
-        end
-        local winSize = cc.Director:getInstance():getWinSize()
-        gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
-        gk.event:post("displayDomTree", layer)
-        layer:runAction(cc.CallFunc:create(function()
-            gk.event:post("displayNode", layer)
-            gk.event:post("displayDomTree")
-        end))
     end
 end
 
