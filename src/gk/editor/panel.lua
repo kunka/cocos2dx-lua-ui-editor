@@ -79,6 +79,10 @@ function panel:onNodeCreate(node)
                 local type = node.__cname and node.__cname or tolua.type(node)
                 gk.log("click node %s, id = %s", type, node.__info.id)
                 self._containerNode = node:getParent()
+                if self._containerNode and not self._containerNode.__info then
+                    gk.event:post("displayNode", node)
+                    return false
+                end
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(1)
                 gk.event:post("displayNode", node)

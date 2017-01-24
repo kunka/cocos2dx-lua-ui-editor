@@ -23,6 +23,9 @@ function generator:deflate(node)
 
     -- rescan children
     local children = node:getChildren()
+    if iskindof(node, "cc.ScrollView") then
+        children = node:getContainer():getChildren()
+    end
     for i = 1, #children do
         local child = children[i]
         if child and child.__info and child.__info.id then
@@ -122,6 +125,7 @@ function generator:wrap(info, rootTable)
             if key == "id" and string.len(value) > 0 then
                 local b = string.byte(value:sub(1, 1))
                 if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
+                    value = string.trim(value)
                     if rootTable[value] == nil then
                         local node = rootTable and rootTable[proxy["id"]] or nil
                         if node then
@@ -185,11 +189,9 @@ function generator:modify(node, property, input, valueType)
     elseif type(input) == "string" then
         if string.len(input) > 0 and input:sub(1, 1) == "$" then
             local macro = input:sub(2, #input)
-            dump(macro)
             -- contains
             if self.macroFuncs[macro] then
                 value = input
-                dump(value)
             end
         elseif valueType == "string" then
             value = input
@@ -198,7 +200,6 @@ function generator:modify(node, property, input, valueType)
         end
     end
     if value then
-        dump(value)
         if prop2 then
             local p = node.__info[prop1]
             if p then
@@ -281,8 +282,8 @@ generator.macroFuncs = {
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
-    ["winSize.width"] = function() return gk.display.winSize().width end,
-    ["winSize.height"] = function() return gk.display.winSize().height end,
+    ["win.w"] = function() return gk.display.winSize().width end,
+    ["win.h"] = function() return gk.display.winSize().height end,
     fill_w = function(node) return node:getParent() and node:getParent():getContentSize().width or gk.display.winSize().width end,
     fill_h = function(node) return node:getParent() and node:getParent():getContentSize().height or gk.display.winSize().height end,
 }
@@ -379,7 +380,9 @@ generator.nodeSetFuncs = {
     --    end,
     --------------------------- cc.ScrollView   ---------------------------
     viewSize = function(node, var)
-        node:setViewSize(var)
+        local w = generator:parseValue(node, var.width)
+        local h = generator:parseValue(node, var.height)
+        node:setViewSize(cc.size(w, h))
     end,
     direction = function(node, ...)
         node:setDirection(...)
@@ -429,7 +432,7 @@ generator.nodeGetFuncs = {
         elseif iskindof(node, "cc.ScrollView") then
             return node.__info.width or node:getViewSize().width
         else
-            return node:getContentSize().width
+            return node.__info.width or node:getContentSize().width
         end
     end,
     height = function(node)
@@ -440,7 +443,7 @@ generator.nodeGetFuncs = {
         elseif iskindof(node, "cc.ScrollView") then
             return node.__info.height or node:getViewSize().height
         else
-            return node:getContentSize().height
+            return node.__info.height or node:getContentSize().height
         end
     end,
     color = function(node)

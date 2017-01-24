@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+local generator = import(".generator")
 local panel = {}
 
 function panel.create(parent)
@@ -116,21 +117,132 @@ function panel:displayDomNode(node, layer)
         if fixChild or not gk.util:isGlobalVisible(node) then
             label:setOpacity(100)
         end
-        local button = gk.ZoomButton.new(label)
-        button:setScale(scale)
-        self.displayDomInfoNode:addChild(button)
-        button:setAnchorPoint(0, 0.5)
-        button:setPosition(x, y)
-        button:onClicked(function()
-            if fixChild then
-                return
-            end
-            gk.event:post("displayNode", node)
-            gk.event:post("displayDomTree")
-        end)
+        --        local button = gk.ZoomButton.new(label)
+        --        button:setScale(scale)
+        --        self.displayDomInfoNode:addChild(button)
+        --        button:setAnchorPoint(0, 0.5)
+        --        button:setPosition(x, y)
+        label:setScale(scale)
+        self.displayDomInfoNode:addChild(label)
+        label:setAnchorPoint(0, 0.5)
+        label:setPosition(x, y)
+        --        button:onClicked(function()
+        --            if fixChild then
+        --                return
+        --            end
+        --            gk.event:post("displayNode", node)
+        --            gk.event:post("displayDomTree")
+        --        end)
         -- select
         if self.parent.displayingNode == node then
-            gk.util:drawNodeRect(button, nil)
+            gk.util:drawNodeRect(label, nil)
+        end
+        -- drag button
+        if not fixChild then
+            label:setTag(1)
+            content = string.trim(content)
+            label.content = content
+            local node = label
+            local listener = cc.EventListenerTouchOneByOne:create()
+            listener:setSwallowTouches(true)
+            listener:registerScriptHandler(function(touch, event)
+                local location = touch:getLocation()
+                self._touchBegainLocation = cc.p(location)
+                local s = node:getContentSize()
+                local rect = { x = 0, y = 0, width = s.width, height = s.height }
+                local p = node:convertToNodeSpace(location)
+                if not self.draggingNode and cc.rectContainsPoint(rect, p) then
+                    gk.log("choose node %s", content)
+                    local nd = self.parent.scene.layer[content]
+                    if nd then
+                        gk.event:post("displayNode", nd)
+                    end
+                    gk.event:post("displayDomTree")
+                    return true
+                else
+                    return false
+                end
+            end, cc.Handler.EVENT_TOUCH_BEGAN)
+            listener:registerScriptHandler(function(touch, event)
+                local location = touch:getLocation()
+                local p = self:convertToNodeSpace(location)
+                if not self.draggingNode then
+                    local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+                    local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
+                    label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
+                    label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
+                    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+                    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+                    label:setTextColor(cc.c3b(200, 200, 200))
+                    label:setPosition(x, y)
+                    label:setAnchorPoint(0, 0.5)
+                    label:setScale(scale)
+                    self:addChild(label)
+                    self.draggingNode = label
+                end
+                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
+
+                -- find dest container
+                if self.sortedChildren == nil then
+                    self:sortChildrenOfSceneGraphPriority(self.displayDomInfoNode, true)
+                end
+                local children = self.sortedChildren
+                for i = #children, 1, -1 do
+                    local node = children[i]
+                    local s = node:getContentSize()
+                    local rect = { x = 0, y = 0, width = s.width, height = s.height }
+                    local p = node:convertToNodeSpace(location)
+                    if cc.rectContainsPoint(rect, p) then
+                        if self._containerNode ~= node and node.content ~= content then
+                            self._containerNode = node
+                            gk.log("find container node %s", self._containerNode.content)
+                            local nd = self.parent.scene.layer[self._containerNode.content]
+                            if nd then
+                                gk.event:post("displayNode", nd)
+                            end
+                        end
+                        break
+                    end
+                end
+            end, cc.Handler.EVENT_TOUCH_MOVED)
+            listener:registerScriptHandler(function(touch, event)
+                if self._containerNode then
+                    local container = self.parent.scene.layer[self._containerNode.content]
+                    local node = self.parent.scene.layer[content]
+                    if node and container then
+                        node:retain()
+                        node:removeFromParent()
+                        local p = cc.p(0, 0)
+                        local sx, sy = gk.util:getGlobalScale(self._containerNode)
+                        if sx ~= 1 or sy ~= 1 then
+                            node.__info.scaleX, node.__info.scaleY = 1, 1
+                            node.__info.scaleXY = { x = "1", y = "1" }
+                        else
+                            node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
+                            node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
+                        end
+                        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+                        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+                        node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                        container:addChild(node)
+                        node:release()
+                        gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
+                    end
+                end
+                if self.draggingNode then
+                    self.draggingNode:removeFromParent()
+                    self.draggingNode = nil
+                end
+                self.sortedChildren = nil
+            end, cc.Handler.EVENT_TOUCH_ENDED)
+            listener:registerScriptHandler(function(touch, event)
+                if self.draggingNode then
+                    self.draggingNode:removeFromParent()
+                    self.draggingNode = nil
+                end
+                self.sortedChildren = nil
+            end, cc.Handler.EVENT_TOUCH_CANCELLED)
+            cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
         end
         return button
     end
@@ -198,6 +310,39 @@ function panel:displayOthers(keys)
     for _, key in ipairs(keys) do
         createButton(key, leftX, topY - stepY * self.domDepth)
         self.domDepth = self.domDepth + 1
+    end
+end
+
+
+function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
+    if isRootNode then
+        self.sortedChildren = {}
+    end
+    node:sortAllChildren()
+    local children = node:getChildren()
+    local childrenCount = #children
+    if childrenCount > 0 then
+        for i = 1, childrenCount do
+            local child = children[i]
+            if child and child:getLocalZOrder() < 0 and child:getTag() == 1 then
+                self:sortChildrenOfSceneGraphPriority(child, false)
+            else
+                break
+            end
+        end
+        if not table.indexof(self.sortedChildren, node) then
+            table.insert(self.sortedChildren, node)
+        end
+        for i = 1, childrenCount do
+            local child = children[i]
+            if child and child:getTag() == 1 then
+                self:sortChildrenOfSceneGraphPriority(child, false)
+            end
+        end
+    else
+        if not table.indexof(self.sortedChildren, node) then
+            table.insert(self.sortedChildren, node)
+        end
     end
 end
 

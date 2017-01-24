@@ -127,11 +127,18 @@ function util:drawNodeRect(node, c4f, tag)
     }
     local tg = tag or util.tags.rectTag
     local draw = node:getChildByTag(tg)
+    if iskindof(node, "cc.ScrollView") then
+        draw = node:getContainer():getChildByTag(tg)
+    end
     if draw then
         draw:clear()
     else
         draw = cc.DrawNode:create()
-        node:add(draw, 999, tg)
+        if iskindof(node, "cc.ScrollView") then
+            node:add(draw, -1, tg)
+        else
+            node:add(draw, 999, tg)
+        end
         draw:setPosition(cc.p(0, 0))
     end
 
@@ -148,6 +155,13 @@ function util:drawNodeRect(node, c4f, tag)
         p.x = p.x * size.width
         p.y = p.y * size.height
         draw:drawDot(p, 4, cc.c4f(1, 0, 0, 1))
+    end
+
+    if iskindof(node, "cc.ScrollView") then
+        -- bg
+        local p1 = cc.p(0, 0)
+        local p2 = cc.p(size.width, size.height)
+        draw:drawSolidRect(p1, p2, cc.c4f(0.5, 0.5, 0.5, 0.5))
     end
 
     -- draw text size
