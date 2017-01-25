@@ -67,6 +67,7 @@ function resource:setGenNodePath(path)
                 -- TODO: other types
                 if iskindof(clazz, "Layer") then
                     resource.genNodes[clazz.__cname] = path .. name
+                    gk.log("resource:scan genNode --> %s", clazz.__cname)
                 end
             end
         end

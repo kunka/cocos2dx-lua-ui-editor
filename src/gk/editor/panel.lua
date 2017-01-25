@@ -103,7 +103,7 @@ function panel:onNodeCreate(node)
             for i = #children, 1, -1 do
                 local nd = children[i]
                 if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.id and nd ~= node then
-                    local s = nd:getContentSize()
+                    local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
                     if cc.rectContainsPoint(rect, p) then
@@ -130,7 +130,8 @@ function panel:onNodeCreate(node)
                 return
             end
             local type = tolua.type(self._containerNode)
-            if self._containerNode and self._containerNode ~= node:getParent() and (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
+            if self._containerNode and self._containerNode ~= node:getParent() and
+                    (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()

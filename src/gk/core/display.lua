@@ -12,12 +12,16 @@ display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
     cc.size(1280 * displayScale, 853 * displayScale),
     cc.size(1280 * displayScale, 960 * displayScale),
+    cc.size(1280 * displayScale, 1280 * displayScale),
+    cc.size(720 * displayScale, 1280 * displayScale),
 }
 
 display.deviceSizesDesc = {
     "1280x720(16:9)",
     "1280x853(1.5:1)",
     "1280x960(4:3)",
+    "1280x1280(1:1)",
+    "720x1280(9:16)",
 }
 
 function display:initWithDesignSize(size)

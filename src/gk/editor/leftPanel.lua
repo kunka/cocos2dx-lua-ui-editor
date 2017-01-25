@@ -51,6 +51,11 @@ function panel:displayDomTree(rootLayer)
         table.sort(keys, function(k1, k2) return k1 < k2 end)
         for _, key in ipairs(keys) do
             if key == rootLayer.__cname then
+                local lastDisplayLayer = gk.resource.genNodes[key]
+                if lastDisplayLayer then
+                    cc.UserDefault:getInstance():setStringForKey("lastDisplayLayer", key)
+                    cc.UserDefault:getInstance():flush()
+                end
                 self:displayDomNode(rootLayer, 0)
             else
                 self:displayOthers({ key })

@@ -324,11 +324,14 @@ generator.nodeSetFuncs = {
     scaleY = function(node, ...)
         node:setScaleY(...)
     end,
-    anchor = function(node, anchor)
-        node:setAnchorPoint(anchor)
+    anchor = function(node, var)
+        node:setAnchorPoint(var)
     end,
-    width = function(node, width)
-        width = generator:parseValue("width", node, width)
+    width = function(node, var)
+        local width = generator:parseValue("width", node, var)
+        local ss = node.__info.scaleSize
+        local scaleW = generator:parseValue("scaleW", node, ss.w)
+        width = width * scaleW
         if iskindof(node, "cc.Label") then
             node:setWidth(width)
         else
@@ -337,14 +340,41 @@ generator.nodeSetFuncs = {
             node:setContentSize(size)
         end
     end,
-    height = function(node, height)
-        height = generator:parseValue("height", node, height)
+    height = function(node, var)
+        local height = generator:parseValue("height", node, var)
+        local ss = node.__info.scaleSize
+        local scaleH = generator:parseValue("scaleH", node, ss.h)
+        height = height * scaleH
         if iskindof(node, "cc.Label") then
             node:setHeight(height)
         else
             local size = node:getContentSize()
             size.height = height
             node:setContentSize(size)
+        end
+    end,
+    scaleSize = function(node, var)
+        if iskindof(node, "cc.ScrollView") then
+            local vs = node.__info.viewSize
+            local w = generator:parseValue("width", node, vs.width)
+            local h = generator:parseValue("height", node, vs.height)
+            local scaleW = generator:parseValue("scaleW", node, var.w)
+            local scaleH = generator:parseValue("scaleH", node, var.h)
+            node:setViewSize(cc.size(w * scaleW, h * scaleH))
+            if iskindof(node, "cc.TableView") then
+                node:reloadData()
+            end
+        else
+            local w = generator:parseValue("width", node, node.__info.width)
+            local h = generator:parseValue("height", node, node.__info.height)
+            local scaleW = generator:parseValue("scaleW", node, var.w)
+            local scaleH = generator:parseValue("scaleH", node, var.h)
+            local size = cc.size(w * scaleW, h * scaleH)
+            if iskindof(node, "cc.Label") then
+                node:setDimensions(size)
+            else
+                node:setContentSize(size)
+            end
         end
     end,
     rotation = function(node, ...)
@@ -417,17 +447,6 @@ generator.nodeSetFuncs = {
         local ss = node.__info.scaleSize
         local scaleW = generator:parseValue("scaleW", node, ss.w)
         local scaleH = generator:parseValue("scaleH", node, ss.h)
-        node:setViewSize(cc.size(w * scaleW, h * scaleH))
-        if iskindof(node, "cc.TableView") then
-            node:reloadData()
-        end
-    end,
-    scaleSize = function(node, var)
-        local vs = node.__info.viewSize
-        local w = generator:parseValue("width", node, vs.width)
-        local h = generator:parseValue("height", node, vs.height)
-        local scaleW = generator:parseValue("scaleW", node, var.w)
-        local scaleH = generator:parseValue("scaleH", node, var.h)
         node:setViewSize(cc.size(w * scaleW, h * scaleH))
         if iskindof(node, "cc.TableView") then
             node:reloadData()
