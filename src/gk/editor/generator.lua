@@ -147,7 +147,7 @@ function generator:wrap(info, rootTable)
             proxy[key] = value
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node and value then
-                local v = self:parseValue(node, value)
+                local v = self:parseValue(key, node, value)
                 local func = self.nodeSetFuncs[key]
                 if func then
                     func(node, v)
@@ -163,13 +163,13 @@ function generator:wrap(info, rootTable)
     return info
 end
 
-function generator:parseValue(node, input)
+function generator:parseValue(key, node, input)
     local v
     if type(input) == "string" and string.len(input) > 1 then
         local macro = input:sub(2, #input)
         v = self.macroFuncs[macro]
         if v then
-            v = v(node)
+            v = v(key, node)
         end
     end
     return v or input
@@ -285,29 +285,30 @@ function generator:genID(type, rootTable)
 end
 
 generator.macroFuncs = {
+    -- Scale
     minScale = gk.display.minScale,
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
     ["win.w"] = function() return gk.display.winSize().width end,
     ["win.h"] = function() return gk.display.winSize().height end,
-    fill_w = function(node) return node:getParent() and node:getParent():getContentSize().width or gk.display.winSize().width end,
-    fill_h = function(node) return node:getParent() and node:getParent():getContentSize().height or gk.display.winSize().height end,
+    -- contentSize, ViewSize
+    fill = function(key, node) return node:getParent() and node:getParent():getContentSize()[key] or gk.display.winSize()[key] end,
 }
 
 generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
     x = function(node, x)
-        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
+        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x)
         node:setPositionX(x * scaleX)
     end,
     y = function(node, y)
-        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y)
         node:setPositionY(y * scaleY)
     end,
     scaleXY = function(node, var)
-        local scaleX = generator:parseValue(node, var.x)
-        local scaleY = generator:parseValue(node, var.y)
+        local scaleX = generator:parseValue("scaleX", node, var.x)
+        local scaleY = generator:parseValue("scaleY", node, var.y)
         local x, y = node.__info.x, node.__info.y
         node:setPosition(cc.p(x * scaleX, y * scaleY))
     end,
@@ -321,7 +322,7 @@ generator.nodeSetFuncs = {
         node:setAnchorPoint(anchor)
     end,
     width = function(node, width)
-        width = generator:parseValue(node, width)
+        width = generator:parseValue("width", node, width)
         if iskindof(node, "cc.Label") then
             node:setWidth(width)
         else
@@ -331,7 +332,7 @@ generator.nodeSetFuncs = {
         end
     end,
     height = function(node, height)
-        height = generator:parseValue(node, height)
+        height = generator:parseValue("height", node, height)
         if iskindof(node, "cc.Label") then
             node:setHeight(height)
         else
@@ -358,6 +359,13 @@ generator.nodeSetFuncs = {
     end,
     localZOrder = function(node, var)
         node:setLocalZOrder(var)
+    end,
+    --------------------------- cc.Sprite   ---------------------------
+    file = function(node, var)
+        node:setSpriteFrame(gk.create_sprite_frame(var))
+    end,
+    flippedX = function(node, var)
+        node:setFlippedX(var == 0)
     end,
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node, var)
@@ -398,8 +406,8 @@ generator.nodeSetFuncs = {
     --    end,
     --------------------------- cc.ScrollView   ---------------------------
     viewSize = function(node, var)
-        local w = generator:parseValue(node, var.width)
-        local h = generator:parseValue(node, var.height)
+        local w = generator:parseValue("width", node, var.width)
+        local h = generator:parseValue("height", node, var.height)
         node:setViewSize(cc.size(w, h))
     end,
     direction = function(node, ...)
@@ -425,10 +433,10 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Node   ---------------------------
     x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue(node, node.__info.scaleXY.x), 1)
+        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue("x", node, node.__info.scaleXY.x), 1)
     end,
     y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue(node, node.__info.scaleXY.y), 1)
+        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue("y", node, node.__info.scaleXY.y), 1)
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()
@@ -448,6 +456,8 @@ generator.nodeGetFuncs = {
     width = function(node)
         if iskindof(node, "cc.Label") then
             return node.__info.width or node:getWidth()
+        elseif iskindof(node, "cc.Sprite") then
+            return node:getContentSize().width
         elseif iskindof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
         elseif iskindof(node, "cc.ScrollView") then
@@ -459,6 +469,8 @@ generator.nodeGetFuncs = {
     height = function(node)
         if iskindof(node, "cc.Label") then
             return node.__info.height or node:getHeight()
+        elseif iskindof(node, "cc.Sprite") then
+            return node:getContentSize().height
         elseif iskindof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height
         elseif iskindof(node, "cc.ScrollView") then
@@ -479,6 +491,13 @@ generator.nodeGetFuncs = {
     end,
     localZOrder = function(node, var)
         return node.__info.localZOrder or node:getLocalZOrder()
+    end,
+    --------------------------- cc.Sprite   ---------------------------
+    file = function(node)
+        return (node.__info.type == "cc.Sprite" and node.__info.file)
+    end,
+    flippedX = function(node)
+        return (node.__info.type == "cc.Sprite" and (node.__info.flippedX or (node:isFlippedX() and 0 or 1)))
     end,
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node)

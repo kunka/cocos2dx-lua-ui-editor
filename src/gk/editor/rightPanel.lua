@@ -132,13 +132,22 @@ function panel:displayNode(node)
         return
     end
 
+    local isLabel = iskindof(node, "cc.Label")
+    local isSprite = iskindof(node, "cc.Sprite")
+    local isZoomButton = node.__info.type == "ZoomButton"
+    local isLayer = iskindof(node, "cc.Layer")
+    local isLayerColor = iskindof(node, "cc.LayerColor")
+    local isScrollView = iskindof(node, "cc.ScrollView")
+
     local yIndex = 0
+    --------------------------- ID   ---------------------------
     -- id
-    createLabel("Name", leftX, topY)
+    createLabel("ID", leftX, topY)
     createInput(node.__info.id, leftX2_1, topY, inputWidth1, function(editBox, input)
         editBox:setInput(generator:modify(node, "id", input, "string"))
     end)
     yIndex = yIndex + 1
+    --------------------------- cc.Node   ---------------------------
     createLabel("Node", leftX, topY - stepY * yIndex, true)
     yIndex = yIndex + 0.6
     yIndex = yIndex + 0.2
@@ -219,7 +228,7 @@ function panel:displayNode(node)
         editBox:setInput(generator:modify(node, "scaleY", input, "number"))
     end)
     yIndex = yIndex + 1
-    if not iskindof(node, "cc.Layer") then
+    if not isLayer then
         -- anchor
         createLabel("Anchor", leftX, topY - stepY * yIndex)
         createLabel("X", leftX2, topY - stepY * yIndex)
@@ -232,7 +241,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if not iskindof(node, "cc.Label") then
+    if not isLabel then
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
@@ -245,9 +254,9 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if iskindof(node, "cc.LayerColor") or iskindof(node, "cc.Label") or iskindof(node, "cc.Sprite") then
+    if isLayerColor or isLabel or isSprite then
         -- color
-        if iskindof(node, "cc.LayerColor") then
+        if isLayerColor then
             -- offset
             yIndex = yIndex + 3
             createLabel("Color4B", leftX, topY - stepY * yIndex)
@@ -268,7 +277,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if iskindof(node, "cc.LayerColor") then
+    if isLayerColor then
         createLabel("A", leftX2, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.a", input, "number"))
@@ -301,21 +310,18 @@ function panel:displayNode(node)
     end)
     yIndex = yIndex + 1
 
-    if iskindof(node, "cc.Layer") then
-        -- empty title
-        if iskindof(node, "cc.LayerColor") then
-            createLabel("LayerColor", leftX, topY - stepY * yIndex, true)
-        else
-            createLabel("Layer", leftX, topY - stepY * yIndex, true)
-        end
+    --------------------------- cc.LayerColor   ---------------------------
+    if isLayerColor then
+        createLabel("LayerColor", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
     end
 
-    if iskindof(node, "cc.Sprite") or node.__info.type == "ZoomButton" then
-        createLabel("Sprite", leftX, topY - stepY * yIndex, true)
+    --------------------------- cc.Sprite, ZoomButton   ---------------------------
+    if isSprite or isZoomButton then
+        createLabel(isSprite and "Sprite" or "ZoomButton", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
 
         yIndex = yIndex + 0.2
@@ -328,7 +334,17 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if node.__info.type == "ZoomButton" then
+
+    if isSprite then
+        -- flippedX
+        createLabel("FippedX", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.flippedX == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "flippedX", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+
+    if isZoomButton then
         -- zoomScale
         createLabel("ZoomScale", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.zoomScale), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
@@ -336,7 +352,8 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if iskindof(node, "cc.Label") then
+    --------------------------- cc.Label   ---------------------------
+    if isLabel then
         createLabel("Label", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
 
@@ -372,11 +389,11 @@ function panel:displayNode(node)
         -- dimensions
         createLabel("Dimensions", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
-        createInput(string.format("%.2f", node.__info.width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        createInput(tostring(node.__info.width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
         end)
         createLabel("H", leftX3, topY - stepY * yIndex)
-        createInput(string.format("%.2f", node.__info.height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        createInput(tostring(node.__info.height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
@@ -401,10 +418,14 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if iskindof(node, "cc.ScrollView") then
+    --------------------------- cc.ScrollView   ---------------------------
+    if isScrollView then
+        createLabel("ScrollView", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+
         -- viewSize
         createLabel("ViewSize", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
@@ -440,6 +461,15 @@ function panel:displayNode(node)
             generator:modify(node, "touchEnabled", selected, "number")
         end)
         yIndex = yIndex + 1
+    end
+
+    --------------------------- cc.Layer   ---------------------------
+    if isLayer and not isLayerColor and not isScrollView then
+        createLabel("Layer", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
     end
 
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))

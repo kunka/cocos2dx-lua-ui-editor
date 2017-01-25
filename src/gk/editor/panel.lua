@@ -135,15 +135,15 @@ function panel:onNodeCreate(node)
                 node:retain()
                 node:removeFromParent()
                 self:rescaleNode(node, self._containerNode)
-                local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
-                local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+                local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
+                local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
                 gk.log("change node's container %s", node.__info.id)
             else
-                local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
-                local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+                local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
+                local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
                 gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
             end
@@ -259,6 +259,11 @@ function panel:handleEvent()
             return
         end
         local key = cc.KeyCodeKey[keyCode + 1]
+        if key == "KEY_SHIFT" then
+            self.shiftPressed = true
+            return
+        end
+
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode and self.displayingNode.__info then
             -- TODO: hold
@@ -280,8 +285,8 @@ function panel:handleEvent()
             gk.event:post("postSync")
         elseif key == "KEY_BACKSPACE" then
             -- delete node
-            gk.log("delete")
-            if self.displayingNode and self.displayingNode.__info.id then
+            if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id then
+                gk.log("delete node %s", self.displayingNode.__info.id)
                 local parent = self.displayingNode:getParent()
                 if parent and parent[self.displayingNode.__info.id] == self.displayingNode then
                     parent[self.displayingNode.__info.id] = nil
@@ -295,8 +300,20 @@ function panel:handleEvent()
         end
     end
 
+    local function onKeyReleased(keyCode, event)
+        if gk.focusNode then
+            return
+        end
+        local key = cc.KeyCodeKey[keyCode + 1]
+        if key == "KEY_SHIFT" then
+            self.shiftPressed = false
+            return
+        end
+    end
+
     local listener = cc.EventListenerKeyboard:create()
     listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
+    listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 
     -- TODO: mouse move event

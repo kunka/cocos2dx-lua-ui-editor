@@ -133,8 +133,8 @@ function panel.create(parent)
     self.widgets = {
         { type = "cc.Node", },
         { type = "cc.Sprite", file = "?", },
-        { type = "ZoomButton", file = "?", },
         { type = "cc.Label", },
+        { type = "ZoomButton", file = "?", },
         { type = "cc.Layer", },
         { type = "cc.LayerColor", },
         { type = "cc.ScrollView" },
@@ -222,8 +222,8 @@ function panel.create(parent)
                     local node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
-                        local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
+                        local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
+                        local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
                         node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)

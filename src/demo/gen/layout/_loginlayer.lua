@@ -20,6 +20,7 @@ return {
 	   r = 255},
 	children = {	   {
 	      file = "?",
+	      flippedX = 1,
 	      height = 150,
 	      id = "sprite2",
 	      localZOrder = 0,
@@ -45,6 +46,7 @@ return {
 	         y = "$yScale"}},
 	   {
 	      file = "?",
+	      flippedX = 1,
 	      height = 150,
 	      id = "sprite1",
 	      localZOrder = 0,
