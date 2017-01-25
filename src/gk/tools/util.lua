@@ -100,13 +100,16 @@ end
 function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.rectTag
     local draw = node:getChildByTag(tg)
+    if iskindof(node, "cc.ScrollView") then
+        draw = node:getContainer():getChildByTag(tg)
+    end
     if draw then
         draw:clear()
         draw:stopAllActions()
     end
 end
 
-function util:drawNodeRect(node, c4f, tag)
+function util:drawNode(node, c4f, tag)
     util.tags = util.tags and util.tags or {
         rectTag = 0xFFF0,
         fontSizeTag = 0xFFF1,
@@ -127,6 +130,7 @@ function util:drawNodeRect(node, c4f, tag)
         end
         draw:setPosition(cc.p(0, 0))
     end
+    local sx, sy = util:getGlobalScale(node)
 
     local size = node:getContentSize()
     -- bounds
@@ -135,13 +139,14 @@ function util:drawNodeRect(node, c4f, tag)
         cc.p(size.width - 0.5, size.height - 0.5),
         cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
 
-    if not iskindof(node, "cc.Layer") then
-        -- anchor point
-        local p = node:getAnchorPoint()
-        p.x = p.x * size.width
-        p.y = p.y * size.height
-        draw:drawDot(p, 4, cc.c4f(1, 0, 0, 1))
+    -- anchor point
+    local p = node:getAnchorPoint()
+    p.x = p.x * size.width
+    p.y = p.y * size.height
+    if node:isIgnoreAnchorPointForPosition() then
+        p.x, p.y = 0, 0
     end
+    draw:drawDot(p, sx ~= 0 and 2 / sx or 2, cc.c4f(1, 0, 0, 1))
 
     if iskindof(node, "cc.ScrollView") then
         -- bg
@@ -150,33 +155,34 @@ function util:drawNodeRect(node, c4f, tag)
         draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
     end
 
-    -- draw text size
-    --    if tolua.type(node) == "cc.Label" then
-    --        local fontSize = node:getTTFConfig().fontFilePath ~= "" and node:getTTFConfig().fontSize or 0
-    --        if fontSize <= 0 then
-    --            -- bmfont
-    --            fontSize = node:getBMFontSize()
-    --        end
-    --        if fontSize > 0 then
-    --            local lb = cc.Label:createWithSystemFont(string.format("%d", fontSize), "Arial", 15)
-    --            lb:enableUnderline()
-    --            local child = node:getChildByTag(-0x2333)
-    --            if child then
-    --                child:removeFromParent()
-    --            end
-    --            node:addChild(lb, 9999, -0x2333)
-    --            lb:setPosition(size.width, size.height)
-    --        end
-    --    end
-
     -- refresh draw, only in test mode
     if DEBUG and not tag then
         draw:stopAllActions()
         draw:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
             draw:clear()
-            util:drawNodeRect(node, c4f)
+            util:drawNode(node, c4f)
         end)))
     end
+    return draw
+end
+
+function util:drawNodeBounds(node, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+
+    local size = node:getContentSize()
+    -- bounds
+    draw:drawRect(cc.p(0.5, 0.5),
+        cc.p(0.5, size.height - 0.5),
+        cc.p(size.width - 0.5, size.height - 0.5),
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
     return draw
 end
 
@@ -264,6 +270,13 @@ function util:isAncestorOf(ancestor, child)
         c = c:getParent()
     end
     return false
+end
+
+function util:touchInNode(node, globalPoint)
+    local s = node:getContentSize()
+    local rect = { x = 0, y = 0, width = s.width, height = s.height }
+    local p = node:convertToNodeSpace(globalPoint)
+    return cc.rectContainsPoint(rect, p)
 end
 
 return util

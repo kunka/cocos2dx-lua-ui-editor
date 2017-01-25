@@ -120,7 +120,7 @@ function inject:initLayer(layer)
             self:sync(layer)
         end
         if gk.MODE == 1 then
-            gk.util:drawNodeRect(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
+            gk.util:drawNode(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
             gk.event:post("displayDomTree", layer)
             layer:runAction(cc.CallFunc:create(function()
                 gk.event:post("displayNode", layer)

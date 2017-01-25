@@ -240,6 +240,12 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("layer", rootTable)
         return node
     end,
+    ["cc.LayerColor"] = function(info, rootTable)
+        info.color = info.color or cc.c4b(0, 0, 0, 255)
+        local node = cc.LayerColor:create(info.color)
+        info.id = info.id or generator:genID("layer", rootTable)
+        return node
+    end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
         info.id = info.id or generator:genID("label", rootTable)
@@ -341,13 +347,21 @@ generator.nodeSetFuncs = {
         node:setOpacity(...)
     end,
     color = function(node, var)
-        node:setColor(var)
+        if iskindof(node, "cc.LayerColor") then
+            -- LayerColor has no setColor interface
+        else
+            node:setColor(var)
+        end
     end,
     visible = function(node, var)
         node:setVisible(var == 0)
     end,
     localZOrder = function(node, var)
         node:setLocalZOrder(var)
+    end,
+    --------------------------- ZoomButton   ---------------------------
+    zoomScale = function(node, var)
+        node:setZoomScale(var)
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node, string)
@@ -379,7 +393,7 @@ generator.nodeSetFuncs = {
         gk.log("set fontFile_%s %s", lan, font)
         --        node:setLineHeight(...)
     end,
-    --    np = function(node, var)
+    --    np = function( node, var)
     --        node:setNormalizedPosition(var)
     --    end,
     --------------------------- cc.ScrollView   ---------------------------
@@ -454,13 +468,21 @@ generator.nodeGetFuncs = {
         end
     end,
     color = function(node)
-        return node.__info.color or node:getColor()
+        if iskindof(node, "cc.LayerColor") then
+            return node.__info.color
+        else
+            return node.__info.color or node:getColor()
+        end
     end,
     visible = function(node)
         return node.__info.visible or (node:isVisible() and 0 or 1)
     end,
     localZOrder = function(node, var)
         return node.__info.localZOrder or node:getLocalZOrder()
+    end,
+    --------------------------- ZoomButton   ---------------------------
+    zoomScale = function(node)
+        return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)

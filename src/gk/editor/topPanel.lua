@@ -136,16 +136,26 @@ function panel.create(parent)
         { type = "ZoomButton", file = "?", },
         { type = "cc.Label", },
         { type = "cc.Layer", },
+        { type = "cc.LayerColor", },
         { type = "cc.ScrollView" },
     }
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = gk.create_sprite(self.widgets[i].file)
         node.type = self.widgets[i].type
-        node:setScale(0.35)
+        node:setScale(0.32)
         local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
+        originPos.y = originPos.y + 8
         node:setPosition(originPos)
         self:addChild(node)
+
+        local names = string.split(self.widgets[i].type, ".")
+        local label = cc.Label:createWithSystemFont(names[#names], fontName, 8 * 4)
+        label:setScale(scale)
+        label:setTextColor(cc.c3b(189, 189, 189))
+        self:addChild(label)
+        label:setAnchorPoint(0.5, 0.5)
+        label:setPosition(originPos.x, originPos.y - 35)
 
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
@@ -187,13 +197,13 @@ function panel.create(parent)
                 local s = node:getContentSize()
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
                 local p = node:convertToNodeSpace(location)
-                if cc.rectContainsPoint(rect, p) then
+                if gk.util:isGlobalVisible(node) and cc.rectContainsPoint(rect, p) then
                     local type = node.__cname and node.__cname or tolua.type(node)
                     if self._containerNode ~= node then
                         self._containerNode = node
                         gk.log("find container node %s, id = %s", type, node.__info.id)
+                        gk.event:post("displayNode", node)
                     end
-                    gk.event:post("displayNode", node)
                     break
                 end
             end
@@ -211,17 +221,7 @@ function panel.create(parent)
                     local info = clone(self.widgets[i])
                     local node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
-                        if tolua.type(node) == "cc.ScrollView" or tolua.type(node) == "cc.Layer" then
-                            node.__info.scaleX, node.__info.scaleY = 1, 1
-                        else
-                            local sx, sy = gk.util:getGlobalScale(self._containerNode)
-                            if sx ~= 1 or sy ~= 1 then
-                                node.__info.scaleX, node.__info.scaleY = 1, 1
-                            else
-                                node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
-                                node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
-                            end
-                        end
+                        self.parent:rescaleNode(node, self._containerNode)
                         local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
                         local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                         node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)

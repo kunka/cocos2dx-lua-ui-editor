@@ -16,18 +16,22 @@ function ZoomButton:ctor(node, callback)
     -- default scale
     local width = self:getContentSize().width
     if width <= 100 then
-        self.selectedScale = 0.9
+        self.zoomScale = 0.9
     elseif width <= 200 then
-        self.selectedScale = 0.9 + 0.05 / 100 * (width - 100)
+        self.zoomScale = 0.9 + 0.05 / 100 * (width - 100)
     elseif width <= 500 then
-        self.selectedScale = 0.95 + 0.04 / 300 * (width - 200)
+        self.zoomScale = 0.95 + 0.04 / 300 * (width - 200)
     else
-        self.selectedScale = 0.99
+        self.zoomScale = 0.99
     end
 end
 
-function ZoomButton:setSelectedScale(scale)
-    self.selectedScale = scale
+function ZoomButton:setZoomScale(scale)
+    self.zoomScale = scale
+end
+
+function ZoomButton:getZoomScale()
+    return self.zoomScale
 end
 
 function ZoomButton:setSafeAnchor(anchorX, anchorY)
@@ -51,7 +55,7 @@ function ZoomButton:selected()
             self.originalScaleY = self:getScaleY()
         end
 
-        local zoomAction = cc.ScaleTo:create(0.03, self.originalScaleX * self.selectedScale, self.originalScaleY * self.selectedScale)
+        local zoomAction = cc.ScaleTo:create(0.03, self.originalScaleX * self.zoomScale, self.originalScaleY * self.zoomScale)
         zoomAction:setTag(kZoomActionTag)
         self:runAction(zoomAction)
 
@@ -65,8 +69,8 @@ function ZoomButton:unselected()
     if self.enabled and self.isSelected then
         --        gk.log("ZoomButton:unselected")
         gk.util:stopActionByTagSafe(self, kZoomActionTag)
-        local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.selectedScale) / 2), self.originalScaleY * (1 + (1 - self.selectedScale) / 2))
-        local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.selectedScale + 1), 0.5 * self.originalScaleY * (self.selectedScale + 1))
+        local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.zoomScale) / 2), self.originalScaleY * (1 + (1 - self.zoomScale) / 2))
+        local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.zoomScale + 1), 0.5 * self.originalScaleY * (self.zoomScale + 1))
         local action3 = cc.ScaleTo:create(0.06, self.originalScaleX, self.originalScaleY)
         local actionAll = cc.Sequence:create(action1, action2, action3)
         local zoomAction = cc.Sequence:create(actionAll, cc.CallFunc:create(function()

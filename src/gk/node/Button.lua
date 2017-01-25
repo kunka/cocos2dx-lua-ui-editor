@@ -74,7 +74,7 @@ function Button:setContentNode(node)
     -- test draw
     if GK_DRAW_BUTTON then
         self:runAction(cc.CallFunc:create(function()
-            gk.util:drawNodeRect(self)
+            gk.util:drawNode(self)
         end))
     end
 end

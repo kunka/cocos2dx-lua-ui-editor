@@ -148,7 +148,7 @@ function EditBox:focus()
             gk.focusNode:unfocus()
         end
         gk.focusNode = self
-        gk.util:drawNodeRect(self, cc.c4f(1, 0, 0, 1), -2)
+        gk.util:drawNode(self, cc.c4f(1, 0, 0, 1), -2)
         local str = self:getInput()
         self.label:setString(str .. self.cursorChar)
         self:startBlinkCursor()

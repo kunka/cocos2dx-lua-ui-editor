@@ -20,7 +20,7 @@ function panel.create(parent)
     local createLine = function(y)
         gk.util:drawLineOnNode(self, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
     end
-    createLine(size.height)
+    createLine(size.height - 0.5)
 
     return self
 end
@@ -121,32 +121,19 @@ function panel:displayDomNode(node, layer)
         if fixChild or not gk.util:isGlobalVisible(node) then
             label:setOpacity(100)
         end
-        --        local button = gk.ZoomButton.new(label)
-        --        button:setScale(scale)
-        --        self.displayDomInfoNode:addChild(button)
-        --        button:setAnchorPoint(0, 0.5)
-        --        button:setPosition(x, y)
         label:setScale(scale)
         self.displayDomInfoNode:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
-        --        button:onClicked(function()
-        --            if fixChild then
-        --                return
-        --            end
-        --            gk.event:post("displayNode", node)
-        --            gk.event:post("displayDomTree")
-        --        end)
         -- select
         if self.parent.displayingNode == node then
-            gk.util:drawNodeRect(label, nil)
+            gk.util:drawNodeBounds(label, nil, -2)
             self.selectedNode = label
         end
         -- drag button
         if not fixChild then
             label:setTag(1)
             label.content = content
-            local nodePre = node
             local node = label
             local listener = cc.EventListenerTouchOneByOne:create()
             listener:setSwallowTouches(true)
@@ -160,19 +147,15 @@ function panel:displayDomNode(node, layer)
                     gk.log("dom:choose node %s", content)
                     local nd = self.parent.scene.layer[content]
                     if nd then
-                        --                        if self.parent.displayingNode == nodePre then
-                        --                            gk.util:clearDrawNode(label)
-                        --                        end
                         if self.selectedNode ~= node then
                             if self.selectedNode then
-                                gk.util:clearDrawNode(self.selectedNode)
+                                gk.util:clearDrawNode(self.selectedNode, -2)
                             end
                         end
                         self.selectedNode = node
-                        gk.util:drawNodeRect(node)
+                        gk.util:drawNodeBounds(node, nil, -2)
                         gk.event:post("displayNode", nd)
                     end
-                    --                    gk.event:post("displayDomTree")
                     return true
                 else
                     return false
@@ -204,7 +187,7 @@ function panel:displayDomNode(node, layer)
                     gk.util:clearDrawNode(self._containerNode, -2)
                 end
                 if self.selectedNode then
-                    gk.util:clearDrawNode(self.selectedNode)
+                    gk.util:clearDrawNode(self.selectedNode, -2)
                 end
                 self._containerNode = nil
                 local children = self.sortedChildren
@@ -214,15 +197,11 @@ function panel:displayDomNode(node, layer)
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)
                     if cc.rectContainsPoint(rect, p) then
-                        --                        if self._containerNode ~= node and node.content ~= content then
                         local nd1 = self.parent.scene.layer[node.content]
                         local nd2 = self.parent.scene.layer[content]
                         if nd1 == nd2 or nd1:getParent() == nd2 or nd2:getParent() == nd1 then
                             break
                         end
-                        --                        if self._containerNode then
-                        --                            gk.util:clearDrawNode(self._containerNode, -2)
-                        --                        end
                         self._containerNode = node
                         if p.y < s.height / 2 and nd1 and nd2 and nd1:getParent() == nd2:getParent() then
                             -- reorder mode
@@ -231,7 +210,7 @@ function panel:displayDomNode(node, layer)
                             self.mode = 1
                         else
                             -- change container mode
-                            gk.util:drawNodeRect(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
+                            gk.util:drawNode(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
                             self.mode = 2
                         end
                         --                            gk.log("dom:find container node %s", self._containerNode.content)
@@ -239,7 +218,6 @@ function panel:displayDomNode(node, layer)
                         if nd then
                             gk.event:post("displayNode", nd)
                         end
-                        --                        end
                         break
                     end
                 end
@@ -254,14 +232,7 @@ function panel:displayDomNode(node, layer)
                             p = container:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
                             node:retain()
                             node:removeFromParent()
-                            local sx, sy = gk.util:getGlobalScale(container)
-                            if sx ~= 1 or sy ~= 1 then
-                                node.__info.scaleX, node.__info.scaleY = 1, 1
-                                node.__info.scaleXY = { x = "1", y = "1" }
-                            else
-                                node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
-                                node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
-                            end
+                            self.parent:rescaleNode(node, container)
                             local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
                             local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                             node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)

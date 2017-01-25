@@ -70,7 +70,7 @@ function panel:onNodeCreate(node)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
-            if gk.util:hitTest(node, touch) then
+            if node ~= self.scene.layer and gk.util:isGlobalVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -102,7 +102,7 @@ function panel:onNodeCreate(node)
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if nd.__info and nd.__info.id and nd ~= node then
+                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.id and nd ~= node then
                     local s = nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
@@ -134,14 +134,7 @@ function panel:onNodeCreate(node)
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
                 node:retain()
                 node:removeFromParent()
-                local sx, sy = gk.util:getGlobalScale(self._containerNode)
-                if sx ~= 1 or sy ~= 1 then
-                    node.__info.scaleX, node.__info.scaleY = 1, 1
-                    node.__info.scaleXY = { x = "1", y = "1" }
-                else
-                    node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
-                    node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
-                end
+                self:rescaleNode(node, self._containerNode)
                 local scaleX = generator:parseValue(node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue(node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
@@ -166,6 +159,22 @@ function panel:onNodeCreate(node)
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end)
+end
+
+function panel:rescaleNode(node, parent)
+    if node:isIgnoreAnchorPointForPosition() then
+        -- Layer, ScrollView ...
+        node.__info.scaleX, node.__info.scaleY = 1, 1
+    else
+        -- normal node
+        local sx, sy = gk.util:getGlobalScale(parent)
+        if sx ~= 1 or sy ~= 1 then
+            node.__info.scaleX, node.__info.scaleY = 1, 1
+        else
+            node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
+            node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
+        end
+    end
 end
 
 function panel:undisplayNode()
@@ -194,8 +203,10 @@ function panel:drawNodeCoordinate(node)
         self.coordinateNode:setCascadeOpacityEnabled(true)
 
         local sx, sy = gk.util:getGlobalScale(parent)
-        sx = 0.2 / sx
-        sy = 0.2 / sy
+        if sx ~= 0 and sy ~= 0 then
+            sx = 0.2 / sx
+            sy = 0.2 / sy
+        end
 
         local createArrow = function(width, scale, p, rotation, ap)
             if width < 0 then
@@ -236,7 +247,7 @@ function panel:displayNode(node)
     end
     self:undisplayNode()
     self.displayingNode = node
-    gk.util:drawNodeRect(node)
+    gk.util:drawNode(node)
     self:drawNodeCoordinate(node)
 
     self.rightPanel:displayNode(node)
