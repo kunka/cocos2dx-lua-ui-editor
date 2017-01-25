@@ -114,7 +114,7 @@ function panel.create(parent)
         local view = director:getOpenGLView()
         view:setFrameSize(size.width, size.height)
         gk.log("set OpenGLView size(%.1f,%.1f)", size.width, winSize.height)
-        gk.util:restartGame()
+        gk.util:restartGame(1)
     end)
     yIndex = yIndex + 1
 
@@ -125,7 +125,7 @@ function panel.create(parent)
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local lan = items[index]
         gk.resource:setCurrentLan(lan)
-        gk.util:restartGame()
+        gk.util:restartGame(1)
     end)
     yIndex = yIndex + 1
 
@@ -138,6 +138,7 @@ function panel.create(parent)
         { type = "cc.Layer", },
         { type = "cc.LayerColor", },
         { type = "cc.ScrollView" },
+        { type = "cc.TableView" },
     }
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do

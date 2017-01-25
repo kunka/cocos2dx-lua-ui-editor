@@ -103,6 +103,7 @@ function generator:default()
         },
         fontSize = "32",
         scaleXY = { x = 1, y = 1 },
+        scaleSize = { w = 1, h = 1 },
     }
     return self._default
 end
@@ -254,6 +255,11 @@ generator.nodeCreator = {
     ["cc.ScrollView"] = function(info, rootTable)
         local node = cc.ScrollView:create(cc.size(100, 150))
         info.id = info.id or generator:genID("scrollView", rootTable)
+        return node
+    end,
+    ["cc.TableView"] = function(info, rootTable)
+        local node = cc.TableView:create(cc.size(100, 150))
+        info.id = info.id or generator:genID("tableView", rootTable)
         return node
     end,
 }
@@ -408,7 +414,24 @@ generator.nodeSetFuncs = {
     viewSize = function(node, var)
         local w = generator:parseValue("width", node, var.width)
         local h = generator:parseValue("height", node, var.height)
-        node:setViewSize(cc.size(w, h))
+        local ss = node.__info.scaleSize
+        local scaleW = generator:parseValue("scaleW", node, ss.w)
+        local scaleH = generator:parseValue("scaleH", node, ss.h)
+        node:setViewSize(cc.size(w * scaleW, h * scaleH))
+        if iskindof(node, "cc.TableView") then
+            node:reloadData()
+        end
+    end,
+    scaleSize = function(node, var)
+        local vs = node.__info.viewSize
+        local w = generator:parseValue("width", node, vs.width)
+        local h = generator:parseValue("height", node, vs.height)
+        local scaleW = generator:parseValue("scaleW", node, var.w)
+        local scaleH = generator:parseValue("scaleH", node, var.h)
+        node:setViewSize(cc.size(w * scaleW, h * scaleH))
+        if iskindof(node, "cc.TableView") then
+            node:reloadData()
+        end
     end,
     direction = function(node, ...)
         node:setDirection(...)
@@ -421,6 +444,10 @@ generator.nodeSetFuncs = {
     end,
     touchEnabled = function(node, var)
         node:setTouchEnabled(var == 0)
+    end,
+    --------------------------- cc.TableView   ---------------------------
+    verticalFillOrder = function(node, var)
+        node:setVerticalFillOrder(var)
     end,
 }
 
@@ -543,6 +570,10 @@ generator.nodeGetFuncs = {
     end,
     touchEnabled = function(node)
         return iskindof(node, "cc.ScrollView") and (node.__info.touchEnabled or (node:isTouchEnabled() and 0 or 1))
+    end,
+    --------------------------- cc.TableView   ---------------------------
+    verticalFillOrder = function(node)
+        return iskindof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
     end,
 }
 

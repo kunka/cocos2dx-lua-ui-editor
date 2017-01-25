@@ -138,6 +138,7 @@ function panel:displayNode(node)
     local isLayer = iskindof(node, "cc.Layer")
     local isLayerColor = iskindof(node, "cc.LayerColor")
     local isScrollView = iskindof(node, "cc.ScrollView")
+    local isTableView = iskindof(node, "cc.TableView")
 
     local yIndex = 0
     --------------------------- ID   ---------------------------
@@ -171,7 +172,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
         -- ScaleXY
-        createLabel("ScaleXY", leftX, topY - stepY * yIndex)
+        createLabel("ScalePos", leftX, topY - stepY * yIndex)
         createLabel("X", leftX2, topY - stepY * yIndex)
         local scaleXs = { "1", "$xScale", "$minScale", "$maxScale" }
         createSelectBox(scaleXs, table.indexof(scaleXs, tostring(node.__info.scaleXY.x)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
@@ -217,17 +218,19 @@ function panel:displayNode(node)
         --            setOpacitys(ps, nps)
         --        end)
     end
-    -- scale
-    createLabel("Scale", leftX, topY - stepY * yIndex)
-    createLabel("X", leftX2, topY - stepY * yIndex)
-    createInput(tostring(node.__info.scaleX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator:modify(node, "scaleX", input, "number"))
-    end)
-    createLabel("Y", leftX3, topY - stepY * yIndex)
-    createInput(tostring(node.__info.scaleY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-        editBox:setInput(generator:modify(node, "scaleY", input, "number"))
-    end)
-    yIndex = yIndex + 1
+    if not isScrollView then
+        -- scale
+        createLabel("Scale", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.scaleX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "scaleX", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.scaleY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "scaleY", input, "number"))
+        end)
+        yIndex = yIndex + 1
+    end
     if not isLayer then
         -- anchor
         createLabel("Anchor", leftX, topY - stepY * yIndex)
@@ -241,7 +244,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if not isLabel then
+    if not isLabel and not isTableView then
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
@@ -287,17 +290,19 @@ function panel:displayNode(node)
         yIndex = yIndex - 3 - 2
     end
 
-    -- rotation
-    createLabel("Rotation", leftX, topY - stepY * yIndex)
-    createInput(tostring(node.__info.rotation), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-        editBox:setInput(generator:modify(node, "rotation", input, "number"))
-    end)
-    -- opacity
-    createLabel("Opacity", leftX4_2, topY - stepY * yIndex)
-    createInput(tostring(node.__info.opacity), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-        editBox:setInput(generator:modify(node, "opacity", input, "number"))
-    end)
-    yIndex = yIndex + 1
+    if not isScrollView then
+        -- rotation
+        createLabel("Rotation", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.rotation), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            editBox:setInput(generator:modify(node, "rotation", input, "number"))
+        end)
+        -- opacity
+        createLabel("Opacity", leftX4_2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.opacity), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            editBox:setInput(generator:modify(node, "opacity", input, "number"))
+        end)
+        yIndex = yIndex + 1
+    end
     -- localZOrder
     createLabel("ZOrder", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.localZOrder), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
@@ -418,9 +423,9 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    --------------------------- cc.ScrollView   ---------------------------
+    --------------------------- cc.ScrollView, cc.TableView  ---------------------------
     if isScrollView then
-        createLabel("ScrollView", leftX, topY - stepY * yIndex, true)
+        createLabel(isTableView and "TableView" or "ScrollView", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
@@ -437,13 +442,35 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "viewSize.height", input, "number"))
         end)
         yIndex = yIndex + 1
+        -- ScaleSize
+        createLabel("ScaleSize", leftX, topY - stepY * yIndex)
+        createLabel("W", leftX2, topY - stepY * yIndex)
+        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+        createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "scaleSize.w", scaleWs[index], "string")
+        end)
+        createLabel("H", leftX3, topY - stepY * yIndex)
+        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+        createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "scaleSize.h", scaleHs[index], "string")
+        end)
+        yIndex = yIndex + 1
         -- Direction
         createLabel("Direction", leftX, topY - stepY * yIndex)
-        local overflows = { "HORIZONTAL", "VERTICAL", "BOTH" }
-        createSelectBox(overflows, node.__info.direction + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+        local directions = { "HORIZONTAL", "VERTICAL", "BOTH" }
+        createSelectBox(directions, node.__info.direction + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
             generator:modify(node, "direction", index - 1, "number")
         end)
         yIndex = yIndex + 1
+        if isTableView then
+            -- verticalFillOrder
+            createLabel("FillOrder", leftX, topY - stepY * yIndex)
+            local verticalFillOrders = { "TOP_DOWN", "BOTTOM_UP" }
+            createSelectBox(verticalFillOrders, node.__info.verticalFillOrder + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+                generator:modify(node, "verticalFillOrder", index - 1, "number")
+            end)
+            yIndex = yIndex + 1
+        end
         -- ClipToBD
         createLabel("ClipToBD", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.clipToBD == 0, leftX2_1, topY - stepY * yIndex, function(selected)

@@ -22,13 +22,15 @@ function panel.create(parent)
     end
     createLine(size.height - 0.5)
 
+    self:handleEvent()
+
     return self
 end
 
 function panel:undisplayNode()
-    if self.displayDomInfoNode then
-        self.displayDomInfoNode:removeFromParent()
-        self.displayDomInfoNode = nil
+    if self.displayInfoNode then
+        self.displayInfoNode:removeFromParent()
+        self.displayInfoNode = nil
     end
     self.draggingNode = nil
     self.sortedChildren = nil
@@ -40,8 +42,8 @@ function panel:displayDomTree(rootLayer)
     if rootLayer then
         -- current layout
         self:undisplayNode()
-        self.displayDomInfoNode = cc.Node:create()
-        self:addChild(self.displayDomInfoNode)
+        self.displayInfoNode = cc.Node:create()
+        self:addChild(self.displayInfoNode)
         self.domDepth = 0
 
         -- other layout
@@ -54,6 +56,7 @@ function panel:displayDomTree(rootLayer)
                 self:displayOthers({ key })
             end
         end
+        self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, 20 * self.domDepth + gk.display.bottomHeight + 5))
     end
 end
 
@@ -99,7 +102,7 @@ function panel:displayDomNode(node, layer)
                 button:setScale(scale * 0.6, scale)
                 button:setPosition(x + 1, y)
             end
-            self.displayDomInfoNode:addChild(button)
+            self.displayInfoNode:addChild(button)
             button:setAnchorPoint(0, 0.5)
             button:onClicked(function()
                 if fixChild then
@@ -122,7 +125,7 @@ function panel:displayDomNode(node, layer)
             label:setOpacity(100)
         end
         label:setScale(scale)
-        self.displayDomInfoNode:addChild(label)
+        self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
         -- select
@@ -174,14 +177,14 @@ function panel:displayDomNode(node, layer)
                     label:setTextColor(cc.c3b(200, 200, 200))
                     label:setAnchorPoint(0, 0.5)
                     label:setScale(scale)
-                    self.displayDomInfoNode:addChild(label)
+                    self.displayInfoNode:addChild(label)
                     self.draggingNode = label
                 end
-                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self.displayDomInfoNode:convertToNodeSpace(self._touchBegainLocation))))
+                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self.displayInfoNode:convertToNodeSpace(self._touchBegainLocation))))
 
                 -- find dest container
                 if self.sortedChildren == nil then
-                    self:sortChildrenOfSceneGraphPriority(self.displayDomInfoNode, true)
+                    self:sortChildrenOfSceneGraphPriority(self.displayInfoNode, true)
                 end
                 if self._containerNode then
                     gk.util:clearDrawNode(self._containerNode, -2)
@@ -336,7 +339,7 @@ function panel:displayOthers(keys)
         label:setContentSize(10 / scale, 10 / scale)
         local button = gk.ZoomButton.new(label)
         button:setScale(scale * 0.6, scale)
-        self.displayDomInfoNode:addChild(button)
+        self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
         button:setPosition(x + 1, y)
         button:onClicked(function()
@@ -353,7 +356,7 @@ function panel:displayOthers(keys)
         label:setTextColor(cc.c3b(200, 200, 200))
         local button = gk.ZoomButton.new(label)
         button:setScale(scale)
-        self.displayDomInfoNode:addChild(button)
+        self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
         button:setPosition(x, y)
         button:onClicked(function()
@@ -399,6 +402,23 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
             table.insert(self.sortedChildren, node)
         end
     end
+end
+
+function panel:handleEvent()
+    local listener = cc.EventListenerMouse:create()
+    listener:registerScriptHandler(function(touch, event)
+        local location = touch:getLocationInView()
+        if gk.util:touchInNode(self, location) then
+            if self.displayInfoNode:getContentSize().height > self:getContentSize().height then
+                local scrollY = touch:getScrollY()
+                local x, y = self.displayInfoNode:getPosition()
+                y = y + scrollY * 10
+                y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
+                self.displayInfoNode:setPosition(x, y)
+            end
+        end
+    end, cc.Handler.EVENT_MOUSE_SCROLL)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 return panel
