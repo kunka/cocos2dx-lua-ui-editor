@@ -209,7 +209,7 @@ function panel:drawNodeCoordinate(node)
             sy = 0.2 / sy
         end
 
-        local createArrow = function(width, scale, p, rotation, ap)
+        local createArrow = function(width, dis, scale, p, rotation, ap)
             if width < 0 then
                 return
             end
@@ -222,7 +222,7 @@ function panel:drawNodeCoordinate(node)
             arrow:setOpacity(128)
             self.coordinateNode:addChild(arrow)
             -- label
-            local label = cc.Label:createWithSystemFont(tostring(math.round(width)), "Arial", 50)
+            local label = cc.Label:createWithSystemFont(tostring(math.round(dis)), "Arial", 50)
             label:setScale(scale)
             label:setColor(cc.c3b(200, 100, 200))
             label:setAnchorPoint(ap.x, ap.y)
@@ -232,13 +232,15 @@ function panel:drawNodeCoordinate(node)
         local size = parent:getContentSize()
 
         -- left
-        createArrow(x, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
+        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x)
+        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y)
+        createArrow(x, x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down
-        createArrow(y, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
+        createArrow(y, y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
         -- right
-        createArrow((size.width - x), sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
+        createArrow((size.width - x), (size.width - x) / scaleX, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
         -- top
-        createArrow((size.height - y), sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
+        createArrow((size.height - y), (size.height - y) / scaleY, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
     end
 end
 
@@ -288,10 +290,7 @@ function panel:handleEvent()
             -- delete node
             if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id then
                 gk.log("delete node %s", self.displayingNode.__info.id)
-                local parent = self.displayingNode:getParent()
-                if parent and parent[self.displayingNode.__info.id] == self.displayingNode then
-                    parent[self.displayingNode.__info.id] = nil
-                end
+                self:removeNodeIndex(self.displayingNode, self.scene.layer)
                 self.displayingNode:removeFromParent()
                 self.displayingNode = nil
                 gk.event:post("postSync")
@@ -352,6 +351,21 @@ function panel:handleEvent()
     --    listener:registerScriptHandler(function(touch, event)
     --    end, cc.Handler.EVENT_MOUSE_SCROLL)
     --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+end
+
+function panel:removeNodeIndex(node, rootTable)
+    if node.__info and node.__info.id and rootTable[node.__info.id] == node then
+        rootTable[node.__info.id] = nil
+    end
+    local children = node:getChildren()
+    if children then
+        for i = 1, #children do
+            local child = children[i]
+            if child then
+                self:removeNodeIndex(child, rootTable)
+            end
+        end
+    end
 end
 
 function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)

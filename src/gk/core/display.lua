@@ -28,7 +28,7 @@ function display:initWithDesignSize(size)
     if gk.MODE == 1 then
         display.topHeight = 80
         display.leftWidth = 140
-        display.rightWidth = 200
+        display.rightWidth = 210
         display.bottomHeight = 20
     else
         display.topHeight = 0

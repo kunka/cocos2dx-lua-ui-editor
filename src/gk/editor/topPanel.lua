@@ -225,7 +225,11 @@ function panel.create(parent)
                         self.parent:rescaleNode(node, self._containerNode)
                         local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
                         local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                        node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                        if type == "cc.Layer" then
+                            node.__info.x, node.__info.y = 0, 0
+                        else
+                            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                        end
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
                         gk.event:post("postSync")

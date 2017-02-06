@@ -93,20 +93,78 @@ function generator:createNode(info, rootNode, rootTable)
     return node
 end
 
-function generator:default()
-    self._default = self._default and self._default or {
-        file = "",
-        string = "label",
-        fontFile = {
-            en = "gk/res/font/Consolas.ttf",
-            cn = "gk/res/font/msyh.ttf",
-        },
-        fontSize = "32",
-        scaleXY = { x = 1, y = 1 },
-        scaleSize = { w = 1, h = 1 },
-    }
-    return self._default
+function generator:default(type, key)
+    if not self._default then
+        self._default = {}
+        self._default["cc.Node"] = {
+            file = "",
+            scaleXY = { x = 1, y = 1 },
+            scaleSize = { w = 1, h = 1 },
+        }
+        self._default["cc.Label"] = {
+            string = "label",
+            fontFile = {
+                en = "gk/res/font/Consolas.ttf",
+                cn = "gk/res/font/msyh.ttf",
+            },
+            fontSize = "32",
+        }
+        self._default["cc.Layer"] = {
+            width = "$win.w",
+            height = "$win.h",
+        }
+        self._default["cc.LayerColor"] = {
+            width = "$win.w",
+            height = "$win.h",
+            color = { r = 153, g = 153, b = 153, a = 255 },
+        }
+    end
+    return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
 end
+
+generator.defunodeCreator = {
+    ["cc.Node"] = function(info, rootTable)
+        local node = cc.Node:create()
+        info.id = info.id or generator:genID("node", rootTable)
+        return node
+    end,
+    ["cc.Sprite"] = function(info, rootTable)
+        local node = gk.create_sprite(info.file)
+        info.id = info.id or generator:genID("sprite", rootTable)
+        return node
+    end,
+    ["ZoomButton"] = function(info, rootTable)
+        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
+        info.id = info.id or generator:genID("button", rootTable)
+        return node
+    end,
+    ["cc.Layer"] = function(info, rootTable)
+        local node = cc.Layer:create()
+        info.id = info.id or generator:genID("layer", rootTable)
+        return node
+    end,
+    ["cc.LayerColor"] = function(info, rootTable)
+        info.color = info.color or cc.c4b(0, 0, 0, 255)
+        local node = cc.LayerColor:create(info.color)
+        info.id = info.id or generator:genID("layer", rootTable)
+        return node
+    end,
+    ["cc.Label"] = function(info, rootTable)
+        local node = gk.create_label(info)
+        info.id = info.id or generator:genID("label", rootTable)
+        return node
+    end,
+    ["cc.ScrollView"] = function(info, rootTable)
+        local node = cc.ScrollView:create(cc.size(100, 150))
+        info.id = info.id or generator:genID("scrollView", rootTable)
+        return node
+    end,
+    ["cc.TableView"] = function(info, rootTable)
+        local node = cc.TableView:create(cc.size(100, 150))
+        info.id = info.id or generator:genID("tableView", rootTable)
+        return node
+    end,
+}
 
 function generator:wrap(info, rootTable)
     local proxy = info
@@ -117,7 +175,7 @@ function generator:wrap(info, rootTable)
             if key == "__self" then
                 var = proxy
             else
-                var = proxy[key] or self:default()[key]
+                var = proxy[key] or self:default(info.type, key)
             end
             --            gk.log("get %s,%s", key, var)
             return var

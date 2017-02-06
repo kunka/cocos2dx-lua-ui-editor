@@ -11,7 +11,7 @@ local ScrollViewTest = class("ScrollViewTest", gk.Layer)
 function ScrollViewTest:ctor()
     ScrollViewTest.super.ctor(self)
     if self.scrollView1 then
-        self.scrollView1:setContentSize(cc.size(200 * gk.display.xScale(), 600 * gk.display.yScale()))
+--        self.scrollView1:setContentSize(cc.size(200 * gk.display.xScale(), 600 * gk.display.yScale()))
     end
 end
 
