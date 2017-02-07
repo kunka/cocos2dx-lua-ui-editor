@@ -44,10 +44,32 @@ function panel:subscribeEvent()
         self.leftPanel:displayDomTree(node or self.scene.layer)
     end)
     gk.event:subscribe(self, "changeRootLayout", function(clazz)
-        local layer = gk.resource.genNodes[clazz]
-        if gk.resource.genNodes[clazz] then
+        gk.log("changeRootLayout --> %s", clazz)
+        local path = gk.resource.genNodes[clazz]
+        if path then
             gk.event:unsubscribeAll(self)
-            gk.SceneManager:replace(layer)
+            --            gk.SceneManager:replace(layer)
+            --            local clazz = require(layer)
+            --            print(layer)
+            --            local node = clazz:create()
+            --            local scene = gk.SceneManager:getRunningScene()
+            --            if scene.layer then
+            --                scene.layer:removeFromParent()
+            --            end
+            --            scene:addChild(node)
+            --            scene.layer = node
+            local clazz = require(path)
+            local isLayer = iskindof(clazz, "Layer")
+            if isLayer then
+                gk.SceneManager:replace(path)
+            else
+                gk.log("changeRootLayout ??")
+                local scene = gk.Layer:createScene()
+                local node = clazz:create()
+                scene:addChild(node)
+                scene.layer = node
+                gk.SceneManager:replaceScene(scene)
+            end
         end
     end)
     gk.event:subscribe(self, "postSync", function(node)
@@ -65,6 +87,16 @@ function panel:onNodeCreate(node)
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
+        end
+        local c = node:getParent()
+        while c ~= nil do
+            if iskindof(c, "cc.TableView") then
+                return
+            end
+            c = c:getParent()
+        end
+        if gk.MODE == 1 and node == self.scene.layer then
+            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
         end
         gk.log("onNodeCreate %s", node.__info.id)
         local listener = cc.EventListenerTouchOneByOne:create()
@@ -250,7 +282,9 @@ function panel:displayNode(node)
     end
     self:undisplayNode()
     self.displayingNode = node
-    gk.util:drawNode(node)
+    if node ~= self.scene.layer then
+        gk.util:drawNode(node)
+    end
     self:drawNodeCoordinate(node)
 
     self.rightPanel:displayNode(node)

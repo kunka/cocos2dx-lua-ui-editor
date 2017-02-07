@@ -21,18 +21,20 @@ function generator:deflate(node)
         end
     end
 
-    -- rescan children
-    node:sortAllChildren()
-    local children = node:getChildren()
-    if iskindof(node, "cc.ScrollView") then
-        children = node:getContainer():getChildren()
-    end
-    for i = 1, #children do
-        local child = children[i]
-        if child and child.__info and child.__info.id then
-            info.children = info.children or {}
-            local c = self:deflate(child)
-            table.insert(info.children, c)
+    if not iskindof(node, "cc.TableView") then
+        -- rescan children
+        node:sortAllChildren()
+        local children = node:getChildren()
+        if iskindof(node, "cc.ScrollView") then
+            children = node:getContainer():getChildren()
+        end
+        for i = 1, #children do
+            local child = children[i]
+            if child and child.__info and child.__info.id then
+                info.children = info.children or {}
+                local c = self:deflate(child)
+                table.insert(info.children, c)
+            end
         end
     end
 
@@ -55,10 +57,14 @@ function generator:inflate(info, rootNode, rootTable)
                 local c = self:inflate(child, nil, rootTable)
                 if c then
                     node:addChild(c)
+                    -- set width/height($fill)
+                    c.__info.width = self.nodeGetFuncs["width"](c)
+                    c.__info.height = self.nodeGetFuncs["height"](c)
                 end
             end
         end
     end
+
     return node
 end
 
@@ -121,50 +127,6 @@ function generator:default(type, key)
     end
     return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
 end
-
-generator.defunodeCreator = {
-    ["cc.Node"] = function(info, rootTable)
-        local node = cc.Node:create()
-        info.id = info.id or generator:genID("node", rootTable)
-        return node
-    end,
-    ["cc.Sprite"] = function(info, rootTable)
-        local node = gk.create_sprite(info.file)
-        info.id = info.id or generator:genID("sprite", rootTable)
-        return node
-    end,
-    ["ZoomButton"] = function(info, rootTable)
-        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
-        info.id = info.id or generator:genID("button", rootTable)
-        return node
-    end,
-    ["cc.Layer"] = function(info, rootTable)
-        local node = cc.Layer:create()
-        info.id = info.id or generator:genID("layer", rootTable)
-        return node
-    end,
-    ["cc.LayerColor"] = function(info, rootTable)
-        info.color = info.color or cc.c4b(0, 0, 0, 255)
-        local node = cc.LayerColor:create(info.color)
-        info.id = info.id or generator:genID("layer", rootTable)
-        return node
-    end,
-    ["cc.Label"] = function(info, rootTable)
-        local node = gk.create_label(info)
-        info.id = info.id or generator:genID("label", rootTable)
-        return node
-    end,
-    ["cc.ScrollView"] = function(info, rootTable)
-        local node = cc.ScrollView:create(cc.size(100, 150))
-        info.id = info.id or generator:genID("scrollView", rootTable)
-        return node
-    end,
-    ["cc.TableView"] = function(info, rootTable)
-        local node = cc.TableView:create(cc.size(100, 150))
-        info.id = info.id or generator:genID("tableView", rootTable)
-        return node
-    end,
-}
 
 function generator:wrap(info, rootTable)
     local proxy = info
@@ -320,6 +282,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("tableView", rootTable)
         return node
     end,
+    --    ["cc.TableViewCell"] = function(info, rootTable)
+    --        local node = cc.TableViewCell:create()
+    --        info.id = info.id or generator:genID("tableViewCell", rootTable)
+    --        return node
+    --    end,
 }
 
 function generator:genID(type, rootTable)
@@ -354,10 +321,14 @@ generator.macroFuncs = {
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
-    ["win.w"] = function() return gk.display.winSize().width end,
-    ["win.h"] = function() return gk.display.winSize().height end,
+    ["win.w"] = function() return gk.display.winSize().width
+    end,
+    ["win.h"] = function() return gk.display.winSize().height
+    end,
     -- contentSize, ViewSize
-    fill = function(key, node) return node:getParent() and node:getParent():getContentSize()[key] or gk.display.winSize()[key] end,
+    fill = function(key, node)
+        return node:getParent() and node:getParent():getContentSize()[key] or gk.display.winSize()[key]
+    end,
 }
 
 generator.nodeSetFuncs = {
@@ -492,7 +463,7 @@ generator.nodeSetFuncs = {
         -- recreate node
         local lan = gk.resource:getCurrentLan()
         local font = var[lan]
-        gk.log("set fontFile_%s %s", lan, font)
+        --        gk.log("set fontFile_%s %s", lan, font)
         --        node:setLineHeight(...)
     end,
     --    np = function( node, var)

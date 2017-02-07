@@ -97,6 +97,11 @@ function util:restartGame(mode)
     end))
 end
 
+util.tags = util.tags and util.tags or {
+    rectTag = 0xFFF0,
+    fontSizeTag = 0xFFF1,
+}
+
 function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.rectTag
     local draw = node:getChildByTag(tg)
@@ -111,10 +116,6 @@ function util:clearDrawNode(node, tag)
 end
 
 function util:drawNode(node, c4f, tag)
-    util.tags = util.tags and util.tags or {
-        rectTag = 0xFFF0,
-        fontSizeTag = 0xFFF1,
-    }
     local tg = tag or util.tags.rectTag
     local draw = node:getChildByTag(tg)
     if iskindof(node, "cc.ScrollView") then

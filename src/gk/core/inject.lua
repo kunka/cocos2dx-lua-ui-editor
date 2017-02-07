@@ -89,11 +89,18 @@ inject:node_method_swizz(cc.Node, "create")
 inject:node_method_swizz(cc.Label, "createWithSystemFont")
 inject:node_method_swizz(cc.Label, "createWithTTF")
 inject:node_method_swizz(cc.Label, "createWithBMFont")
+--inject:node_method_swizz(cc.TableViewCell, "create")
 
 function inject:init()
     gk.event:subscribe(self, "onNodeCreate", function(node)
         self:initLayer(node)
     end)
+end
+
+function inject:inflateNode(cname)
+    local clazz = require(gk.resource.genNodes[cname])
+    local node = clazz:create()
+    return node
 end
 
 function inject:initLayer(layer)
@@ -103,24 +110,27 @@ function inject:initLayer(layer)
         local status, info = pcall(require, file)
         if status then
             gk.log("initLayer with file %s", file)
-            layer.__info = generator:wrap({}, layer)
+            layer.__info = generator:wrap({ type = layer.__cname }, layer)
             --            layer.__info.id = "root"
             generator:inflate(info, layer, layer)
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            layer.__info.width = gk.display.winSize().width
-            layer.__info.height = gk.display.winSize().height
+            local clazz = require(gk.resource.genNodes[layer.__cname])
+            local isLayer = iskindof(clazz, "Layer")
+            if isLayer then
+                layer.__info.width = gk.display.winSize().width
+                layer.__info.height = gk.display.winSize().height
+            end
             --            dump(info)
         else
             -- init first time
             gk.log("initLayer first time %s ", file)
-            layer.__info = generator:wrap({}, layer)
+            layer.__info = generator:wrap({ type = layer.__cname }, layer)
             layer.__info.id = layer.__cname
             layer[layer.__info.id] = layer
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
             self:sync(layer)
         end
         if gk.MODE == 1 then
-            gk.util:drawNode(layer, cc.c4f(1, 200 / 255, 0, 1), -2)
             gk.event:post("displayDomTree", layer)
             layer:runAction(cc.CallFunc:create(function()
                 gk.event:post("displayNode", layer)

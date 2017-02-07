@@ -15,9 +15,11 @@ end)
 -- Use as scene
 function Layer:createScene(sceneType, ...)
     local scene = cc.Scene:create()
-    local layer = require(sceneType):create(...)
-    scene:addChild(layer)
-    scene.layer = layer
+    if sceneType then
+        local layer = require(sceneType):create(...)
+        scene:addChild(layer)
+        scene.layer = layer
+    end
     return scene
 end
 
@@ -28,6 +30,7 @@ function Layer:ctor()
     self.popOnBack = true -- popScene on back
     self:enableNodeEvents()
     self.dialogsStack = {}
+    -- enableNodeEvents maybe be overwrited, so post msg here
     gk.event:post("onNodeCreate", self)
 end
 

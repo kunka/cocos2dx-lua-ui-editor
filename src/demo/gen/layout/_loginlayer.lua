@@ -69,4 +69,26 @@ return {
 	         r = 255},
 	      scaleXY = {
 	         x = "$xScale",
-	         y = "$yScale"}}}}
+	         y = "$yScale"}},
+	   {
+	      height = "$win.h",
+	      id = "layer1",
+	      localZOrder = 0,
+	      opacity = 255,
+	      rotation = 0,
+	      scaleX = 1,
+	      scaleY = 1,
+	      type = "cc.LayerColor",
+	      visible = 0,
+	      width = "$win.w",
+	      x = 265,
+	      y = 125,
+	      anchor = {
+	         x = 0.5,
+	         y = 0.5},
+	      children = {},
+	      color = {
+	         a = 255,
+	         b = 153,
+	         g = 153,
+	         r = 153}}}}

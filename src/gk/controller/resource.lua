@@ -65,7 +65,13 @@ function resource:setGenNodePath(path)
             local status, clazz = pcall(require, path .. name)
             if status then
                 -- TODO: other types
-                if iskindof(clazz, "Layer") then
+                local isEditable = iskindof(clazz, "Layer")
+                if not isEditable then
+                    local instance = clazz:create()
+                    --                if iskindof(clazz, "Layer") or iskindof(clazz, "cc.TableViewCell") then
+                    isEditable = iskindof(instance, "cc.TableViewCell")
+                end
+                if isEditable then
                     resource.genNodes[clazz.__cname] = path .. name
                     gk.log("resource:scan genNode --> %s", clazz.__cname)
                 end

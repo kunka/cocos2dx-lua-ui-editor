@@ -155,7 +155,7 @@ function panel:displayNode(node)
     createLine(topY - stepY * yIndex)
     yIndex = yIndex + 0.2
 
-    local isRoot = gk.util:getRootNode(node) == node
+    local isRoot = self.parent.scene.layer == node
     -- not root
     if not isRoot then
         -- position
@@ -254,6 +254,20 @@ function panel:displayNode(node)
         createLabel("H", leftX3, topY - stepY * yIndex)
         createInput(node.__info.height or string.format("%.2f", node:getContentSize().height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
+        end)
+        yIndex = yIndex + 1
+
+        -- ScaleSize
+        createLabel("ScaleSize", leftX, topY - stepY * yIndex)
+        createLabel("W", leftX2, topY - stepY * yIndex)
+        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+        createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "scaleSize.w", scaleWs[index], "string")
+        end)
+        createLabel("H", leftX3, topY - stepY * yIndex)
+        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+        createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "scaleSize.h", scaleHs[index], "string")
         end)
         yIndex = yIndex + 1
     end

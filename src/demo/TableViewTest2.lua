@@ -1,15 +1,15 @@
 --
 -- Created by IntelliJ IDEA.
 -- User: Kunkka
--- Date: 17/1/25
--- Time: 下午5:28
+-- Date: 17/2/7
+-- Time: 下午2:49
 -- To change this template use File | Settings | File Templates.
 --
 
-local TableViewTest = class("TableViewTest", gk.Layer)
+local TableViewTest2 = class("TableViewTest2", gk.Layer)
 
-function TableViewTest:ctor()
-    TableViewTest.super.ctor(self)
+function TableViewTest2:ctor()
+    TableViewTest2.super.ctor(self)
     if self.tableView1 then
         local tableView = self.tableView1
 
@@ -25,18 +25,21 @@ function TableViewTest:ctor()
 
         local function tableCellAtIndex(table, idx)
             local cell = table:dequeueCell()
+            local str = tostring(idx) .. ". create tableCell by code"
             if nil == cell then
                 cell = cc.TableViewCell:new()
                 local layerColor = cc.LayerColor:create(cc.c4b(102, 101, 155, 255), cellWidth, bgHeight)
                 cell:addChild(layerColor)
 
-                local label = cc.Label:createWithSystemFont(tostring(idx), "Consolas", 12, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+                local label = gk.create_label({ fontFile = { en = "gk/res/font/Consolas.ttf" }, fontSize = 32, string = str })
                 cell:addChild(label)
+                label:setScale(gk.display.minScale())
                 label:setTag(1)
+                label:setAnchorPoint(cc.p(0, 0.5))
                 label:setPosition(25 * gk.display.xScale(), bgHeight / 2)
             else
                 local label = cell:getChildByTag(1)
-                label:setString(tostring(idx))
+                label:setString(str)
             end
 
             return cell
@@ -49,4 +52,4 @@ function TableViewTest:ctor()
     end
 end
 
-return TableViewTest
+return TableViewTest2

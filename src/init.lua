@@ -43,8 +43,18 @@ function init:startGame(mode)
     gk.log("init:startGame with mode %d", mode)
     init:initGameKit(mode)
     gk.SceneManager:init()
-    local clazz = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", "MainLayer")
-    gk.SceneManager:replace(gk.resource.genNodes[clazz])
+    local key = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", "MainLayer")
+    local clazz = require(gk.resource.genNodes[key])
+    local isLayer = iskindof(clazz, "Layer")
+    if isLayer then
+        gk.SceneManager:replace(gk.resource.genNodes[key])
+    else
+        local scene = gk.Layer:createScene()
+        local node = clazz:create()
+        scene:addChild(node)
+        scene.layer = node
+        gk.SceneManager:replaceScene(scene)
+    end
     gk.util:registerRestartGameCallback(function(...)
         restartGame(...)
     end)

@@ -11,7 +11,7 @@ local SelectBox = class("SelectBox", function()
 end)
 
 function SelectBox:ctor(size, items, index)
-    --    assert(((not items) or (#items == 0)), "SelectBox's items == nil or size = 0 !")
+    --    assert(((not items) or (#items == 0)), "SelectBox's items == nil or size == 0 !")
     self:enableNodeEvents()
     self:setContentSize(size)
     self.selectItems = items

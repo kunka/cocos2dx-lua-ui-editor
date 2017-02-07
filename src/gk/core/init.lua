@@ -9,8 +9,8 @@ import(".List")
 import(".log")
 gk.event = import(".event")
 gk.event:init()
-local injector = import(".inject")
-injector:init()
+gk.injector = import(".inject")
+gk.injector:init()
 gk.display = import(".display")
 
 

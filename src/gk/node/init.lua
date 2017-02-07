@@ -12,6 +12,7 @@ gk.Button = import(".Button")
 gk.EditBox = import(".EditBox")
 gk.SelectBox = import(".SelectBox")
 gk.ZoomButton = import(".ZoomButton")
+gk.TableViewCell = import(".TableViewCell")
 
 ----------------------------------------- create sprite  -------------------------------------------------
 

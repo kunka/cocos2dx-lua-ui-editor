@@ -67,13 +67,12 @@ end
 function Dialog:pop()
     gk.log("%s:popDialog --> %s", self.parent.__cname, self.__cname)
     table.removebyvalue(self.parent.dialogsStack, self)
-    -- remove on next tick
-    self:runAction(cc.CallFunc:create(function()
-        self:removeFromParent()
-    end))
+    self:retain()
     if self.onPopCallback then
         self.onPopCallback()
     end
+    self:release()
+    self:removeFromParent()
 end
 
 function Dialog:onKeyBack()
