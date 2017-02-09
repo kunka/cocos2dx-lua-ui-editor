@@ -10,9 +10,8 @@ local Button = import(".Button")
 local ZoomButton = class("ZoomButton", Button)
 local kZoomActionTag = -872738
 
-function ZoomButton:ctor(node, callback)
-    ZoomButton.super.ctor(self, callback)
-    self:setContentNode(node)
+function ZoomButton:setContentNode(node)
+    ZoomButton.super.setContentNode(self, node)
     -- default scale
     local width = self:getContentSize().width
     if width <= 100 then

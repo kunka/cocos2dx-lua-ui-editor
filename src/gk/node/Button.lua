@@ -13,7 +13,7 @@ local kDelaySelectActionTag = -71321
 local kLongPressedActionTag = -71322
 Button.trackingButton = false
 
-function Button:ctor(callback)
+function Button:ctor(contentNode, callback)
     self:enableNodeEvents()
     self.callback = callback
     self.enabled = true
@@ -21,7 +21,7 @@ function Button:ctor(callback)
     -- TODO: set selected shader
     self.disabledProgram = nil -- set shader of disabled state
     self.cascadeProgramEnable = true -- set shader of all children(not Label child)
-    self.node = nil -- content node, must be set
+    self.contentNode = nil -- content node, must be set
     self:setCascadeColorEnabled(true)
     self:setCascadeOpacityEnabled(true)
     self:setAnchorPoint(0.5, 0.5)
@@ -29,6 +29,48 @@ function Button:ctor(callback)
     self.cacheProgram = {}
     self.trackingTouch = false
     self.swallowTouches = false
+
+    self.__addChild = self.addChild
+    self.addChild = function(_self, ...)
+        self:_addChild(...)
+    end
+    if contentNode then
+        self:addChild(contentNode)
+    end
+end
+
+function Button:_addChild(child, zorder, tag)
+    if tag then
+        self.__addChild(self, child, zorder, tag)
+    elseif zorder then
+        self.__addChild(self, child, zorder)
+    else
+        self.__addChild(self, child)
+    end
+    if #self:getChildren() == 1 then
+        self:setContentNode(child)
+    end
+end
+
+function Button:getNode()
+    return self.contentNode
+end
+
+function Button:setContentNode(node)
+    --    assert(node:getParent() ~= self, "Button's content node cannot be added again!")
+    self.contentNode = node
+
+    local contentSize = node:getContentSize()
+    local anchorPoint = node:getAnchorPoint()
+    node:setPosition(cc.p(contentSize.width * anchorPoint.x, contentSize.height * anchorPoint.y))
+    self:setContentSize(contentSize)
+
+    -- test draw
+    if GK_DRAW_BUTTON then
+        self:runAction(cc.CallFunc:create(function()
+            gk.util:drawNode(self)
+        end))
+    end
 end
 
 function Button:onEnter()
@@ -54,28 +96,6 @@ function Button:onEnter()
             break
         end
         c = c:getParent()
-    end
-end
-
-function Button:getNode()
-    return self.node
-end
-
-function Button:setContentNode(node)
-    assert(node:getParent() == nil, "Button's content node cannot be added again!")
-    self.node = node
-    self:addChild(node)
-
-    local contentSize = node:getContentSize()
-    local anchorPoint = node:getAnchorPoint()
-    node:setPosition(cc.p(contentSize.width * anchorPoint.x, contentSize.height * anchorPoint.y))
-    self:setContentSize(contentSize)
-
-    -- test draw
-    if GK_DRAW_BUTTON then
-        self:runAction(cc.CallFunc:create(function()
-            gk.util:drawNode(self)
-        end))
     end
 end
 
@@ -129,7 +149,7 @@ function Button:onTouchBegan(touch, event)
         end
         c = c:getParent()
     end
-    assert(self.node, "Button's content node is necessary!")
+    --    assert(self.contentNode, "Button's content node is necessary!")
     -- hit test
     if not Button.trackingButton and gk.util:hitTest(self, touch) then
         --        gk.log("Button:onTouchBegan")

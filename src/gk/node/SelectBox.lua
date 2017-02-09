@@ -25,8 +25,7 @@ end
 function SelectBox:setScale9SpriteBg(scale9Sprite)
     local contentSize = self:getContentSize()
     scale9Sprite:setContentSize(contentSize)
-    local button = gk.Button.new()
-    button:setContentNode(scale9Sprite)
+    local button = gk.Button.new(scale9Sprite)
     self:addChild(button, -1)
     button:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
     button:onClicked(function()
@@ -82,7 +81,6 @@ function SelectBox:openPopup()
     if self.popupLabelCreator then
         for i = 1, #self.selectItems do
             local label = self.popupLabelCreator()
-            local button = gk.Button.new()
             label:setOverflow(1)
             label:setString(self.selectItems[i])
             label:setDimensions(size.width, size.height)
@@ -91,7 +89,7 @@ function SelectBox:openPopup()
             if self.popupLabelDidCreated then
                 self.popupLabelDidCreated(label)
             end
-            button:setContentNode(label)
+            local button = gk.Button.new(label)
             bg:addChild(button)
             button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
             button:onClicked(function()

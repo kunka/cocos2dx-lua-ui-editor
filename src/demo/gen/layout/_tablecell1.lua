@@ -1,6 +1,7 @@
 return {
 	height = 100,
 	id = "TableCell1",
+	ignoreAnchor = 1,
 	localZOrder = 0,
 	opacity = 255,
 	rotation = 0,
@@ -24,6 +25,7 @@ return {
 	children = {	   {
 	      height = 90,
 	      id = "layer1",
+	      ignoreAnchor = 0,
 	      localZOrder = 0,
 	      opacity = 255,
 	      rotation = 0,
@@ -53,6 +55,7 @@ return {
 	      hAlign = 0,
 	      height = 0,
 	      id = "label1",
+	      ignoreAnchor = 1,
 	      lineHeight = 37,
 	      localZOrder = 0,
 	      opacity = 255,

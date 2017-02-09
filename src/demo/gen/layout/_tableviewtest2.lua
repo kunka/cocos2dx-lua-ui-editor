@@ -1,6 +1,7 @@
 return {
 	height = 288,
 	id = "TableViewTest2",
+	ignoreAnchor = 0,
 	localZOrder = 0,
 	opacity = 255,
 	rotation = 0,
@@ -24,6 +25,7 @@ return {
 	      direction = 1,
 	      height = 0,
 	      id = "tableView1",
+	      ignoreAnchor = 0,
 	      localZOrder = 0,
 	      opacity = 255,
 	      rotation = 0,

@@ -231,19 +231,23 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if not isLayer then
-        -- anchor
-        createLabel("Anchor", leftX, topY - stepY * yIndex)
-        createLabel("X", leftX2, topY - stepY * yIndex)
-        createInput(tostring(node.__info.anchor.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
-        end)
-        createLabel("Y", leftX3, topY - stepY * yIndex)
-        createInput(tostring(node.__info.anchor.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator:modify(node, "anchor.y", input, "number"))
-        end)
-        yIndex = yIndex + 1
-    end
+    -- anchor
+    createLabel("Anchor", leftX, topY - stepY * yIndex)
+    createLabel("X", leftX2, topY - stepY * yIndex)
+    createInput(tostring(node.__info.anchor.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
+    end)
+    createLabel("Y", leftX3, topY - stepY * yIndex)
+    createInput(tostring(node.__info.anchor.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(generator:modify(node, "anchor.y", input, "number"))
+    end)
+    yIndex = yIndex + 1
+    -- ignoreAnchor
+    createLabel("IgnoreAnchor", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.ignoreAnchor == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "ignoreAnchor", selected, "number")
+    end)
+    yIndex = yIndex + 1
     if not isLabel and not isTableView then
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)

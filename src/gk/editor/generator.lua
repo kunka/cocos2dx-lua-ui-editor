@@ -356,6 +356,9 @@ generator.nodeSetFuncs = {
     anchor = function(node, var)
         node:setAnchorPoint(var)
     end,
+    ignoreAnchor = function(node, var)
+        node:ignoreAnchorPointForPosition(var == 0)
+    end,
     width = function(node, var)
         local width = generator:parseValue("width", node, var)
         local ss = node.__info.scaleSize
@@ -515,6 +518,9 @@ generator.nodeGetFuncs = {
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()
+    end,
+    ignoreAnchor = function(node)
+        return node.__info.ignoreAnchor or (node:isIgnoreAnchorPointForPosition() and 0 or 1)
     end,
     scaleX = function(node)
         return node.__info.scaleX or math.shrink(node:getScaleX(), 3)
