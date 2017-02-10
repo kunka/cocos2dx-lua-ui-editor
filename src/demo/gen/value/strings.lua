@@ -15,4 +15,5 @@ return {
     error_invalid_password = "This password is too short",
     error_incorrect_password = "This password is incorrect",
     none_scaled_scrollivew = "",
+    multi_language = "Different language use different font(English:Consolas,Chinese:msyh)",
 }

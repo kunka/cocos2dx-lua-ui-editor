@@ -185,15 +185,21 @@ function generator:wrap(info, rootTable)
 end
 
 function generator:parseValue(key, node, input)
-    local v
-    if type(input) == "string" and string.len(input) > 1 then
-        local macro = input:sub(2, #input)
-        v = self.macroFuncs[macro]
-        if v then
-            v = v(key, node)
-        end
+    local v = generator:parseMacroFunc(input)
+    if v then
+        v = v(key, node)
     end
     return v or input
+end
+
+function generator:parseMacroFunc(input)
+    if type(input) == "string" and string.len(input) > 1 and input:sub(1, 1) == "$" then
+        local macro = input:sub(2, #input)
+        -- contains
+        return self.macroFuncs[macro]
+    else
+        return nil
+    end
 end
 
 function generator:modify(node, property, input, valueType)
@@ -209,12 +215,9 @@ function generator:modify(node, property, input, valueType)
     if type(input) == "number" and valueType == "number" then
         value = tonumber(input)
     elseif type(input) == "string" then
-        if string.len(input) > 0 and input:sub(1, 1) == "$" then
-            local macro = input:sub(2, #input)
-            -- contains
-            if self.macroFuncs[macro] then
-                value = input
-            end
+        local v = generator:parseMacroFunc(input)
+        if v then
+            value = input
         elseif valueType == "string" then
             value = input
         elseif valueType == "number" then
@@ -598,7 +601,7 @@ generator.nodeGetFuncs = {
         return iskindof(node, "cc.Label") and (node.__info.overflow or node:getOverflow())
     end,
     lineHeight = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.lineHeight or node:getLineHeight())
+        return iskindof(node, "cc.Label") and (node.__info.lineHeight)
     end,
     fontFile = function(node)
         return iskindof(node, "cc.Label") and (node.__info.fontFile)

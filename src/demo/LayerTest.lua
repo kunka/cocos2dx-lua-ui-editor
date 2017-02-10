@@ -10,6 +10,10 @@ local LayerTest = class("LayerTest", gk.Layer)
 
 function LayerTest:ctor()
     LayerTest.super.ctor(self)
+
+    gk.util:drawNode(self.layer2, nil, -3)
+    gk.util:drawNode(self.layer3, nil, -3)
+    gk.util:drawNode(self.layer4, nil, -3)
 end
 
 return LayerTest

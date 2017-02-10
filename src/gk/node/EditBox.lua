@@ -225,6 +225,9 @@ function EditBox:handleKeyboardEvent()
             keyTable["KEY_PERIOD"] = "."
             keyTable["KEY_SLASH"] = "/"
             keyTable["KEY_SPACE"] = " "
+            keyTable["KEY_COMMA"] = ","
+            keyTable["KEY_SEMICOLON"] = ";"
+            keyTable["KEY_APOSTROPHE"] = "'"
             --            dump(keyTable)
             local delete = table.indexof(cc.KeyCodeKey, "KEY_BACKSPACE") - 1
             local enter = table.indexof(cc.KeyCodeKey, "KEY_ENTER") - 1

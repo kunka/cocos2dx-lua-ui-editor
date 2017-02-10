@@ -60,6 +60,12 @@ function panel:displayNode(node)
     local inputWidth1 = 110
     local inputWidth2 = 45
     local inputWidth3 = 25
+
+    local getMacroColor = function(content)
+        local v = generator:parseMacroFunc(content)
+        return v ~= nil and cc.c3b(0xFF, 0x00, 0x33) or cc.c3b(0, 0, 0)
+    end
+
     local createLabel = function(content, x, y, isTitle)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setScale(scale)
@@ -86,6 +92,10 @@ function panel:displayNode(node)
         node:onEditEnded(function(...)
             callback(...)
         end)
+        node:onInputChanged(function(_, input)
+            label:setTextColor(getMacroColor(input))
+        end)
+        label:setTextColor(getMacroColor(content))
         node:setPosition(x, y)
         return node
     end
@@ -107,7 +117,11 @@ function panel:displayNode(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
         node:setPosition(x, y)
-        node:onSelectChanged(callback)
+        node:onSelectChanged(function(index)
+            callback(index)
+            label:setTextColor(getMacroColor(items[index]))
+        end)
+        label:setTextColor(getMacroColor(items[index]))
         return node
     end
 
@@ -252,28 +266,37 @@ function panel:displayNode(node)
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)
         createLabel("W", leftX2, topY - stepY * yIndex)
-        createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        local w = createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
         end)
         createLabel("H", leftX3, topY - stepY * yIndex)
-        createInput(node.__info.height or string.format("%.2f", node:getContentSize().height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        local h = createInput(node.__info.height or string.format("%.2f", node:getContentSize().height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
-
-        -- ScaleSize
-        createLabel("ScaleSize", leftX, topY - stepY * yIndex)
-        createLabel("W", leftX2, topY - stepY * yIndex)
-        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
-        createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
-            generator:modify(node, "scaleSize.w", scaleWs[index], "string")
-        end)
-        createLabel("H", leftX3, topY - stepY * yIndex)
-        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
-        createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
-            generator:modify(node, "scaleSize.h", scaleHs[index], "string")
-        end)
-        yIndex = yIndex + 1
+        if isSprite then
+            w:setOpacity(150)
+            w:setCascadeOpacityEnabled(true)
+            w.enabled = false
+            h:setOpacity(150)
+            h:setCascadeOpacityEnabled(true)
+            h.enabled = false
+        end
+        if not isSprite then
+            -- ScaleSize
+            createLabel("ScaleSize", leftX, topY - stepY * yIndex)
+            createLabel("W", leftX2, topY - stepY * yIndex)
+            local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+            createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+                generator:modify(node, "scaleSize.w", scaleWs[index], "string")
+            end)
+            createLabel("H", leftX3, topY - stepY * yIndex)
+            local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+            createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
+                generator:modify(node, "scaleSize.h", scaleHs[index], "string")
+            end)
+            yIndex = yIndex + 1
+        end
     end
     if isLayerColor or isLabel or isSprite then
         -- color
@@ -396,10 +419,11 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
         end)
         yIndex = yIndex + 1
-        -- font size
-        createLabel("FontSize", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-            editBox:setInput(generator:modify(node, "fontSize", input, "number"))
+        -- overflow
+        createLabel("Overflow", leftX, topY - stepY * yIndex)
+        local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
+        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "overflow", index - 1, "number")
         end)
         -- lineHeight
         if node.__info.lineHeight then
@@ -433,11 +457,10 @@ function panel:displayNode(node)
             generator:modify(node, "vAlign", index - 1, "number")
         end)
         yIndex = yIndex + 1
-        -- overflow
-        createLabel("Overflow", leftX, topY - stepY * yIndex)
-        local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
-        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
-            generator:modify(node, "overflow", index - 1, "number")
+        -- font size
+        createLabel("FontSize", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            editBox:setInput(generator:modify(node, "fontSize", input, "number"))
         end)
         yIndex = yIndex + 1
     end

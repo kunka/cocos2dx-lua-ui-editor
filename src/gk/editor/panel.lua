@@ -1,6 +1,7 @@
 local panel = {}
 local generator = import(".generator")
 
+local kMoveNodeAction = -1102
 function panel.create(scene)
     local self = cc.Layer:create()
     setmetatableindex(self, panel)
@@ -74,12 +75,11 @@ function panel:subscribeEvent()
     end)
     gk.event:subscribe(self, "postSync", function(node)
         gk.util:stopActionByTagSafe(self, -234)
-        local action = cc.CallFunc:create(function()
+        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
             local inject = require("gk.core.inject")
             inject:sync(node or self.scene.layer)
-        end)
+        end)))
         action:setTag(-234)
-        self:runAction(action)
     end)
 end
 
@@ -304,15 +304,31 @@ function panel:handleEvent()
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode and self.displayingNode.__info then
             -- TODO: hold
-            local x, y = self.displayingNode.__info.x, self.displayingNode.__info.y
-            if key == "KEY_LEFT_ARROW" then
-                self.displayingNode.__info.x = x - 1
-            elseif key == "KEY_RIGHT_ARROW" then
-                self.displayingNode.__info.x = x + 1
-            elseif key == "KEY_UP_ARROW" then
-                self.displayingNode.__info.y = y + 1
-            elseif key == "KEY_DOWN_ARROW" then
-                self.displayingNode.__info.y = y - 1
+            self.moveActions = self.moveActions or {
+                KEY_LEFT_ARROW = function(info, step)
+                    info.x = info.x - step
+                end,
+                KEY_RIGHT_ARROW = function(info, step)
+                    info.x = info.x + step
+                end,
+                KEY_UP_ARROW = function(info, step)
+                    info.y = info.y + step
+                end,
+                KEY_DOWN_ARROW = function(info, step)
+                    info.y = info.y - step
+                end,
+            }
+            local move = self.moveActions[key]
+            if move then
+                move(self.displayingNode.__info, 1)
+                local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
+                    local action = self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.01), cc.CallFunc:create(function()
+                        move(self.displayingNode.__info, 5)
+                        gk.event:post("displayNode", self.displayingNode)
+                    end))))
+                    action:setTag(kMoveNodeAction)
+                end)))
+                action:setTag(kMoveNodeAction)
             end
             gk.event:post("displayNode", self.displayingNode)
         end
@@ -342,6 +358,9 @@ function panel:handleEvent()
         if key == "KEY_SHIFT" then
             self.shiftPressed = false
             return
+        end
+        if self.moveActions and self.moveActions[key] then
+            gk.util:stopActionByTagSafe(self, kMoveNodeAction)
         end
     end
 
