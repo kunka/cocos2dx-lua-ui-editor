@@ -166,6 +166,7 @@ function panel.create(parent)
             local s = node:getContentSize()
             local rect = { x = 0, y = 0, width = s.width, height = s.height }
             local p = node:convertToNodeSpace(location)
+            self._containerNode = nil
             if cc.rectContainsPoint(rect, p) then
                 local type = self.widgets[i].type
                 gk.log("choose node %s", type)
@@ -195,23 +196,25 @@ function panel.create(parent)
             local children = self.parent.sortedChildren
             for i = #children, 1, -1 do
                 local node = children[i]
-                local s = node:getContentSize()
-                local rect = { x = 0, y = 0, width = s.width, height = s.height }
-                local p = node:convertToNodeSpace(location)
-                if gk.util:isGlobalVisible(node) and cc.rectContainsPoint(rect, p) then
-                    local type = node.__cname and node.__cname or tolua.type(node)
-                    if self._containerNode ~= node then
-                        self._containerNode = node
-                        gk.log("find container node %s, id = %s", type, node.__info.id)
-                        gk.event:post("displayNode", node)
+                if node and (not (node.__info and node.__info.lock == 1)) then
+                    local s = node:getContentSize()
+                    local rect = { x = 0, y = 0, width = s.width, height = s.height }
+                    local p = node:convertToNodeSpace(location)
+                    if gk.util:isGlobalVisible(node) and cc.rectContainsPoint(rect, p) then
+                        local type = node.__cname and node.__cname or tolua.type(node)
+                        if self._containerNode ~= node then
+                            self._containerNode = node
+                            gk.log("find container node %s, id = %s", type, node.__info.id)
+                            gk.event:post("displayNode", node)
+                        end
+                        break
                     end
-                    break
                 end
             end
         end, cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(function(touch, event)
             if self._containerNode then
-                local s = self.parent.scene.layer:getContentSize()
+                local s = self._containerNode:getContentSize()
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
                 local location = touch:getLocation()
                 local p = self:convertToNodeSpace(location)
@@ -239,10 +242,10 @@ function panel.create(parent)
                         gk.log("cannot create node %s", type)
                     end
                 else
-                    gk.log("cancel put node")
+                    gk.log("cancel put node, not inside of container node")
                 end
             else
-                gk.log("cancel put node")
+                gk.log("cancel put node, no container node")
             end
             if self.draggingNode then
                 self.draggingNode:removeFromParent()

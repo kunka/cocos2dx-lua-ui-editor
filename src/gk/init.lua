@@ -6,7 +6,9 @@
 -- To change this template use File | Settings | File Templates.
 
 gk = {}
-gk.MODE = 1
+gk.MODE_RELEASE = 0
+gk.MODE_EDIT = 1
+gk.mode = gk.MODE_RELEASE
 
 -- export global variable
 local __g = _G

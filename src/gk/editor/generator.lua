@@ -103,6 +103,7 @@ function generator:default(type, key)
     if not self._default then
         self._default = {}
         self._default["cc.Node"] = {
+            lock = 0,
             file = "",
             scaleXY = { x = 1, y = 1 },
             scaleSize = { w = 1, h = 1 },
@@ -155,6 +156,8 @@ function generator:wrap(info, rootTable)
                             gk.event:post("displayDomTree")
                         else
                             proxy[key] = value
+                            gk.event:post("postSync")
+                            gk.event:post("displayDomTree")
                         end
                     end
                 else
@@ -173,8 +176,11 @@ function generator:wrap(info, rootTable)
                     gk.event:post("displayDomTree")
                     --                elseif key ~= "id" and key ~= "children" and key ~= "type" then
                     --                    error(string.format("cannot find node func to set property %s", key))
+                    return
                 end
             end
+            gk.event:post("postSync")
+            gk.event:post("displayDomTree")
         end,
     }
     setmetatable(info, mt)
@@ -344,7 +350,9 @@ generator.nodeSetFuncs = {
     scaleXY = function(node, var)
         local scaleX = generator:parseValue("scaleX", node, var.x)
         local scaleY = generator:parseValue("scaleY", node, var.y)
-        local x, y = node.__info.x, node.__info.y
+        --        local x, y = node.__info.x, node.__info.y
+        local x = generator:parseValue("x", node, node.__info.x)
+        local y = generator:parseValue("y", node, node.__info.y)
         node:setPosition(cc.p(x * scaleX, y * scaleY))
     end,
     scaleX = function(node, ...)

@@ -40,6 +40,7 @@ end
 
 function panel:displayDomTree(rootLayer)
     if rootLayer then
+        gk.log("displayDomTree")
         -- current layout
         self:undisplayNode()
         self.displayInfoNode = cc.Node:create()
@@ -126,7 +127,7 @@ function panel:displayDomNode(node, layer)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(200, 200, 200))
-        if fixChild or not gk.util:isGlobalVisible(node) then
+        if fixChild or not gk.util:isGlobalVisible(node) or (node.__info and node.__info.lock == 1) then
             label:setOpacity(100)
         end
         label:setScale(scale)

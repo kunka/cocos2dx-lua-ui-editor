@@ -57,7 +57,7 @@ function panel:displayNode(node)
     local leftX5_3 = 175
     local stepY = 25
     local stepX = 40
-    local inputWidth1 = 110
+    local inputWidth1 = 65
     local inputWidth2 = 45
     local inputWidth3 = 25
 
@@ -161,6 +161,11 @@ function panel:displayNode(node)
     createInput(node.__info.id, leftX2_1, topY, inputWidth1, function(editBox, input)
         editBox:setInput(generator:modify(node, "id", input, "string"))
     end)
+    -- lock
+    createLabel("Lock", leftX4_2 + 28, topY - stepY * yIndex)
+    createCheckBox(node.__info.lock == 1, leftX5_3, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "lock", 1 - selected, "number")
+    end)
     yIndex = yIndex + 1
     --------------------------- cc.Node   ---------------------------
     createLabel("Node", leftX, topY - stepY * yIndex, true)
@@ -188,12 +193,12 @@ function panel:displayNode(node)
         -- ScaleXY
         createLabel("ScalePos", leftX, topY - stepY * yIndex)
         createLabel("X", leftX2, topY - stepY * yIndex)
-        local scaleXs = { "1", "$xScale", "$minScale", "$maxScale" }
+        local scaleXs = { "0.5", "1", "$xScale", "$minScale", "$maxScale" }
         createSelectBox(scaleXs, table.indexof(scaleXs, tostring(node.__info.scaleXY.x)), leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
             generator:modify(node, "scaleXY.x", scaleXs[index], "string")
         end)
         createLabel("Y", leftX3, topY - stepY * yIndex)
-        local scaleYs = { "1", "$yScale", "$minScale", "$maxScale" }
+        local scaleYs = { "0.5", "1", "$yScale", "$minScale", "$maxScale" }
         createSelectBox(scaleYs, table.indexof(scaleYs, tostring(node.__info.scaleXY.y)), leftX3_1, topY - stepY * yIndex, inputWidth2, function(index)
             generator:modify(node, "scaleXY.y", scaleYs[index], "string")
         end)

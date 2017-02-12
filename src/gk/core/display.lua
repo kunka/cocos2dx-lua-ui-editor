@@ -25,7 +25,7 @@ display.deviceSizesDesc = {
 }
 
 function display:initWithDesignSize(size)
-    if gk.MODE == 1 then
+    if gk.mode == gk.MODE_EDIT then
         display.topHeight = 80
         display.leftWidth = 140
         display.rightWidth = 210

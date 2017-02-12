@@ -64,7 +64,7 @@ function util:registerRestartGameCallback(callback)
             if key == "KEY_R" then
                 util:restartGame(1)
             elseif key == "KEY_T" then
-                util:restartGame(2)
+                util:restartGame(0)
             end
         end
 

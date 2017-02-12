@@ -16,7 +16,7 @@ SceneManager:init()
 -- layerName:must inherit from Layer
 function SceneManager:push(layerName, ...)
     gk.log("SceneManager:push --> %s", layerName)
-    local Layer = require(layerName)
+    local Layer = gk.resource:require(layerName)
     local scene = Layer:createScene(layerName, ...)
     return SceneManager:pushScene(scene)
 end
@@ -31,7 +31,7 @@ end
 
 function SceneManager:replace(layerName, ...)
     gk.log("SceneManager:replace --> %s", layerName)
-    local Layer = require(layerName)
+    local Layer = gk.resource:require(layerName)
     local scene = Layer:createScene(layerName, ...)
     return SceneManager:replaceScene(scene)
 end

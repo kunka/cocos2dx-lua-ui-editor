@@ -95,7 +95,7 @@ function panel:onNodeCreate(node)
             end
             c = c:getParent()
         end
-        if gk.MODE == 1 and node == self.scene.layer then
+        if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
             gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
         end
         gk.log("onNodeCreate %s", node.__info.id)
@@ -134,7 +134,7 @@ function panel:onNodeCreate(node)
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.id and nd ~= node then
+                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node then
                     local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)

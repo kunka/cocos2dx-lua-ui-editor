@@ -13,7 +13,7 @@ function inject:layer_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.MODE == 1 then
+            if gk.mode == gk.MODE_EDIT then
                 local vars = { ... }
                 local count = #vars
                 if count <= 2 then
@@ -37,7 +37,7 @@ function inject:scene_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.MODE == 1 then
+            if gk.mode == gk.MODE_EDIT then
                 gk.display:addEditorPanel(node)
             end
             return node
@@ -55,7 +55,7 @@ function inject:sprite_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.MODE == 1 then
+            if gk.mode == gk.MODE_EDIT then
                 gk.event:post("onNodeCreate", node)
             end
             return node
@@ -75,7 +75,7 @@ function inject:node_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.MODE == 1 then
+            if gk.mode == gk.MODE_EDIT then
                 gk.event:post("onNodeCreate", node)
             end
             return node
@@ -106,7 +106,7 @@ end
 function inject:initLayer(layer)
     if layer and gk.resource.genNodes[layer.__cname] and not layer.__info then
         local generator = require("gk.editor.generator")
-        local file = gk.resource.genPath .. "layout/_" .. layer.__cname:lower()
+        local file = gk.resource.genPath .. "_" .. layer.__cname:lower()
         local status, info = pcall(require, file)
         if status then
             gk.log("initLayer with file %s", file)
@@ -130,7 +130,7 @@ function inject:initLayer(layer)
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
             self:sync(layer)
         end
-        if gk.MODE == 1 then
+        if gk.mode == gk.MODE_EDIT then
             gk.event:post("displayDomTree", layer)
             layer:runAction(cc.CallFunc:create(function()
                 gk.event:post("displayNode", layer)
@@ -147,7 +147,7 @@ function inject:sync(node)
         gk.log("start sync %s", nd.__info.id)
         local info = generator:deflate(nd)
         local table2lua = require("gk.tools.table2lua")
-        local file = gk.resource.genPath .. "layout/_" .. nd.__cname:lower() .. ".lua"
+        local file = gk.resource.genPath .. "_" .. nd.__cname:lower() .. ".lua"
         gk.log("sync to file: " .. file)
         --    gk.log(table2lua.encode_pretty(info))
         io.writefile(file, table2lua.encode_pretty(info))

@@ -80,4 +80,22 @@ function resource:setGenNodePath(path)
     end
 end
 
+function resource:require(key, default)
+    gk.log("resource:require --> %s, default= %s", key, default)
+    local status, clazz = pcall(require, gk.resource.genNodes[key])
+    if status then
+        return clazz, gk.resource.genNodes[key]
+    end
+    local status, clazz = pcall(require, key)
+    if status then
+        return clazz, key
+    end
+    if default then
+        local clazz = require(gk.resource.genNodes[default])
+        return clazz, gk.resource.genNodes[default]
+    else
+        return nil
+    end
+end
+
 return resource
