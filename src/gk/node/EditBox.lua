@@ -16,6 +16,7 @@ function EditBox:ctor(size)
     self:handleKeyboardEvent()
     self.cursorChar = "|"
     self.enabled = true
+    self.focusable = true
 end
 
 function EditBox:onInputChanged(callback)
@@ -72,13 +73,13 @@ end
 function EditBox:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
     if not self.enabled or not self:isVisible() or not camera then
-        self:unselected()
+        self:unfocus()
         return false
     end
     local c = self:getParent()
     while c ~= nil do
         if not c:isVisible() then
-            self:unselected()
+            self:unfocus()
             return false
         end
         c = c:getParent()
@@ -86,12 +87,12 @@ function EditBox:onTouchBegan(touch, event)
     assert(self.label, "EditBox's input label is necessary!")
     -- hit test
     if gk.util:hitTest(self, touch) then
-        self:selected()
+        self:focus()
         self.trackingTouch = true
         self.touchBeginPoint = self:convertTouchToNodeSpace(touch)
         return true
     end
-    self:unselected()
+    self:unfocus()
     return false
 end
 
@@ -101,11 +102,11 @@ function EditBox:onTouchMoved(touch, event)
             -- cancel select item when touch moved too much
             local p = self:convertTouchToNodeSpace(touch)
             if cc.pDistanceSQ(p, self.touchBeginPoint) > 225 then
-                --                self:unselected()
+                --                self:unfocus()
                 self:stopTracking()
             end
         else
-            --            self:unselected()
+            --            self:unfocus()
             self:stopTracking()
         end
     end
@@ -114,7 +115,7 @@ end
 function EditBox:onTouchEnded(touch, event)
     if self.trackingTouch then
         --        gk.log("EditBox:onTouchEnded")
-        --        self:unselected()
+        --        self:unfocus()
         -- must before the callback, callback maybe crash, then touch state will be locked forever.
         self:stopTracking()
     end
@@ -123,22 +124,8 @@ end
 function EditBox:onTouchCancelled(touch, event)
     if self.trackingTouch then
         --        gk.log("EditBox:onTouchCancelled")
-        --        self:unselected()
+        --        self:unfocus()
         self:stopTracking()
-    end
-end
-
-function EditBox:selected()
-    if not self.isSelected then
-        self.isSelected = true
-        self:focus()
-    end
-end
-
-function EditBox:unselected()
-    if self.isSelected then
-        self.isSelected = false
-        self:unfocus()
     end
 end
 
@@ -148,6 +135,7 @@ function EditBox:focus()
             gk.focusNode:unfocus()
         end
         gk.focusNode = self
+        self.isFocus = true
         gk.util:drawNode(self, cc.c4f(1, 0, 0, 1), -2)
         local str = self:getInput()
         self.label:setString(str .. self.cursorChar)
@@ -155,12 +143,18 @@ function EditBox:focus()
         if self.onEditBeganCallback then
             self.onEditBeganCallback(self, self:getInput())
         end
+        -- test draw
+        local next = gk.nextFocusNode(self)
+        if next then
+            gk.log("focus %s, next = %s", self:getInput(), next:getInput())
+        end
     end
 end
 
 function EditBox:unfocus()
     if gk.focusNode == self then
         gk.focusNode = nil
+        self.isFocus = false
         gk.util:clearDrawNode(self, -2)
         self:stopBlinkCursor()
         local str = self:getInput()
@@ -168,6 +162,7 @@ function EditBox:unfocus()
         if self.onEditEndedCallback then
             self.onEditEndedCallback(self, self:getInput())
         end
+        gk.log("unfocus %s", self:getInput())
     end
 end
 
@@ -197,10 +192,20 @@ function EditBox:handleKeyboardEvent()
     local function onKeyPressed(keyCode, event)
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
-            --            gk.log("%s:onKeyPressed %s", "EditBox", key)
+            gk.log("%s:onKeyPressed %s", "EditBox", key)
             if key == "KEY_SHIFT" then
                 self.shiftPressed = true
                 return
+            elseif key == "KEY_TAB" then
+                local next = gk.nextFocusNode(self)
+                if next then
+                    -- delay
+                    self:runAction(cc.CallFunc:create(function()
+                        self:unfocus()
+                        next:focus()
+                    end))
+                    return
+                end
             end
             -- TODO: optimize table create
             local keyTable = {}
@@ -251,7 +256,7 @@ function EditBox:handleKeyboardEvent()
                     end
                 end
             elseif keyCode == enter then
-                self:unselected()
+                self:unfocus()
             end
         end
     end

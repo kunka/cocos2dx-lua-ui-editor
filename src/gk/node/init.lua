@@ -103,3 +103,65 @@ end
 
 gk.create_label = create_label
 
+local function nextFocusNode(current)
+    local all = {}
+    local function focusNodes(node)
+        if node then
+            if node ~= current and node.focusable and node.enabled then
+                table.insert(all, node)
+            end
+            -- test draw
+                        if node.focusable then
+                            gk.util:clearDrawLabel(node)
+                        end
+            local children = node:getChildren()
+            for i = 1, #children do
+                focusNodes(children[i])
+            end
+        end
+    end
+
+    local root = gk.util:getRootNode(current)
+    focusNodes(root)
+    if #all > 0 then
+        table.sort(all, function(a, b)
+            if b:getPositionY() == current:getPositionY() and b:getPositionX() < current:getPositionX() then
+                return true
+            end
+            if a:getPositionY() == current:getPositionY() and a:getPositionX() < current:getPositionX() then
+                return false
+            end
+            if b:getPositionY() == current:getPositionY() and a:getPositionY() == current:getPositionY() then
+                return a:getPositionX() < b:getPositionX()
+            end
+
+            if b:getPositionY() > current:getPositionY() then
+                if a:getPositionY() <= current:getPositionY() then
+                    return true
+                end
+            elseif b:getPositionY() == current:getPositionY() then
+                if a:getPositionY() > current:getPositionY() then
+                    return false
+                end
+            elseif b:getPositionY() < current:getPositionY() then
+                if a:getPositionY() > current:getPositionY() then
+                    return false
+                end
+            end
+            return (a:getPositionY() == b:getPositionY() and a:getPositionX() < b:getPositionX() or a:getPositionY() > b:getPositionY())
+        end)
+
+        -- test draw
+                for i = 1, #all do
+                    gk.util:drawLabelOnNode(all[i], tostring(i))
+                end
+        if #all > 0 then
+            return all[1]
+        end
+    end
+
+    return nil
+end
+
+gk.nextFocusNode = nextFocusNode
+

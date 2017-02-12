@@ -102,12 +102,12 @@ function util:restartGame(mode)
 end
 
 util.tags = util.tags and util.tags or {
-    rectTag = 0xFFF0,
-    fontSizeTag = 0xFFF1,
+    drawTag = 0xFFF0,
+    labelTag = 0xFFF1,
 }
 
 function util:clearDrawNode(node, tag)
-    local tg = tag or util.tags.rectTag
+    local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
     if iskindof(node, "cc.ScrollView") then
         -- do not clear :)
@@ -119,8 +119,16 @@ function util:clearDrawNode(node, tag)
     end
 end
 
+function util:clearDrawLabel(node, tag)
+    local tg = tag or util.tags.labelTag
+    local label = node:getChildByTag(tg)
+    if label then
+        label:setString("")
+    end
+end
+
 function util:drawNode(node, c4f, tag)
-    local tg = tag or util.tags.rectTag
+    local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
     if iskindof(node, "cc.ScrollView") then
         draw = node:getContainer():getChildByTag(tg)
@@ -190,6 +198,25 @@ function util:drawNodeBounds(node, c4f, tg)
         cc.p(size.width - 0.5, size.height - 0.5),
         cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
     return draw
+end
+
+function util:drawLabelOnNode(node, content, c3b, tag)
+    local tg = tag or util.tags.labelTag
+    local label = node:getChildByTag(tg)
+    if iskindof(node, "cc.ScrollView") then
+        label = node:getContainer():getChildByTag(tg)
+    end
+    if not label then
+        label = cc.Label:createWithSystemFont(content, "Arial", 12)
+        local size = node:getContentSize()
+        label:setPosition(cc.p(size.width, size.height))
+        node:add(label, 999, tg)
+    else
+        label:setString(content)
+    end
+    label:setTextColor(c3b and c3b or cc.c4f(0, 255, 0))
+    local sx, sy = util:getGlobalScale(node)
+    label:setScale(1 / sx)
 end
 
 function util:drawLineOnNode(node, p1, p2, c4f, tg)
