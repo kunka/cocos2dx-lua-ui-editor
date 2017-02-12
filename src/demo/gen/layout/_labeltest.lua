@@ -46,8 +46,8 @@ return {
 	         g = 255,
 	         r = 50},
 	      fontFile = {
-	         cn = "gk/res/font/Consolas.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/Consolas.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -78,8 +78,8 @@ return {
 	         g = 255,
 	         r = 0},
 	      fontFile = {
-	         cn = "gk/res/font/Candara.fnt",
-	         en = "gk/res/font/Candara.fnt"},
+	         cn = "font/Candara.fnt",
+	         en = "font/Candara.fnt"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -110,8 +110,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -142,8 +142,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -175,8 +175,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -207,8 +207,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},
@@ -239,8 +239,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$yScale"}},

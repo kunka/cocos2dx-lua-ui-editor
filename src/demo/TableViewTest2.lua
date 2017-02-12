@@ -31,7 +31,7 @@ function TableViewTest2:ctor()
                 local layerColor = cc.LayerColor:create(cc.c4b(102, 101, 155, 255), cellWidth, bgHeight)
                 cell:addChild(layerColor)
 
-                local label = gk.create_label({ fontFile = { en = "gk/res/font/Consolas.ttf" }, fontSize = 32, string = str })
+                local label = gk.create_label({ fontFile = { en = "font/Consolas.ttf" }, fontSize = 32, string = str })
                 cell:addChild(label)
                 label:setScale(gk.display.minScale())
                 label:setTag(1)

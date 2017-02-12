@@ -109,10 +109,7 @@ function generator:default(type, key)
         }
         self._default["cc.Label"] = {
             string = "label",
-            fontFile = {
-                en = "gk/res/font/Consolas.ttf",
-                cn = "gk/res/font/msyh.ttf",
-            },
+            fontFile = {},
             fontSize = "32",
         }
         self._default["cc.Layer"] = {

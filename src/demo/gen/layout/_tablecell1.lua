@@ -79,8 +79,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "gk/res/font/msyh.ttf",
-	         en = "gk/res/font/Consolas.ttf"},
+	         cn = "font/msyh.ttf",
+	         en = "font/Consolas.ttf"},
 	      scaleXY = {
 	         x = "$xScale",
 	         y = "$minScale"}}}}
