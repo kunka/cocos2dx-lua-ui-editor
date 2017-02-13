@@ -14,7 +14,7 @@ local init = {}
 function init:initGameKit(mode)
     gk.mode = mode
 
-    gk.resource.defaultSprite = "gk/res/texture/default.png"
+    gk.resource.defaultSprite = DEBUG > 0 and "gk/res/texture/default.png" or "gk/res/texture/default_release.png"
     gk.display:initWithDesignSize(cc.size(1280, 720))
     gk.resource:setTextureRelativePath("texture/")
     gk.resource:setAtlasRelativePath("atlas/")

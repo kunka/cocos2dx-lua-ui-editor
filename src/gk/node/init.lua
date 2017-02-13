@@ -22,7 +22,7 @@ local function create_sprite(name)
     if name == "" then
         return cc.Sprite:create(gk.resource.defaultSprite)
     end
-    local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(gk.resource.atlasRelativePath .. name)
+    local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame)
     end

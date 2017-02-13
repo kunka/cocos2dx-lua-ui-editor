@@ -8,16 +8,10 @@
 
 local resource = {}
 resource.textureRelativePath = ""
-resource.atlasRelativePath = ""
 
 function resource:setTextureRelativePath(path)
     resource.textureRelativePath = path
     gk.log("resource.setTextureRelativePath %s", path)
-end
-
-function resource:setAtlasRelativePath(path)
-    resource.atlasRelativePath = path
-    gk.log("resource.setAtlasPath %s", path)
 end
 
 function resource:setStringGetter(func)
