@@ -119,7 +119,7 @@ function panel:onNodeCreate(node)
                 --                    return false
                 --                end
                 cc.Director:getInstance():setDepthTest(true)
-                node:setPositionZ(1)
+                node:setPositionZ(0.00000001)
                 gk.event:post("displayNode", node)
                 return true
             else
@@ -164,13 +164,17 @@ function panel:onNodeCreate(node)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
-            local destPos = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")
                 return
             end
+            local destPos = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
+            node:setPosition(destPos)
+            local delta = self:onNodeMoved(node)
+            destPos = cc.pAdd(destPos, delta)
+
             local type = tolua.type(self._containerNode)
             if self._containerNode and self._containerNode ~= node:getParent() and
                     (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
@@ -190,7 +194,7 @@ function panel:onNodeCreate(node)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
                 gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
                 local delta = self:onNodeMoved(node)
-                p = cc.pAdd(p, delta)
+                --                p = cc.pAdd(p, delta)
             end
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
@@ -497,58 +501,97 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     end
 end
 
+-- smart align node
 function panel:onNodeMoved(node, threshold)
---    local p = cc.p(node:getPosition())
---    dump(p)
---    p.x = math.floor(p.x * 2) / 2
---    p.y = math.floor(p.y * 2) / 2
---    node:setPosition(p)
---    dump(p)
---
---    local all = {}
---    local function allInfoNodes(nd)
---        if nd and nd.__info and nd ~= node then
---            table.insert(all, nd)
---            --        -- test draw
---            --        if node.focusable then
---            --            gk.util:clearDrawLabel(node)
---            --        end
---            local children = nd:getChildren()
---            for i = 1, #children do
---                allInfoNodes(children[i])
---            end
---        end
---    end
---
+    local all = {}
+    local function allInfoNodes(nd)
+        if nd and nd.__info and nd ~= node then
+            table.insert(all, nd)
+            local children = nd:getChildren()
+            for i = 1, #children do
+                allInfoNodes(children[i])
+            end
+        end
+    end
+
+    threshold = threshold or 2
+    allInfoNodes(self.scene.layer)
+    local tag = -3
+    gk.util:clearDrawNode(self.scene.layer, tag)
+    local findX, findY, findLeftX, findRightX, findTopY, findBottomY
     local delta = cc.p(0, 0)
---    threshold = threshold or 5
---    allInfoNodes(self.scene.layer)
---    local tag = -3
---    gk.util:clearDrawNode(self.scene.layer, tag)
---    local findX = false
---    for _, other in pairs(all) do
---        local p1 = self.scene.layer:convertToNodeSpace(node:getParent():convertToWorldSpace(cc.p(node:getPosition())))
---        local p2 = self.scene.layer:convertToNodeSpace(other:getParent():convertToWorldSpace(cc.p(other:getPosition())))
-----        p1.x = math.floor(p1.x * 2) / 2
-----        p1.y = math.floor(p1.y * 2) / 2
-----        p2.x = math.floor(p2.x * 2) / 2
-----        p2.y = math.floor(p2.y * 2) / 2
---        if (not findX and math.abs(p1.x - p2.x) <= threshold) or p1.x == p2.x then
---            --p1.x == p2.x then
---            delta.x = p2.x - p1.x
---            dump(p1)
---            dump(p2)
---            gk.util:drawLineOnNode(self.scene.layer, cc.p(p2.x, p1.y), p2, cc.c4f(255 / 255, 102 / 255, 102 / 255, 1), tag):setPositionZ(2)
---            gk.util:drawDotOnNode(self.scene.layer, cc.p(p2.x, p1.y), cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
---            gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
---            findX = true
---        end
---    end
---    node:setPosition(cc.pAdd(cc.p(node:getPosition()), delta))
---    local p1 = self.scene.layer:convertToNodeSpace(node:getParent():convertToWorldSpace(cc.p(node:getPosition())))
---    dump(delta)
---    dump(p1)
---    dump(cc.p(node:getPosition()))
+    local p1 = self.scene.layer:convertToNodeSpace(node:getParent():convertToWorldSpace(cc.p(node:getPosition())))
+    local sx, sy = gk.util:getGlobalScale(node)
+    local size = node:getContentSize()
+    local drawLine = function(p1, p2)
+        gk.util:drawLineOnNode(self.scene.layer, p1, p2, cc.c4f(255 / 255, 102 / 255, 102 / 255, 1), tag):setPositionZ(0.00000001)
+        gk.util:drawDotOnNode(self.scene.layer, p1, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
+        gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
+    end
+    local updatePosX = function(dtX)
+        if not findX and not findLeftX and not findRightX then
+            delta.x = dtX
+            p1.x = p1.x + dtX
+            node:setPosition(node:getParent():convertToNodeSpace(self.scene.layer:convertToWorldSpace(p1)))
+        end
+    end
+    local updatePosY = function(dtY)
+        if not findY and not findTopY and not findBottomY then
+            delta.y = dtY
+            p1.y = p1.y + dtY
+            node:setPosition(node:getParent():convertToNodeSpace(self.scene.layer:convertToWorldSpace(p1)))
+        end
+    end
+    for _, other in pairs(all) do
+        local p2 = self.scene.layer:convertToNodeSpace(other:getParent():convertToWorldSpace(cc.p(other:getPosition())))
+        -- x
+        if (not findX and math.abs(p1.x - p2.x) <= threshold) or (findX and math.equal(p2.x, findX, 1)) then
+            updatePosX(p2.x - p1.x)
+            drawLine(cc.p(p2.x, p1.y), p2)
+            findX = p2.x
+        end
+        -- y
+        if (not findY and math.abs(p1.y - p2.y) <= threshold) or (findY and math.equal(findY, p2.y, 1)) then
+            updatePosY(p2.y - p1.y)
+            drawLine(cc.p(p1.x, p2.y), p2)
+            findY = p2.y
+        end
+        -- left x
+        local sx2, sy2 = gk.util:getGlobalScale(other)
+        local size2 = other:getContentSize()
+        local p1_ = cc.p(p1.x - size.width / 2 * sx, p1.y)
+        local p2_ = cc.p(p2.x - size2.width / 2 * sx2, p2.y)
+        if (not findX and not findLeftX and math.abs(p1_.x - p2_.x) <= threshold) or math.equal(p1_.x, p2_.x, 4) then
+            updatePosX(p2_.x - p1_.x)
+            drawLine(cc.p(p2_.x, p1_.y), p2_)
+            findLeftX = p2_.x
+        end
+        -- right x
+        local p1_ = cc.p(p1.x + size.width / 2 * sx, p1.y)
+        local p2_ = cc.p(p2.x + size2.width / 2 * sx2, p2.y)
+        if (not findX and not findRightX and math.abs(p1_.x - p2_.x) <= threshold) or math.equal(p1_.x, p2_.x, 1) then
+            updatePosX(p2_.x - p1_.x)
+            drawLine(cc.p(p2_.x, p1_.y), p2_)
+            findRightX = p2_.x
+        end
+        -- top y
+        local p1_ = cc.p(p1.x, p1.y + size.height / 2 * sy)
+        local p2_ = cc.p(p2.x, p2.y + size2.height / 2 * sy2)
+        if (not findY and not findTopY and math.abs(p1_.y - p2_.y) <= threshold) or math.equal(p1_.y, p2_.y, 1) then
+            updatePosY(p2_.y - p1_.y)
+            drawLine(cc.p(p1_.x, p2_.y), p2_)
+            findTopY = p2_.y
+        end
+        -- bottom y
+        local p1_ = cc.p(p1.x, p1.y - size.height / 2 * sy)
+        local p2_ = cc.p(p2.x, p2.y - size2.height / 2 * sy2)
+        if (not findY and not findBottomY and math.abs(p1_.y - p2_.y) <= threshold) or math.equal(p1_.y, p2_.y, 1) then
+            updatePosY(p2_.y - p1_.y)
+            drawLine(cc.p(p1_.x, p2_.y), p2_)
+            findBottomY = p2_.y
+        end
+    end
+
     return delta
 end
 

@@ -49,6 +49,10 @@ function math.shrink(f, bit)
     end
 end
 
+function math.equal(f1, f2, bit)
+    return math.shrink(f1, bit) == math.shrink(f2, bit)
+end
+
 ----------------------------------------- restart game  -------------------------------------------------
 function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
@@ -163,7 +167,7 @@ function util:drawNode(node, c4f, tag)
     if node:isIgnoreAnchorPointForPosition() then
         p.x, p.y = 0, 0
     end
-    draw:drawDot(p, sx ~= 0 and 2 / sx or 2, cc.c4f(1, 0, 0, 1))
+    draw:drawDot(p, sx ~= 0 and 1.5 / sx or 1.5, cc.c4f(1, 0, 0, 1))
 
     if iskindof(node, "cc.ScrollView") then
         -- bg

@@ -73,7 +73,7 @@ function display:initWithDesignSize(size)
         local p = cc.p(display.xScale() * x, display.yScale() * y)
         return p
     end
-    gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.2f), yScale(%.2f), minScale(%.2f), maxScale(%.2f)",
+    gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
         size.width, size.height, display.winSize().width, display.winSize().height,
         display.xScale(), display.yScale(), display.minScale(), display.maxScale())
 end
