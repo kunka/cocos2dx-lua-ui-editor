@@ -17,7 +17,6 @@ function init:initGameKit(mode)
     gk.resource.defaultSprite = DEBUG > 0 and "gk/res/texture/default.png" or "gk/res/texture/default_release.png"
     gk.display:initWithDesignSize(cc.size(1280, 720))
     gk.resource:setTextureRelativePath("texture/")
-    gk.resource:setAtlasRelativePath("atlas/")
     local strings = {
         en = require("demo.gen.value.strings"),
         cn = require("demo.gen.value.strings_cn"),
