@@ -40,6 +40,8 @@ function math.shrink(f, bit)
         local e = 1 / math.pow(10, bit + 1)
         local v = math.pow(10, bit)
         return math.round((f + e) * v) / v
+    elseif bit == 0.5 then
+        return math.floor(f * 2) / 2
     elseif bit == 0 then
         return math.round(f)
     else
@@ -84,6 +86,7 @@ function util:restartGame(mode)
         util.restartLayer = nil
     end
 
+    gk.event:post("syncNow")
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
@@ -230,6 +233,21 @@ function util:drawLineOnNode(node, p1, p2, c4f, tg)
         draw:setPosition(cc.p(0, 0))
     end
     draw:drawLine(p1, p2, c4f)
+    return draw
+end
+
+function util:drawDotOnNode(node, p, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    local sx, sy = util:getGlobalScale(node)
+    draw:drawDot(p, sx ~= 0 and 1.5 / sx or 1.5, c4f or cc.c4f(1, 0, 0, 1))
     return draw
 end
 

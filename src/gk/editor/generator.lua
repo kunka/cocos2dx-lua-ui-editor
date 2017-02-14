@@ -87,6 +87,14 @@ function generator:createNode(info, rootNode, rootTable)
     node.__info = info
     -- index node
     if rootTable then
+        -- warning: duplicated id
+        local id = info.id
+        local index = 1
+        while rootTable[id] do
+            id = info.id .. "_" .. tostring(index)
+            index = index + 1
+        end
+        info.id = id
         rootTable[info.id] = node
     end
     -- force set value
@@ -341,11 +349,13 @@ generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
     x = function(node, x)
         local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x)
-        node:setPositionX(x * scaleX)
+        local x = math.shrink(x * scaleX, 0.5)
+        node:setPositionX(x)
     end,
     y = function(node, y)
         local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y)
-        node:setPositionY(y * scaleY)
+        local y = math.shrink(y * scaleY, 0.5)
+        node:setPositionY(y)
     end,
     scaleXY = function(node, var)
         local scaleX = generator:parseValue("scaleX", node, var.x)
@@ -519,10 +529,10 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Node   ---------------------------
     x = function(node)
-        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue("x", node, node.__info.scaleXY.x), 1)
+        return node.__info.x or math.shrink(node:getPositionX() / generator:parseValue("x", node, node.__info.scaleXY.x), 0.5)
     end,
     y = function(node)
-        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue("y", node, node.__info.scaleXY.y), 1)
+        return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue("y", node, node.__info.scaleXY.y), 0.5)
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()

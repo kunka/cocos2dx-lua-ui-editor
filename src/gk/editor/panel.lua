@@ -81,6 +81,10 @@ function panel:subscribeEvent()
         end)))
         action:setTag(-234)
     end)
+    gk.event:subscribe(self, "syncNow", function(node)
+        local inject = require("gk.core.inject")
+        inject:sync(node or self.scene.layer)
+    end)
 end
 
 function panel:onNodeCreate(node)
@@ -126,6 +130,12 @@ function panel:onNodeCreate(node)
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             node:setPosition(cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos)))
+            --            local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
+            --            local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
+            --            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+            --            gk.event:post("displayNode", node)
+            local delta = self:onNodeMoved(node)
+            p = cc.pAdd(p, delta)
 
             -- find dest container
             if self.sortedChildren == nil then
@@ -179,6 +189,8 @@ function panel:onNodeCreate(node)
                 local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
                 node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
                 gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
+                local delta = self:onNodeMoved(node)
+                p = cc.pAdd(p, delta)
             end
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
@@ -300,9 +312,35 @@ function panel:handleEvent()
             self.shiftPressed = true
             return
         end
+        if key == "KEY_HYPER" then
+            self.commandPressed = true
+            return
+        end
 
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode and self.displayingNode.__info then
+            -- copy node
+            if self.commandPressed then
+                if key == "KEY_C" then
+                    gk.log("copy node %s", self.displayingNode.__info.id)
+                    self.copyingNode = self.displayingNode
+                    return
+                elseif key == "KEY_V" and self.copyingNode then
+                    --                    local info = clone(self.copyingNode.__info)
+                    local info = clone(generator:deflate(self.copyingNode))
+                    local node = generator:inflate(info, nil, self.scene.layer)
+                    if node then
+                        node.__info.x, node.__info.y = node.__info.x + 20, node.__info.y + 20
+                        self.copyingNode:getParent():addChild(node)
+                        gk.log("paste node %s", node.__info.id)
+                        gk.event:post("postSync")
+                        gk.event:post("displayNode", node)
+                        gk.event:post("displayDomTree")
+                    end
+                    return
+                end
+            end
+
             -- TODO: hold
             self.moveActions = self.moveActions or {
                 KEY_LEFT_ARROW = function(info, step)
@@ -329,9 +367,11 @@ function panel:handleEvent()
                     action:setTag(kMoveNodeAction)
                 end)))
                 action:setTag(kMoveNodeAction)
+                self:onNodeMoved(self.displayingNode, 0)
             end
             gk.event:post("displayNode", self.displayingNode)
         end
+        self.copyingNode = nil
 
         if key == "KEY_S" then
             -- save
@@ -357,6 +397,10 @@ function panel:handleEvent()
         local key = cc.KeyCodeKey[keyCode + 1]
         if key == "KEY_SHIFT" then
             self.shiftPressed = false
+            return
+        end
+        if key == "KEY_HYPER" then
+            self.commandPressed = false
             return
         end
         if self.moveActions and self.moveActions[key] then
@@ -451,6 +495,61 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
             table.insert(self.sortedChildren, node)
         end
     end
+end
+
+function panel:onNodeMoved(node, threshold)
+--    local p = cc.p(node:getPosition())
+--    dump(p)
+--    p.x = math.floor(p.x * 2) / 2
+--    p.y = math.floor(p.y * 2) / 2
+--    node:setPosition(p)
+--    dump(p)
+--
+--    local all = {}
+--    local function allInfoNodes(nd)
+--        if nd and nd.__info and nd ~= node then
+--            table.insert(all, nd)
+--            --        -- test draw
+--            --        if node.focusable then
+--            --            gk.util:clearDrawLabel(node)
+--            --        end
+--            local children = nd:getChildren()
+--            for i = 1, #children do
+--                allInfoNodes(children[i])
+--            end
+--        end
+--    end
+--
+    local delta = cc.p(0, 0)
+--    threshold = threshold or 5
+--    allInfoNodes(self.scene.layer)
+--    local tag = -3
+--    gk.util:clearDrawNode(self.scene.layer, tag)
+--    local findX = false
+--    for _, other in pairs(all) do
+--        local p1 = self.scene.layer:convertToNodeSpace(node:getParent():convertToWorldSpace(cc.p(node:getPosition())))
+--        local p2 = self.scene.layer:convertToNodeSpace(other:getParent():convertToWorldSpace(cc.p(other:getPosition())))
+----        p1.x = math.floor(p1.x * 2) / 2
+----        p1.y = math.floor(p1.y * 2) / 2
+----        p2.x = math.floor(p2.x * 2) / 2
+----        p2.y = math.floor(p2.y * 2) / 2
+--        if (not findX and math.abs(p1.x - p2.x) <= threshold) or p1.x == p2.x then
+--            --p1.x == p2.x then
+--            delta.x = p2.x - p1.x
+--            dump(p1)
+--            dump(p2)
+--            gk.util:drawLineOnNode(self.scene.layer, cc.p(p2.x, p1.y), p2, cc.c4f(255 / 255, 102 / 255, 102 / 255, 1), tag):setPositionZ(2)
+--            gk.util:drawDotOnNode(self.scene.layer, cc.p(p2.x, p1.y), cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
+--            gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
+--            findX = true
+--        end
+--    end
+--    node:setPosition(cc.pAdd(cc.p(node:getPosition()), delta))
+--    local p1 = self.scene.layer:convertToNodeSpace(node:getParent():convertToWorldSpace(cc.p(node:getPosition())))
+--    dump(delta)
+--    dump(p1)
+--    dump(cc.p(node:getPosition()))
+    return delta
 end
 
 return panel
