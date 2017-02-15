@@ -208,26 +208,28 @@ function panel:displayDomNode(node, layer)
                     if cc.rectContainsPoint(rect, p) then
                         local nd1 = self.parent.scene.layer[node.content]
                         local nd2 = self.parent.scene.layer[content]
-                        if nd1 == nd2 or nd1:getParent() == nd2 or nd2:getParent() == nd1 then
+                        if nd1 then
+                            if nd1 == nd2 or nd1:getParent() == nd2 or nd2:getParent() == nd1 then
+                                break
+                            end
+                            self._containerNode = node
+                            if p.y < s.height / 2 and nd1 and nd2 and nd1:getParent() == nd2:getParent() then
+                                -- reorder mode
+                                local size = self._containerNode:getContentSize()
+                                gk.util:drawSolidRectOnNode(self._containerNode, cc.p(0, 5), cc.p(size.width, 0), cc.c4f(0, 1, 0, 1), -2)
+                                self.mode = 1
+                            else
+                                -- change container mode
+                                gk.util:drawNode(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
+                                self.mode = 2
+                            end
+                            --                            gk.log("dom:find container node %s", self._containerNode.content)
+                            local nd = self.parent.scene.layer[self._containerNode.content]
+                            if nd then
+                                gk.event:post("displayNode", nd)
+                            end
                             break
                         end
-                        self._containerNode = node
-                        if p.y < s.height / 2 and nd1 and nd2 and nd1:getParent() == nd2:getParent() then
-                            -- reorder mode
-                            local size = self._containerNode:getContentSize()
-                            gk.util:drawSolidRectOnNode(self._containerNode, cc.p(0, 5), cc.p(size.width, 0), cc.c4f(0, 1, 0, 1), -2)
-                            self.mode = 1
-                        else
-                            -- change container mode
-                            gk.util:drawNode(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
-                            self.mode = 2
-                        end
-                        --                            gk.log("dom:find container node %s", self._containerNode.content)
-                        local nd = self.parent.scene.layer[self._containerNode.content]
-                        if nd then
-                            gk.event:post("displayNode", nd)
-                        end
-                        break
                     end
                 end
             end, cc.Handler.EVENT_TOUCH_MOVED)

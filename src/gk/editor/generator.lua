@@ -446,9 +446,18 @@ generator.nodeSetFuncs = {
     localZOrder = function(node, var)
         node:setLocalZOrder(var)
     end,
-    --------------------------- cc.Sprite   ---------------------------
+    --------------------------- cc.Sprite Button   ---------------------------
     file = function(node, var)
-        node:setSpriteFrame(gk.create_sprite_frame(var))
+        -- TODO: iskind of bug
+        --        if iskindof(node, "Button") then
+        if node.__info.type == "ZoomButton" then
+            node.contentNode:setSpriteFrame(gk.create_sprite_frame(var))
+            node:setContentNode(node.contentNode)
+            node.__info.width = nil
+            node.__info.height = nil
+        else
+            node:setSpriteFrame(gk.create_sprite_frame(var))
+        end
     end,
     flippedX = function(node, var)
         node:setFlippedX(var == 0)

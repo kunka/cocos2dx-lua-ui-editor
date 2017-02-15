@@ -121,6 +121,8 @@ function panel:onNodeCreate(node)
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(0.00000001)
                 gk.event:post("displayNode", node)
+                gk.util:clearDrawNode(self.scene.layer, -3)
+                self:onNodeMoved(node, nil, 0)
                 return true
             else
                 return false
@@ -129,13 +131,12 @@ function panel:onNodeCreate(node)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
-            node:setPosition(cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos)))
+            p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             --            local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
             --            local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
             --            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
             --            gk.event:post("displayNode", node)
-            local delta = self:onNodeMoved(node)
-            p = cc.pAdd(p, delta)
+            p = self:onNodeMoved(node, p)
 
             -- find dest container
             if self.sortedChildren == nil then
@@ -170,30 +171,28 @@ function panel:onNodeCreate(node)
                 gk.event:post("displayDomTree")
                 return
             end
-            local destPos = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
-            node:setPosition(destPos)
-            local delta = self:onNodeMoved(node)
-            destPos = cc.pAdd(destPos, delta)
+            local p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
+            p = self:onNodeMoved(node, p)
 
             local type = tolua.type(self._containerNode)
             if self._containerNode and self._containerNode ~= node:getParent() and
                     (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
-                local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(destPos))
+                local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
                 node:retain()
                 node:removeFromParent()
                 self:rescaleNode(node, self._containerNode)
                 local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
                 self._containerNode:addChild(node)
                 node:release()
                 gk.log("change node's container %s", node.__info.id)
             else
                 local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                node.__info.x, node.__info.y = math.round(destPos.x / scaleX), math.round(destPos.y / scaleY)
+                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
                 gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
-                local delta = self:onNodeMoved(node)
+                --                local delta = self:onNodeMoved(node)
                 --                p = cc.pAdd(p, delta)
             end
             gk.event:post("postSync")
@@ -217,8 +216,10 @@ function panel:rescaleNode(node, parent)
     else
         -- normal node
         local sx, sy = gk.util:getGlobalScale(parent)
+        gk.log("rescaleNode(%s) sx %f, sy %f", node.__info.id, sx, sy)
         if sx ~= 1 or sy ~= 1 then
             node.__info.scaleX, node.__info.scaleY = 1, 1
+            node.__info.scaleXY = { x = "1", y = "1" }
         else
             node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
             node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
@@ -258,7 +259,7 @@ function panel:drawNodeCoordinate(node)
         end
 
         local createArrow = function(width, dis, scale, p, rotation, ap)
-            if width < 0 then
+            if width < 50 then
                 return
             end
             local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
@@ -348,16 +349,16 @@ function panel:handleEvent()
             -- TODO: hold
             self.moveActions = self.moveActions or {
                 KEY_LEFT_ARROW = function(info, step)
-                    info.x = info.x - step
+                    info.x = math.floor(info.x - step)
                 end,
                 KEY_RIGHT_ARROW = function(info, step)
-                    info.x = info.x + step
+                    info.x = math.floor(info.x + step)
                 end,
                 KEY_UP_ARROW = function(info, step)
-                    info.y = info.y + step
+                    info.y = math.floor(info.y + step)
                 end,
                 KEY_DOWN_ARROW = function(info, step)
-                    info.y = info.y - step
+                    info.y = math.floor(info.y - step)
                 end,
             }
             local move = self.moveActions[key]
@@ -371,7 +372,7 @@ function panel:handleEvent()
                     action:setTag(kMoveNodeAction)
                 end)))
                 action:setTag(kMoveNodeAction)
-                self:onNodeMoved(self.displayingNode, 0)
+                self:onNodeMoved(self.displayingNode, nil, 0)
             end
             gk.event:post("displayNode", self.displayingNode)
         end
@@ -502,7 +503,14 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
 end
 
 -- smart align node
-function panel:onNodeMoved(node, threshold)
+function panel:onNodeMoved(node, destPos, threshold)
+    if destPos then
+        destPos.x = math.shrink(destPos.x, 1)
+        destPos.y = math.shrink(destPos.y, 1)
+        node:setPosition(destPos)
+    end
+    threshold = threshold or 2
+
     local all = {}
     local function allInfoNodes(nd)
         if nd and nd.__info and nd ~= node then
@@ -514,7 +522,6 @@ function panel:onNodeMoved(node, threshold)
         end
     end
 
-    threshold = threshold or 2
     allInfoNodes(self.scene.layer)
     local tag = -3
     gk.util:clearDrawNode(self.scene.layer, tag)
@@ -524,20 +531,18 @@ function panel:onNodeMoved(node, threshold)
     local sx, sy = gk.util:getGlobalScale(node)
     local size = node:getContentSize()
     local drawLine = function(p1, p2)
-        gk.util:drawLineOnNode(self.scene.layer, p1, p2, cc.c4f(255 / 255, 102 / 255, 102 / 255, 1), tag):setPositionZ(0.00000001)
-        gk.util:drawDotOnNode(self.scene.layer, p1, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
-        gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 1), tag)
+        gk.util:drawLineOnNode(self.scene.layer, p1, p2, cc.c4f(255 / 255, 102 / 255, 102 / 255, 0.5), tag):setPositionZ(0.00000001)
+        gk.util:drawDotOnNode(self.scene.layer, p1, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.5), tag)
+        gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.5), tag)
     end
     local updatePosX = function(dtX)
-        if not findX and not findLeftX and not findRightX then
-            delta.x = dtX
+        if destPos and not findX and not findLeftX and not findRightX then
             p1.x = p1.x + dtX
             node:setPosition(node:getParent():convertToNodeSpace(self.scene.layer:convertToWorldSpace(p1)))
         end
     end
     local updatePosY = function(dtY)
-        if not findY and not findTopY and not findBottomY then
-            delta.y = dtY
+        if destPos and not findY and not findTopY and not findBottomY then
             p1.y = p1.y + dtY
             node:setPosition(node:getParent():convertToNodeSpace(self.scene.layer:convertToWorldSpace(p1)))
         end
@@ -592,7 +597,7 @@ function panel:onNodeMoved(node, threshold)
         end
     end
 
-    return delta
+    return cc.p(node:getPosition())
 end
 
 return panel
