@@ -57,6 +57,7 @@ function panel:displayNode(node)
     local leftX5_3 = 175
     local stepY = 25
     local stepX = 40
+    local inputMax = 110
     local inputWidth1 = 65
     local inputWidth2 = 45
     local inputWidth3 = 25
@@ -380,7 +381,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         -- file
         createLabel("Sprite", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.file), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        createInput(tostring(node.__info.file), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
             editBox:setInput(generator:modify(node, "file", input, "string"))
         end)
         yIndex = yIndex + 1

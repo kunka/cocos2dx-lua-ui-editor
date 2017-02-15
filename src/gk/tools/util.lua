@@ -269,6 +269,22 @@ function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
     return draw
 end
 
+function util:drawNodeBg(node, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, -1, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:clear()
+    local size = node:getContentSize()
+    draw:drawSolidRect(cc.p(0, 0), cc.p(size.width, size.height), c4f or cc.c4f(1, 1, 1, 1))
+    return draw
+end
+
 function util:getGlobalScale(node)
     local scaleX, scaleY = 1, 1
     local c = node

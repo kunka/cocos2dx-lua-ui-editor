@@ -98,6 +98,9 @@ local function create_label(info)
         -- TODO: createWithCharMap
         label = cc.Label:createWithSystemFont(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     end
+    if not label then
+        gk.log("warning! create_label return nil, string= %s, fontFile = %s", info.string, fontFile)
+    end
     return label
 end
 
@@ -111,9 +114,9 @@ local function nextFocusNode(current)
                 table.insert(all, node)
             end
             -- test draw
-                        if node.focusable then
-                            gk.util:clearDrawLabel(node)
-                        end
+            if node.focusable then
+                gk.util:clearDrawLabel(node)
+            end
             local children = node:getChildren()
             for i = 1, #children do
                 focusNodes(children[i])
@@ -152,9 +155,9 @@ local function nextFocusNode(current)
         end)
 
         -- test draw
-                for i = 1, #all do
-                    gk.util:drawLabelOnNode(all[i], tostring(i))
-                end
+        for i = 1, #all do
+            gk.util:drawLabelOnNode(all[i], tostring(i))
+        end
         if #all > 0 then
             return all[1]
         end

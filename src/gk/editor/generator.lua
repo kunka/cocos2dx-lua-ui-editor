@@ -39,12 +39,12 @@ function generator:deflate(node)
     end
 
     -- filter useless properties
-    local keys = table.keys(info)
-    for _, key in ipairs(keys) do
-        if string.len(key) > 0 and key:sub(1, 1) == "_" then
-            info[key] = nil
-        end
-    end
+    --    local keys = table.keys(info)
+    --    for _, key in ipairs(keys) do
+    --        if string.len(key) > 0 and key:sub(1, 1) == "_" then
+    --            info[key] = nil
+    --        end
+    --    end
     return info
 end
 

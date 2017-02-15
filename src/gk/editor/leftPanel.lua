@@ -126,8 +126,17 @@ function panel:displayDomNode(node, layer)
         label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        label:setTextColor(cc.c3b(0x99, 0xcc, 0x00))
+        if fixChild then --or (node.__info and node.__info.lock == 1) then
         label:setTextColor(cc.c3b(200, 200, 200))
-        if fixChild or not gk.util:isGlobalVisible(node) or (node.__info and node.__info.lock == 1) then
+        label:setOpacity(100)
+        end
+        if not gk.util:isGlobalVisible(node) then
+            label:setTextColor(cc.c3b(200, 200, 200))
+            label:setOpacity(100)
+        end
+        if (node.__info and node.__info.lock == 1) then
+            label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
         end
         label:setScale(scale)
@@ -208,21 +217,23 @@ function panel:displayDomNode(node, layer)
                     if cc.rectContainsPoint(rect, p) then
                         local nd1 = self.parent.scene.layer[node.content]
                         local nd2 = self.parent.scene.layer[content]
-                        if nd1 then
-                            if nd1 == nd2 or nd1:getParent() == nd2 or nd2:getParent() == nd1 then
+                        if nd1 and nd2 then
+                            if nd1 == nd2 or nd1:getParent() == nd2 then
                                 break
                             end
-                            self._containerNode = node
-                            if p.y < s.height / 2 and nd1 and nd2 and nd1:getParent() == nd2:getParent() then
+                            if p.y < s.height / 2 and nd1 and nd2 and (nd1:getParent() == nd2:getParent() or nd2:getParent() == nd1) then
                                 -- reorder mode
-                                local size = self._containerNode:getContentSize()
-                                gk.util:drawSolidRectOnNode(self._containerNode, cc.p(0, 5), cc.p(size.width, 0), cc.c4f(0, 1, 0, 1), -2)
+                                local size = node:getContentSize()
+                                gk.util:drawSolidRectOnNode(node, cc.p(0, 5), cc.p(size.width, 0), cc.c4f(0, 1, 0, 1), -2)
                                 self.mode = 1
+                            elseif nd2:getParent() == nd1 then
+                                break
                             else
                                 -- change container mode
-                                gk.util:drawNode(self._containerNode, cc.c4f(1, 0, 0, 1), -2)
+                                gk.util:drawNode(node, cc.c4f(1, 0, 0, 1), -2)
                                 self.mode = 2
                             end
+                            self._containerNode = node
                             --                            gk.log("dom:find container node %s", self._containerNode.content)
                             local nd = self.parent.scene.layer[self._containerNode.content]
                             if nd then
@@ -236,6 +247,7 @@ function panel:displayDomNode(node, layer)
             listener:registerScriptHandler(function(touch, event)
                 if self._containerNode then
                     if self.mode == 2 then
+                        -- change container mode
                         local container = self.parent.scene.layer[self._containerNode.content]
                         local node = self.parent.scene.layer[content]
                         if node and container then
@@ -254,39 +266,65 @@ function panel:displayDomNode(node, layer)
                             return
                         end
                     elseif self.mode == 1 then
+                        -- reorder mode
                         local bro = self.parent.scene.layer[self._containerNode.content]
                         local node = self.parent.scene.layer[content]
-                        if node and bro and node:getParent() == bro:getParent() then
-                            local parent = node:getParent()
-                            local z1, z2 = bro:getLocalZOrder(), node:getLocalZOrder()
-                            if z2 < z1 then
-                                -- promotion
-                                z2 = z1
-                            end
-                            parent:sortAllChildren()
-                            local reorder = false
-                            local children = parent:getChildren()
-                            for i = 1, #children do
-                                local child = children[i]
-                                if child and child.__info then
+                        if node and bro and (node:getParent() == bro:getParent() or node:getParent() == bro) then
+                            if node:getParent() == bro then
+                                -- put in the first place
+                                local parent = node:getParent()
+                                parent:sortAllChildren()
+                                local children = parent:getChildren()
+                                local child = children[1]
+                                if child ~= node then
+                                    local z1, z2 = child:getLocalZOrder(), node:getLocalZOrder()
                                     if z2 > z1 then
-                                        if child:getLocalZOrder() == z2 and node ~= child then
-                                            parent:reorderChild(child, z2)
-                                        end
-                                    else
-                                        if child:getLocalZOrder() == z1 then
-                                            if child == bro then
-                                                reorder = true
-                                                parent:reorderChild(node, z2)
-                                            elseif reorder and child ~= node then
+                                        -- demotion
+                                        z2 = z1
+                                    end
+                                    parent:reorderChild(node, z2)
+                                    for i = 1, #children do
+                                        local child = children[i]
+                                        if child and child.__info then
+                                            if child:getLocalZOrder() == z1 and node ~= child then
                                                 parent:reorderChild(child, z1)
                                             end
                                         end
                                     end
+                                    gk.log("dom:reorder node %s before %s", node.__info.id, child.__info.id)
                                 end
+                            else
+                                local parent = node:getParent()
+                                local z1, z2 = bro:getLocalZOrder(), node:getLocalZOrder()
+                                if z2 < z1 then
+                                    -- promotion
+                                    z2 = z1
+                                end
+                                parent:sortAllChildren()
+                                local reorder = false
+                                local children = parent:getChildren()
+                                for i = 1, #children do
+                                    local child = children[i]
+                                    if child and child.__info then
+                                        if z2 > z1 then
+                                            if child:getLocalZOrder() == z2 and node ~= child then
+                                                parent:reorderChild(child, z2)
+                                            end
+                                        else
+                                            if child:getLocalZOrder() == z1 then
+                                                if child == bro then
+                                                    reorder = true
+                                                    parent:reorderChild(node, z2)
+                                                elseif reorder and child ~= node then
+                                                    parent:reorderChild(child, z1)
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                                node.__info.localZOrder = z2
+                                gk.log("dom:reorder node %s after %s", node.__info.id, bro.__info.id)
                             end
-                            node.__info.localZOrder = z2
-                            gk.log("dom:reorder node %s after %s", node.__info.id, bro.__info.id)
                             gk.event:post("displayDomTree")
                             gk.event:post("postSync")
                         end
@@ -314,6 +352,7 @@ function panel:displayDomNode(node, layer)
         end
         return label
     end
+
     createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth)
     self.domDepth = self.domDepth + 1
     layer = layer + 1

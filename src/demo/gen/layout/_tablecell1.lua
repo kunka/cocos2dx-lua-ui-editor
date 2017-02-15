@@ -3,6 +3,7 @@ return {
 	id = "TableCell1",
 	ignoreAnchor = 1,
 	localZOrder = 0,
+	lock = 1,
 	opacity = 255,
 	rotation = 0,
 	scaleX = 1,

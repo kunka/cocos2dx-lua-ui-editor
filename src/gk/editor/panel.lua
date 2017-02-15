@@ -88,6 +88,10 @@ function panel:subscribeEvent()
 end
 
 function panel:onNodeCreate(node)
+    if not node then
+        gk.log("warning! onNodeCreate = nil")
+        return
+    end
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
@@ -125,10 +129,17 @@ function panel:onNodeCreate(node)
                 self:onNodeMoved(node, nil, 0)
                 return true
             else
+                if not gk.util:hitTest(self.scene.layer, touch) then
+                    self:undisplayNode(true)
+                    gk.util:clearDrawNode(self.scene.layer, -3)
+                end
                 return false
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
+            if node.__info and node.__info.lock == 1 then
+                return
+            end
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
@@ -167,6 +178,10 @@ function panel:onNodeCreate(node)
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
+            if node.__info and node.__info.lock == 1 then
+                gk.event:post("displayDomTree")
+                return
+            end
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")
                 return
@@ -183,14 +198,16 @@ function panel:onNodeCreate(node)
                 self:rescaleNode(node, self._containerNode)
                 local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
+                --                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
+                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 self._containerNode:addChild(node)
                 node:release()
                 gk.log("change node's container %s", node.__info.id)
             else
                 local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
                 local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
+                --                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
+                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
                 gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
                 --                local delta = self:onNodeMoved(node)
                 --                p = cc.pAdd(p, delta)
@@ -227,9 +244,10 @@ function panel:rescaleNode(node, parent)
     end
 end
 
-function panel:undisplayNode()
-    self.rightPanel:undisplayNode()
-
+function panel:undisplayNode(expRightPanel)
+    if not expRightPanel then
+        self.rightPanel:undisplayNode()
+    end
     if self.displayingNode then
         gk.util:clearDrawNode(self.displayingNode)
         self.displayingNode = nil

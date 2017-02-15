@@ -120,6 +120,9 @@ function inject:initLayer(layer)
                 layer.__info.width = gk.display.winSize().width
                 layer.__info.height = gk.display.winSize().height
             end
+            if iskindof(layer, "cc.TableViewCell") then
+                layer.__info.lock = 1
+            end
             --            dump(info)
         else
             -- init first time
@@ -128,6 +131,9 @@ function inject:initLayer(layer)
             layer.__info.id = layer.__cname
             layer[layer.__info.id] = layer
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+            if iskindof(layer, "cc.TableViewCell") then
+                layer.__info.lock = 1
+            end
             self:sync(layer)
         end
         if gk.mode == gk.MODE_EDIT then

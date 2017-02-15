@@ -26,6 +26,7 @@ return {
 	      id = "bg",
 	      ignoreAnchor = 1,
 	      localZOrder = 0,
+	      lock = 0,
 	      opacity = 50,
 	      rotation = 0,
 	      scaleX = "$xScale",

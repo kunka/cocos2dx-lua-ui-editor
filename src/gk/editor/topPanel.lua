@@ -129,6 +129,31 @@ function panel.create(parent)
     end)
     yIndex = yIndex + 1
 
+    -- right
+    local rightX = gk.display.leftWidth + gk.display.winSize().width + leftX
+    local rightX2 = rightX + leftX2 - leftX + 30
+    local yIndex = 0
+    -- bg
+    createLabel("Background", rightX, topY - yIndex * stepY)
+    local items = { "BLACK", "WHITE", "GRAY" }
+    local colors = { cc.c4f(0, 0, 0, 1), cc.c4f(1, 1, 1, 1), cc.c4f(0.66, 0.66, 0.66, 1) }
+    local index = cc.UserDefault:getInstance():getIntegerForKey("colorIndex", 1)
+    local node = createSelectBox(items, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local color = colors[index]
+        local root = gk.util:getRootNode(self)
+        gk.util:drawNodeBg(root, color, -89)
+        cc.UserDefault:getInstance():setIntegerForKey("colorIndex", index)
+        cc.UserDefault:getInstance():flush()
+    end)
+    yIndex = yIndex + 1
+    local color = colors[index]
+    self:runAction(cc.CallFunc:create(function()
+        local root = gk.util:getRootNode(self)
+        if root then
+            gk.util:drawNodeBg(root, color, -89)
+        end
+    end))
+
     -- widgets
     self.widgets = {
         { type = "cc.Node", },
