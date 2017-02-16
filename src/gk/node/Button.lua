@@ -100,10 +100,16 @@ function Button:onEnter()
 end
 
 function Button:onClicked(callback)
+    if gk.mode == gk.MODE_EDIT and self.__info then
+        return
+    end
     self.callback = callback
 end
 
 function Button:onLongPressed(callback)
+    if gk.mode == gk.MODE_EDIT and self.__info then
+        return
+    end
     self.longPressdCallback = callback
 end
 

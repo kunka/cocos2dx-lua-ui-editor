@@ -31,8 +31,8 @@ end
 
 function SceneManager:replace(layerName, ...)
     gk.log("SceneManager:replace --> %s", layerName)
-    local Layer = gk.resource:require(layerName)
-    local scene = Layer:createScene(layerName, ...)
+    local Layer, path = gk.resource:require(layerName)
+    local scene = Layer:createScene(path, ...)
     return SceneManager:replaceScene(scene)
 end
 
@@ -50,13 +50,13 @@ end
 function SceneManager:pop()
     gk.log("SceneManager:pop")
     local director = cc.Director:getInstance()
-    local stack = director:getScenesStack()
-    if #stack == 1 then
-        if SceneManager.endCallback then
-            SceneManager.endCallback()
-            return
-        end
-    end
+--    local stack = director:getScenesStack()
+--    if #stack == 1 then
+--        if SceneManager.endCallback then
+--            SceneManager.endCallback()
+--            return
+--        end
+--    end
     director:popScene()
     self.sceneStack:popRight()
     self:printSceneStack()

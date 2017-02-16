@@ -11,7 +11,6 @@ local TableViewCell = class("TableViewCell", function()
 end)
 
 function TableViewCell:ctor()
-    gk.event:post("onNodeCreate", self)
 end
 
 return TableViewCell

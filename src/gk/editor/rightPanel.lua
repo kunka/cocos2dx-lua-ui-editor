@@ -159,14 +159,28 @@ function panel:displayNode(node)
     --------------------------- ID   ---------------------------
     -- id
     createLabel("ID", leftX, topY)
-    createInput(node.__info.id, leftX2_1, topY, inputWidth1, function(editBox, input)
+    createInput(node.__info.id, leftX2_1, topY, inputMax, function(editBox, input)
         editBox:setInput(generator:modify(node, "id", input, "string"))
     end)
+    yIndex = yIndex + 1
     -- lock
-    createLabel("Lock", leftX4_2 + 28, topY - stepY * yIndex)
-    createCheckBox(node.__info.lock == 1, leftX5_3, topY - stepY * yIndex, function(selected)
+    createLabel("Lock", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.lock == 1, leftX2_1, topY - stepY * yIndex, function(selected)
         generator:modify(node, "lock", 1 - selected, "number")
     end)
+    -- widget
+    if node.__info.isWidget == 1 then
+        local w = createLabel("Widget", leftX4_2, topY - stepY * yIndex)
+        local h = createCheckBox(node.__info.isWidget == 1, leftX5_3, topY - stepY * yIndex, function(selected)
+            --        generator:modify(node, "isWidget", 1 - selected, "number")
+        end)
+        w:setOpacity(150)
+        w:setCascadeOpacityEnabled(true)
+        w.enabled = false
+        h:setOpacity(150)
+        h:setCascadeOpacityEnabled(true)
+        h:setTouchEnabled(false)
+    end
     yIndex = yIndex + 1
     --------------------------- cc.Node   ---------------------------
     createLabel("Node", leftX, topY - stepY * yIndex, true)
@@ -238,19 +252,6 @@ function panel:displayNode(node)
         --            setOpacitys(ps, nps)
         --        end)
     end
-    if not isScrollView then
-        -- scale
-        createLabel("Scale", leftX, topY - stepY * yIndex)
-        createLabel("X", leftX2, topY - stepY * yIndex)
-        createInput(tostring(node.__info.scaleX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator:modify(node, "scaleX", input, "number"))
-        end)
-        createLabel("Y", leftX3, topY - stepY * yIndex)
-        createInput(tostring(node.__info.scaleY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-            editBox:setInput(generator:modify(node, "scaleY", input, "number"))
-        end)
-        yIndex = yIndex + 1
-    end
     -- anchor
     createLabel("Anchor", leftX, topY - stepY * yIndex)
     createLabel("X", leftX2, topY - stepY * yIndex)
@@ -303,6 +304,19 @@ function panel:displayNode(node)
             end)
             yIndex = yIndex + 1
         end
+    end
+    if not isScrollView then
+        -- scale
+        createLabel("Scale", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.scaleX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "scaleX", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.scaleY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "scaleY", input, "number"))
+        end)
+        yIndex = yIndex + 1
     end
     if isLayerColor or isLabel or isSprite then
         -- color
@@ -544,6 +558,29 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+    end
+
+    local isgkLayer = iskindof(node.class, "Layer")
+    local isDialog = iskindof(node.class, "Dialog")
+    if isgkLayer or isDialog then
+        -- swallowTouchEvent
+        createLabel("SwallowTouchEvent", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.swallowTouchEvent == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "swallowTouchEvent", selected, "number")
+        end)
+        yIndex = yIndex + 1
+        -- enableKeyPad
+        local w = createLabel("EnableKeyPad", leftX, topY - stepY * yIndex)
+        local h = createCheckBox(node.__info.enableKeyPad == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "enableKeyPad", selected, "number")
+        end)
+        yIndex = yIndex + 1
+        -- popOnBack
+        createLabel("PopOnBack", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.popOnBack == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "popOnBack", selected, "number")
+        end)
+        yIndex = yIndex + 1
     end
 
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))

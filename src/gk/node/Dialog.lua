@@ -12,8 +12,9 @@ local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
     Dialog.super.ctor(self)
-    self.enableKeyPad = false
     -- set dialog bg, use to animate out
+    self.enableKeyPad = false
+    self.popOnBack = true -- popScene on back
     self.dialogBg = nil
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
@@ -21,17 +22,21 @@ function Dialog:ctor()
 end
 
 function Dialog:addMaskLayer(opacity)
-    -- black cover bg
-    local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, 0))
-    self:addChild(layerColor, -1)
-    layerColor:runAction(cc.FadeTo:create(0.15, opacity and opacity or 156))
-    self.maskLayer = layerColor
+    if gk.mode ~= gk.MODE_EDIT then
+        -- black cover bg
+        local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, 0))
+        self:addChild(layerColor, -1)
+        layerColor:runAction(cc.FadeTo:create(0.15, opacity and opacity or 156))
+        self.maskLayer = layerColor
+    end
 end
 
 function Dialog:animateOut()
-    if self.dialogBg then
-        self.dialogBg:setScale(0)
-        self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display.minScale())))
+    if gk.mode ~= gk.MODE_EDIT then
+        if self.dialogBg then
+            self.dialogBg:setScale(0)
+            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display.minScale())))
+        end
     end
 end
 

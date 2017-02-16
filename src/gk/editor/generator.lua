@@ -21,7 +21,7 @@ function generator:deflate(node)
         end
     end
 
-    if not iskindof(node, "cc.TableView") then
+    if not iskindof(node, "cc.TableView") and not info.isWidget then
         -- rescan children
         node:sortAllChildren()
         local children = node:getChildren()
@@ -74,7 +74,7 @@ function generator:createNode(info, rootNode, rootTable)
     if rootNode then
         node = rootNode
     else
-        local creator = self.nodeCreator[info.type]
+        local creator = self.nodeCreator[info.isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
             gk.log("createNode %s", info.id)
@@ -301,6 +301,22 @@ generator.nodeCreator = {
     --        info.id = info.id or generator:genID("tableViewCell", rootTable)
     --        return node
     --    end,
+    ["widget"] = function(info, rootTable)
+        local clazz, path = gk.resource:require(info.type)
+        local node = clazz:create()
+        local type = info.type
+        local type = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+        -- copy info
+        local keys = table.keys(node.__info.__self)
+        for _, key in ipairs(keys) do
+            if not info.__self[key] then
+                info.__self[key] = node.__info.__self[key]
+            end
+        end
+        info.id = generator:genID(type, rootTable)
+        info.lock = 1
+        return node
+    end,
 }
 
 function generator:genID(type, rootTable)
@@ -527,6 +543,16 @@ generator.nodeSetFuncs = {
     verticalFillOrder = function(node, var)
         node:setVerticalFillOrder(var)
     end,
+    --------------------------- Layer   ---------------------------
+    swallowTouchEvent = function(node, var)
+        node.swallowTouchEvent = var == 0
+    end,
+    enableKeyPad = function(node, var)
+        node.enableKeyPad = var == 0
+    end,
+    popOnBack = function(node, var)
+        node.popOnBack = var == 0
+    end,
 }
 
 generator.nodeGetFuncs = {
@@ -655,6 +681,16 @@ generator.nodeGetFuncs = {
     --------------------------- cc.TableView   ---------------------------
     verticalFillOrder = function(node)
         return iskindof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
+    end,
+    --------------------------- Layer   ---------------------------
+    swallowTouchEvent = function(node, var)
+        return iskindof(node.class, "Layer") and (node.__info.swallowTouchEvent or (node.swallowTouchEvent and 0 or 1))
+    end,
+    enableKeyPad = function(node, var)
+        return iskindof(node.class, "Layer") and (node.__info.enableKeyPad or (node.enableKeyPad and 0 or 1))
+    end,
+    popOnBack = function(node, var)
+        return iskindof(node.class, "Layer") and (node.__info.popOnBack or (node.popOnBack and 0 or 1))
     end,
 }
 

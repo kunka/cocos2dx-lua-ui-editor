@@ -39,30 +39,33 @@ function panel:subscribeEvent()
         self:undisplayNode()
     end)
     gk.event:subscribe(self, "displayNode", function(node)
-        self:displayNode(node)
+        --        self:displayNode(node)
+        gk.util:stopActionByTagSafe(node, -2342)
+        local action = node:runAction(cc.CallFunc:create(function()
+            self:displayNode(node)
+        end))
+        action:setTag(-2342)
     end)
     gk.event:subscribe(self, "displayDomTree", function(node)
-        self.leftPanel:displayDomTree(node or self.scene.layer)
+        --        self.leftPanel:displayDomTree(node or self.scene.layer)
+        node = node or self.scene.layer
+        if node then
+            gk.util:stopActionByTagSafe(node, -2341)
+            local action = node:runAction(cc.CallFunc:create(function()
+                self.leftPanel:displayDomTree(node or self.scene.layer)
+            end))
+            action:setTag(-2341)
+        end
     end)
-    gk.event:subscribe(self, "changeRootLayout", function(clazz)
-        gk.log("changeRootLayout --> %s", clazz)
-        local path = gk.resource.genNodes[clazz]
+    gk.event:subscribe(self, "changeRootLayout", function(key)
+        gk.log("changeRootLayout --> %s", key)
+        local path = gk.resource.genNodes[key].path
         if path then
             gk.event:unsubscribeAll(self)
-            --            gk.SceneManager:replace(layer)
-            --            local clazz = require(layer)
-            --            print(layer)
-            --            local node = clazz:create()
-            --            local scene = gk.SceneManager:getRunningScene()
-            --            if scene.layer then
-            --                scene.layer:removeFromParent()
-            --            end
-            --            scene:addChild(node)
-            --            scene.layer = node
             local clazz = require(path)
             local isLayer = iskindof(clazz, "Layer")
             if isLayer then
-                gk.SceneManager:replace(path)
+                gk.SceneManager:replace(key)
             else
                 gk.log("changeRootLayout ??")
                 local scene = gk.Layer:createScene()
@@ -106,11 +109,11 @@ function panel:onNodeCreate(node)
         if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
             gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
         end
-        gk.log("onNodeCreate %s", node.__info.id)
+        gk.log("onNodeCreate onEnter %s", node.__info.id)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
-            if node ~= self.scene.layer and gk.util:isGlobalVisible(node) and gk.util:hitTest(node, touch) then
+            if node.__info and node.__info.lock == 0 and node ~= self.scene.layer and gk.util:isGlobalVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -133,6 +136,7 @@ function panel:onNodeCreate(node)
                     self:undisplayNode(true)
                     gk.util:clearDrawNode(self.scene.layer, -3)
                 end
+--                gk.log("click none %s", node.__info.id)
                 return false
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
@@ -156,7 +160,7 @@ function panel:onNodeCreate(node)
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node then
+                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node and (not (nd.__info and nd.__info.isWidget == 1)) then
                     local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)

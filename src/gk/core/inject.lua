@@ -28,9 +28,6 @@ function inject:layer_method_swizz(type, methodName)
     end
 end
 
-inject:layer_method_swizz(cc.Layer, "create")
-inject:layer_method_swizz(cc.LayerColor, "create")
-
 function inject:scene_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
         local meta = getmetatable(type)
@@ -46,28 +43,6 @@ function inject:scene_method_swizz(type, methodName)
         type[methodName .. "__swizzed"] = true
     end
 end
-
-inject:scene_method_swizz(cc.Scene, "create")
-
-function inject:sprite_method_swizz(type, methodName)
-    if not type[methodName .. "__swizzed"] then
-        local meta = getmetatable(type)
-        local method = meta[methodName]
-        local __method = function(...)
-            local node = method(...)
-            if gk.mode == gk.MODE_EDIT then
-                gk.event:post("onNodeCreate", node)
-            end
-            return node
-        end
-        meta[methodName] = __method
-        type[methodName .. "__swizzed"] = true
-    end
-end
-
-inject:sprite_method_swizz(cc.Sprite, "create")
-inject:sprite_method_swizz(cc.Sprite, "createWithSpriteFrame")
-inject:sprite_method_swizz(cc.Sprite, "createWithTexture")
 
 function inject:node_method_swizz(type, methodName)
     if not type[methodName .. "__swizzed"] then
@@ -85,11 +60,28 @@ function inject:node_method_swizz(type, methodName)
     end
 end
 
+inject:scene_method_swizz(cc.Scene, "create")
+inject:layer_method_swizz(cc.Layer, "create")
+inject:layer_method_swizz(cc.LayerColor, "create")
+inject:node_method_swizz(cc.Sprite, "create")
+inject:node_method_swizz(cc.Sprite, "createWithSpriteFrame")
+inject:node_method_swizz(cc.Sprite, "createWithTexture")
 inject:node_method_swizz(cc.Node, "create")
 inject:node_method_swizz(cc.Label, "createWithSystemFont")
 inject:node_method_swizz(cc.Label, "createWithTTF")
 inject:node_method_swizz(cc.Label, "createWithBMFont")
---inject:node_method_swizz(cc.TableViewCell, "create")
+
+function inject:ctor_method_swizz(type, methodName)
+    if not type["__" .. methodName .. "__swizzed"] then
+        local method = type[methodName]
+        local __method = function(node, ...)
+            method(node, ...)
+            gk.event:post("onNodeCreate", node)
+        end
+        type[methodName] = __method
+        type["__" .. methodName .. "__swizzed"] = true
+    end
+end
 
 function inject:init()
     gk.event:subscribe(self, "onNodeCreate", function(node)
@@ -98,7 +90,7 @@ function inject:init()
 end
 
 function inject:inflateNode(cname)
-    local clazz = require(gk.resource.genNodes[cname])
+    local clazz = require(gk.resource.genNodes[cname].path)
     local node = clazz:create()
     return node
 end
@@ -114,15 +106,15 @@ function inject:initLayer(layer)
             --            layer.__info.id = "root"
             generator:inflate(info, layer, layer)
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            local clazz = require(gk.resource.genNodes[layer.__cname])
+            local clazz = require(gk.resource.genNodes[layer.__cname].path)
             local isLayer = iskindof(clazz, "Layer")
             if isLayer then
                 layer.__info.width = gk.display.winSize().width
                 layer.__info.height = gk.display.winSize().height
             end
-            if iskindof(layer, "cc.TableViewCell") then
-                layer.__info.lock = 1
-            end
+            --            if iskindof(layer, "cc.TableViewCell") then
+            --            layer.__info.lock = 1
+            --            end
             --            dump(info)
         else
             -- init first time
@@ -131,9 +123,9 @@ function inject:initLayer(layer)
             layer.__info.id = layer.__cname
             layer[layer.__info.id] = layer
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            if iskindof(layer, "cc.TableViewCell") then
-                layer.__info.lock = 1
-            end
+            --            if iskindof(layer, "cc.TableViewCell") then
+            --            layer.__info.lock = 1
+            --            end
             self:sync(layer)
         end
         if gk.mode == gk.MODE_EDIT then

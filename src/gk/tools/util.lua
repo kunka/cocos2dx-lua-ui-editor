@@ -53,7 +53,30 @@ function math.equal(f1, f2, bit)
     return math.shrink(f1, bit) == math.shrink(f2, bit)
 end
 
------------------------------------------ restart game  -------------------------------------------------
+function string.replaceChar(str, index, char)
+    if index >= 1 and index <= str:len() then
+        str = index == 1 and char .. str:sub(2, str:len()) or (str:sub(1, index - 1) .. char .. str:sub(index + 1, str:len()))
+    end
+    return str
+end
+
+-- insert before the index
+function string.insertChar(str, index, char)
+    if index >= 1 and index <= str:len() + 1 then
+        str = index == 1 and char .. str or (str:sub(1, index - 1) .. char .. str:sub(index, str:len()))
+    end
+    return str
+end
+
+-- insert char at index
+function string.deleteChar(str, index)
+    if index >= 1 and index <= str:len() then
+        str = index == 1 and str:sub(2, str:len()) or (str:sub(1, index - 1) .. str:sub(index + 1, str:len()))
+    end
+    return str
+end
+
+------------ g----------------------------- restart game  -------------------------------------------------
 function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
     if not util.restartLayer then
@@ -305,9 +328,11 @@ function util:hitTest(node, touch)
 end
 
 function util:stopActionByTagSafe(node, tag)
-    local action = node:getActionByTag(tag)
-    if action then
-        node:stopAction(action)
+    if node then
+        local action = node:getActionByTag(tag)
+        if action then
+            node:stopAction(action)
+        end
     end
 end
 

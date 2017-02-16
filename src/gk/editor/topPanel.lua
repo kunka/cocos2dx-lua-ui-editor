@@ -165,6 +165,16 @@ function panel.create(parent)
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
     }
+    -- self define widget
+    local keys = table.keys(gk.resource.genNodes)
+    table.sort(keys, function(k1, k2) return k1 < k2 end)
+    for _, key in ipairs(keys) do
+        local nodeInfo = gk.resource.genNodes[key]
+        if nodeInfo.clazz.isWidget then
+            table.insert(self.widgets, { type = nodeInfo.clazz.__cname, isWidget = 1 })
+        end
+    end
+
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = gk.create_sprite(self.widgets[i].file)
@@ -221,7 +231,7 @@ function panel.create(parent)
             local children = self.parent.sortedChildren
             for i = #children, 1, -1 do
                 local node = children[i]
-                if node and (not (node.__info and node.__info.lock == 1)) then
+                if node and (not (node.__info and node.__info.lock == 1)) and (not (node.__info and node.__info.isWidget == 1)) then
                     local s = node:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)
@@ -246,9 +256,11 @@ function panel.create(parent)
                 local p = cc.pAdd(originPos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
                 p = self._containerNode:convertToNodeSpace(self:convertToWorldSpace(p))
                 if cc.rectContainsPoint(rect, p) then
-                    local type = self.widgets[i].type
-                    local info = clone(self.widgets[i])
-                    local node = generator:createNode(info, nil, self.parent.scene.layer)
+                    local node
+                    local widget = self.widgets[i]
+                    local info = clone(widget)
+                    local type = widget.type
+                    node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
                         local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
