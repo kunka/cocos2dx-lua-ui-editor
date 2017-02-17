@@ -136,7 +136,7 @@ function panel:onNodeCreate(node)
                     self:undisplayNode(true)
                     gk.util:clearDrawNode(self.scene.layer, -3)
                 end
---                gk.log("click none %s", node.__info.id)
+                --                gk.log("click none %s", node.__info.id)
                 return false
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
@@ -281,17 +281,19 @@ function panel:drawNodeCoordinate(node)
         end
 
         local createArrow = function(width, dis, scale, p, rotation, ap)
-            if width < 50 then
+            if width < 0 then
                 return
             end
-            local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
-            arrow:setContentSize(cc.size(width / scale, 57))
-            arrow:setScale(scale)
-            arrow:setPosition(x, y)
-            arrow:setRotation(rotation)
-            arrow:setAnchorPoint(cc.p(0, 0.5))
-            arrow:setOpacity(128)
-            self.coordinateNode:addChild(arrow)
+            if width > 30 then
+                local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
+                arrow:setContentSize(cc.size(width / scale, 57))
+                arrow:setScale(scale)
+                arrow:setPosition(x, y)
+                arrow:setRotation(rotation)
+                arrow:setAnchorPoint(cc.p(0, 0.5))
+                arrow:setOpacity(128)
+                self.coordinateNode:addChild(arrow)
+            end
             -- label
             local label = cc.Label:createWithSystemFont(tostring(math.round(dis)), "Arial", 50)
             label:setScale(scale)

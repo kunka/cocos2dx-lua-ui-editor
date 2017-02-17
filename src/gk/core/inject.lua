@@ -107,7 +107,7 @@ function inject:initLayer(layer)
             generator:inflate(info, layer, layer)
             layer.__info.x, layer.__info.y = gk.display.leftWidth, gk.display.bottomHeight
             local clazz = require(gk.resource.genNodes[layer.__cname].path)
-            local isLayer = iskindof(clazz, "Layer")
+            local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
             if isLayer then
                 layer.__info.width = gk.display.winSize().width
                 layer.__info.height = gk.display.winSize().height

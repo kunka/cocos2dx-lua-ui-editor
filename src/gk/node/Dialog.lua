@@ -15,10 +15,8 @@ function Dialog:ctor()
     -- set dialog bg, use to animate out
     self.enableKeyPad = false
     self.popOnBack = true -- popScene on back
-    self.dialogBg = nil
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
-    self.onPopCallback = nil
 end
 
 function Dialog:addMaskLayer(opacity)

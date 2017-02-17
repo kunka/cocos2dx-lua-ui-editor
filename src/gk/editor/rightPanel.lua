@@ -393,7 +393,30 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
-        -- file
+
+        if isZoomButton then
+            -- click event
+            createLabel("onClicked", leftX, topY - stepY * yIndex)
+            local clicks = { "-" }
+            -- search click callback format like "onXXXClicked"
+            -- TODO: super class's click function
+            for key, value in pairs(self.parent.scene.layer.class) do
+                if type(value) == "function" and key:sub(1, 2) == "on" and key:sub(key:len() - 6, key:len()) == "Clicked" then
+                    table.insert(clicks, key)
+                end
+            end
+            createSelectBox(clicks, table.indexof(clicks, tostring(node.__info.onClicked)), leftX2_1, topY - stepY * yIndex, inputMax, function(index)
+                generator:modify(node, "onClicked", clicks[index], "string")
+            end)
+            yIndex = yIndex + 1
+            -- enabled
+            createLabel("Enabled", leftX, topY - stepY * yIndex)
+            createCheckBox(node.__info.enabled == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+                generator:modify(node, "enabled", selected, "number")
+            end)
+            yIndex = yIndex + 1
+        end
+        -- sprite file
         createLabel("Sprite", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.file), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
             editBox:setInput(generator:modify(node, "file", input, "string"))

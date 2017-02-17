@@ -96,6 +96,7 @@ function generator:createNode(info, rootNode, rootTable)
         end
         info.id = id
         rootTable[info.id] = node
+        node.__rootTable = rootTable
     end
     -- force set value
     for k, func in pairs(self.nodeGetFuncs) do
@@ -482,12 +483,23 @@ generator.nodeSetFuncs = {
     zoomScale = function(node, var)
         node:setZoomScale(var)
     end,
+    onClicked = function(node, var)
+        if node.__rootTable then
+            local func = node.__rootTable[var]
+            if func and type(func) == "function" then
+                node:onClicked(func)
+            end
+        end
+    end,
+    enabled = function(node, var)
+        node:setEnabled(var == 0)
+    end,
     --------------------------- cc.Label   ---------------------------
     string = function(node, string)
         local value = string
         if string.len(string) > 0 and string:sub(1, 1) == "@" then
             local key = string:sub(2, #string)
-            value = gk.resource.stringGetter(key, gk.resource:getCurrentLan())
+            value = gk.resource:getString(key)
         end
         node:setString(value)
     end,
@@ -636,6 +648,12 @@ generator.nodeGetFuncs = {
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node)
         return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
+    end,
+    onClicked = function(node)
+        return (node.__info.type == "ZoomButton") and (node.__info.onClicked or "-")
+    end,
+    enabled = function(node)
+        return (node.__info.type == "ZoomButton") and (node.__info.enabled or (node.enabled and 0 or 1))
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)

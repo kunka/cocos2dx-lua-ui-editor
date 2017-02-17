@@ -14,22 +14,24 @@ function resource:setTextureRelativePath(path)
     gk.log("resource.setTextureRelativePath %s", path)
 end
 
-function resource:setStringGetter(func)
-    resource.stringGetter = func
+function resource:setGetStringFunc(func)
+    resource.getString = function(_, key, ...)
+        -- TODO: input content start with '@'
+        if key:len() > 0 and key:sub(1, 1) == "@" then
+            return func(key:sub(2, #key), ...)
+        end
+        return func(key, ...)
+    end
 end
 
 function resource:getCurrentLan()
     local lan = cc.UserDefault:getInstance():getStringForKey("app_language")
     if lan == "" then
-        if device.language == "cn" then
-            lan = "cn"
-        elseif device.language == "cht" then
-            lan = "cht"
-        elseif device.language == "de" then
-            lan = "de"
-        elseif device.language == "ru" then
-            lan = "ru"
+        if table.indexof(resource.lans, device.language) then
+            lan = device.language
+            gk.log("resource.getCurrentLan init first time, use local lan %s", lan)
         else
+            gk.log("resource.getCurrentLan init first time, not supported local lan(%s), use English!", device.language)
             lan = "en"
         end
 
