@@ -62,8 +62,13 @@ function panel:displayNode(node)
     local inputWidth2 = 45
     local inputWidth3 = 25
 
+    local disabled = node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0
+
     local getMacroColor = function(content)
-        local v = generator:parseMacroFunc(content)
+        local v = generator:parseMacroFunc(node, content)
+        if not v then
+            v = generator:parseCustomMacroFunc(node, content)
+        end
         return v ~= nil and cc.c3b(0xFF, 0x00, 0x33) or cc.c3b(0, 0, 0)
     end
 
@@ -98,6 +103,7 @@ function panel:displayNode(node)
         end)
         label:setTextColor(getMacroColor(content))
         node:setPosition(x, y)
+        node.enabled = not disabled
         return node
     end
     local createSelectBox = function(items, index, x, y, width, callback)
@@ -123,6 +129,7 @@ function panel:displayNode(node)
             label:setTextColor(getMacroColor(items[index]))
         end)
         label:setTextColor(getMacroColor(items[index]))
+        node.enabled = not disabled
         return node
     end
 
@@ -136,6 +143,7 @@ function panel:displayNode(node)
         node:addEventListener(function(sender, eventType)
             callback(eventType)
         end)
+        node:setTouchEnabled(not disabled)
         return node
     end
     local createLine = function(y)
@@ -169,9 +177,9 @@ function panel:displayNode(node)
         generator:modify(node, "lock", 1 - selected, "number")
     end)
     -- widget
-    if node.__info.isWidget == 1 then
+    if node.__info.isWidget == 0 then
         local w = createLabel("Widget", leftX4_2, topY - stepY * yIndex)
-        local h = createCheckBox(node.__info.isWidget == 1, leftX5_3, topY - stepY * yIndex, function(selected)
+        local h = createCheckBox(node.__info.isWidget == 0, leftX5_3, topY - stepY * yIndex, function(selected)
             --        generator:modify(node, "isWidget", 1 - selected, "number")
         end)
         w:setOpacity(150)
@@ -402,17 +410,11 @@ function panel:displayNode(node)
             -- TODO: super class's click function
             for key, value in pairs(self.parent.scene.layer.class) do
                 if type(value) == "function" and key:sub(1, 2) == "on" and key:sub(key:len() - 6, key:len()) == "Clicked" then
-                    table.insert(clicks, key)
+                    table.insert(clicks, "&" .. key)
                 end
             end
             createSelectBox(clicks, table.indexof(clicks, tostring(node.__info.onClicked)), leftX2_1, topY - stepY * yIndex, inputMax, function(index)
                 generator:modify(node, "onClicked", clicks[index], "string")
-            end)
-            yIndex = yIndex + 1
-            -- enabled
-            createLabel("Enabled", leftX, topY - stepY * yIndex)
-            createCheckBox(node.__info.enabled == 0, leftX2_1, topY - stepY * yIndex, function(selected)
-                generator:modify(node, "enabled", selected, "number")
             end)
             yIndex = yIndex + 1
         end
@@ -440,6 +442,12 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "zoomScale", input, "number"))
         end)
         yIndex = yIndex + 1
+        -- enabled
+        createLabel("Enabled", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.enabled == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "enabled", selected, "number")
+        end)
+        yIndex = yIndex + 1
     end
     --------------------------- cc.Label   ---------------------------
     if isLabel then
@@ -451,21 +459,21 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         -- string
         createLabel("String", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.string), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        createInput(tostring(node.__info.string), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
             editBox:setInput(generator:modify(node, "string", input, "string"))
         end)
         yIndex = yIndex + 1
         -- font file
         createLabel("FontFile", leftX, topY - stepY * yIndex)
         local lan = gk.resource:getCurrentLan()
-        createInput(tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputWidth1, function(editBox, input)
+        createInput(tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
             editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
         end)
         yIndex = yIndex + 1
         -- overflow
         createLabel("Overflow", leftX, topY - stepY * yIndex)
         local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
-        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputMax, function(index)
             generator:modify(node, "overflow", index - 1, "number")
         end)
         -- lineHeight
@@ -607,6 +615,10 @@ function panel:displayNode(node)
     end
 
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))
+    if disabled then
+        self.displayInfoNode:setOpacity(150)
+        gk.util:setRecursiveCascadeOpacityEnabled(self.displayInfoNode, true)
+    end
 end
 
 function panel:handleEvent()

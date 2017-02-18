@@ -161,6 +161,7 @@ function generator:wrap(info, rootTable)
                             -- change id
                             rootTable[value] = node
                             proxy[key] = value
+                            node.__rootTable = rootTable
                             gk.event:post("postSync")
                             gk.event:post("displayDomTree")
                         else
@@ -197,21 +198,37 @@ function generator:wrap(info, rootTable)
 end
 
 function generator:parseValue(key, node, input)
-    local v = generator:parseMacroFunc(input)
+    local v = generator:parseMacroFunc(node, input)
     if v then
         v = v(key, node)
     end
     return v or input
 end
 
-function generator:parseMacroFunc(input)
+function generator:parseMacroFunc(node, input)
     if type(input) == "string" and string.len(input) > 1 and input:sub(1, 1) == "$" then
         local macro = input:sub(2, #input)
-        -- contains
-        return self.macroFuncs[macro]
-    else
-        return nil
+        -- global preset get func
+        local func = self.macroFuncs[macro]
+        if func then
+            return func, macro
+        end
     end
+    return nil, nil
+end
+
+function generator:parseCustomMacroFunc(node, input)
+    if type(input) == "string" and string.len(input) > 1 and input:sub(1, 1) == "&" then
+        local macro = input:sub(2, #input)
+        -- custom defined set func
+        if node and node.__rootTable then
+            local func = node.__rootTable[macro]
+            if func and type(func) == "function" then
+                return func, macro
+            end
+        end
+    end
+    return nil, nil
 end
 
 function generator:modify(node, property, input, valueType)
@@ -227,7 +244,7 @@ function generator:modify(node, property, input, valueType)
     if type(input) == "number" and valueType == "number" then
         value = tonumber(input)
     elseif type(input) == "string" then
-        local v = generator:parseMacroFunc(input)
+        local v = generator:parseMacroFunc(node, input)
         if v then
             value = input
         elseif valueType == "string" then
@@ -484,11 +501,24 @@ generator.nodeSetFuncs = {
         node:setZoomScale(var)
     end,
     onClicked = function(node, var)
-        if node.__rootTable then
-            local func = node.__rootTable[var]
-            if func and type(func) == "function" then
-                node:onClicked(func)
-            end
+        --        if node.__rootTable then
+        --            if var:len() > 1 and var:sub(1, 1) == "$" then
+        --                local key = var:sub(2, #var)
+        --                local func = node.__rootTable[key]
+        --                if func and type(func) == "function" then
+        --                    node:onClicked(function(...)
+        --                        gk.log("[%s] %s", node.__rootTable.__cname, key)
+        --                        func(node.__rootTable, ...)
+        --                    end)
+        --                end
+        --            end
+        --        end
+        local func, macro = generator:parseCustomMacroFunc(node, var)
+        if func then
+            node:onClicked(function(...)
+                gk.log("[%s] %s", node.__rootTable.__cname, macro)
+                func(node.__rootTable, ...)
+            end)
         end
     end,
     enabled = function(node, var)

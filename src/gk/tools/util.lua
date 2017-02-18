@@ -375,4 +375,12 @@ function util:touchInNode(node, globalPoint)
     return cc.rectContainsPoint(rect, p)
 end
 
+function util:setRecursiveCascadeOpacityEnabled(node, enabled)
+    node:setCascadeOpacityEnabled(enabled)
+    local children = node:getChildren()
+    for _, c in pairs(children) do
+        util:setRecursiveCascadeOpacityEnabled(c, enabled)
+    end
+end
+
 return util

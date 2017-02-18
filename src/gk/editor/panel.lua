@@ -144,6 +144,9 @@ function panel:onNodeCreate(node)
             if node.__info and node.__info.lock == 1 then
                 return
             end
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
+                return
+            end
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
@@ -160,7 +163,7 @@ function panel:onNodeCreate(node)
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node and (not (nd.__info and nd.__info.isWidget == 1)) then
+                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node and (not (nd.__info and nd.__info.isWidget == 0)) then
                     local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
@@ -185,6 +188,10 @@ function panel:onNodeCreate(node)
             if node.__info and node.__info.lock == 1 then
                 gk.event:post("displayDomTree")
                 return
+            end
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
+                return
+                gk.event:post("displayDomTree")
             end
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")

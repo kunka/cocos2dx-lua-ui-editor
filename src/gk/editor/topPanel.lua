@@ -125,7 +125,7 @@ function panel.create(parent)
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local lan = items[index]
         gk.resource:setCurrentLan(lan)
-        gk.util:restartGame(1)
+        gk.util:restartGame(gk.mode)
     end)
     yIndex = yIndex + 1
 
@@ -171,13 +171,16 @@ function panel.create(parent)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
         if nodeInfo.clazz.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.clazz.__cname, isWidget = 1 })
+            table.insert(self.widgets, { type = nodeInfo.clazz.__cname, isWidget = 0 })
         end
     end
 
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = gk.create_sprite(self.widgets[i].file)
+        if self.widgets[i].isWidget then
+            node:setColor(cc.c3b(0xCC, 0xFF, 0x66))
+        end
         node.type = self.widgets[i].type
         node:setScale(0.32)
         local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
@@ -231,7 +234,7 @@ function panel.create(parent)
             local children = self.parent.sortedChildren
             for i = #children, 1, -1 do
                 local node = children[i]
-                if node and (not (node.__info and node.__info.lock == 1)) and (not (node.__info and node.__info.isWidget == 1)) then
+                if node and (not (node.__info and node.__info.lock == 1)) and (not (node.__info and node.__info.isWidget == 0)) then
                     local s = node:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)

@@ -21,7 +21,8 @@ function init:initGameKit(mode)
         en = require("demo.gen.value.strings"),
         cn = require("demo.gen.value.strings_cn"),
     }
-    gk.resource:setStringGetter(function(key, lan)
+    gk.resource:setGetStringFunc(function(key, lan)
+        lan = lan or gk.resource:getCurrentLan()
         return strings[lan][key] or "undefined"
     end)
     gk.resource:setSupportLans(table.keys(strings))

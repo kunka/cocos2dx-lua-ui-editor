@@ -356,7 +356,7 @@ function panel:displayDomNode(node, layer)
     createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
-    if not (node.__info and node.__info.isWidget and node.__info.isWidget == 1) then
+    if not (node.__info and node.__info.isWidget and node.__info.isWidget == 0) then
         if fixChild or not node.__info._flod then
             node:sortAllChildren()
             local children = node:getChildren()
