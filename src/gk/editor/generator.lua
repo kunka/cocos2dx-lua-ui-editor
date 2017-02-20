@@ -314,6 +314,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("tableView", rootTable)
         return node
     end,
+    ["cc.ClippingNode"] = function(info, rootTable)
+        local node = cc.ClippingNode:create(cc.Node:create())
+        info.id = info.id or generator:genID("clippingNode", rootTable)
+        return node
+    end,
     --    ["cc.TableViewCell"] = function(info, rootTable)
     --        local node = cc.TableViewCell:create()
     --        info.id = info.id or generator:genID("tableViewCell", rootTable)

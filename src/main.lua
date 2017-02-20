@@ -57,12 +57,17 @@ local function clearModules()
     end
 end
 
+local function getAppEntry()
+    --    return require("init")
+    return require("initdemoapp")
+end
+
 function restartGame(mode)
     print("restartGame")
     clearModules()
-    require("init"):startGame(mode)
+    getAppEntry():startGame(mode)
 end
 
 nativeHotUpdateInit()
-require("init"):startGame(1)
+getAppEntry():startGame(1)
 

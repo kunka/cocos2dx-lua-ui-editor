@@ -164,6 +164,7 @@ function panel.create(parent)
         { type = "cc.LayerColor", },
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
+        { type = "cc.ClippingNode" },
     }
     -- self define widget
     local keys = table.keys(gk.resource.genNodes)

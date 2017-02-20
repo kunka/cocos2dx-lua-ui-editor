@@ -18,8 +18,8 @@ function init:initGameKit(mode)
     gk.display:initWithDesignSize(cc.size(1280, 720))
     gk.resource:setTextureRelativePath("texture/")
     local strings = {
-        en = require("test.gen.value.strings"),
-        cn = require("test.gen.value.strings_cn"),
+        en = require("demoapp.gen.value.strings"),
+        cn = require("demoapp.gen.value.strings_cn"),
     }
     gk.resource:setGetStringFunc(function(key, lan)
         lan = lan or gk.resource:getCurrentLan()
@@ -30,12 +30,12 @@ function init:initGameKit(mode)
     -- set gen path
     local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
     path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
-    local genPath = path .. "src/test/gen/layout/"
+    local genPath = path .. "src/demoapp/gen/layout/"
     gk.resource.genPath = genPath
     print("gen path = " .. gk.resource.genPath)
     cc.FileUtils:getInstance():createDirectory(gk.resource.genPath)
     -- set gen node search path
-    local genNodePath = path .. "src/test/"
+    local genNodePath = path .. "src/demoapp/"
     gk.resource:setGenNodePath(genNodePath)
 end
 
@@ -43,8 +43,8 @@ function init:startGame(mode)
     gk.log("init:startGame with mode %d", mode)
     init:initGameKit(mode)
     gk.SceneManager:init()
-    local key = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", "MainLayer")
-    local clazz, layerClazz = gk.resource:require(key, "MainLayer")
+    local key = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", "SplashLayer")
+    local clazz, layerClazz = gk.resource:require(key, "SplashLayer")
     local isLayer = iskindof(clazz, "Layer")
     if isLayer then
         gk.SceneManager:replace(layerClazz)
