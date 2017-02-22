@@ -99,6 +99,7 @@ function panel:onNodeCreate(node)
         if not node.__info or not node.__info.id then
             return
         end
+        -- cannot select and move tableView cell which is auto gen
         local c = node:getParent()
         while c ~= nil do
             if iskindof(c, "cc.TableView") then
@@ -113,7 +114,7 @@ function panel:onNodeCreate(node)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
-            if node.__info and node.__info.lock == 0 and node ~= self.scene.layer and gk.util:isGlobalVisible(node) and gk.util:hitTest(node, touch) then
+            if node.__info and node.__info.lock == 0 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -158,12 +159,32 @@ function panel:onNodeCreate(node)
 
             -- find dest container
             if self.sortedChildren == nil then
-                self:sortChildrenOfSceneGraphPriority(self.scene.layer, true)
+                self:sortChildrenOfSceneGraphPriority(self.scene.layer)
             end
             local children = self.sortedChildren
             for i = #children, 1, -1 do
                 local nd = children[i]
-                if gk.util:isGlobalVisible(nd) and nd.__info and nd.__info.lock == 0 and nd.__info.id and nd ~= node and (not (nd.__info and nd.__info.isWidget == 0)) then
+                local canBeContainer = false
+                repeat
+                    if not node or nd == node or not gk.util:isAncestorsVisible(nd) then
+                        break
+                    end
+                    if node.__info then
+                        if node.__info.lock == 1 or node.__info.isWidget == 0 then
+                            break
+                        end
+                    end
+                    canBeContainer = true
+                until true
+                if canBeContainer then
+                    -- move out of parent
+                    --                    local parent = node:getParent()
+                    --                    local s = iskindof(parent, "cc.ScrollView") and parent:getViewSize() or parent:getContentSize()
+                    --                    local rect = { x = 0, y = 0, width = s.width, height = s.height }
+                    --                    local p = parent:convertToNodeSpace(location)
+                    --                    if cc.rectContainsPoint(rect, p) then
+                    --                        return
+                    --                    end
                     local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
@@ -196,6 +217,11 @@ function panel:onNodeCreate(node)
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")
                 return
+            end
+            -- move out of screen, cancel modify
+            if not gk.util:hitTest(self.scene.layer, touch) then
+                self._containerNode = nil
+                p = cc.p(self._touchBegainPos)
             end
             local p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             p = self:onNodeMoved(node, p)
@@ -460,7 +486,7 @@ function panel:handleEvent()
         location.y = cc.Director:getInstance():getWinSize().height + location.y
         -- find node
         if self.sortedChildren == nil then
-            self:sortChildrenOfSceneGraphPriority(self.scene.layer, true)
+            self:sortChildrenOfSceneGraphPriority(self.scene.layer)
         end
         local children = self.sortedChildren
         for i = #children, 1, -1 do
@@ -501,10 +527,8 @@ function panel:removeNodeIndex(node, rootTable)
     end
 end
 
-function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
-    if isRootNode then
-        self.sortedChildren = {}
-    end
+function panel:sortChildrenOfSceneGraphPriority(node)
+    self.sortedChildren = self.sortedChildren or {}
     node:sortAllChildren()
     local children = node:getChildren()
     local childrenCount = #children
@@ -512,7 +536,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child and child:getLocalZOrder() < 0 and child.__info then
-                self:sortChildrenOfSceneGraphPriority(child, false)
+                self:sortChildrenOfSceneGraphPriority(child)
             else
                 break
             end
@@ -523,7 +547,7 @@ function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
         for i = 1, childrenCount do
             local child = children[i]
             if child and child.__info then
-                self:sortChildrenOfSceneGraphPriority(child, false)
+                self:sortChildrenOfSceneGraphPriority(child)
             end
         end
     else

@@ -25,10 +25,10 @@ function Button:ctor(contentNode, callback)
     self:setCascadeColorEnabled(true)
     self:setCascadeOpacityEnabled(true)
     self:setAnchorPoint(0.5, 0.5)
-    self.delaySelect = false -- optimize for button in ScrollView
     self.cacheProgram = {}
     self.trackingTouch = false
-    self.swallowTouches = false
+    self.delaySelect = nil -- optimize for button in ScrollView
+    self.swallowTouches = true
 
     self.__addChild = self.addChild
     self.addChild = function(_self, ...)
@@ -75,27 +75,41 @@ end
 
 function Button:onEnter()
     local listener = cc.EventListenerTouchOneByOne:create()
-    if self.swallowTouches then
-        listener:setSwallowTouches(true)
-    else
-        listener:setSwallowTouches(false)
-    end
+    listener:setSwallowTouches(self.swallowTouches)
     listener:registerScriptHandler(handler(self, self.onTouchBegan), cc.Handler.EVENT_TOUCH_BEGAN)
     listener:registerScriptHandler(handler(self, self.onTouchMoved), cc.Handler.EVENT_TOUCH_MOVED)
     listener:registerScriptHandler(handler(self, self.onTouchEnded), cc.Handler.EVENT_TOUCH_ENDED)
     listener:registerScriptHandler(handler(self, self.onTouchCancelled), cc.Handler.EVENT_TOUCH_CANCELLED)
     local eventDispatcher = self:getEventDispatcher()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+    self.touchListener = listener
+end
 
-    -- delay select
-    local c = self:getParent()
-    while c ~= nil do
-        local type = tolua.type(c)
-        if type == "cc.ScrollView" then
-            self.delaySelect = true
-            break
+function Button:setSwallowTouches(swallowTouches)
+    if self.swallowTouches ~= swallowTouches then
+        gklog("[%s]: setSwallowTouches %s", self.__cname, swallowTouches)
+        self.swallowTouches = swallowTouches
+        if self.touchListener then
+            self.touchListener:setSwallowTouches(swallowTouches)
         end
-        c = c:getParent()
+    end
+end
+
+function Button:updateDelaySelect()
+    -- delay select and don't swallow touches when in ScrollView
+    if self.delaySelect == nil then
+        self.delaySelect = false
+        local c = self:getParent()
+        while c ~= nil do
+            local type = tolua.type(c)
+            if type == "cc.ScrollView" then
+                self.delaySelect = true
+                self:setSwallowTouches(false)
+                gk.log("[%s]: In ScrollView, auto set delaySelect = true, swallowTouches = false", self.__cname)
+                break
+            end
+            c = c:getParent()
+        end
     end
 end
 
@@ -120,7 +134,7 @@ end
 function Button:activate()
     if self.enabled then
         if self.callback then
-            --            gk.log("Button:activate")
+            gk.log("[%s]: activate", self.__cname)
             self.callback(self)
         end
     end
@@ -129,7 +143,7 @@ end
 function Button:triggleLongPressed()
     if self.enabled then
         if self.longPressdCallback then
-            --            gk.log("Button:triggleLongPressed")
+            gk.log("[%s]: triggleLongPressed", self.__cname)
             self.longPressdCallback(self)
         end
     end
@@ -145,20 +159,16 @@ end
 
 function Button:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.enabled or not self:isVisible() or not camera then
+    if not self.enabled or not camera then
         return false
     end
-    local c = self:getParent()
-    while c ~= nil do
-        if not c:isVisible() then
-            return false
-        end
-        c = c:getParent()
+    if not gk.util:isAncestorsVisible(self) then
+        return false
     end
-    --    assert(self.contentNode, "Button's content node is necessary!")
     -- hit test
     if not Button.trackingButton and gk.util:hitTest(self, touch) then
         --        gk.log("Button:onTouchBegan")
+        self:updateDelaySelect()
         if self.delaySelect then
             local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
                 if self.trackingTouch and not self.isSelected then
@@ -242,6 +252,7 @@ end
 
 function Button:setEnabled(enabled)
     if self.enabled ~= enabled then
+        gk.log("[%s]: setEnabled %s", self.__cname, enabled)
         self.enabled = enabled
         if self.disabledProgram then
             if enabled then

@@ -131,7 +131,7 @@ function panel:displayDomNode(node, layer)
         label:setTextColor(cc.c3b(200, 200, 200))
         label:setOpacity(100)
         end
-        if not gk.util:isGlobalVisible(node) then
+        if not gk.util:isAncestorsVisible(node) then
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
         end

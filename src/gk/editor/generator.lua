@@ -64,7 +64,6 @@ function generator:inflate(info, rootNode, rootTable)
             end
         end
     end
-
     return node
 end
 
@@ -129,8 +128,18 @@ function generator:default(type, key)
         self._default["cc.LayerColor"] = {
             width = "$win.w",
             height = "$win.h",
-            color = { r = 153, g = 153, b = 153, a = 255 },
+            color = cc.c4b(153, 153, 153, 255),
         }
+        self._default["cc.LayerGradient"] = {
+            width = "$win.w",
+            height = "$win.h",
+            startColor = cc.c4b(0, 0, 0, 255),
+            endColor = cc.c4b(255, 255, 255, 25),
+        }
+        --        self._default["cc.ClippingNode"] = {
+        --            width = 150,
+        --            height = 100,
+        --        }
     end
     return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
 end
@@ -294,9 +303,13 @@ generator.nodeCreator = {
         return node
     end,
     ["cc.LayerColor"] = function(info, rootTable)
-        info.color = info.color or cc.c4b(0, 0, 0, 255)
         local node = cc.LayerColor:create(info.color)
-        info.id = info.id or generator:genID("layer", rootTable)
+        info.id = info.id or generator:genID("layerColor", rootTable)
+        return node
+    end,
+    ["cc.LayerGradient"] = function(info, rootTable)
+        local node = cc.LayerGradient:create(info.startColor, info.endColor)
+        info.id = info.id or generator:genID("layerGradient", rootTable)
         return node
     end,
     ["cc.Label"] = function(info, rootTable)
@@ -472,6 +485,13 @@ generator.nodeSetFuncs = {
     opacity = function(node, ...)
         node:setOpacity(...)
     end,
+    visible = function(node, var)
+        node:setVisible(var == 0)
+    end,
+    localZOrder = function(node, var)
+        node:setLocalZOrder(var)
+    end,
+    --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node, var)
         if iskindof(node, "cc.LayerColor") then
             -- LayerColor has no setColor interface
@@ -479,11 +499,24 @@ generator.nodeSetFuncs = {
             node:setColor(var)
         end
     end,
-    visible = function(node, var)
-        node:setVisible(var == 0)
+    --------------------------- cc.LayerGradient   ---------------------------
+    startColor = function(node, var)
+        node:setStartColor(var)
     end,
-    localZOrder = function(node, var)
-        node:setLocalZOrder(var)
+    endColor = function(node, var)
+        node:setEndColor(var)
+    end,
+    startOpacity = function(node, var)
+        node:setStartOpacity(var)
+    end,
+    endOpacity = function(node, var)
+        node:setEndOpacity(var)
+    end,
+    vector = function(node, var)
+        node:setVector(var)
+    end,
+    isCompressedInterpolation = function(node, var)
+        node:setCompressedInterpolation(var == 0)
     end,
     --------------------------- cc.Sprite Button   ---------------------------
     file = function(node, var)
@@ -506,18 +539,6 @@ generator.nodeSetFuncs = {
         node:setZoomScale(var)
     end,
     onClicked = function(node, var)
-        --        if node.__rootTable then
-        --            if var:len() > 1 and var:sub(1, 1) == "$" then
-        --                local key = var:sub(2, #var)
-        --                local func = node.__rootTable[key]
-        --                if func and type(func) == "function" then
-        --                    node:onClicked(function(...)
-        --                        gk.log("[%s] %s", node.__rootTable.__cname, key)
-        --                        func(node.__rootTable, ...)
-        --                    end)
-        --                end
-        --            end
-        --        end
         local func, macro = generator:parseCustomMacroFunc(node, var)
         if func then
             node:onClicked(function(...)
@@ -600,6 +621,13 @@ generator.nodeSetFuncs = {
     popOnBack = function(node, var)
         node.popOnBack = var == 0
     end,
+    --------------------------- cc.ClippingNode   ---------------------------
+    inverted = function(node, var)
+        node:setInverted(var == 0)
+    end,
+    alphaThreshold = function(node, ...)
+        node:setAlphaThreshold(...)
+    end,
 }
 
 generator.nodeGetFuncs = {
@@ -660,6 +688,13 @@ generator.nodeGetFuncs = {
             return node.__info.height or node:getContentSize().height
         end
     end,
+    visible = function(node)
+        return node.__info.visible or (node:isVisible() and 0 or 1)
+    end,
+    localZOrder = function(node, var)
+        return node.__info.localZOrder or node:getLocalZOrder()
+    end,
+    --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node)
         if iskindof(node, "cc.LayerColor") then
             return node.__info.color
@@ -667,11 +702,24 @@ generator.nodeGetFuncs = {
             return node.__info.color or node:getColor()
         end
     end,
-    visible = function(node)
-        return node.__info.visible or (node:isVisible() and 0 or 1)
+    --------------------------- cc.LayerGradient   ---------------------------
+    startColor = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.startColor or node:getStartColor()))
     end,
-    localZOrder = function(node, var)
-        return node.__info.localZOrder or node:getLocalZOrder()
+    endColor = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.endColor or node:getEndColor()))
+    end,
+    startOpacity = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.startOpacity or node:getStartOpacity()))
+    end,
+    endOpacity = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.endOpacity or node:getEndOpacity()))
+    end,
+    vector = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.vector or node:getVector()))
+    end,
+    isCompressedInterpolation = function(node)
+        return (node.__info.type == "cc.LayerGradient" and (node.__info.isCompressedInterpolation or (node:isCompressedInterpolation() and 0 or 1)))
     end,
     --------------------------- cc.Sprite   ---------------------------
     file = function(node)
@@ -744,6 +792,13 @@ generator.nodeGetFuncs = {
     end,
     popOnBack = function(node, var)
         return iskindof(node.class, "Layer") and (node.__info.popOnBack or (node.popOnBack and 0 or 1))
+    end,
+    --------------------------- cc.ClippingNode   ---------------------------
+    inverted = function(node, var)
+        return iskindof(node, "cc.ClippingNode") and (node.__info.inverted or (node:isInverted() and 0 or 1))
+    end,
+    alphaThreshold = function(node)
+        return iskindof(node, "cc.ClippingNode") and (node.__info.alphaThreshold or node:getAlphaThreshold())
     end,
 }
 

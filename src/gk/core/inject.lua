@@ -63,6 +63,7 @@ end
 inject:scene_method_swizz(cc.Scene, "create")
 inject:layer_method_swizz(cc.Layer, "create")
 inject:layer_method_swizz(cc.LayerColor, "create")
+inject:layer_method_swizz(cc.LayerGradient, "create")
 inject:node_method_swizz(cc.Sprite, "create")
 inject:node_method_swizz(cc.Sprite, "createWithSpriteFrame")
 inject:node_method_swizz(cc.Sprite, "createWithTexture")
@@ -70,6 +71,7 @@ inject:node_method_swizz(cc.Node, "create")
 inject:node_method_swizz(cc.Label, "createWithSystemFont")
 inject:node_method_swizz(cc.Label, "createWithTTF")
 inject:node_method_swizz(cc.Label, "createWithBMFont")
+inject:node_method_swizz(cc.ClippingNode, "create")
 
 function inject:ctor_method_swizz(type, methodName)
     if not type["__" .. methodName .. "__swizzed"] then

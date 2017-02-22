@@ -184,7 +184,7 @@ end
 function EditBox:changeCursorPos(newPos)
     local input = self.label:getString()
     if newPos >= 0 and newPos <= input:len() then
-        gk.log("[EDITBOX] change cursorPos %d --> %d", self.cursorPos, newPos)
+        gk.log("[EDITBOX]: change cursorPos %d --> %d", self.cursorPos, newPos)
         self.cursorPos = newPos
 
         if not self.cursorNode then
@@ -227,7 +227,7 @@ function EditBox:handleKeyboardEvent()
     local function onKeyPressed(keyCode, event)
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
-            gk.log("[EDITBOX] onKeyPressed %s", key)
+            gk.log("[EDITBOX]: onKeyPressed %s", key)
             if key == "KEY_LEFT_ARROW" then
                 if self.cursorNode then
                     local moveChar = function()
@@ -277,7 +277,7 @@ function EditBox:handleKeyboardEvent()
                 if self.cursorNode then
                     local insertChar = function()
                         local str = self:getInput()
-                        gk.log("[EDITBOX] insert char '%s' at %d", inputTable[key], self.cursorPos)
+                        gk.log("[EDITBOX]: insert char '%s' at %d", inputTable[key], self.cursorPos)
                         str = str:insertChar(self.cursorPos + 1, inputTable[key])
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + 1)
@@ -296,7 +296,7 @@ function EditBox:handleKeyboardEvent()
                     local deleteChar = function()
                         local str = self:getInput()
                         if self.cursorPos >= 1 and #str >= 1 then
-                            gk.log("[EDITBOX] delete char at %d", self.cursorPos)
+                            gk.log("[EDITBOX]: delete char at %d", self.cursorPos)
                             str = str:deleteChar(self.cursorPos)
                             self.label:setString(str)
                             self:changeCursorPos(self.cursorPos - 1)

@@ -336,7 +336,7 @@ function util:stopActionByTagSafe(node, tag)
     end
 end
 
-function util:isGlobalVisible(node)
+function util:isAncestorsVisible(node)
     local c = node
     while c ~= nil do
         if not c:isVisible() then

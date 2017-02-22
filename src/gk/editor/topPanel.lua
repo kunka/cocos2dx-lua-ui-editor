@@ -162,6 +162,7 @@ function panel.create(parent)
         { type = "ZoomButton", file = "?", },
         { type = "cc.Layer", },
         { type = "cc.LayerColor", },
+        { type = "cc.LayerGradient", },
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
         { type = "cc.ClippingNode" },
@@ -190,7 +191,7 @@ function panel.create(parent)
         self:addChild(node)
 
         local names = string.split(self.widgets[i].type, ".")
-        local label = cc.Label:createWithSystemFont(names[#names], fontName, 8 * 4)
+        local label = cc.Label:createWithSystemFont(names[#names], fontName, 7 * 4)
         label:setScale(scale)
         label:setTextColor(cc.c3b(189, 189, 189))
         self:addChild(label)
@@ -235,11 +236,23 @@ function panel.create(parent)
             local children = self.parent.sortedChildren
             for i = #children, 1, -1 do
                 local node = children[i]
-                if node and (not (node.__info and node.__info.lock == 1)) and (not (node.__info and node.__info.isWidget == 0)) then
+                local canBeContainer = false
+                repeat
+                    if not node then
+                        break
+                    end
+                    if node.__info then
+                        if node.__info.lock == 1 or node.__info.isWidget == 0 then
+                            break
+                        end
+                    end
+                    canBeContainer = true
+                until true
+                if canBeContainer then
                     local s = node:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)
-                    if gk.util:isGlobalVisible(node) and cc.rectContainsPoint(rect, p) then
+                    if gk.util:isAncestorsVisible(node) and cc.rectContainsPoint(rect, p) then
                         local type = node.__cname and node.__cname or tolua.type(node)
                         if self._containerNode ~= node then
                             self._containerNode = node

@@ -160,6 +160,7 @@ function panel:displayNode(node)
     local isZoomButton = node.__info.type == "ZoomButton"
     local isLayer = iskindof(node, "cc.Layer")
     local isLayerColor = iskindof(node, "cc.LayerColor")
+    local isLayerGradient = iskindof(node, "cc.LayerGradient")
     local isScrollView = iskindof(node, "cc.ScrollView")
     local isTableView = iskindof(node, "cc.TableView")
 
@@ -272,8 +273,8 @@ function panel:displayNode(node)
     end)
     yIndex = yIndex + 1
     -- ignoreAnchor
-    createLabel("IgnoreAnchor", leftX, topY - stepY * yIndex)
-    createCheckBox(node.__info.ignoreAnchor == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+    createLabel("IgnoreAnchorPoint", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.ignoreAnchor == 0, leftX5_3, topY - stepY * yIndex, function(selected)
         generator:modify(node, "ignoreAnchor", selected, "number")
     end)
     yIndex = yIndex + 1
@@ -326,7 +327,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if isLayerColor or isLabel or isSprite then
+    if (isLayerColor or isLabel or isSprite) and not isLayerGradient then
         -- color
         if isLayerColor then
             -- offset
@@ -348,15 +349,16 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
         end)
         yIndex = yIndex + 1
-    end
-    if isLayerColor then
-        createLabel("A", leftX2, topY - stepY * yIndex)
-        createInput(tostring(node.__info.color.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-            editBox:setInput(generator:modify(node, "color.a", input, "number"))
-        end)
-        yIndex = yIndex + 1
-        -- reset offset
-        yIndex = yIndex - 3 - 2
+
+        if isLayerColor then
+            createLabel("A", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.a", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            -- reset offset
+            yIndex = yIndex - 3 - 2
+        end
     end
 
     if not isScrollView then
@@ -386,11 +388,71 @@ function panel:displayNode(node)
 
     --------------------------- cc.LayerColor   ---------------------------
     if isLayerColor then
-        createLabel("LayerColor", leftX, topY - stepY * yIndex, true)
+        createLabel(isLayerGradient and "LayerGradient" or "LayerColor", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+
+        if isLayerGradient then
+            -- startColor
+            createLabel("StartColor", leftX, topY - stepY * yIndex)
+            createLabel("R", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.startColor.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "startColor.r", input, "number"))
+            end)
+            createLabel("G", leftX4_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.startColor.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "startColor.g", input, "number"))
+            end)
+            createLabel("B", leftX5_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.startColor.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "startColor.b", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            createLabel("StartOpacity", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.startOpacity), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "startOpacity", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            -- endColor4B
+            createLabel("EndColor", leftX, topY - stepY * yIndex)
+            createLabel("R", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.endColor.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "endColor.r", input, "number"))
+            end)
+            createLabel("G", leftX4_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.endColor.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "endColor.g", input, "number"))
+            end)
+            createLabel("B", leftX5_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.endColor.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "endColor.b", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            createLabel("EndOpacity", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.endOpacity), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "endOpacity", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            -- Vector
+            createLabel("Vector", leftX, topY - stepY * yIndex)
+            createLabel("X", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.vector.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "vector.x", input, "number"))
+            end)
+            createLabel("Y", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.vector.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "vector.y", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            -- isCompressedInterpolation
+            createLabel("IsCompressedInterpolation", leftX, topY - stepY * yIndex)
+            createCheckBox(node.__info.isCompressedInterpolation == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+                generator:modify(node, "isCompressedInterpolation", selected, "number")
+            end)
+            yIndex = yIndex + 1
+        end
     end
 
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
@@ -610,6 +672,33 @@ function panel:displayNode(node)
         createLabel("PopOnBack", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.popOnBack == 0, leftX5_3, topY - stepY * yIndex, function(selected)
             generator:modify(node, "popOnBack", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+
+    local isClippingNode = iskindof(node, "cc.ClippingNode")
+    if isClippingNode then
+        createLabel("ClippingNode", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
+        --        -- stencil
+        --        createLabel("StencilID", leftX, topY - stepY * yIndex)
+        --        createInput(tostring(node.__info.stencil), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        --            editBox:setInput(generator:modify(node, "stencil", input, "string"))
+        --        end)
+        --        yIndex = yIndex + 1
+        -- alphaThreshold
+        createLabel("AlphaThreshold", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.alphaThreshold), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "alphaThreshold", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- inverted
+        createLabel("Inverted", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.inverted == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "inverted", selected, "number")
         end)
         yIndex = yIndex + 1
     end

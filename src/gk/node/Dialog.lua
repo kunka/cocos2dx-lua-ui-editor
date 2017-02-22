@@ -47,7 +47,7 @@ function Dialog:onTouchBegan(touch, event)
         local touchP = self.dialogBg:convertToNodeSpace(touchBeginPoint)
         if not cc.rectContainsPoint(rect, touchP) then
             if self.popOnTouchOutsideBg then
-                gk.log("%s:popOnTouchOutsideBg", self.__cname)
+                gk.log("[%s]: popOnTouchOutsideBg", self.__cname)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
@@ -55,7 +55,7 @@ function Dialog:onTouchBegan(touch, event)
             end
         else
             if self.popOnTouchInsideBg then
-                gk.log("%s:popOnTouchInsideBg", self.__cname)
+                gk.log("[%s]: popOnTouchInsideBg", self.__cname)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
@@ -68,7 +68,7 @@ function Dialog:onTouchBegan(touch, event)
 end
 
 function Dialog:pop()
-    gk.log("%s:popDialog --> %s", self.parent.__cname, self.__cname)
+    gk.log("[%s]: popDialog --> %s", self.parent.__cname, self.__cname)
     table.removebyvalue(self.parent.dialogsStack, self)
     self:retain()
     if self.onPopCallback then
@@ -82,7 +82,7 @@ function Dialog:onKeyBack()
     if self.popOnBack then
         self:pop()
     else
-        gk.log("%s:pop onKeyBack is disable", self.__cname)
+        gk.log("[%s]: pop onKeyBack is disable", self.__cname)
     end
 end
 
