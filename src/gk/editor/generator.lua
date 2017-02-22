@@ -134,12 +134,8 @@ function generator:default(type, key)
             width = "$win.w",
             height = "$win.h",
             startColor = cc.c4b(0, 0, 0, 255),
-            endColor = cc.c4b(255, 255, 255, 25),
+            endColor = cc.c4b(255, 255, 255, 255),
         }
-        --        self._default["cc.ClippingNode"] = {
-        --            width = 150,
-        --            height = 100,
-        --        }
     end
     return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
 end

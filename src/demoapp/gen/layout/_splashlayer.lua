@@ -45,9 +45,11 @@ return {
 	         g = 0,
 	         r = 0},
 	      children = {	         {
+	            alphaThreshold = 1,
 	            height = 0,
 	            id = "clippingNode1",
 	            ignoreAnchor = 1,
+	            inverted = 1,
 	            localZOrder = 0,
 	            opacity = 255,
 	            rotation = 0,

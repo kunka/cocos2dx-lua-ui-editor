@@ -1,12 +1,15 @@
 return {
+	enableKeyPad = 1,
 	height = 288,
 	id = "TableViewTest1",
 	ignoreAnchor = 0,
 	localZOrder = 0,
 	opacity = 255,
+	popOnBack = 1,
 	rotation = 0,
 	scaleX = 1,
 	scaleY = 1,
+	swallowTouchEvent = 0,
 	type = "TableViewTest1",
 	visible = 0,
 	width = 512,
@@ -20,6 +23,7 @@ return {
 	   g = 255,
 	   r = 255},
 	children = {	   {
+	      _flod = false,
 	      bounceable = 0,
 	      clipToBD = 0,
 	      direction = 1,

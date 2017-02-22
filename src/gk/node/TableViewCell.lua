@@ -10,6 +10,7 @@ local TableViewCell = class("TableViewCell", function()
     return cc.TableViewCell:create()
 end)
 
+-- must have a __cname and ctor to be injected
 function TableViewCell:ctor()
 end
 

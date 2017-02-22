@@ -58,8 +58,7 @@ local function clearModules()
 end
 
 local function getAppEntry()
-    --    return require("init")
-    return require("initdemoapp")
+    return require("init")
 end
 
 function restartGame(mode)

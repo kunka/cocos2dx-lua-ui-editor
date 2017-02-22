@@ -327,15 +327,9 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if (isLayerColor or isLabel or isSprite) and not isLayerGradient then
+    if (isLabel or isSprite) and not isLayerColor then
         -- color
-        if isLayerColor then
-            -- offset
-            yIndex = yIndex + 3
-            createLabel("Color4B", leftX, topY - stepY * yIndex)
-        else
-            createLabel("Color3B", leftX, topY - stepY * yIndex)
-        end
+        createLabel("Color3B", leftX, topY - stepY * yIndex)
         createLabel("R", leftX2, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.r", input, "number"))
@@ -349,16 +343,6 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
         end)
         yIndex = yIndex + 1
-
-        if isLayerColor then
-            createLabel("A", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.color.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-                editBox:setInput(generator:modify(node, "color.a", input, "number"))
-            end)
-            yIndex = yIndex + 1
-            -- reset offset
-            yIndex = yIndex - 3 - 2
-        end
     end
 
     if not isScrollView then
@@ -393,6 +377,29 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+
+        if not isLayerGradient then
+            -- color
+            createLabel("Color4B", leftX, topY - stepY * yIndex)
+            createLabel("R", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.r", input, "number"))
+            end)
+            createLabel("G", leftX4_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.g", input, "number"))
+            end)
+            createLabel("B", leftX5_1, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.b", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            createLabel("A", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.a", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
 
         if isLayerGradient then
             -- startColor
@@ -538,13 +545,6 @@ function panel:displayNode(node)
         createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputMax, function(index)
             generator:modify(node, "overflow", index - 1, "number")
         end)
-        -- lineHeight
-        if node.__info.lineHeight then
-            createLabel("LineHeight", leftX4_1 - 4, topY - stepY * yIndex)
-            createInput(tostring(node.__info.lineHeight), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
-                editBox:setInput(generator:modify(node, "lineHeight", input, "number"))
-            end)
-        end
         yIndex = yIndex + 1
         -- dimensions
         createLabel("Dimensions", leftX, topY - stepY * yIndex)
@@ -570,6 +570,14 @@ function panel:displayNode(node)
             generator:modify(node, "vAlign", index - 1, "number")
         end)
         yIndex = yIndex + 1
+        -- lineHeight
+        if node.__info.lineHeight then
+            createLabel("LineHeight", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.lineHeight), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "lineHeight", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
         -- font size
         createLabel("FontSize", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
