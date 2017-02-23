@@ -33,8 +33,16 @@ function generator:deflate(node)
             if child and child.__info and child.__info.id then
                 info.children = info.children or {}
                 local c = self:deflate(child)
+                c.parentId = info.id
                 table.insert(info.children, c)
             end
+        end
+    end
+
+    if iskindof(node, "cc.ProgressTimer") then
+        local sprite = node:getSprite()
+        if sprite then
+            info.sprite = self:deflate(sprite)
         end
     end
 
@@ -110,6 +118,20 @@ end
 function generator:default(type, key)
     if not self._default then
         self._default = {}
+        --------------------------- root container   ---------------------------
+        self._default["Dialog"] = {
+            width = "$fill",
+            height = "$fill",
+        }
+        self._default["Layer"] = {
+            width = "$fill",
+            height = "$fill",
+        }
+        self._default["cc.TableViewCell"] = {
+            width = "$fill",
+            height = "50",
+        }
+        --------------------------- content node   ---------------------------
         self._default["cc.Node"] = {
             lock = 0,
             file = "",
@@ -130,11 +152,24 @@ function generator:default(type, key)
             height = "$win.h",
             color = cc.c4b(153, 153, 153, 255),
         }
+        self._default["cc.ScrollView"] = {
+            width = 100,
+            height = 150,
+            _flod = true,
+        }
+        self._default["cc.TableView"] = {
+            width = 100,
+            height = 150,
+            _flod = true,
+        }
         self._default["cc.LayerGradient"] = {
             width = "$win.w",
             height = "$win.h",
             startColor = cc.c4b(0, 0, 0, 255),
             endColor = cc.c4b(255, 255, 255, 255),
+        }
+        self._default["cc.ProgressTimer"] = {
+            sprite = { file = "", type = "cc.Sprite", voidContent = true, lock = 1 },
         }
     end
     return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
@@ -149,9 +184,14 @@ function generator:wrap(info, rootTable)
             if key == "__self" then
                 var = proxy
             else
-                var = proxy[key] or self:default(info.type, key)
+                var = proxy[key]
+                if var == nil then
+                    return self:default(info.type, key)
+                else
+                    return var
+                end
             end
-            --            gk.log("get %s,%s", key, var)
+            --                        gk.log("get %s,%s", key, var)
             return var
         end,
         __newindex = function(_, key, value)
@@ -169,6 +209,7 @@ function generator:wrap(info, rootTable)
                             node.__rootTable = rootTable
                             gk.event:post("postSync")
                             gk.event:post("displayDomTree")
+                            gk.event:post("displayNode", node)
                         else
                             proxy[key] = value
                             gk.event:post("postSync")
@@ -189,6 +230,7 @@ function generator:wrap(info, rootTable)
                     func(node, v)
                     gk.event:post("postSync")
                     gk.event:post("displayDomTree")
+                    gk.event:post("displayNode", node)
                     --                elseif key ~= "id" and key ~= "children" and key ~= "type" then
                     --                    error(string.format("cannot find node func to set property %s", key))
                     return
@@ -196,6 +238,9 @@ function generator:wrap(info, rootTable)
             end
             gk.event:post("postSync")
             gk.event:post("displayDomTree")
+            if node then
+                gk.event:post("displayNode", node)
+            end
         end,
     }
     setmetatable(info, mt)
@@ -314,25 +359,34 @@ generator.nodeCreator = {
         return node
     end,
     ["cc.ScrollView"] = function(info, rootTable)
-        local node = cc.ScrollView:create(cc.size(100, 150))
+        local node = cc.ScrollView:create(cc.size(info.width, info.height))
         info.id = info.id or generator:genID("scrollView", rootTable)
         return node
     end,
     ["cc.TableView"] = function(info, rootTable)
-        local node = cc.TableView:create(cc.size(100, 150))
+        local node = cc.TableView:create(cc.size(info.width, info.height))
         info.id = info.id or generator:genID("tableView", rootTable)
         return node
     end,
     ["cc.ClippingNode"] = function(info, rootTable)
+        -- Add an useless node
         local node = cc.ClippingNode:create(cc.Node:create())
         info.id = info.id or generator:genID("clippingNode", rootTable)
         return node
     end,
-    --    ["cc.TableViewCell"] = function(info, rootTable)
-    --        local node = cc.TableViewCell:create()
-    --        info.id = info.id or generator:genID("tableViewCell", rootTable)
-    --        return node
-    --    end,
+    ["cc.ProgressTimer"] = function(info, rootTable)
+        if info.sprite then
+            -- create content sprite first
+            local sprite = generator:createNode(clone(info.sprite), nil, rootTable)
+            -- create ProgressTimer
+            local node = cc.ProgressTimer:create(sprite)
+            info.id = info.id or generator:genID("progressTimer", rootTable)
+            sprite.__info.id = info.id .. "_sprite"
+            return node
+        end
+        return nil
+    end,
+    --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
         local clazz, path = gk.resource:require(info.type)
         local node = clazz:create()
@@ -383,13 +437,15 @@ generator.macroFuncs = {
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
-    ["win.w"] = function() return gk.display.winSize().width
-    end,
-    ["win.h"] = function() return gk.display.winSize().height
-    end,
+    ["win.w"] = function() return gk.display.winSize().width end,
+    ["win.h"] = function() return gk.display.winSize().height end,
     -- contentSize, ViewSize
     fill = function(key, node)
-        return node:getParent() and node:getParent():getContentSize()[key] or gk.display.winSize()[key]
+        local parent = node:getParent()
+        if not parent and node.__info and node.__info.parentId and node.__rootTable then
+            parent = node.__rootTable[node.__info.parentId]
+        end
+        return parent and parent:getContentSize()[key] or gk.display.winSize()[key]
     end,
 }
 
@@ -624,6 +680,22 @@ generator.nodeSetFuncs = {
     alphaThreshold = function(node, ...)
         node:setAlphaThreshold(...)
     end,
+    --------------------------- cc.ProgressTimer   ---------------------------
+    barType = function(node, ...)
+        node:setType(...)
+    end,
+    percentage = function(node, ...)
+        node:setPercentage(...)
+    end,
+    reverseDirection = function(node, var)
+        node:setReverseDirection(var == 0)
+    end,
+    midpoint = function(node, ...)
+        node:setMidpoint(...)
+    end,
+    barChangeRate = function(node, ...)
+        node:setBarChangeRate(...)
+    end,
 }
 
 generator.nodeGetFuncs = {
@@ -795,6 +867,22 @@ generator.nodeGetFuncs = {
     end,
     alphaThreshold = function(node)
         return iskindof(node, "cc.ClippingNode") and (node.__info.alphaThreshold or node:getAlphaThreshold())
+    end,
+    --------------------------- cc.ProgressTimer   ---------------------------
+    barType = function(node)
+        return iskindof(node, "cc.ProgressTimer") and (node.__info.barType or node:getType())
+    end,
+    percentage = function(node)
+        return iskindof(node, "cc.ProgressTimer") and (node.__info.percentage or node:getPercentage())
+    end,
+    reverseDirection = function(node, var)
+        return iskindof(node, "cc.ProgressTimer") and (node.__info.reverseDirection or (node:isReverseDirection() and 0 or 1))
+    end,
+    midpoint = function(node)
+        return iskindof(node, "cc.ProgressTimer") and (node.__info.midpoint or node:getMidpoint())
+    end,
+    barChangeRate = function(node)
+        return iskindof(node, "cc.ProgressTimer") and (node.__info.barChangeRate or node:getBarChangeRate())
     end,
 }
 

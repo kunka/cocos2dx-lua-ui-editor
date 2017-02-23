@@ -76,6 +76,14 @@ function EditBox:onEnter()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
 end
 
+function EditBox:onExit()
+    if gk.focusNode == self then
+        gk.focusNode = nil
+        self.isFocus = false
+        gk.log("[EDITBOX] unfocus %s", self:getInput())
+    end
+end
+
 function EditBox:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
     if not self.enabled or not self:isVisible() or not camera then
@@ -132,8 +140,8 @@ end
 
 function EditBox:focus()
     if gk.focusNode ~= self then
-        if gk.focusNode then
-            gk.focusNode:unfocus()
+        if gk.focusNode then --and gk.focusNode["unfocus"] and type(gk.focusNode["unfocus"]) == "function" then
+        gk.focusNode:unfocus()
         end
         gk.focusNode = self
         self.isFocus = true
@@ -148,6 +156,7 @@ function EditBox:focus()
         --        if next then
         --            gk.log("focus %s, next = %s", self:getInput(), next:getInput())
         --        end
+        gk.log("[EDITBOX] focus %s", self:getInput())
     end
 end
 

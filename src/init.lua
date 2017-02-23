@@ -20,9 +20,13 @@ function init:initGameKit(mode)
     gk.mode = mode
 
     gk.resource.defaultSprite = DEBUG > 0 and "gk/res/texture/default.png" or "gk/res/texture/default_release.png"
-    gk.display:initWithDesignSize(cc.size(1280, 720))
     gk.resource:setTextureRelativePath("texture/")
     local srcPath = getEntry()
+    if srcPath == "test" then
+        gk.display:initWithDesignSize(cc.size(1280, 720))
+    else
+        gk.display:initWithDesignSize(cc.size(720, 1280))
+    end
     local strings = {
         en = require(srcPath .. ".gen.value.strings"),
         cn = require(srcPath .. ".gen.value.strings_cn"),

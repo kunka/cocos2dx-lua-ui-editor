@@ -1,6 +1,6 @@
 return {
 	enableKeyPad = 1,
-	height = 288,
+	height = "$fill",
 	id = "TableViewTest1",
 	ignoreAnchor = 0,
 	localZOrder = 0,
@@ -12,7 +12,7 @@ return {
 	swallowTouchEvent = 0,
 	type = "TableViewTest1",
 	visible = 0,
-	width = 512,
+	width = "$fill",
 	x = 140,
 	y = 20,
 	anchor = {
@@ -23,7 +23,7 @@ return {
 	   g = 255,
 	   r = 255},
 	children = {	   {
-	      _flod = false,
+	      _flod = true,
 	      bounceable = 0,
 	      clipToBD = 0,
 	      direction = 1,
@@ -32,6 +32,7 @@ return {
 	      ignoreAnchor = 0,
 	      localZOrder = 0,
 	      opacity = 255,
+	      parentId = "TableViewTest1",
 	      rotation = 0,
 	      scaleX = 1,
 	      scaleY = 1,
@@ -58,4 +59,4 @@ return {
 	         y = "$yScale"},
 	      viewSize = {
 	         height = 700,
-	         width = 940}}}}
+	         width = 1260}}}}

@@ -6,5 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-return {}
+return {
+    app_name = "微信",
+}
 

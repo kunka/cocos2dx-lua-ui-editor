@@ -140,8 +140,7 @@ function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
     if iskindof(node, "cc.ScrollView") then
-        -- do not clear :)
-        --        draw = node:getContainer():getChildByTag(tg)
+        draw = node:getContainer():getChildByTag(tg)
     end
     if draw then
         draw:clear()

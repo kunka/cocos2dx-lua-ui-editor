@@ -9,7 +9,7 @@ import(".List")
 import(".log")
 gk.event = import(".event")
 gk.event:init()
-gk.injector = import(".inject")
+gk.injector = import(".injector")
 gk.injector:init()
 gk.display = import(".display")
 

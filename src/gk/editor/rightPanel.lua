@@ -34,10 +34,15 @@ function panel:undisplayNode()
 end
 
 function panel:displayNode(node)
+    gk.log("displayRightPanel")
     panel:undisplayNode()
 
     self.displayInfoNode = cc.Node:create()
     self:addChild(self.displayInfoNode)
+    if self.lastDisplayNodeId == node.__info.id and self.lastDisplayInfoOffset then
+        self.displayInfoNode:setPosition(self.lastDisplayInfoOffset)
+    end
+    self.lastDisplayNodeId = node.__info.id
     local size = self:getContentSize()
 
     local fontSize = 10 * 4
@@ -199,6 +204,7 @@ function panel:displayNode(node)
     yIndex = yIndex + 0.2
 
     local isRoot = self.parent.scene.layer == node
+    local voidContent = node.__info and node.__info.voidContent
     -- not root
     if not isRoot then
         -- position
@@ -711,6 +717,57 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
+    local isProgressTimer = iskindof(node, "cc.ProgressTimer")
+    if isProgressTimer then
+        createLabel("ProgressTimer", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
+        -- barType
+        createLabel("BarType", leftX, topY - stepY * yIndex)
+        local types = { "RADIAL", "BAR" }
+        createSelectBox(types, node.__info.barType + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "barType", index - 1, "number")
+        end)
+        yIndex = yIndex + 1
+        -- reverseDirection
+        createLabel("RreverseDirection", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.reverseDirection == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "reverseDirection", selected, "number")
+        end)
+        yIndex = yIndex + 1
+        -- percentage
+        createLabel("Percentage", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.percentage), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "percentage", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- midpoint
+        createLabel("Midpoint", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.midpoint.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "midpoint.x", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.midpoint.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "midpoint.y", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        if node.__info.barType == 1 then
+            -- barChangeRate
+            createLabel("ChangeRate", leftX, topY - stepY * yIndex)
+            createLabel("X", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.barChangeRate.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "barChangeRate.x", input, "number"))
+            end)
+            createLabel("Y", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.barChangeRate.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "barChangeRate.y", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
+    end
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))
     if disabled then
         self.displayInfoNode:setOpacity(150)
@@ -729,6 +786,7 @@ function panel:handleEvent()
                 y = y + scrollY * 10
                 y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
                 self.displayInfoNode:setPosition(x, y)
+                self.lastDisplayInfoOffset = cc.p(x, y)
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)

@@ -71,6 +71,7 @@ function panel:displayDomNode(node, layer)
         return
     end
     local fixChild = node.__info == nil
+    local realNode = node
     local size = self:getContentSize()
     local fontSize = 11 * 4
     local fontName = "Consolas"
@@ -114,8 +115,9 @@ function panel:displayDomNode(node, layer)
                 if fixChild then
                     return
                 end
-                gk.log("fold container %s", node.__info.id)
+                gk.log("fold container %s, %s", node.__info.id, node.__info._flod)
                 node.__info._flod = not node.__info._flod
+                gk.log("fold container %s, %s", node.__info.id, node.__info._flod)
                 gk.event:post("displayDomTree")
             end)
             x = x + 11
@@ -164,7 +166,8 @@ function panel:displayDomNode(node, layer)
                 if not self.draggingNode and cc.rectContainsPoint(rect, p) then
                     gk.log("dom:choose node %s", content)
                     local nd = self.parent.scene.layer[content]
-                    if nd then
+                    local voidContent = realNode.__info and realNode.__info.voidContent
+                    if nd or voidContent then
                         if self.selectedNode ~= node then
                             if self.selectedNode then
                                 gk.util:clearDrawNode(self.selectedNode, -2)
@@ -173,6 +176,9 @@ function panel:displayDomNode(node, layer)
                         self.selectedNode = node
                         gk.util:drawNodeBounds(node, nil, -2)
                         gk.event:post("displayNode", nd)
+                    end
+                    if voidContent then
+                        return false
                     end
                     return true
                 else
@@ -369,6 +375,11 @@ function panel:displayDomNode(node, layer)
                 end
             end
         end
+    end
+
+    if iskindof(node, "cc.ProgressTimer") then
+        local sprite = node:getSprite()
+        self:displayDomNode(sprite, layer)
     end
 end
 

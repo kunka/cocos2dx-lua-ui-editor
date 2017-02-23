@@ -13,7 +13,7 @@ function TableViewTest2:ctor()
     if self.tableView1 then
         local tableView = self.tableView1
 
-        local cellWidth, cellHeight = 940 * gk.display.xScale(), 100 * gk.display.minScale()
+        local cellWidth, cellHeight = 1260 * gk.display.xScale(), 100 * gk.display.minScale()
         local bgHeight = (100 - 10) * gk.display.minScale()
         local function numberOfCellsInTableView(table)
             return 10
