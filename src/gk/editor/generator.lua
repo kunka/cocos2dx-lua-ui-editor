@@ -333,6 +333,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("sprite", rootTable)
         return node
     end,
+    ["ccui.Scale9Sprite"] = function(info, rootTable)
+        local node = gk.create_scale9_sprite(info.file)
+        info.id = info.id or generator:genID("scale9Sprite", rootTable)
+        return node
+    end,
     ["ZoomButton"] = function(info, rootTable)
         local node = gk.ZoomButton.new(gk.create_sprite(info.file))
         info.id = info.id or generator:genID("button", rootTable)
@@ -570,7 +575,7 @@ generator.nodeSetFuncs = {
     isCompressedInterpolation = function(node, var)
         node:setCompressedInterpolation(var == 0)
     end,
-    --------------------------- cc.Sprite Button   ---------------------------
+    --------------------------- cc.Sprite, Button   ---------------------------
     file = function(node, var)
         -- TODO: iskind of bug
         --        if iskindof(node, "Button") then
@@ -583,8 +588,22 @@ generator.nodeSetFuncs = {
             node:setSpriteFrame(gk.create_sprite_frame(var))
         end
     end,
+    --------------------------- cc.Sprite, Button, ccui.Scale9Sprite   ---------------------------
     flippedX = function(node, var)
         node:setFlippedX(var == 0)
+    end,
+    --------------------------- ccui.Scale9Sprite   ---------------------------
+    capInsets = function(node, ...)
+        node:setCapInsets(...)
+    end,
+    flippedY = function(node, var)
+        node:setFlippedY(var == 0)
+    end,
+    renderingType = function(node, var)
+        node:setRenderingType(var)
+    end,
+    state = function(node, var)
+        node:setState(var)
     end,
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node, var)
@@ -793,8 +812,22 @@ generator.nodeGetFuncs = {
     file = function(node)
         return (node.__info.type == "cc.Sprite" and node.__info.file)
     end,
+    --------------------------- cc.Sprite, ccui.Scale9Sprite   ---------------------------
     flippedX = function(node)
-        return (node.__info.type == "cc.Sprite" and (node.__info.flippedX or (node:isFlippedX() and 0 or 1)))
+        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ccui.Scale9Sprite") and (node.__info.flippedX or (node:isFlippedX() and 0 or 1)))
+    end,
+    --------------------------- ccui.Scale9Sprite   ---------------------------
+    capInsets = function(node)
+        return iskindof(node, "ccui.Scale9Sprite") and (node.__info.capInsets or node:getCapInsets())
+    end,
+    flippedY = function(node)
+        return (node.__info.type == "ccui.Scale9Sprite" and (node.__info.flippedY or (node:isFlippedY() and 0 or 1)))
+    end,
+    renderingType = function(node, var)
+        return (node.__info.type == "ccui.Scale9Sprite" and (node.__info.renderingType or node:getRenderingType()))
+    end,
+    state = function(node, var)
+        return (node.__info.type == "ccui.Scale9Sprite" and (node.__info.state or node:getState()))
     end,
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node)

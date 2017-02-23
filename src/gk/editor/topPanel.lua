@@ -158,6 +158,7 @@ function panel.create(parent)
     self.widgets = {
         { type = "cc.Node", },
         { type = "cc.Sprite", file = "?", },
+        { type = "ccui.Scale9Sprite", file = "?", },
         { type = "cc.Label", },
         { type = "ZoomButton", file = "?", },
         { type = "cc.Layer", },

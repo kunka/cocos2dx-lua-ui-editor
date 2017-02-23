@@ -37,6 +37,9 @@ function panel:displayNode(node)
     gk.log("displayRightPanel")
     panel:undisplayNode()
 
+    if not node.__info then
+        return
+    end
     self.displayInfoNode = cc.Node:create()
     self:addChild(self.displayInfoNode)
     if self.lastDisplayNodeId == node.__info.id and self.lastDisplayInfoOffset then
@@ -768,6 +771,67 @@ function panel:displayNode(node)
             yIndex = yIndex + 1
         end
     end
+
+    local isProgressTimer = iskindof(node, "ccui.Scale9Sprite")
+    if isProgressTimer then
+        createLabel("Scale9Sprite", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
+        -- sprite file
+        createLabel("Sprite", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.file), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
+            editBox:setInput(generator:modify(node, "file", input, "string"))
+        end)
+        yIndex = yIndex + 1
+        -- CapInsets
+        createLabel("CapInsets", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.capInsets.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "capInsets.x", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.capInsets.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "capInsets.y", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        createLabel("W", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.capInsets.width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "capInsets.width", input, "number"))
+        end)
+        createLabel("H", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.capInsets.height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "capInsets.height", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- RenderingType
+        createLabel("RenderingType", leftX, topY - stepY * yIndex)
+        local types = { "SIMPLE", "SLICE" }
+        createSelectBox(types, node.__info.renderingType + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "renderingType", index - 1, "number")
+        end)
+        yIndex = yIndex + 1
+        -- state
+        createLabel("State", leftX, topY - stepY * yIndex)
+        local types = { "NORMAL", "GRAY" }
+        createSelectBox(types, node.__info.state + 1, leftX2_1, topY - stepY * yIndex, inputWidth2, function(index)
+            generator:modify(node, "state", index - 1, "number")
+        end)
+        yIndex = yIndex + 1
+        -- flippedX
+        createLabel("FippedX", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.flippedX == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "flippedX", selected, "number")
+        end)
+        -- flippedY
+        createLabel("FippedY", leftX4_2, topY - stepY * yIndex)
+        createCheckBox(node.__info.flippedY == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "flippedY", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))
     if disabled then
         self.displayInfoNode:setOpacity(150)
