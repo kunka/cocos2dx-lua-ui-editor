@@ -16,6 +16,12 @@ function panel.create(parent)
     self.parent = parent
     self:setPosition(0, winSize.height - gk.display.topHeight)
 
+    if self.displayInfoNode then
+        self.displayInfoNode:removeFromParent()
+    end
+    self.displayInfoNode = cc.Node:create()
+    --    self:addChild(self.displayInfoNode)
+
     local size = self:getContentSize()
     -- winSize
     local fontSize = 10 * 4
@@ -24,7 +30,7 @@ function panel.create(parent)
     local topY = size.height - 15 - 15
     local leftX = 10
     local leftX2 = 50
-    local stepX = 50
+    local stepX = 51
     local stepY = 25
     local leftX_widget = 10
     local inputWidth1 = 80
@@ -169,6 +175,18 @@ function panel.create(parent)
         { type = "cc.ClippingNode" },
         { type = "cc.ProgressTimer" },
     }
+    -- content node
+    local iconScale = 0.32
+    local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets - 1)
+    self.displayInfoNode:setContentSize(cc.size(width, self:getContentSize().height))
+    self.displayInfoNode:setAnchorPoint(cc.p(0, 0))
+    self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
+    --    gk.util:drawNodeBounds(self.displayInfoNode)
+    -- clipping
+    self.clippingNode = cc.ClippingRectangleNode:create(cc.rect(gk.display.leftWidth, 0, gk.display.winSize().width, self:getContentSize().height))
+    self:addChild(self.clippingNode)
+    self.clippingNode:addChild(self.displayInfoNode)
+
     -- self define widget
     local keys = table.keys(gk.resource.genNodes)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
@@ -186,17 +204,18 @@ function panel.create(parent)
             node:setColor(cc.c3b(0xCC, 0xFF, 0x66))
         end
         node.type = self.widgets[i].type
-        node:setScale(0.32)
-        local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
+        node:setScale(iconScale)
+        --        local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
+        local originPos = cc.p(leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
         originPos.y = originPos.y + 8
         node:setPosition(originPos)
-        self:addChild(node)
+        self.displayInfoNode:addChild(node)
 
         local names = string.split(self.widgets[i].type, ".")
         local label = cc.Label:createWithSystemFont(names[#names], fontName, 7 * 4)
         label:setScale(scale)
         label:setTextColor(cc.c3b(189, 189, 189))
-        self:addChild(label)
+        self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0.5, 0.5)
         label:setPosition(originPos.x, originPos.y - 35)
 
@@ -224,12 +243,13 @@ function panel.create(parent)
             local p = self:convertToNodeSpace(location)
             if not self.draggingNode then
                 local node = gk.create_sprite(self.widgets[i].file)
-                node:setPosition(originPos)
+                node:setPosition(cc.p(originPos.x + gk.display.leftWidth, originPos.y))
                 node:setScale(gk.display.minScale())
                 self:addChild(node)
                 self.draggingNode = node
+                node:setPositionZ(0.00000001)
             end
-            self.draggingNode:setPosition(cc.pAdd(originPos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
+            self.draggingNode:setPosition(cc.pAdd(cc.p(originPos.x + gk.display.leftWidth, originPos.y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
 
             -- find dest container
             if self.parent.sortedChildren == nil then
@@ -244,7 +264,7 @@ function panel.create(parent)
                         break
                     end
                     if node.__info then
-                        if node.__info.lock == 1 or node.__info.isWidget == 0 then
+                        if node.__info.lock == 0 or node.__info.isWidget == 0 then
                             break
                         end
                     end
@@ -272,7 +292,7 @@ function panel.create(parent)
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
                 local location = touch:getLocation()
                 local p = self:convertToNodeSpace(location)
-                local p = cc.pAdd(originPos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
+                local p = cc.pAdd(cc.p(originPos.x + gk.display.leftWidth, originPos.y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
                 p = self._containerNode:convertToNodeSpace(self:convertToWorldSpace(p))
                 if cc.rectContainsPoint(rect, p) then
                     local node
@@ -318,7 +338,29 @@ function panel.create(parent)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end
 
+    self:handleEvent()
+
     return self
+end
+
+function panel:handleEvent()
+    local listener = cc.EventListenerMouse:create()
+    listener:registerScriptHandler(function(touch, event)
+        local location = touch:getLocationInView()
+        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display.winSize().width, height = self:getContentSize().height }
+        local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
+        if cc.rectContainsPoint(rect, touchP) then
+            if self.displayInfoNode:getContentSize().width > gk.display.winSize().width then
+                local scrollX = touch:getScrollX()
+                local x, y = self.displayInfoNode:getPosition()
+                x = x + scrollX * 10
+                x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display.winSize().width), gk.display.leftWidth)
+                self.displayInfoNode:setPosition(x, y)
+                self.lastDisplayInfoOffset = cc.p(x, y)
+            end
+        end
+    end, cc.Handler.EVENT_MOUSE_SCROLL)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 return panel

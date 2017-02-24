@@ -137,7 +137,7 @@ function panel:displayDomNode(node, layer)
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
         end
-        if (node.__info and node.__info.lock == 1) then
+        if (node.__info and node.__info.lock == 0) then
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
         end

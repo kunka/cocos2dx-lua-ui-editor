@@ -118,7 +118,7 @@ function panel:onNodeCreate(node)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
-            if node.__info and node.__info.lock == 0 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
+            if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -146,7 +146,7 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
-            if node.__info and node.__info.lock == 1 then
+            if node.__info and node.__info.lock == 0 then
                 return
             end
             if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
@@ -173,8 +173,8 @@ function panel:onNodeCreate(node)
                     if not node or nd == node or not gk.util:isAncestorsVisible(nd) then
                         break
                     end
-                    if node.__info then
-                        if node.__info.lock == 1 or node.__info.isWidget == 0 then
+                    if nd.__info then
+                        if nd.__info.lock == 0 or nd.__info.isWidget == 0 then
                             break
                         end
                     end
@@ -210,7 +210,7 @@ function panel:onNodeCreate(node)
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
-            if node.__info and node.__info.lock == 1 then
+            if node.__info and node.__info.lock == 0 then
                 gk.event:post("displayDomTree")
                 return
             end

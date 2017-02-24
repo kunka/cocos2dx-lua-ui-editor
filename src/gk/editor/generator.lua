@@ -65,7 +65,7 @@ function generator:inflate(info, rootNode, rootTable)
                 local c = self:inflate(child, nil, rootTable)
                 if c then
                     node:addChild(c)
-                    -- set width/height($fill)
+                    -- update width/height($fill)
                     c.__info.width = self.nodeGetFuncs["width"](c)
                     c.__info.height = self.nodeGetFuncs["height"](c)
                 end
@@ -133,7 +133,7 @@ function generator:default(type, key)
         }
         --------------------------- content node   ---------------------------
         self._default["cc.Node"] = {
-            lock = 0,
+            lock = 1,
             file = "",
             scaleXY = { x = 1, y = 1 },
             scaleSize = { w = 1, h = 1 },
@@ -405,7 +405,7 @@ generator.nodeCreator = {
             end
         end
         info.id = generator:genID(type, rootTable)
-        info.lock = 1
+        info.lock = 0
         return node
     end,
 }
@@ -434,6 +434,18 @@ function generator:genID(type, rootTable)
         end
     end
     return string.format("%s%d", type, index)
+end
+
+function generator:updateSize(node, property)
+    local children = node:getChildren()
+    for i = 1, #children do
+        local child = children[i]
+        if child and child.__info then
+            -- update width/height($fill)
+            child.__info[property] = self.nodeGetFuncs[property](child)
+            self:updateSize(child, property)
+        end
+    end
 end
 
 generator.macroFuncs = {
@@ -498,6 +510,7 @@ generator.nodeSetFuncs = {
             size.width = width
             node:setContentSize(size)
         end
+        generator:updateSize(node, "width")
     end,
     height = function(node, var)
         local height = generator:parseValue("height", node, var)
@@ -511,6 +524,7 @@ generator.nodeSetFuncs = {
             size.height = height
             node:setContentSize(size)
         end
+        generator:updateSize(node, "height")
     end,
     scaleSize = function(node, var)
         if iskindof(node, "cc.ScrollView") then

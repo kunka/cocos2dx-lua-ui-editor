@@ -29,6 +29,7 @@ return {
 	      ignoreAnchor = 1,
 	      localZOrder = 0,
 	      opacity = 255,
+	      parentId = "ProgressTimerTest",
 	      percentage = 70,
 	      reverseDirection = 1,
 	      rotation = 0,

@@ -182,8 +182,8 @@ function panel:displayNode(node)
     yIndex = yIndex + 1
     -- lock
     createLabel("Lock", leftX, topY - stepY * yIndex)
-    createCheckBox(node.__info.lock == 1, leftX2_1, topY - stepY * yIndex, function(selected)
-        generator:modify(node, "lock", 1 - selected, "number")
+    createCheckBox(node.__info.lock == 0, leftX2_1, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "lock", selected, "number")
     end)
     -- widget
     if node.__info.isWidget == 0 then
