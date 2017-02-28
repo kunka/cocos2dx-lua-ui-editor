@@ -52,7 +52,7 @@ function panel:displayNode(node)
     local fontName = "gk/res/font/Consolas.ttf"
     local scale = 0.25
     local topY = size.height - 20
-    local leftX = 10
+    local leftX = 15
     local leftX2 = 70
     local leftX2_1 = 80
     local leftX3 = 135
@@ -93,7 +93,7 @@ function panel:displayNode(node)
     end
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
@@ -116,7 +116,7 @@ function panel:displayNode(node)
     end
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF("", fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setDisplayLabel(label)
@@ -144,7 +144,7 @@ function panel:displayNode(node)
     local createCheckBox = function(selected, x, y, callback)
         local node = ccui.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
         node:setPosition(x, y)
-        node:setScale(scale * 2)
+        node:setScale(scale)
         node:setSelected(selected)
         self.displayInfoNode:addChild(node)
         node:setAnchorPoint(0, 0.5)
@@ -828,6 +828,35 @@ function panel:displayNode(node)
         createLabel("FippedY", leftX4_2, topY - stepY * yIndex)
         createCheckBox(node.__info.flippedY == 0, leftX5_3, topY - stepY * yIndex, function(selected)
             generator:modify(node, "flippedY", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+
+    local isClippingRectangleNode = iskindof(node, "cc.ClippingRectangleNode")
+    if isClippingRectangleNode then
+        createLabel("ClippingRectangleNode", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
+        -- ClippingRegion
+        createLabel("ClipRegion", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.clippingRegion.x), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clippingRegion.x", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.clippingRegion.y), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clippingRegion.y", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        createLabel("W", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.clippingRegion.width), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clippingRegion.width", input, "number"))
+        end)
+        createLabel("H", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.clippingRegion.height), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clippingRegion.height", input, "number"))
         end)
         yIndex = yIndex + 1
     end

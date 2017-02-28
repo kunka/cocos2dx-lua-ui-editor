@@ -25,6 +25,15 @@ function panel.create(scene)
     self.bottomPanel = bottomPanelModule.create(self)
     self:addChild(self.bottomPanel)
 
+    -- win frame
+    -- frame
+    local bg = gk.create_scale9_sprite("gk/res/texture/frame.png", cc.rect(30, 30, 290, 130))
+    local p = cc.p(15, 17)
+    bg:setContentSize(cc.size(gk.display.winSize().width + p.x * 2, gk.display.winSize().height + p.y * 2))
+    bg:setAnchorPoint(cc.p(0, 0))
+    bg:setPosition(cc.p(gk.display.leftWidth - p.x, gk.display.bottomHeight - p.y))
+    self:addChild(bg)
+
     self:handleEvent()
     self:subscribeEvent()
 
@@ -112,7 +121,7 @@ function panel:onNodeCreate(node)
             c = c:getParent()
         end
         if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
-            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
+            --            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
         end
         gk.log("onNodeCreate onEnter %s", node.__info.id)
         local listener = cc.EventListenerTouchOneByOne:create()

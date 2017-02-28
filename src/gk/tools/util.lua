@@ -197,6 +197,14 @@ function util:drawNode(node, c4f, tag)
         local p2 = cc.p(size.width, size.height)
         draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
     end
+    if iskindof(node, "cc.ClippingRectangleNode") then
+        -- bg
+        local rect = node:getClippingRegion()
+        draw:drawRect(cc.p(rect.x + 0.5, rect.y + 0.5),
+            cc.p(rect.x + rect.width - 0.5, rect.y + 0.5),
+            cc.p(rect.x + rect.width - 0.5, rect.y + rect.height - 0.5),
+            cc.p(rect.x + 0.5, rect.y + rect.height - 0.5), c4f and c4f or cc.c4f(155/255, 0, 0, 1))
+    end
 
     -- refresh draw, only in test mode
     if DEBUG and not tag then

@@ -45,7 +45,7 @@ function panel.create(parent)
     end
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF(content, fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setInputLabel(label)
@@ -80,7 +80,7 @@ function panel.create(parent)
     end
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF("", fontName, fontSize)
         label:setTextColor(cc.c3b(0, 0, 0))
         node:setDisplayLabel(label)
@@ -173,6 +173,7 @@ function panel.create(parent)
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
         { type = "cc.ClippingNode" },
+        { type = "cc.ClippingRectangleNode" },
         { type = "cc.ProgressTimer" },
     }
     -- content node
@@ -241,15 +242,16 @@ function panel.create(parent)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
             local p = self:convertToNodeSpace(location)
+            local pos = cc.p(originPos.x + self.displayInfoNode:getPositionX(), originPos.y)
             if not self.draggingNode then
                 local node = gk.create_sprite(self.widgets[i].file)
-                node:setPosition(cc.p(originPos.x + gk.display.leftWidth, originPos.y))
+                node:setPosition(pos)
                 node:setScale(gk.display.minScale())
                 self:addChild(node)
                 self.draggingNode = node
                 node:setPositionZ(0.00000001)
             end
-            self.draggingNode:setPosition(cc.pAdd(cc.p(originPos.x + gk.display.leftWidth, originPos.y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
+            self.draggingNode:setPosition(cc.pAdd(pos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
 
             -- find dest container
             if self.parent.sortedChildren == nil then
@@ -292,7 +294,7 @@ function panel.create(parent)
                 local rect = { x = 0, y = 0, width = s.width, height = s.height }
                 local location = touch:getLocation()
                 local p = self:convertToNodeSpace(location)
-                local p = cc.pAdd(cc.p(originPos.x + gk.display.leftWidth, originPos.y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
+                p = cc.pAdd(cc.p(originPos.x + self.displayInfoNode:getPositionX(), originPos.y), cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation)))
                 p = self._containerNode:convertToNodeSpace(self:convertToWorldSpace(p))
                 if cc.rectContainsPoint(rect, p) then
                     local node

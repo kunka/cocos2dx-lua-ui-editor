@@ -162,6 +162,9 @@ function generator:default(type, key)
             height = 150,
             _flod = true,
         }
+        self._default["ClippingRectangleNode"] = {
+            clippingRegion = cc.rect(0, 0, 100, 100),
+        }
         self._default["cc.LayerGradient"] = {
             width = "$win.w",
             height = "$win.h",
@@ -377,6 +380,12 @@ generator.nodeCreator = {
         -- Add an useless node
         local node = cc.ClippingNode:create(cc.Node:create())
         info.id = info.id or generator:genID("clippingNode", rootTable)
+        return node
+    end,
+    ["cc.ClippingRectangleNode"] = function(info, rootTable)
+        -- Add an useless node
+        local node = cc.ClippingRectangleNode:create(cc.rect(0, 0, 100, 100))
+        info.id = info.id or generator:genID("clippingRectNode", rootTable)
         return node
     end,
     ["cc.ProgressTimer"] = function(info, rootTable)
@@ -713,6 +722,10 @@ generator.nodeSetFuncs = {
     alphaThreshold = function(node, ...)
         node:setAlphaThreshold(...)
     end,
+    --------------------------- cc.ClippingRectangleNode   ---------------------------
+    clippingRegion = function(node, ...)
+        node:setClippingRegion(...)
+    end,
     --------------------------- cc.ProgressTimer   ---------------------------
     barType = function(node, ...)
         node:setType(...)
@@ -914,6 +927,10 @@ generator.nodeGetFuncs = {
     end,
     alphaThreshold = function(node)
         return iskindof(node, "cc.ClippingNode") and (node.__info.alphaThreshold or node:getAlphaThreshold())
+    end,
+    --------------------------- cc.ClippingRectangleNode   ---------------------------
+    clippingRegion = function(node)
+        return iskindof(node, "cc.ClippingRectangleNode") and (node.__info.clippingRegion or node:getClippingRegion())
     end,
     --------------------------- cc.ProgressTimer   ---------------------------
     barType = function(node)

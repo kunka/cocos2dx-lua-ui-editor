@@ -27,7 +27,7 @@ display.deviceSizesDesc = {
 function display:initWithDesignSize(size)
     if gk.mode == gk.MODE_EDIT then
         display.topHeight = 80
-        display.leftWidth = 140
+        display.leftWidth = 210
         display.rightWidth = 210
         display.bottomHeight = 20
     else

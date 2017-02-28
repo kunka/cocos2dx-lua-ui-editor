@@ -145,7 +145,7 @@ function EditBox:focus()
         end
         gk.focusNode = self
         self.isFocus = true
-        gk.util:drawNode(self, cc.c4f(1, 0, 0, 1), -2)
+        gk.util:drawNodeBounds(self, cc.c4f(1, 0, 0, 1), -2)
         self:changeCursorPos(self.label:getString():len())
         self:startBlinkCursor(self.cursorPos)
         if self.onEditBeganCallback then
@@ -371,6 +371,9 @@ function EditBox:getInputTable(shiftPressed)
             end
             inputTable["KEY_MINUS"] = "_"
             inputTable["KEY_SLASH"] = "?"
+            inputTable["KEY_SEMICOLON"] = ":"
+            inputTable["KEY_LEFT_BRACKET"] = "{"
+            inputTable["KEY_RIGHT_BRACKET"] = "}"
         else
             for i = 0, 9 do
                 inputTable[string.format("KEY_%d", i)] = string.format("%d", i)
@@ -380,11 +383,13 @@ function EditBox:getInputTable(shiftPressed)
             end
             inputTable["KEY_MINUS"] = "-"
             inputTable["KEY_SLASH"] = "/"
+            inputTable["KEY_SEMICOLON"] = ";"
+            inputTable["KEY_LEFT_BRACKET"] = "["
+            inputTable["KEY_RIGHT_BRACKET"] = "]"
         end
         inputTable["KEY_PERIOD"] = "."
         inputTable["KEY_SPACE"] = " "
         inputTable["KEY_COMMA"] = ","
-        inputTable["KEY_SEMICOLON"] = ";"
         inputTable["KEY_APOSTROPHE"] = "'"
 
         if shiftPressed then

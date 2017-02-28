@@ -66,7 +66,7 @@ end
 function SelectBox:openPopup()
     gk.log("openPopup")
     self:closePopup()
-    local bg = gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 8, 10, 5))
+    local bg = gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20))
     local size = self:getContentSize()
     local height = size.height * (#self.selectItems)
     bg:setContentSize(cc.size(size.width, height))

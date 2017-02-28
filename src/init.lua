@@ -12,8 +12,8 @@ require "gk.init"
 local init = {}
 
 local function getEntry()
-    return "test"
-    --        return "demoapp"
+--    return "test"
+            return "demoapp"
 end
 
 function init:initGameKit(mode)
