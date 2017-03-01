@@ -81,6 +81,14 @@ function SelectBox:openPopup()
     bg:setPosition(p)
     bg:setScale(gk.util:getGlobalScale(self))
 
+    if p.y - height * bg:getScaleY() < 0 then
+        -- pop upside
+        bg:setAnchorPoint(cc.p(0, 0))
+        local p = self:convertToWorldSpace(cc.p(0, size.height))
+        local p = root:convertToNodeSpace(p)
+        bg:setPosition(p)
+    end
+
     if self.popupLabelCreator then
         for i = 1, #self.selectItems do
             local label = self.popupLabelCreator()
@@ -89,10 +97,16 @@ function SelectBox:openPopup()
             label:setDimensions(size.width, size.height)
             label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+            label:setTextColor(i == self.selectIndex and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
             if self.popupLabelDidCreated then
                 self.popupLabelDidCreated(label)
             end
-            local button = gk.Button.new(label)
+            local layer = cc.LayerColor:create(cc.c3b(251, 147, 74), size.width, size.height)
+            layer:addChild(label)
+            label:setPosition(cc.p(size.width / 2, size.height / 2))
+            layer:ignoreAnchorPointForPosition(false)
+            layer:setOpacity(i == self.selectIndex and 255 or 0)
+            local button = gk.Button.new(layer)
             bg:addChild(button)
             button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
             button:onClicked(function()
@@ -100,6 +114,7 @@ function SelectBox:openPopup()
                 if self.selectIndex ~= i then
                     self.selectIndex = i
                     self.label:setString(self.selectItems[i])
+                    label:setTextColor(i == self.selectIndex and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
                     if self.onSelectChangedCallback then
                         self.onSelectChangedCallback(i)
                     end

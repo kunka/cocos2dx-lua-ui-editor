@@ -10,11 +10,17 @@ local LabelTest = class("LabelTest", gk.Layer)
 
 function LabelTest:ctor()
     LabelTest.super.ctor(self)
-    local color = cc.c4f(128 / 255, 128 / 255, 0, 255 / 255)
+    local color = cc.c4f(128 / 255, 128 / 255, 0, 150 / 255)
     gk.util:drawNode(self.label4, color, -3)
     gk.util:drawNode(self.label5, color, -3)
     gk.util:drawNode(self.label6, color, -3)
     gk.util:drawNode(self.label7, color, -3)
+    gk.util:drawNode(self.label4_1, color, -3)
+    gk.util:drawNode(self.label5_1, color, -3)
+    gk.util:drawNode(self.label6_1, color, -3)
+    gk.util:drawNode(self.label7_1, color, -3)
+    gk.util:drawNode(self.label4_2, color, -3)
+    gk.util:drawNode(self.label7_2, color, -3)
 end
 
 return LabelTest

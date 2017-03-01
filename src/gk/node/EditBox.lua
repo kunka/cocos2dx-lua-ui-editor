@@ -175,6 +175,7 @@ end
 
 function EditBox:startBlinkCursor(cursorPos)
     if self.cursorNode then
+        gk.util:stopActionByTagSafe(self.cursorNode, kCursorBlinkAction)
         self.cursorPos = cursorPos
         local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
             self.cursorNode:setVisible(not self.cursorNode:isVisible())

@@ -101,11 +101,11 @@ local function create_label(info)
         label:setBMFontSize(info.fontSize)
     else
         -- TODO: createWithCharMap
-        label = cc.Label:createWithSystemFont(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        label = cc.Label:createWithSystemFont(info.string, info.systemFontName, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     end
     if not label then
         gk.log("warning! create_label return nil, use default system font, string= %s, fontFile = %s", info.string, fontFile)
-        label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        label = cc.Label:createWithSystemFont(info.string, info.systemFontName, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     end
     return label
 end

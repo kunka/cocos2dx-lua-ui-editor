@@ -7,7 +7,7 @@
 
 local display = {}
 
-local displayScale = 0.4
+local displayScale = 0.56--0.4
 display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
     cc.size(1280 * displayScale, 853 * displayScale),

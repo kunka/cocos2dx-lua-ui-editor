@@ -41,10 +41,13 @@ function panel:displayNode(node)
     end
     self.displayInfoNode = cc.Node:create()
     self:addChild(self.displayInfoNode)
-    if self.lastDisplayNodeId == node.__info.id and self.lastDisplayInfoOffset then
+    if (self.lastDisplayNodeId == node.__info.id or self.lastDisplayNodeType == node.__info.type) and self.lastDisplayInfoOffset then
         self.displayInfoNode:setPosition(self.lastDisplayInfoOffset)
+    else
+        self.lastDisplayInfoOffset = cc.p(0, 0)
     end
     self.lastDisplayNodeId = node.__info.id
+    self.lastDisplayNodeType = node.__info.type
     local size = self:getContentSize()
 
     local fontSize = 10 * 4
@@ -76,7 +79,11 @@ function panel:displayNode(node)
         if not v then
             v = generator:parseCustomMacroFunc(node, content)
         end
-        return v ~= nil and cc.c3b(0xFF, 0x00, 0x33) or cc.c3b(0, 0, 0)
+        if not v and type(content) == "string" then
+            v = gk.resource:getString(content)
+            return v ~= "undefined" and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
+        end
+        return v ~= nil and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
     end
 
     local createLabel = function(content, x, y, isTitle)
@@ -121,7 +128,7 @@ function panel:displayNode(node)
         node:setDisplayLabel(label)
         node:onCreatePopupLabel(function()
             local label = cc.Label:createWithTTF("", fontName, fontSize)
-            label:setTextColor(cc.c3b(0, 0, 0))
+            --            label:setTextColor(cc.c3b(0, 0, 0))
             return label
         end)
         local contentSize = node:getContentSize()
@@ -334,8 +341,19 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "scaleY", input, "number"))
         end)
         yIndex = yIndex + 1
+        -- skew
+        createLabel("Skew", leftX, topY - stepY * yIndex)
+        createLabel("X", leftX2, topY - stepY * yIndex)
+        createInput(tostring(node.__info.skewX), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "skewX", input, "number"))
+        end)
+        createLabel("Y", leftX3, topY - stepY * yIndex)
+        createInput(tostring(node.__info.skewY), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+            editBox:setInput(generator:modify(node, "skewY", input, "number"))
+        end)
+        yIndex = yIndex + 1
     end
-    if (isLabel or isSprite) and not isLayerColor then
+    if (isLabel or isSprite or isZoomButton) and not isLayerColor then
         -- color
         createLabel("Color3B", leftX, topY - stepY * yIndex)
         createLabel("R", leftX2, topY - stepY * yIndex)
@@ -351,6 +369,7 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
         end)
         yIndex = yIndex + 1
+        -- TODO LayerColor at once
     end
 
     if not isScrollView then
@@ -367,12 +386,29 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
     -- localZOrder
-    createLabel("ZOrder", leftX, topY - stepY * yIndex)
+    createLabel("LocalZOrder", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.localZOrder), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
         editBox:setInput(generator:modify(node, "localZOrder", input, "number"))
     end)
+    createLabel("Tag", leftX4_2, topY - stepY * yIndex)
+    createInput(tostring(node.__info.tag), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+        editBox:setInput(generator:modify(node, "tag", input, "number"))
+    end)
+    yIndex = yIndex + 1
+    -- cascadeOpacityEnabled
+    createLabel("CascadeOpacityEnabled", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.cascadeOpacityEnabled == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "cascadeOpacityEnabled", selected, "number")
+    end)
+    yIndex = yIndex + 1
+    -- cascadeColorEnabled
+    createLabel("CascadeColorEnabled", leftX, topY - stepY * yIndex)
+    createCheckBox(node.__info.cascadeColorEnabled == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "cascadeColorEnabled", selected, "number")
+    end)
+    yIndex = yIndex + 1
     -- visible
-    createLabel("Visible", leftX4_2, topY - stepY * yIndex)
+    createLabel("Visible", leftX, topY - stepY * yIndex)
     createCheckBox(node.__info.visible == 0, leftX5_3, topY - stepY * yIndex, function(selected)
         generator:modify(node, "visible", selected, "number")
     end)
@@ -504,6 +540,26 @@ function panel:displayNode(node)
     end
 
     if isSprite then
+        -- blendFunc
+        createLabel("blendFunc", leftX, topY - stepY * yIndex)
+        createLabel("S", leftX2, topY - stepY * yIndex)
+        local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
+        local getIndex = function(value)
+            for i, key in ipairs(FUNCS) do
+                if gl[key] == value then
+                    return i
+                end
+            end
+        end
+        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX2_1, topY - stepY * yIndex, inputMax, function(index)
+            generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
+        end)
+        yIndex = yIndex + 1
+        createLabel("D", leftX2, topY - stepY * yIndex)
+        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX2_1, topY - stepY * yIndex, inputMax, function(index)
+            generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
+        end)
+        yIndex = yIndex + 1
         -- flippedX
         createLabel("FippedX", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.flippedX == 0, leftX2_1, topY - stepY * yIndex, function(selected)
@@ -528,30 +584,50 @@ function panel:displayNode(node)
     end
     --------------------------- cc.Label   ---------------------------
     if isLabel then
-        createLabel("Label", leftX, topY - stepY * yIndex, true)
+        local lan = gk.resource:getCurrentLan()
+        local fontFile = node.__info.fontFile[lan]
+        local isTTF = gk.isTTF(fontFile)
+        local isBMFont = gk.isBMFont(fontFile)
+        local isSystemFont = not isTTF and not isBMFont
+        createLabel(string.format("Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")), leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
 
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+        -- font file
+        createLabel("FontFile", leftX, topY - stepY * yIndex)
+        createInput(isSystemFont and "-" or tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
+            editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
+            gk.event:post("displayNode", node)
+            -- TODO recreate label at once
+        end)
+        yIndex = yIndex + 1
+        if isSystemFont then
+            -- systemFontName
+            createLabel("FontName", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.systemFontName), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
+                editBox:setInput(generator:modify(node, "systemFontName", input, "string"))
+            end)
+            yIndex = yIndex + 1
+        end
         -- string
         createLabel("String", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.string), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
             editBox:setInput(generator:modify(node, "string", input, "string"))
         end)
         yIndex = yIndex + 1
-        -- font file
-        createLabel("FontFile", leftX, topY - stepY * yIndex)
-        local lan = gk.resource:getCurrentLan()
-        createInput(tostring(node.__info.fontFile[lan]), leftX2_1, topY - stepY * yIndex, inputMax, function(editBox, input)
-            editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
-        end)
-        yIndex = yIndex + 1
         -- overflow
+        -- System font only support Overflow::NONE and Overflow::RESIZE_HEIGHT.
         createLabel("Overflow", leftX, topY - stepY * yIndex)
         local overflows = { "NONE", "CLAMP", "SHRINK", "RESIZE_HEIGHT" }
-        createSelectBox(overflows, node.__info.overflow + 1, leftX2_1, topY - stepY * yIndex, inputMax, function(index)
-            generator:modify(node, "overflow", index - 1, "number")
+        local values = { 0, 1, 2, 3 }
+        if isSystemFont then
+            overflows = { "NONE", "RESIZE_HEIGHT" }
+            values = { 0, 3 }
+        end
+        createSelectBox(overflows, table.indexof(values, node.__info.overflow), leftX2_1, topY - stepY * yIndex, inputMax, function(index)
+            generator:modify(node, "overflow", values[index], "number")
         end)
         yIndex = yIndex + 1
         -- dimensions
@@ -579,15 +655,15 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
         -- maxLineWidth
-        if node.__info.maxLineWidth then
-            createLabel("MaxLineWidth", leftX, topY - stepY * yIndex)
-            createInput(tostring(node.__info.maxLineWidth), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-                editBox:setInput(generator:modify(node, "maxLineWidth", input, "number"))
-            end)
-            yIndex = yIndex + 1
-        end
-        -- lineHeight
-        if node.__info.lineHeight then
+        --        if node.__info.maxLineWidth then
+        --            createLabel("MaxLineWidth", leftX, topY - stepY * yIndex)
+        --            createInput(tostring(node.__info.maxLineWidth), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        --                editBox:setInput(generator:modify(node, "maxLineWidth", input, "number"))
+        --            end)
+        --            yIndex = yIndex + 1
+        --        end
+        -- lineHeight, Not support system font.
+        if node.__info.lineHeight and not isSystemFont then
             createLabel("LineHeight", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.lineHeight), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "lineHeight", input, "number"))
@@ -596,7 +672,7 @@ function panel:displayNode(node)
         end
         -- font size
         createLabel("FontSize", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+        createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
             editBox:setInput(generator:modify(node, "fontSize", input, "number"))
         end)
         yIndex = yIndex + 1

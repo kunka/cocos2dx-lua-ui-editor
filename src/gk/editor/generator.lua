@@ -142,6 +142,7 @@ function generator:default(type, key)
             string = "label",
             fontFile = {},
             fontSize = "32",
+            systemFontName = "Arial",
         }
         self._default["cc.Layer"] = {
             width = "$win.w",
@@ -501,6 +502,12 @@ generator.nodeSetFuncs = {
     scaleY = function(node, ...)
         node:setScaleY(...)
     end,
+    skewX = function(node, ...)
+        node:setSkewX(...)
+    end,
+    skewY = function(node, ...)
+        node:setSkewY(...)
+    end,
     anchor = function(node, var)
         node:setAnchorPoint(var)
     end,
@@ -522,6 +529,9 @@ generator.nodeSetFuncs = {
         generator:updateSize(node, "width")
     end,
     height = function(node, var)
+        if iskindof(node, "cc.Label") and node.__info.overflow == 3 then
+            return
+        end
         local height = generator:parseValue("height", node, var)
         local ss = node.__info.scaleSize
         local scaleH = generator:parseValue("scaleH", node, ss.h)
@@ -565,12 +575,29 @@ generator.nodeSetFuncs = {
     opacity = function(node, ...)
         node:setOpacity(...)
     end,
+    localZOrder = function(node, ...)
+        node:setLocalZOrder(...)
+    end,
+    tag = function(node, var)
+        node:setTag(var)
+    end,
+    cascadeOpacityEnabled = function(node, var)
+        node:setCascadeOpacityEnabled(var == 0)
+    end,
+    cascadeColorEnabled = function(node, var)
+        node:setCascadeColorEnabled(var == 0)
+    end,
     visible = function(node, var)
         node:setVisible(var == 0)
     end,
-    localZOrder = function(node, var)
-        node:setLocalZOrder(var)
-    end,
+    --    glProgram = function(node, var)
+    --        local program = cc.GLProgramCache:getInstance():getProgram(var)
+    --        if program then
+    --            node:setGLProgram(program)
+    --        else
+    --            gk.log("[%s] error, cannot get %s from cc.GLProgramCache", node.__rootTable.__cname, var)
+    --        end
+    --    end,
     --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node, var)
         if iskindof(node, "cc.LayerColor") then
@@ -578,6 +605,10 @@ generator.nodeSetFuncs = {
         else
             node:setColor(var)
         end
+    end,
+    --------------------------- cc.Sprite   ---------------------------
+    blendFunc = function(node, var)
+        node:setBlendFunc(var)
     end,
     --------------------------- cc.LayerGradient   ---------------------------
     startColor = function(node, var)
@@ -648,8 +679,7 @@ generator.nodeSetFuncs = {
     string = function(node, string)
         local value = string
         if string.len(string) > 0 and string:sub(1, 1) == "@" then
-            local key = string:sub(2, #string)
-            value = gk.resource:getString(key)
+            value = gk.resource:getString(string)
         end
         node:setString(value)
     end,
@@ -664,7 +694,7 @@ generator.nodeSetFuncs = {
     end,
     lineHeight = function(node, var)
         if not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
-            if var ~= -1 then
+            if var > 0 then
                 node:setLineHeight(var)
             end
         end
@@ -676,9 +706,16 @@ generator.nodeSetFuncs = {
         --        gk.log("set fontFile_%s %s", lan, font)
         --        node:setLineHeight(...)
     end,
-    maxLineWidth = function(node, ...)
-        node:setMaxLineWidth(...)
+    systemFontName = function(node, var)
+        if gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
+            node:setSystemFontName(var)
+        end
     end,
+
+    -- conflict with setDimensions
+    --    maxLineWidth = function(node, ...)
+    --        node:setMaxLineWidth(...)
+    --    end,
     clipMarginEnabled = function(node, var)
         node:setClipMarginEnabled(var == 0)
     end,
@@ -778,6 +815,12 @@ generator.nodeGetFuncs = {
     scaleY = function(node)
         return node.__info.scaleY or math.shrink(node:getScaleY(), 3)
     end,
+    skewX = function(node)
+        return node.__info.skewX or math.shrink(node:getSkewX(), 3)
+    end,
+    skewY = function(node)
+        return node.__info.skewY or math.shrink(node:getSkewY(), 3)
+    end,
     rotation = function(node)
         return node.__info.rotation or math.shrink(node:getRotation(), 2)
     end,
@@ -810,11 +853,20 @@ generator.nodeGetFuncs = {
             return node.__info.height or node:getContentSize().height
         end
     end,
-    visible = function(node)
-        return node.__info.visible or (node:isVisible() and 0 or 1)
-    end,
     localZOrder = function(node, var)
         return node.__info.localZOrder or node:getLocalZOrder()
+    end,
+    tag = function(node, var)
+        return node.__info.tag or node:getTag()
+    end,
+    cascadeOpacityEnabled = function(node)
+        return node.__info.cascadeOpacityEnabled or (node:isCascadeOpacityEnabled() and 0 or 1)
+    end,
+    cascadeColorEnabled = function(node)
+        return node.__info.cascadeColorEnabled or (node:isCascadeColorEnabled() and 0 or 1)
+    end,
+    visible = function(node)
+        return node.__info.visible or (node:isVisible() and 0 or 1)
     end,
     --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node)
@@ -823,6 +875,10 @@ generator.nodeGetFuncs = {
         else
             return node.__info.color or node:getColor()
         end
+    end,
+    --------------------------- cc.Sprite   ---------------------------
+    blendFunc = function(node)
+        return (node.__info.type == "cc.Sprite" and (node.__info.blendFunc or node:getBlendFunc()))
     end,
     --------------------------- cc.LayerGradient   ---------------------------
     startColor = function(node)
@@ -890,11 +946,15 @@ generator.nodeGetFuncs = {
     lineHeight = function(node)
         return iskindof(node, "cc.Label") and (node.__info.lineHeight or -1)
     end,
-    maxLineWidth = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.maxLineWidth or node:getMaxLineWidth())
-    end,
+    --    maxLineWidth = function(node)
+    --        return iskindof(node, "cc.Label") and (node.__info.maxLineWidth or node:getMaxLineWidth())
+    --    end,
     fontFile = function(node)
         return iskindof(node, "cc.Label") and (node.__info.fontFile)
+    end,
+    systemFontName = function(node)
+        --        return iskindof(node, "cc.Label") and (node.__info.systemFontName or node:getSystemFontName())
+        return iskindof(node, "cc.Label") and node:getSystemFontName()
     end,
     clipMarginEnabled = function(node)
         return iskindof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
