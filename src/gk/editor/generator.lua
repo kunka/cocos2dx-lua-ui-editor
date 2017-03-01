@@ -84,7 +84,7 @@ function generator:createNode(info, rootNode, rootTable)
         local creator = self.nodeCreator[info.isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
-            gk.log("createNode %s", info.id)
+            --            gk.log("createNode %s", info.id)
         else
             gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
             return nil
@@ -232,17 +232,17 @@ function generator:wrap(info, rootTable)
                 if func then
                     func(node, v)
                     gk.event:post("postSync")
-                    gk.event:post("displayDomTree")
-                    gk.event:post("displayNode", node)
+                    --                    gk.event:post("displayDomTree")
+                    --                    gk.event:post("displayNode", node)
                     --                elseif key ~= "id" and key ~= "children" and key ~= "type" then
                     --                    error(string.format("cannot find node func to set property %s", key))
                     return
                 end
             end
             gk.event:post("postSync")
-            gk.event:post("displayDomTree")
+            --            gk.event:post("displayDomTree")
             if node then
-                gk.event:post("displayNode", node)
+                --                gk.event:post("displayNode", node)
             end
         end,
     }
@@ -662,9 +662,11 @@ generator.nodeSetFuncs = {
     overflow = function(node, ...)
         node:setOverflow(...)
     end,
-    lineHeight = function(node, ...)
+    lineHeight = function(node, var)
         if not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
-            node:setLineHeight(...)
+            if var ~= -1 then
+                node:setLineHeight(var)
+            end
         end
     end,
     fontFile = function(node, var)
@@ -673,6 +675,12 @@ generator.nodeSetFuncs = {
         local font = var[lan]
         --        gk.log("set fontFile_%s %s", lan, font)
         --        node:setLineHeight(...)
+    end,
+    maxLineWidth = function(node, ...)
+        node:setMaxLineWidth(...)
+    end,
+    clipMarginEnabled = function(node, var)
+        node:setClipMarginEnabled(var == 0)
     end,
     --    np = function( node, var)
     --        node:setNormalizedPosition(var)
@@ -880,11 +888,18 @@ generator.nodeGetFuncs = {
         return iskindof(node, "cc.Label") and (node.__info.overflow or node:getOverflow())
     end,
     lineHeight = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.lineHeight)
+        return iskindof(node, "cc.Label") and (node.__info.lineHeight or -1)
+    end,
+    maxLineWidth = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.maxLineWidth or node:getMaxLineWidth())
     end,
     fontFile = function(node)
         return iskindof(node, "cc.Label") and (node.__info.fontFile)
     end,
+    clipMarginEnabled = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
+    end,
+
     --    np = function(node)
     --        return node.__info.np or node:getNormalizedPosition()
     --    end,

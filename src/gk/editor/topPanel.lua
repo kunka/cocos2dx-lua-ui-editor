@@ -215,6 +215,11 @@ function panel.create(parent)
         local names = string.split(self.widgets[i].type, ".")
         local label = cc.Label:createWithSystemFont(names[#names], fontName, 7 * 4)
         label:setScale(scale)
+        label:setDimensions(node:getContentSize().width + stepX * 2 - 8, 60)
+        --        label:setOverflow(2)
+        --                gk.util:drawNodeBounds(label)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(189, 189, 189))
         self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0.5, 0.5)
@@ -269,6 +274,9 @@ function panel.create(parent)
                         if node.__info.lock == 0 or node.__info.isWidget == 0 then
                             break
                         end
+                    end
+                    if gk.util:isAncestorsType(node, "cc.TableView") then
+                        break
                     end
                     canBeContainer = true
                 until true

@@ -34,7 +34,6 @@ function panel:undisplayNode()
 end
 
 function panel:displayNode(node)
-    gk.log("displayRightPanel")
     panel:undisplayNode()
 
     if not node.__info then
@@ -579,6 +578,14 @@ function panel:displayNode(node)
             generator:modify(node, "vAlign", index - 1, "number")
         end)
         yIndex = yIndex + 1
+        -- maxLineWidth
+        if node.__info.maxLineWidth then
+            createLabel("MaxLineWidth", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.maxLineWidth), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "maxLineWidth", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
         -- lineHeight
         if node.__info.lineHeight then
             createLabel("LineHeight", leftX, topY - stepY * yIndex)
@@ -591,6 +598,12 @@ function panel:displayNode(node)
         createLabel("FontSize", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.fontSize), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
             editBox:setInput(generator:modify(node, "fontSize", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- clipMarginEnabled
+        createLabel("ClipMarginEnabled", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.clipMarginEnabled == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "clipMarginEnabled", selected, "number")
         end)
         yIndex = yIndex + 1
     end

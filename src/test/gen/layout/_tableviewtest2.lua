@@ -13,7 +13,7 @@ return {
 	type = "TableViewTest2",
 	visible = 0,
 	width = "$fill",
-	x = 140,
+	x = 210,
 	y = 20,
 	anchor = {
 	   x = 0.5,

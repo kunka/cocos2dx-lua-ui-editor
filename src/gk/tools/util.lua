@@ -134,6 +134,7 @@ end
 util.tags = util.tags and util.tags or {
     drawTag = 0xFFF0,
     labelTag = 0xFFF1,
+    boundsTag = 0xFFF2,
 }
 
 function util:clearDrawNode(node, tag)
@@ -198,12 +199,28 @@ function util:drawNode(node, c4f, tag)
         draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
     end
     if iskindof(node, "cc.ClippingRectangleNode") then
-        -- bg
+        -- clipping rect
         local rect = node:getClippingRegion()
         draw:drawRect(cc.p(rect.x + 0.5, rect.y + 0.5),
             cc.p(rect.x + rect.width - 0.5, rect.y + 0.5),
             cc.p(rect.x + rect.width - 0.5, rect.y + rect.height - 0.5),
-            cc.p(rect.x + 0.5, rect.y + rect.height - 0.5), c4f and c4f or cc.c4f(155/255, 0, 0, 1))
+            cc.p(rect.x + 0.5, rect.y + rect.height - 0.5), c4f and c4f or cc.c4f(155 / 255, 0, 0, 1))
+    end
+    if iskindof(node, "ccui.Scale9Sprite") then
+        -- capInsets
+        local rect = node:getCapInsets()
+        local sprite = node:getSprite()
+        local originSize = sprite:getContentSize()
+        local size = node:getContentSize()
+        rect.x = rect.x * size.width / originSize.width
+        -- reverse y
+        rect.y = (originSize.height - rect.y - rect.height) * size.height / originSize.height
+        rect.width = rect.width * size.width / originSize.width
+        rect.height = rect.height * size.height / originSize.height
+        draw:drawRect(cc.p(rect.x, rect.y),
+            cc.p(rect.x + rect.width, rect.y),
+            cc.p(rect.x + rect.width, rect.y + rect.height),
+            cc.p(rect.x, rect.y + rect.height), c4f and c4f or cc.c4f(155 / 255, 0, 0, 0.2))
     end
 
     -- refresh draw, only in test mode
@@ -218,6 +235,7 @@ function util:drawNode(node, c4f, tag)
 end
 
 function util:drawNodeBounds(node, c4f, tg)
+    local tg = tg or util.tags.boundsTag
     local draw
     if tg then
         draw = node:getChildByTag(tg)
@@ -227,6 +245,7 @@ function util:drawNodeBounds(node, c4f, tg)
         node:add(draw, 999, tg)
         draw:setPosition(cc.p(0, 0))
     end
+    draw:clear()
 
     local size = node:getContentSize()
     -- bounds
@@ -234,6 +253,7 @@ function util:drawNodeBounds(node, c4f, tg)
         cc.p(0.5, size.height - 0.5),
         cc.p(size.width - 0.5, size.height - 0.5),
         cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 155 / 255, 1, 1))
+
     return draw
 end
 
@@ -352,6 +372,17 @@ function util:isAncestorsVisible(node)
         c = c:getParent()
     end
     return true
+end
+
+function util:isAncestorsType(node, type)
+    local c = node
+    while c ~= nil do
+        if iskindof(c, type) then
+            return true
+        end
+        c = c:getParent()
+    end
+    return false
 end
 
 function util:getRootNode(node)

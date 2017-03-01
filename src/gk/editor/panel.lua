@@ -52,8 +52,17 @@ function panel:subscribeEvent()
         if voidContent then
             self:displayNode(node)
         else
-            gk.util:stopActionByTagSafe(node, -2342)
-            local action = node:runAction(cc.CallFunc:create(function()
+            --            local type = tolua.type(node)
+            --            if type == "cc.TableViewCell" then
+            --                return
+            --                end
+            --            -- don;t display tablecell in tableView
+            if gk.util:isAncestorsType(node, "cc.TableView") then
+                return
+            end
+
+            gk.util:stopActionByTagSafe(self, -2342)
+            local action = self:runAction(cc.CallFunc:create(function()
                 self:displayNode(node)
             end))
             action:setTag(-2342)
@@ -186,6 +195,9 @@ function panel:onNodeCreate(node)
                         if nd.__info.lock == 0 or nd.__info.isWidget == 0 then
                             break
                         end
+                    end
+                    if gk.util:isAncestorsType(nd, "cc.TableView") then
+                        break
                     end
                     canBeContainer = true
                 until true
@@ -364,9 +376,10 @@ function panel:drawNodeCoordinate(node)
 end
 
 function panel:displayNode(node)
-    if not node then
+    if not node or not node.__info then
         return
     end
+    gk.log("displayNode %s", node.__info.id)
     self:undisplayNode()
     self.displayingNode = node
     if node ~= self.scene.layer then
