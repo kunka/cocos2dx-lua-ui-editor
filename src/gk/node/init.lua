@@ -74,6 +74,7 @@ gk.create_sprite_frame = create_sprite_frame
 gk.create_scale9_sprite = create_scale9_sprite
 
 ----------------------------------------- create label  -------------------------------------------------
+-- TODO: file exist
 local function isTTF(fontFile)
     return string.lower(tostring(fontFile)):ends(".ttf")
 end
@@ -93,19 +94,27 @@ gk.isSystemFont = isSystemFont
 local function create_label(info)
     local lan = gk.resource:getCurrentLan()
     local fontFile = info.fontFile[lan]
+    if fontFile == nil then
+        -- default use en font as the same
+        gk.log("create_label default use en font as default %s", info.fontFile["en"])
+        fontFile = info.fontFile["en"]
+        info.fontFile[lan] = fontFile
+    end
     local label
+    -- TODO: createWithCharMap
     if isTTF(fontFile) then
         label = cc.Label:createWithTTF(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     elseif isBMFont(fontFile) then
         label = cc.Label:createWithBMFont(fontFile, info.string, cc.TEXT_ALIGNMENT_LEFT)
         label:setBMFontSize(info.fontSize)
-    else
-        -- TODO: createWithCharMap
-        label = cc.Label:createWithSystemFont(info.string, info.systemFontName, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        --    else
+        --        label = cc.Label:createWithSystemFont(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        --        info.fontFile[lan] = label:getSystemFontName()
     end
     if not label then
-        gk.log("warning! create_label return nil, use default system font, string= %s, fontFile = %s", info.string, fontFile)
-        label = cc.Label:createWithSystemFont(info.string, info.systemFontName, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        label = cc.Label:createWithSystemFont(info.string, fontFile ~= nil and fontFile or info.defaultSysFont, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        info.fontFile[lan] = label:getSystemFontName()
+        gk.log("warning! create_label use system font %s, string= \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
     end
     return label
 end

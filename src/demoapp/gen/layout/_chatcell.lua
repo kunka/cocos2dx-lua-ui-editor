@@ -74,7 +74,7 @@ return {
 	               h = "1",
 	               w = 1}},
 	         {
-	            file = "main/default_hd_avatar.png",
+	            file = "avatar.png",
 	            flippedX = 1,
 	            height = 80,
 	            id = "icon",

@@ -141,8 +141,8 @@ function generator:default(type, key)
         self._default["cc.Label"] = {
             string = "label",
             fontFile = {},
-            fontSize = "32",
-            systemFontName = "Arial",
+            fontSize = 32,
+            defaultSysFont = "Helvetica",
         }
         self._default["cc.Layer"] = {
             width = "$win.w",
@@ -702,22 +702,120 @@ generator.nodeSetFuncs = {
     fontFile = function(node, var)
         -- recreate node
         local lan = gk.resource:getCurrentLan()
-        local font = var[lan]
-        --        gk.log("set fontFile_%s %s", lan, font)
-        --        node:setLineHeight(...)
-    end,
-    systemFontName = function(node, var)
-        if gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
-            node:setSystemFontName(var)
+        local fontFile = var[lan]
+        gk.log("set fontFile_%s %s", lan, fontFile)
+        if gk.isTTF(fontFile) then
+            local config = node:getTTFConfig()
+            config.fontFilePath = fontFile
+            config.fontSize = node.__info.fontSize
+            node:setTTFConfig(config)
+        elseif gk.isBMFont(fontFile) then
+            node:setBMFontFilePath(fontFile, cc.p(0, 0), node.__info.fontSize)
+        else
+            node:setSystemFontName(fontFile)
+            node:setSystemFontSize(node.__info.fontSize)
         end
     end,
-
     -- conflict with setDimensions
     --    maxLineWidth = function(node, ...)
     --        node:setMaxLineWidth(...)
     --    end,
-    clipMarginEnabled = function(node, var)
-        node:setClipMarginEnabled(var == 0)
+    fontSize = function(node, var)
+        local lan = gk.resource:getCurrentLan()
+        local fontFile = node.__info.fontFile[lan]
+        if gk.isTTF(fontFile) then
+            local config = node:getTTFConfig()
+            config.fontSize = var
+            node:setTTFConfig(config)
+        elseif gk.isBMFont(fontFile) then
+            node:setBMFontSize(var)
+        else
+            node:setSystemFontSize(var)
+        end
+    end,
+    textColor = function(node, var)
+        local lan = gk.resource:getCurrentLan()
+        local fontFile = node.__info.fontFile[lan]
+        if not gk.isBMFont(fontFile) then
+            node:setTextColor(var)
+        end
+    end,
+    --    clipMarginEnabled = function(node, var)
+    --        node:setClipMarginEnabled(var == 0)
+    --    end,
+    enableShadow = function(node, var)
+        if var == 0 then
+            local shadow = node.__info.shadow
+            if shadow then
+                node:enableShadow(cc.c4b(shadow.r, shadow.g, shadow.b, shadow.a), cc.size(shadow.w, shadow.h), shadow.radius)
+            end
+        else
+            node:disableEffect(cc.LabelEffect.SHADOW)
+        end
+    end,
+    shadow = function(node, var)
+        if node.__info.enableShadow == 0 then
+            node:enableShadow(cc.c4b(var.r, var.g, var.b, var.a), cc.size(var.w, var.h), var.radius)
+        end
+    end,
+    enableOutline = function(node, var)
+        if var == 0 then
+            node.__info.enableGlow = 1
+            node:enableOutline(node.__info.effectColor, node.__info.outlineSize)
+        else
+            node:disableEffect(cc.LabelEffect.OUTLINE)
+        end
+    end,
+    enableGlow = function(node, var)
+        if var == 0 then
+            node.__info.enableOutline = 1
+            gk.log("enableGlow")
+            node:enableGlow(node.__info.effectColor)
+        else
+            gk.log("disableEffect")
+            node:disableEffect(cc.LabelEffect.GLOW)
+        end
+    end,
+    outlineSize = function(node, var)
+        if node.__info.enableOutline == 0 then
+            node:enableOutline(node.__info.effectColor, var)
+        end
+    end,
+    effectColor = function(node, var)
+        if node.__info.enableOutline == 0 then
+            local outlineSize = node.__info.outlineSize
+            node:enableOutline(var, outlineSize)
+        elseif node.__info.enableGlow == 0 then
+            node:enableGlow(var)
+        end
+    end,
+    enableItalics = function(node, var)
+        if var == 0 then
+            node:enableItalics()
+        else
+            node:disableEffect(4)
+        end
+    end,
+    enableBold = function(node, var)
+        if var == 0 then
+            node:enableBold()
+        else
+            node:disableEffect(5)
+        end
+    end,
+    enableUnderline = function(node, var)
+        if var == 0 then
+            node:enableUnderline()
+        else
+            node:disableEffect(6)
+        end
+    end,
+    enableStrikethrough = function(node, var)
+        if var == 0 then
+            node:enableStrikethrough()
+        else
+            node:disableEffect(7)
+        end
     end,
     --    np = function( node, var)
     --        node:setNormalizedPosition(var)
@@ -770,6 +868,9 @@ generator.nodeSetFuncs = {
     --------------------------- cc.ClippingRectangleNode   ---------------------------
     clippingRegion = function(node, ...)
         node:setClippingRegion(...)
+    end,
+    clippingEnabled = function(node, var)
+        node:setClippingEnabled(var == 0)
     end,
     --------------------------- cc.ProgressTimer   ---------------------------
     barType = function(node, ...)
@@ -952,15 +1053,68 @@ generator.nodeGetFuncs = {
     fontFile = function(node)
         return iskindof(node, "cc.Label") and (node.__info.fontFile)
     end,
-    systemFontName = function(node)
-        --        return iskindof(node, "cc.Label") and (node.__info.systemFontName or node:getSystemFontName())
-        return iskindof(node, "cc.Label") and node:getSystemFontName()
+    fontSize = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.fontSize)
     end,
-    clipMarginEnabled = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
+    --    clipMarginEnabled = function(node)
+    --        return iskindof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
+    --    end,
+    textColor = function(node, var)
+        if iskindof(node, "cc.Label") then
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if not gk.isBMFont(fontFile) then
+                return node.__info.textColor or node:getTextColor()
+            end
+        end
+        return nil
     end,
-
-    --    np = function(node)
+    enableShadow = function(node)
+        return iskindof(node, "cc.Label") and node.__info.enableShadow
+    end,
+    shadow = function(node)
+        if iskindof(node, "cc.Label") then
+            if node.__info.shadow then
+                return node.__info.shadow
+            else
+                local color = node:getShadowColor()
+                local size = node:getShadowOffset()
+                local radius = node:getShadowBlurRadius()
+                return { r = color.r * 255, g = color.g * 255, b = color.b * 255, a = color.a * 255, w = size.width, h = size.height, radius = radius }
+            end
+        end
+    end,
+    enableOutline = function(node)
+        return iskindof(node, "cc.Label") and node.__info.enableOutline
+    end,
+    enableGlow = function(node)
+        return iskindof(node, "cc.Label") and node.__info.enableGlow
+    end,
+    outlineSize = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.outlineSize or node:getOutlineSize())
+    end,
+    effectColor = function(node)
+        if iskindof(node, "cc.Label") then
+            if node.__info.effectColor then
+                return node.__info.effectColor
+            else
+                local color = node:getEffectColor()
+                return { r = color.r * 255, g = color.g * 255, b = color.b * 255, a = color.a * 255 }
+            end
+        end
+    end,
+    enableItalics = function(node, var)
+        return iskindof(node, "cc.Label") and node.__info.enableItalics
+    end,
+    enableBold = function(node, var)
+        return iskindof(node, "cc.Label") and node.__info.enableBold
+    end,
+    enableUnderline = function(node, var)
+        return iskindof(node, "cc.Label") and node.__info.enableUnderline
+    end,
+    enableStrikethrough = function(node, var)
+        return iskindof(node, "cc.Label") and node.__info.enableStrikethrough
+    end, --    np = function(node)
     --        return node.__info.np or node:getNormalizedPosition()
     --    end,
     --------------------------- cc.ScrollView   ---------------------------
@@ -1006,6 +1160,9 @@ generator.nodeGetFuncs = {
     --------------------------- cc.ClippingRectangleNode   ---------------------------
     clippingRegion = function(node)
         return iskindof(node, "cc.ClippingRectangleNode") and (node.__info.clippingRegion or node:getClippingRegion())
+    end,
+    clippingEnabled = function(node)
+        return iskindof(node, "cc.ClippingRectangleNode") and (node.__info.clippingEnabled or (node:isClippingEnabled() and 0 or 1))
     end,
     --------------------------- cc.ProgressTimer   ---------------------------
     barType = function(node)

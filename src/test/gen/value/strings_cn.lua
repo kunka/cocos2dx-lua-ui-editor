@@ -14,5 +14,5 @@ return {
     error_invalid_email = "无效Email地址",
     error_invalid_password = "密码太短!",
     error_incorrect_password = "密码错误!",
-    multi_language = "不同语言使用不同字体文件(英文:Candara.fnt,中文:微软雅黑)",
+    multi_language = "不同语言使用不同字体文件(英文:Klee.fnt,中文:微软雅黑)",
 }

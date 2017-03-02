@@ -66,7 +66,7 @@ return {
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            file = "gk/res/texture/pop_l.png",
+	            file = "pop_l.png",
 	            flippedX = 1,
 	            flippedY = 1,
 	            height = 80,
@@ -107,7 +107,7 @@ return {
 	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            file = "gk/res/texture/avatar.png",
+	            file = "avatar.png",
 	            flippedX = 1,
 	            height = 80,
 	            id = "avatar_left",
@@ -161,6 +161,7 @@ return {
 	            skewX = 0,
 	            skewY = 0,
 	            string = "description",
+	            systemFontName = "Helvetica",
 	            tag = -1,
 	            type = "cc.Label",
 	            vAlign = 0,
@@ -178,7 +179,7 @@ return {
 	               r = 0},
 	            fontFile = {
 	               cn = "font/msyh.ttf",
-	               en = "font/Consolas.ttf"},
+	               en = "font/Verdana.ttf"},
 	            scaleXY = {
 	               x = "$xScale",
 	               y = "$minScale"}}}},
@@ -220,7 +221,7 @@ return {
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            file = "gk/res/texture/pop_r.png",
+	            file = "pop_r.png",
 	            flippedX = 1,
 	            flippedY = 1,
 	            height = 80,
@@ -261,7 +262,7 @@ return {
 	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            file = "gk/res/texture/avatar.png",
+	            file = "avatar.png",
 	            flippedX = 1,
 	            height = 80,
 	            id = "avatar_right",
@@ -314,6 +315,7 @@ return {
 	            skewX = 0,
 	            skewY = 0,
 	            string = "description",
+	            systemFontName = "Helvetica",
 	            tag = -1,
 	            type = "cc.Label",
 	            vAlign = 0,
@@ -331,7 +333,7 @@ return {
 	               r = 0},
 	            fontFile = {
 	               cn = "font/msyh.ttf",
-	               en = "font/Consolas.ttf"},
+	               en = "font/Verdana.ttf"},
 	            scaleXY = {
 	               x = "$xScale",
 	               y = "$minScale"}}}},
@@ -373,7 +375,7 @@ return {
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            file = "gk/res/texture/aq1.png",
+	            file = "aq1.png",
 	            flippedX = 1,
 	            flippedY = 1,
 	            height = 50,
@@ -432,6 +434,7 @@ return {
 	            skewX = 0,
 	            skewY = 0,
 	            string = "12:35",
+	            systemFontName = "Helvetica",
 	            tag = -1,
 	            type = "cc.Label",
 	            vAlign = 0,
@@ -449,7 +452,7 @@ return {
 	               r = 255},
 	            fontFile = {
 	               cn = "font/msyh.ttf",
-	               en = "gk/res/font/Consolas.ttf"},
+	               en = "font/Verdana.ttf"},
 	            scaleXY = {
 	               x = "$xScale",
 	               y = "$minScale"}}}}}}
