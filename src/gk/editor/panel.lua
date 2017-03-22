@@ -117,6 +117,7 @@ function panel:onNodeCreate(node)
         gk.log("warning! onNodeCreate = nil")
         return
     end
+    self.multiSelectNodes = self.multiSelectNodes or {}
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
@@ -136,13 +137,19 @@ function panel:onNodeCreate(node)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
+            if not self.commandPressed then
+                for _, nd in ipairs(self.multiSelectNodes) do
+                    gk.util:clearDrawNode(nd)
+                end
+                self.multiSelectNodes = {}
+                gk.event:post("undisplayNode")
+            end
             if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
                 self._originPos = cc.p(node:getPosition())
                 local type = node.__cname and node.__cname or tolua.type(node)
-                gk.log("click node %s, id = %s", type, node.__info.id)
                 self._containerNode = node:getParent()
                 --                if self._containerNode and not self._containerNode.__info then
                 --                    gk.event:post("displayNode", node)
@@ -150,12 +157,37 @@ function panel:onNodeCreate(node)
                 --                end
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(0.00000001)
-                gk.event:post("displayNode", node)
+                if self.commandPressed then
+                    if self.displayingNode and not table.indexof(self.multiSelectNodes, node) then
+                        table.insert(self.multiSelectNodes, self.displayingNode)
+                    end
+                    local index = table.indexof(self.multiSelectNodes, node)
+                    if index then
+                        -- unselect
+                        gk.util:clearDrawNode(node)
+                        table.remove(self.multiSelectNodes, index)
+                    else
+                        table.insert(self.multiSelectNodes, node)
+                        gk.log("multi select node %s, id = %s, count = %d", type, node.__info.id, #self.multiSelectNodes)
+                        gk.util:drawNode(node)
+                    end
+                    if not self.displayingNode then
+                        gk.event:post("displayNode", node)
+                    end
+                else
+                    for _, nd in ipairs(self.multiSelectNodes) do
+                        gk.util:clearDrawNode(nd)
+                    end
+                    self.multiSelectNodes = {}
+                    gk.log("click node %s, id = %s", type, node.__info.id)
+                    gk.event:post("displayNode", node)
+                end
                 gk.util:clearDrawNode(self.scene.layer, -3)
                 self:onNodeMoved(node, nil, 0)
+
                 return true
             else
-                if not gk.util:hitTest(self.scene.layer, touch) then
+                if not self.commandPressed and not gk.util:hitTest(self.scene.layer, touch) then
                     self:undisplayNode(true)
                     gk.util:clearDrawNode(self.scene.layer, -3)
                 end
@@ -164,6 +196,9 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
+            if self.commandPressed then
+                return
+            end
             if node.__info and node.__info.lock == 0 then
                 return
             end
@@ -227,6 +262,9 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(function(touch, event)
+            if self.commandPressed then
+                return
+            end
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
@@ -446,10 +484,22 @@ function panel:handleEvent()
             }
             local move = self.moveActions[key]
             if move then
-                move(self.displayingNode.__info, 1)
+                if #self.multiSelectNodes > 0 then
+                    for _, nd in ipairs(self.multiSelectNodes) do
+                        move(nd.__info, 1)
+                    end
+                else
+                    move(self.displayingNode.__info, 1)
+                end
                 local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
                     local action = self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.01), cc.CallFunc:create(function()
-                        move(self.displayingNode.__info, 5)
+                        if #self.multiSelectNodes > 0 then
+                            for _, nd in ipairs(self.multiSelectNodes) do
+                                move(nd.__info, 5)
+                            end
+                        else
+                            move(self.displayingNode.__info, 5)
+                        end
                         gk.event:post("displayNode", self.displayingNode)
                     end))))
                     action:setTag(kMoveNodeAction)

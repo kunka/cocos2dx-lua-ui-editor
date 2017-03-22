@@ -41,13 +41,6 @@ function panel:displayNode(node)
     end
     self.displayInfoNode = cc.Node:create()
     self:addChild(self.displayInfoNode)
-    if (self.lastDisplayNodeId == node.__info.id or self.lastDisplayNodeType == node.__info.type) and self.lastDisplayInfoOffset then
-        self.displayInfoNode:setPosition(self.lastDisplayInfoOffset)
-    else
-        self.lastDisplayInfoOffset = cc.p(0, 0)
-    end
-    self.lastDisplayNodeId = node.__info.id
-    self.lastDisplayNodeType = node.__info.type
     local size = self:getContentSize()
 
     local fontSize = 10 * 4
@@ -74,19 +67,56 @@ function panel:displayNode(node)
 
     local disabled = node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0
 
-    local getMacroColor = function(content)
-        local v = generator:parseMacroFunc(node, content)
-        if not v then
-            v = generator:parseCustomMacroFunc(node, content)
-        end
-        if not v and type(content) == "string" then
-            if gk.isTTF(content) or gk.isBMFont(content) then
-                return cc.c3b(45, 35, 255)
+    local onLabelInputChanged = function(label, input)
+        local isMacro = true
+        repeat
+            local v = generator:parseMacroFunc(node, input)
+            if v then
+                --                isMacro = true
+                break
             end
-            v = gk.resource:getString(content)
-            return v ~= "undefined" and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
+            v = generator:parseCustomMacroFunc(node, input)
+            if v then
+                --                isMacro = true
+                break
+            end
+            if type(input) == "string" then
+                if gk.isTTF(input) or gk.isBMFont(input) then
+                    --                return cc.c3b(45, 35, 255)
+                    --                    isMacro = true
+                    break
+                end
+                local lower = input:lower()
+                if lower:ends(".png") or lower:ends(".jpg") or lower:ends(".jpeg") then
+                    local _, find = gk.create_sprite(input)
+                    if find then
+                        --                        isMacro = true
+                        break
+                        --                    return cc.c3b(45, 35, 255)
+                    end
+                end
+                v = gk.resource:getString(input)
+                if v ~= "undefined" then
+                    --                    isMacro = true
+                    break
+                end
+                --            return v ~= "undefined" and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
+            end
+            --            if v ~= nil then
+            --- -                isMacro = true
+            -- break
+            -- end
+            isMacro = false
+            --        return v ~= nil and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
+        until true
+        label:setTextColor(isMacro and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
+        if isMacro then
+            label:enableBold()
+            label:enableItalics()
+        else
+            label:disableEffect(5)
+            label:disableEffect(6)
         end
-        return v ~= nil and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
     end
 
     local createLabel = function(content, x, y, isTitle)
@@ -117,9 +147,11 @@ function panel:displayNode(node)
             callback(...)
         end)
         node:onInputChanged(function(_, input)
-            label:setTextColor(getMacroColor(input))
+            onLabelInputChanged(label, input)
+            --            label:setTextColor(getMacroColor(input))
         end)
-        label:setTextColor(getMacroColor(content))
+        --        label:setTextColor(getMacroColor(content))
+        onLabelInputChanged(label, content)
         node:setPosition(x, y)
         node.enabled = not disabled
         return node
@@ -144,9 +176,11 @@ function panel:displayNode(node)
         node:setPosition(x, y)
         node:onSelectChanged(function(index)
             callback(index)
-            label:setTextColor(getMacroColor(items[index]))
+            onLabelInputChanged(label, items[index])
+            --            label:setTextColor(getMacroColor(items[index]))
         end)
-        label:setTextColor(getMacroColor(items[index]))
+        onLabelInputChanged(label, items[index])
+        --        label:setTextColor(getMacroColor(items[index]))
         node.enabled = not disabled
         return node
     end
@@ -667,7 +701,7 @@ function panel:displayNode(node)
         --            yIndex = yIndex + 1
         --        end
         -- lineHeight, Not support system font.
-        if node.__info.lineHeight and not isSystemFont then
+        if not isSystemFont and node.__info.lineHeight then
             createLabel("LineHeight", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.lineHeight), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "lineHeight", input, "number"))
@@ -680,28 +714,50 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "fontSize", input, "number"))
         end)
         yIndex = yIndex + 1
+        if not isSystemFont and node.__info.lineHeight then
+            --additionalKerning
+            createLabel("AdditionalKerning", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.additionalKerning), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "additionalKerning", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
         if not isBMFont then
             -- color
             createLabel("TextColor4B", leftX, topY - stepY * yIndex)
             createLabel("R", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.textColor.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createInput(tostring(node.__info.textColor.r), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.r", input, "number"))
             end)
-            createLabel("G", leftX4_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.textColor.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("G", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.textColor.g), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.g", input, "number"))
             end)
-            createLabel("B", leftX5_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.textColor.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            yIndex = yIndex + 1
+            createLabel("B", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.textColor.b), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.b", input, "number"))
             end)
-            yIndex = yIndex + 1
-            createLabel("A", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.textColor.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("A", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.textColor.a), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.a", input, "number"))
             end)
             yIndex = yIndex + 1
         end
+        if not isSystemFont then
+            -- enableWrap
+            createLabel("EnableWrap", leftX, topY - stepY * yIndex)
+            createCheckBox(node.__info.enableWrap == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+                generator:modify(node, "enableWrap", selected, "number")
+            end)
+            yIndex = yIndex + 1
+        end
+        -- lineBreakWithoutSpace
+        createLabel("LineBreakWithoutSpace", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.lineBreakWithoutSpace == 0, leftX5_3, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "lineBreakWithoutSpace", selected, "number")
+        end)
+        yIndex = yIndex + 1
         -- enableShadow
         createLabel("enableShadow", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.enableShadow == 0, leftX5_3, topY - stepY * yIndex, function(selected)
@@ -713,20 +769,20 @@ function panel:displayNode(node)
             -- shadowColor
             createLabel("Color4B", leftX, topY - stepY * yIndex)
             createLabel("R", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.shadow.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createInput(tostring(node.__info.shadow.r), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.r", input, "number"))
             end)
-            createLabel("G", leftX4_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.shadow.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("G", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.shadow.g), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.g", input, "number"))
             end)
-            createLabel("B", leftX5_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.shadow.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            yIndex = yIndex + 1
+            createLabel("B", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.shadow.b), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.b", input, "number"))
             end)
-            yIndex = yIndex + 1
-            createLabel("A", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.shadow.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("A", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.shadow.a), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.a", input, "number"))
             end)
             yIndex = yIndex + 1
@@ -765,34 +821,34 @@ function panel:displayNode(node)
                 gk.event:post("displayNode", node)
             end)
             yIndex = yIndex + 1
-            if node.__info.enableOutline == 0 then
-                -- outlineSize
-                createLabel("OutlineSize", leftX, topY - stepY * yIndex)
-                createInput(tostring(node.__info.outlineSize), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
-                    editBox:setInput(generator:modify(node, "outlineSize", input, "number"))
-                end)
-                yIndex = yIndex + 1
-            end
         end
         if (node.__info.enableOutline == 0 and (isTTF or isSystemFont)) or (node.__info.enableGlow == 0 and isTTF) then
             -- shadowColor
             createLabel("Color4B", leftX, topY - stepY * yIndex)
             createLabel("R", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.effectColor.r), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createInput(tostring(node.__info.effectColor.r), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "effectColor.r", input, "number"))
             end)
-            createLabel("G", leftX4_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.effectColor.g), leftX4_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("G", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.effectColor.g), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "effectColor.g", input, "number"))
             end)
-            createLabel("B", leftX5_1, topY - stepY * yIndex)
-            createInput(tostring(node.__info.effectColor.b), leftX5_2, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            yIndex = yIndex + 1
+            createLabel("B", leftX2, topY - stepY * yIndex)
+            createInput(tostring(node.__info.effectColor.b), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "effectColor.b", input, "number"))
             end)
-            yIndex = yIndex + 1
-            createLabel("A", leftX2, topY - stepY * yIndex)
-            createInput(tostring(node.__info.effectColor.a), leftX2_1, topY - stepY * yIndex, inputWidth3, function(editBox, input)
+            createLabel("A", leftX3, topY - stepY * yIndex)
+            createInput(tostring(node.__info.effectColor.a), leftX3_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
                 editBox:setInput(generator:modify(node, "effectColor.a", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
+        if isTTF and node.__info.enableOutline == 0 then
+            -- outlineSize
+            createLabel("OutlineSize", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.outlineSize), leftX2_1, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+                editBox:setInput(generator:modify(node, "outlineSize", input, "number"))
             end)
             yIndex = yIndex + 1
         end
@@ -1105,6 +1161,17 @@ function panel:displayNode(node)
         self.displayInfoNode:setOpacity(150)
         gk.util:setRecursiveCascadeOpacityEnabled(self.displayInfoNode, true)
     end
+
+    if (self.lastDisplayNodeId == node.__info.id or self.lastDisplayNodeType == node.__info.type) and self.lastDisplayInfoOffset then
+        local y = self.lastDisplayInfoOffset.y
+        y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
+        self.lastDisplayInfoOffset.y = y
+        self.displayInfoNode:setPosition(self.lastDisplayInfoOffset)
+    else
+        self.lastDisplayInfoOffset = cc.p(0, 0)
+    end
+    self.lastDisplayNodeId = node.__info.id
+    self.lastDisplayNodeType = node.__info.type
 end
 
 function panel:handleEvent()

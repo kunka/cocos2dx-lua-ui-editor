@@ -740,9 +740,26 @@ generator.nodeSetFuncs = {
             node:setTextColor(var)
         end
     end,
+    additionalKerning = function(node, var)
+        local lan = gk.resource:getCurrentLan()
+        local fontFile = node.__info.fontFile[lan]
+        if gk.isTTF(fontFile) then
+            node:setAdditionalKerning(var)
+        elseif gk.isBMFont(fontFile) then
+            node:setAdditionalKerning(var)
+        else
+        end
+    end,
+
     --    clipMarginEnabled = function(node, var)
     --        node:setClipMarginEnabled(var == 0)
     --    end,
+    enableWrap = function(node, var)
+        node:enableWrap(var == 0)
+    end,
+    lineBreakWithoutSpace = function(node, var)
+        node:setLineBreakWithoutSpace(var == 0)
+    end,
     enableShadow = function(node, var)
         if var == 0 then
             local shadow = node.__info.shadow
@@ -1068,6 +1085,15 @@ generator.nodeGetFuncs = {
             end
         end
         return nil
+    end,
+    additionalKerning = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.additionalKerning or node:getAdditionalKerning())
+    end,
+    enableWrap = function(node)
+        return iskindof(node, "cc.Label") and (node.__info.enableWrap or node:isWrapEnabled())
+    end,
+    lineBreakWithoutSpace = function(node)
+        return iskindof(node, "cc.Label") and node.__info.lineBreakWithoutSpace
     end,
     enableShadow = function(node)
         return iskindof(node, "cc.Label") and node.__info.enableShadow

@@ -16,6 +16,28 @@ local function getEntry()
 --            return "demoapp"
 end
 
+function init:startGame(mode)
+    gk.log("init:startGame with mode %d", mode)
+    init:initGameKit(mode)
+    gk.SceneManager:init()
+    local defaultEntry = getEntry() == "test" and "MainLayer" or "SplashLayer"
+    local key = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", defaultEntry)
+    local clazz, layerClazz = gk.resource:require(key, defaultEntry)
+    local isLayer = iskindof(clazz, "Layer")
+    if isLayer then
+        gk.SceneManager:replace(layerClazz)
+    else
+        local scene = gk.Layer:createScene()
+        local node = clazz:create()
+        scene:addChild(node)
+        scene.layer = node
+        gk.SceneManager:replaceScene(scene)
+    end
+    gk.util:registerRestartGameCallback(function(...)
+        restartGame(...)
+    end)
+end
+
 function init:initGameKit(mode)
     gk.mode = mode
 
@@ -47,28 +69,6 @@ function init:initGameKit(mode)
     -- set gen node search path
     local genNodePath = path .. "src/" .. srcPath .. "/"
     gk.resource:setGenNodePath(genNodePath)
-end
-
-function init:startGame(mode)
-    gk.log("init:startGame with mode %d", mode)
-    init:initGameKit(mode)
-    gk.SceneManager:init()
-    local defaultEntry = getEntry() == "test" and "MainLayer" or "SplashLayer"
-    local key = cc.UserDefault:getInstance():getStringForKey("lastDisplayLayer", defaultEntry)
-    local clazz, layerClazz = gk.resource:require(key, defaultEntry)
-    local isLayer = iskindof(clazz, "Layer")
-    if isLayer then
-        gk.SceneManager:replace(layerClazz)
-    else
-        local scene = gk.Layer:createScene()
-        local node = clazz:create()
-        scene:addChild(node)
-        scene.layer = node
-        gk.SceneManager:replaceScene(scene)
-    end
-    gk.util:registerRestartGameCallback(function(...)
-        restartGame(...)
-    end)
 end
 
 return init

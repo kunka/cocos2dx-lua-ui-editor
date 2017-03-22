@@ -30,7 +30,6 @@ local function clearModules()
     local __g = _G
     setmetatable(__g, {})
 
-    -- 白名单 main是无法重新加载的，也无法加载
     local whitelist = {
         ["string"] = true,
         ["io"] = true,

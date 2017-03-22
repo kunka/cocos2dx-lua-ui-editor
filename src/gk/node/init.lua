@@ -29,21 +29,21 @@ local function create_sprite(name)
     end
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
     if spriteFrame then
-        return cc.Sprite:createWithSpriteFrame(spriteFrame)
+        return cc.Sprite:createWithSpriteFrame(spriteFrame), true
     end
     -- absolute path
     spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
     if spriteFrame then
-        return cc.Sprite:createWithSpriteFrame(spriteFrame)
+        return cc.Sprite:createWithSpriteFrame(spriteFrame), true
     end
     local texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. name)
     if texture then
-        return cc.Sprite:createWithTexture(texture)
+        return cc.Sprite:createWithTexture(texture), true
     end
     -- absolute path
     texture = cc.Director:getInstance():getTextureCache():addImage(name)
     if texture then
-        return cc.Sprite:createWithTexture(texture)
+        return cc.Sprite:createWithTexture(texture), true
     end
     gk.log("gk.create_sprite(%s) file not found, use default sprite!", name)
     texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.resource.defaultSprite)

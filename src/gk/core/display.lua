@@ -7,7 +7,7 @@
 
 local display = {}
 
-local displayScale = 0.4--0.56--0.4
+local displayScale = 0.35--0.56--0.4
 display.deviceSizes = {
     cc.size(1280 * displayScale, 720 * displayScale),
     cc.size(1280 * displayScale, 853 * displayScale),
@@ -43,8 +43,9 @@ function display:initWithDesignSize(size)
     winSize.height = s.height + display.topHeight + display.bottomHeight
     local director = cc.Director:getInstance()
     local view = director:getOpenGLView()
-    view:setFrameSize(winSize.width, winSize.height)
+    view:setFrameSize(winSize.width, winSize.height) -- only valid before coco2d-x 3.11 :(
     gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
+    view:setViewName("!!!") -- not implemented :(
 
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f)", winSize.width, winSize.height)
