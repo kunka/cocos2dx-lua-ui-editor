@@ -1,4 +1,6 @@
 return {
+	cascadeColorEnabled = 1,
+	cascadeOpacityEnabled = 1,
 	enableKeyPad = 1,
 	height = "$fill",
 	id = "SplashLayer",
@@ -10,7 +12,10 @@ return {
 	rotation = 0,
 	scaleX = 1,
 	scaleY = 1,
+	skewX = 0,
+	skewY = 0,
 	swallowTouchEvent = 0,
+	tag = -1,
 	type = "SplashLayer",
 	visible = 0,
 	width = "$fill",
@@ -25,6 +30,8 @@ return {
 	   r = 255},
 	children = {	   {
 	      _flod = false,
+	      cascadeColorEnabled = 1,
+	      cascadeOpacityEnabled = 1,
 	      file = "splash/arc.jpg",
 	      flippedX = 1,
 	      height = 1920,
@@ -36,6 +43,9 @@ return {
 	      rotation = 0,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
+	      skewX = 0,
+	      skewY = 0,
+	      tag = -1,
 	      type = "cc.Sprite",
 	      visible = 0,
 	      width = 1080,
@@ -44,6 +54,9 @@ return {
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},
+	      blendFunc = {
+	         dst = 771,
+	         src = 770},
 	      children = {},
 	      color = {
 	         b = 255,

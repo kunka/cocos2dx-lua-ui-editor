@@ -142,7 +142,7 @@ function panel:onNodeCreate(node)
                     gk.util:clearDrawNode(nd)
                 end
                 self.multiSelectNodes = {}
-                gk.event:post("undisplayNode")
+--                gk.event:post("undisplayNode")
             end
             if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()

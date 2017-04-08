@@ -44,7 +44,7 @@ end
 
 function panel:displayDomTree(rootLayer)
     if rootLayer then
-        gk.log("displayDomTree")
+        gk.log("displayDomTree?")
         -- current layout
         self:undisplayNode()
         self.displayInfoNode = cc.Node:create()
@@ -72,11 +72,13 @@ function panel:displayDomTree(rootLayer)
         if self.displayingDomDepth ~= -1 then
             gk.log("displayingDomDepth = %d", self.displayingDomDepth)
             local size = self.displayInfoNode:getContentSize()
-            local topY = size.height - marginTop
-            local offsetY = topY - (stepY * self.displayingDomDepth + gk.display.bottomHeight)
-            local y = size.height - offsetY - self:getContentSize().height / 2
-            y = cc.clampf(y, 0, size.height - self:getContentSize().height)
-            self.displayInfoNode:setPositionY(y)
+            if size.height > self:getContentSize().height then
+                local topY = size.height - marginTop
+                local offsetY = topY - (stepY * self.displayingDomDepth + gk.display.bottomHeight)
+                local y = size.height - offsetY - self:getContentSize().height / 2
+                y = cc.clampf(y, 0, size.height - self:getContentSize().height)
+                self.displayInfoNode:setPositionY(y)
+            end
         end
     end
 end
@@ -137,7 +139,7 @@ function panel:displayDomNode(node, layer)
 
         local label = cc.Label:createWithSystemFont(string.format("%s(%d", content, node:getLocalZOrder()), fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
-        label:setDimensions(contentSize.width  - x/scale, contentSize.height)
+        label:setDimensions(contentSize.width - x / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(0x99, 0xcc, 0x00))
@@ -160,7 +162,7 @@ function panel:displayDomNode(node, layer)
         -- select
         if self.parent.displayingNode == node then
             self.displayingDomDepth = self.domDepth
-            gk.util:drawNodeBg(label, cc.c4f(0.5,0.5,0.5,0.5), -2)
+            gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
             self.selectedNode = label
         end
         -- drag button
@@ -187,7 +189,7 @@ function panel:displayDomNode(node, layer)
                             end
                         end
                         self.selectedNode = node
-                        gk.util:drawNodeBg(node, cc.c4f(0.5,0.5,0.5,0.5), -2)
+                        gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
                         gk.event:post("displayNode", nd)
                     end
                     if voidContent then
