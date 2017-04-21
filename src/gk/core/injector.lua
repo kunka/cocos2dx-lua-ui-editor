@@ -92,47 +92,57 @@ function injector:init()
     end)
 end
 
-function injector:inflateNode(cname)
-    local clazz = require(gk.resource.genNodes[cname].path)
-    local node = clazz:create()
-    return node
+function injector:inflateNode(path)
+    local clazz = gk.resource:require(path)
+    if clazz then
+        local node = clazz:create()
+        return node
+    else
+        return nil
+    end
 end
 
 function injector:onNodeCreate(node)
-    if node and gk.resource.genNodes[node.__cname] and not node.__info then
+    if node and not node.__info and node.__cname then
         -- root container node
+        local path = gk.resource:getGenNodePath(node.__cname)
+        if not path then
+            return
+        end
+        local status, info = pcall(require, path)
         local generator = require("gk.editor.generator")
-        local file = gk.resource.genPath .. "_" .. node.__cname:lower()
-        local status, info = pcall(require, file)
         if status then
-            gk.log("initRootContainer with file %s", file)
+            gk.log("initRootContainer with file %s", path)
             node.__info = generator:wrap({ type = node.__cname }, node)
             generator:inflate(info, node, node)
             node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
         else
-            -- init first time
-            gk.log("initRootContainer first time %s ", file)
-            node.__info = generator:wrap({ type = node.__cname }, node)
-            node.__info.id = node.__cname
-            node[node.__info.id] = node
-            node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            local clazz = require(gk.resource.genNodes[node.__cname].path)
-            local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
-            if isLayer then
-                node.__info.width = generator:default("Layer", "width")
-                node.__info.height = generator:default("Layer", "height")
+            if gk.mode == gk.MODE_EDIT then
+                -- init first time
+                gk.log("initRootContainer first time %s ", path)
+                node.__info = generator:wrap({ type = node.__cname }, node)
+                node.__info.id = node.__cname
+                node[node.__info.id] = node
+                node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+                local clazz = require(gk.resource.genNodes[node.__cname].path)
+                local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
+                if isLayer then
+                    node.__info.width = generator:default("Layer", "width")
+                    node.__info.height = generator:default("Layer", "height")
+                end
+                if iskindof(node, "cc.TableViewCell") then
+                    node.__info.width = generator:default("cc.TableViewCell", "width")
+                    node.__info.height = generator:default("cc.TableViewCell", "height")
+                end
+                self:sync(node)
             end
-            if iskindof(node, "cc.TableViewCell") then
-                node.__info.width = generator:default("cc.TableViewCell", "width")
-                node.__info.height = generator:default("cc.TableViewCell", "height")
-            end
-            self:sync(node)
         end
         if gk.mode == gk.MODE_EDIT then
-            gk.util:drawNode(node, cc.c4f(0, 200 / 255, 0, 1), -9)
-            gk.event:post("displayDomTree", node)
+            --            gk.util:drawNode(node, cc.c4f(0, 200 / 255, 0, 1), -9)
             node:runAction(cc.CallFunc:create(function()
-                gk.event:post("displayNode", node)
+                if not iskindof(node, "cc.TableViewCell") then
+                    gk.event:post("displayNode", node)
+                end
                 gk.event:post("displayDomTree")
             end))
         end
@@ -146,11 +156,11 @@ function injector:sync(node)
         local nd = node or self.scene.layer
         gk.log("start sync %s", nd.__info.id)
         local info = generator:deflate(nd)
+        local path = gk.resource:getGenNodePath(nd.__cname)
+        gk.log("sync to file: " .. path)
         local table2lua = require("gk.tools.table2lua")
-        local file = gk.resource.genPath .. "_" .. nd.__cname:lower() .. ".lua"
-        gk.log("sync to file: " .. file)
-        --    gk.log(table2lua.encode_pretty(info))
-        io.writefile(file, table2lua.encode_pretty(info))
+        --            gk.log(table2lua.encode_pretty(info))
+        io.writefile(path, table2lua.encode_pretty(info))
     end
 end
 

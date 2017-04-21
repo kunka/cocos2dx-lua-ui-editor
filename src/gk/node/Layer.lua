@@ -12,17 +12,6 @@ local Layer = class("Layer", function()
     return cc.Layer:create()
 end)
 
--- Use as scene
-function Layer:createScene(path, ...)
-    local scene = cc.Scene:create()
-    if path then
-        local layer = require(path):create(...)
-        scene:addChild(layer)
-        scene.layer = layer
-    end
-    return scene
-end
-
 function Layer:ctor()
     gk.log("[%s]: ctor", self.__cname)
     self.swallowTouchEvent = true

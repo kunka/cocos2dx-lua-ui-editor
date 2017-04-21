@@ -108,10 +108,10 @@ function panel.create(parent)
     createLabel("Device", leftX, topY - yIndex * stepY)
     local items = gk.display.deviceSizesDesc
     local sizeItems = gk.display.deviceSizes
-    local index = cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex")
+    local index = cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex")
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local size = sizeItems[index]
-        cc.UserDefault:getInstance():setIntegerForKey("deviceSizeIndex", index)
+        cc.UserDefault:getInstance():setIntegerForKey("gk_deviceSizeIndex", index)
         cc.UserDefault:getInstance():flush()
         -- set editor win size
         size.width = size.width + gk.display.leftWidth + gk.display.rightWidth
@@ -188,7 +188,7 @@ function panel.create(parent)
     self:addChild(self.clippingNode)
     self.clippingNode:addChild(self.displayInfoNode)
 
-    -- self define widget
+    -- self pre defined widget
     local keys = table.keys(gk.resource.genNodes)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do

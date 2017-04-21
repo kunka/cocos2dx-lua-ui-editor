@@ -1,26 +1,24 @@
-print("main")
+print("main(notice:only main.lua cannot be reloaded when running!)")
 
 -- init default search path
 cc.FileUtils:getInstance():addSearchPath("src/")
 cc.FileUtils:getInstance():addSearchPath("res/")
 cc.FileUtils:getInstance():setPopupNotify(false)
 
-local function nativeHotUpdateInit()
-    print("nativeHotUpdateInit")
-    local app = cc.Application:getInstance()
-    local target = app:getTargetPlatform()
-    if target == 2 then
-        -- mac app use local search path for restart instantly
+-- use local search path for restart instantly
+local function nativeHotUpdateInit(platform)
+    if platform == 2 then
+        print("nativeHotUpdateInit on macos")
         local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
         path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
-        print("mac project path = " .. path)
+        print("mac project root = \"" .. path .. "\"")
         cc.FileUtils:getInstance():setSearchPaths({})
         cc.FileUtils:getInstance():addSearchPath(path .. "src/")
         cc.FileUtils:getInstance():addSearchPath(path .. "res/")
         local searchPath = cc.FileUtils:getInstance():getSearchPaths()
-        print("mac search path:")
-        for i, v in ipairs(searchPath) do
-            print(v)
+        print("mac app search paths:")
+        for _, v in ipairs(searchPath) do
+            print("searchPath:\"" .. v .. "\"")
         end
     end
 end
@@ -66,6 +64,11 @@ function restartGame(mode)
     getAppEntry():startGame(mode)
 end
 
-nativeHotUpdateInit()
-getAppEntry():startGame(1)
+local platform = cc.Application:getInstance():getTargetPlatform()
+if platform == 2 then
+    nativeHotUpdateInit(platform)
+    getAppEntry():startGame(1)
+else
+    getAppEntry():startGame(0)
+end
 

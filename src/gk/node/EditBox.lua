@@ -10,10 +10,11 @@ local EditBox = class("EditBox", function()
     return cc.Node:create()
 end)
 
-local kDeleteCharAction = -0xFF22
-local kCursorBlinkAction = -0xFF23
-local kCursorMoveAction = -0xFF24
-local kInsertCharAction = -0xFF25
+-- TODO: use global
+local kDeleteCharAction = -0xFFFF1
+local kCursorBlinkAction = -0xFFFF2
+local kCursorMoveAction = -0xFFFF3
+local kInsertCharAction = -0xFFFF4
 function EditBox:ctor(size)
     self:enableNodeEvents()
     self:setContentSize(size)

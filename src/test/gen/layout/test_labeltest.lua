@@ -273,7 +273,12 @@ return {
 	         h = 0,
 	         r = 0,
 	         radius = 0,
-	         w = 0}},
+	         w = 0},
+	      textColor = {
+	         a = 255,
+	         b = 255,
+	         g = 255,
+	         r = 255}},
 	   {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,
@@ -535,6 +540,8 @@ return {
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
 	      clipMarginEnabled = 1,
+	      enableGlow = 1,
+	      enableOutline = 1,
 	      enableWrap = true,
 	      fontSize = 32,
 	      hAlign = 0,
@@ -588,7 +595,12 @@ return {
 	         h = 0,
 	         r = 0,
 	         radius = 0,
-	         w = 0}},
+	         w = 0},
+	      textColor = {
+	         a = 255,
+	         b = 255,
+	         g = 255,
+	         r = 255}},
 	   {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,
@@ -647,7 +659,12 @@ return {
 	         h = 0,
 	         r = 0,
 	         radius = 0,
-	         w = 0}},
+	         w = 0},
+	      textColor = {
+	         a = 255,
+	         b = 255,
+	         g = 255,
+	         r = 255}},
 	   {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,
@@ -706,7 +723,12 @@ return {
 	         h = 0,
 	         r = 0,
 	         radius = 0,
-	         w = 0}},
+	         w = 0},
+	      textColor = {
+	         a = 255,
+	         b = 255,
+	         g = 255,
+	         r = 255}},
 	   {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,
@@ -765,7 +787,12 @@ return {
 	         h = 0,
 	         r = 0,
 	         radius = 0,
-	         w = 0}},
+	         w = 0},
+	      textColor = {
+	         a = 255,
+	         b = 255,
+	         g = 255,
+	         r = 255}},
 	   {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,

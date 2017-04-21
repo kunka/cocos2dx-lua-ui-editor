@@ -84,7 +84,7 @@ function generator:createNode(info, rootNode, rootTable)
         local creator = self.nodeCreator[info.isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
-            --            gk.log("createNode %s", info.id)
+            --            gk.log("createNode %s,%s", node, info.id)
         else
             gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
             return nil
@@ -403,10 +403,10 @@ generator.nodeCreator = {
     end,
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
-        local clazz, path = gk.resource:require(info.type)
+        local clazz = gk.resource:require(info.type)
         local node = clazz:create()
         local type = info.type
-        local type = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+        type = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
         -- copy info
         local keys = table.keys(node.__info.__self)
         for _, key in ipairs(keys) do
@@ -679,7 +679,7 @@ generator.nodeSetFuncs = {
     string = function(node, string)
         local value = string
         if string.len(string) > 0 and string:sub(1, 1) == "@" then
-            value = gk.resource:getString(string)
+            value = gk.resource:getString(string:sub(2, #string))
         end
         node:setString(value)
     end,

@@ -8,7 +8,8 @@
 
 local Button = import(".Button")
 local ZoomButton = class("ZoomButton", Button)
-local kZoomActionTag = -872738
+-- TODO: use global
+local kZoomActionTag = -0xFFFFF1
 
 function ZoomButton:setContentNode(node)
     ZoomButton.super.setContentNode(self, node)

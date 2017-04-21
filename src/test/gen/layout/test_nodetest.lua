@@ -30,7 +30,7 @@ return {
 	children = {	   {
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
-	      file = "?",
+	      file = "Hello.png",
 	      flippedX = 1,
 	      height = 150,
 	      id = "sprite1",

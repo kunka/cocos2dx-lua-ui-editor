@@ -13,7 +13,7 @@ function MainLayer:ctor()
     if self.tableView1 then
         local tableView = self.tableView1
 
-        local cell = gk.injector:inflateNode("ChatCell")
+        local cell = gk.injector:inflateNode("demoapp/ChatCell")
         local cellWidth, cellHeight = cell:getContentSize().width, cell:getContentSize().height
         local function numberOfCellsInTableView(table)
             return 10
@@ -26,7 +26,7 @@ function MainLayer:ctor()
         local function tableCellAtIndex(table, idx)
             local cell = table:dequeueCell()
             if nil == cell then
-                cell = gk.injector:inflateNode("ChatCell")
+                cell = gk.injector:inflateNode("demoapp/ChatCell")
             end
             --            if cell and cell.label1 then
             --                local str = tostring(idx) .. ". gen tableCell"

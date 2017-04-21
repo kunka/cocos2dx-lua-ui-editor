@@ -43,25 +43,28 @@ function panel:undisplayNode()
 end
 
 function panel:displayDomTree(rootLayer)
-    if rootLayer then
-        gk.log("displayDomTree?")
+    if rootLayer and rootLayer.__info then
+        if self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode then
+            return
+        end
+        gk.log("displayDomTree %s", rootLayer.__info.id)
+        self.lastDisplayingNode = self.parent.displayingNode
         -- current layout
         self:undisplayNode()
         self.displayInfoNode = cc.Node:create()
         self:addChild(self.displayInfoNode)
         self.domDepth = 0
         self.displayingDomDepth = -1
+        self.lastDisplayingPos = self.lastDisplayingPos or cc.p(0, 0)
 
         -- other layout
         local keys = table.keys(gk.resource.genNodes)
         table.sort(keys, function(k1, k2) return k1 < k2 end)
         for _, key in ipairs(keys) do
+            local value = gk.resource.genNodes[key]
             if key == rootLayer.__cname then
-                local lastDisplayLayer = gk.resource.genNodes[key]
-                if lastDisplayLayer then
-                    cc.UserDefault:getInstance():setStringForKey("lastDisplayLayer", key)
-                    cc.UserDefault:getInstance():flush()
-                end
+                cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
+                cc.UserDefault:getInstance():flush()
                 self:displayDomNode(rootLayer, 0)
             else
                 self:displayOthers({ key })
@@ -77,7 +80,12 @@ function panel:displayDomTree(rootLayer)
                 local offsetY = topY - (stepY * self.displayingDomDepth + gk.display.bottomHeight)
                 local y = size.height - offsetY - self:getContentSize().height / 2
                 y = cc.clampf(y, 0, size.height - self:getContentSize().height)
-                self.displayInfoNode:setPositionY(y)
+                --                self.displayInfoNode:setPositionY(y)
+                --                dump(self.lastDisplayingPos)
+                self.displayInfoNode:setPosition(self.lastDisplayingPos)
+                local dt = 0.2 + 0.2 * math.abs(self.lastDisplayingPos.y - y) / 150
+                self.displayInfoNode:runAction(cc.EaseSineOut:create(cc.MoveTo:create(dt, cc.p(0, y))))
+                self.lastDisplayingPos = cc.p(0, y)
             end
         end
     end
@@ -162,7 +170,9 @@ function panel:displayDomNode(node, layer)
         -- select
         if self.parent.displayingNode == node then
             self.displayingDomDepth = self.domDepth
-            gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
+                gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+            end)))
             self.selectedNode = label
         end
         -- drag button
@@ -490,6 +500,7 @@ function panel:handleEvent()
                 y = y + scrollY * 10
                 y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
                 self.displayInfoNode:setPosition(x, y)
+                self.lastDisplayingPos = cc.p(self.displayInfoNode:getPosition())
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)

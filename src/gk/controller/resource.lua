@@ -7,19 +7,17 @@
 --
 
 local resource = {}
-resource.textureRelativePath = ""
 
+----------------------------- texture relative path -----------------------------------
+resource.textureRelativePath = ""
 function resource:setTextureRelativePath(path)
-    resource.textureRelativePath = path
-    gk.log("resource.setTextureRelativePath %s", path)
+    gk.log("resource.setTextureRelativePath \"%s\"", path)
+    self.textureRelativePath = path
 end
 
-function resource:setGetStringFunc(func)
-    resource.getString = function(_, key, ...)
-        -- TODO: input content start with '@'
-        if key:len() > 0 and key:sub(1, 1) == "@" then
-            return func(key:sub(2, #key), ...)
-        end
+----------------------------------- lans and strings -----------------------------------
+function resource:setStringGetFunc(func)
+    self.getString = function(_, key, ...)
         return func(key, ...)
     end
 end
@@ -27,73 +25,86 @@ end
 function resource:getCurrentLan()
     local lan = cc.UserDefault:getInstance():getStringForKey("app_language")
     if lan == "" then
-        if table.indexof(resource.lans, device.language) then
+        if table.indexof(self.lans, device.language) then
             lan = device.language
-            gk.log("resource.getCurrentLan init first time, use local lan %s", lan)
+            gk.log("resource.getCurrentLan init first time, use local lan \"%s\"", lan)
         else
-            gk.log("resource.getCurrentLan init first time, not supported local lan(%s), use English!", device.language)
-            lan = "en"
+            gk.log("resource.getCurrentLan init first time, not supported local lan(\"%s\"), use default lan \"%s\"!", device.language, self.defaultLan)
+            lan = self.defaultLan
         end
 
-        resource:setCurrentLan(lan)
+        self:setCurrentLan(lan)
     end
     return lan
 end
 
 function resource:setCurrentLan(lan)
-    gk.log("resource.setCurrentLan %s", lan)
+    gk.log("resource.setCurrentLan \"%s\"", lan)
     cc.UserDefault:getInstance():setStringForKey("app_language", lan)
     cc.UserDefault:getInstance():flush()
 end
 
-function resource:setSupportLans(lans)
-    resource.lans = lans
+function resource:setSupportLans(lans, defaultLan)
+    self.lans = lans
+    self.defaultLan = defaultLan and defaultLan or "en"
+    gk.log("resource.setSupportLans: {%s}, defaultLan = \"%s\", curLan = \"%s\"", table.concat(lans, ","), defaultLan, self:getCurrentLan())
 end
 
-function resource:setGenNodePath(path)
-    gk.log("resource:setGenNodePath %s", path)
-    resource.genNodePath = path
-    resource.genNodes = {}
-    -- scan files
-    local f = io.popen('ls ' .. path)
+----------------------------- gen node search path -----------------------------------
+function resource:setGenSrcPath(path)
+    gk.log("resource:setGenSrcPath \"%s\"", path)
+    self.genSrcPath = path
+end
+
+function resource:setGenOutputPath(path)
+    gk.log("resource:setGenOutputPath \"%s\"", path)
+    self.genOutputPath = path
+end
+
+function resource:scanGenNodes(path)
+    gk.log("resource:scanGenNodes fullpath = \"%s\"", path .. self.genSrcPath)
+    self.genNodes = {}
+    -- scan all gen-able files, TODO: scan sub dirs
+    local f = io.popen('ls ' .. path .. self.genSrcPath)
     for name in f:lines() do
         if name:ends(".lua") then
-            local status, clazz = pcall(require, path .. name)
-            if status then
+            local path = self.genSrcPath .. name
+            local status, clazz = pcall(require, path)
+            if status and clazz then
                 -- TODO: other types
                 local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
                 if not isEditable then
                     local instance = clazz:create()
-                    --                if iskindof(clazz, "Layer") or iskindof(clazz, "cc.TableViewCell") then
                     isEditable = iskindof(instance, "cc.TableViewCell")
                 end
+
                 if isEditable then
-                    resource.genNodes[clazz.__cname] = { path = path .. name, clazz = clazz }
-                    gk.log("resource:scan genNode --> %s", clazz.__cname)
+                    local genPath = self:getGenNodePath(clazz.__cname)
+                    self.genNodes[clazz.__cname] = { path = path, clazz = clazz, genPath = genPath }
+                    gk.log("resource:scanGenNodes file:%s, output:%s", path, genPath)
                 end
             end
         end
     end
 end
 
-function resource:require(key, default)
-    gk.log("resource:require --> %s, default= %s", key, default)
-    if gk.resource.genNodes[key] then
-        local status, clazz = pcall(require, gk.resource.genNodes[key].path)
-        if status then
-            return clazz, gk.resource.genNodes[key].path
-        end
-    end
-    local status, clazz = pcall(require, key)
-    if status then
-        return clazz, key
-    end
-    if default then
-        local clazz = require(gk.resource.genNodes[default].path)
-        return clazz, gk.resource.genNodes[default].path
+function resource:getGenNodePath(cname)
+    if self.genSrcPath then
+        local path = self.genSrcPath:gsub("/", "_")
+        local genPath = self.genOutputPath .. path:lower() .. cname:lower() .. ".lua"
+        return genPath
     else
         return nil
     end
+end
+
+function resource:require(path)
+    local status, clazz = pcall(require, path)
+    if status then
+        return clazz
+    end
+    gk.log("resource:require --> %s failed", path)
+    return nil
 end
 
 return resource

@@ -24,7 +24,7 @@ function TableViewTest1:ctor()
         local timeMarginV = 8 * gk.display.minScale()
 
         -- size model
-        local cell = gk.injector:inflateNode("TableCell1")
+        local cell = gk.injector:inflateNode("test/TableCell1")
         local function numberOfCellsInTableView(table)
             return #data
         end
@@ -57,7 +57,7 @@ function TableViewTest1:ctor()
             local cell = table:dequeueCell()
             if nil == cell then
                 --                gk.log("tableCellAtIndex idx = %d, create new", idx)
-                cell = gk.injector:inflateNode("TableCell1")
+                cell = gk.injector:inflateNode("test/TableCell1")
             else
                 --                gk.log("tableCellAtIndex idx = %d, reuse", idx)
             end

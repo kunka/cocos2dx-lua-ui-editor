@@ -95,7 +95,11 @@ function panel:displayNode(node)
                         --                    return cc.c3b(45, 35, 255)
                     end
                 end
-                v = gk.resource:getString(input)
+                if string.len(input) > 0 and input:sub(1, 1) == "@" then
+                    v = gk.resource:getString(input:sub(2, #input))
+                else
+                    v = gk.resource:getString(input)
+                end
                 if v ~= "undefined" then
                     --                    isMacro = true
                     break

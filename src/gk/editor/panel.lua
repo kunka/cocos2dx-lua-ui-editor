@@ -84,18 +84,7 @@ function panel:subscribeEvent()
         local path = gk.resource.genNodes[key].path
         if path then
             gk.event:unsubscribeAll(self)
-            local clazz = require(path)
-            local isLayer = iskindof(clazz, "Layer")
-            if isLayer then
-                gk.SceneManager:replace(key)
-            else
-                gk.log("changeRootLayout ??")
-                local scene = gk.Layer:createScene()
-                local node = clazz:create()
-                scene:addChild(node)
-                scene.layer = node
-                gk.SceneManager:replaceScene(scene)
-            end
+            gk.SceneManager:replace(path)
         end
     end)
     gk.event:subscribe(self, "postSync", function(node)
@@ -118,6 +107,7 @@ function panel:onNodeCreate(node)
         return
     end
     self.multiSelectNodes = self.multiSelectNodes or {}
+    --    gk.log("onNodeCreate onCreate %s %s", node, node.__info)
     node:onNodeEvent("enter", function()
         if not node.__info or not node.__info.id then
             return
@@ -130,10 +120,9 @@ function panel:onNodeCreate(node)
             end
             c = c:getParent()
         end
-        if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
-            --            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
-        end
-        gk.log("onNodeCreate onEnter %s", node.__info.id)
+        --        if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
+        --            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
+        --        end
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
@@ -142,7 +131,7 @@ function panel:onNodeCreate(node)
                     gk.util:clearDrawNode(nd)
                 end
                 self.multiSelectNodes = {}
---                gk.event:post("undisplayNode")
+                --                gk.event:post("undisplayNode")
             end
             if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 local location = touch:getLocation()
@@ -274,8 +263,8 @@ function panel:onNodeCreate(node)
                 return
             end
             if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
-                return
                 gk.event:post("displayDomTree")
+                return
             end
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")

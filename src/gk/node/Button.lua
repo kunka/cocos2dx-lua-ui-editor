@@ -9,8 +9,9 @@
 local Button = class("Button", function()
     return cc.Node:create()
 end)
-local kDelaySelectActionTag = -71321
-local kLongPressedActionTag = -71322
+-- TODO: use global
+local kDelaySelectActionTag = -0xFFF1
+local kLongPressedActionTag = -0xFFF2
 Button.trackingButton = false
 
 function Button:ctor(contentNode, callback)

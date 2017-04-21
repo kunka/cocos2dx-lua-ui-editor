@@ -37,7 +37,7 @@ function display:initWithDesignSize(size)
         display.bottomHeight = 0
     end
     -- set editor win size
-    local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("deviceSizeIndex", 1)]
+    local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex", 1)]
     local winSize = {}
     winSize.width = s.width + display.leftWidth + display.rightWidth
     winSize.height = s.height + display.topHeight + display.bottomHeight

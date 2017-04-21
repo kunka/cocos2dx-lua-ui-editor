@@ -6,7 +6,6 @@
 -- To change this template use File | Settings | File Templates.
 
 local function log(format, ...)
-    local vars = { ... }
     local string = string.format(format, ...)
     print(string)
 end
