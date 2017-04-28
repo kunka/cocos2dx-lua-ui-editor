@@ -138,7 +138,7 @@ function injector:onNodeCreate(node)
             end
         end
         if gk.mode == gk.MODE_EDIT then
-            --            gk.util:drawNode(node, cc.c4f(0, 200 / 255, 0, 1), -9)
+            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1), -9)
             node:runAction(cc.CallFunc:create(function()
                 if not iskindof(node, "cc.TableViewCell") then
                     gk.event:post("displayNode", node)
@@ -156,11 +156,10 @@ function injector:sync(node)
         local nd = node or self.scene.layer
         gk.log("start sync %s", nd.__info.id)
         local info = generator:deflate(nd)
-        local path = gk.resource:getGenNodePath(nd.__cname)
-        gk.log("sync to file: " .. path)
+        local path = gk.resource:getGenNodeFullPath(nd.__cname)
         local table2lua = require("gk.tools.table2lua")
-        --            gk.log(table2lua.encode_pretty(info))
-        io.writefile(path, table2lua.encode_pretty(info))
+        --                    gk.log(table2lua.encode_pretty(info))
+        gk.log("sync to file: " .. path .. (io.writefile(path, table2lua.encode_pretty(info)) and " success!" or " failed!!!"))
     end
 end
 

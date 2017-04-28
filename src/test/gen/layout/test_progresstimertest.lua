@@ -2,7 +2,7 @@ return {
 	cascadeColorEnabled = 1,
 	cascadeOpacityEnabled = 1,
 	enableKeyPad = 1,
-	height = 288,
+	height = "$fill",
 	id = "ProgressTimerTest",
 	ignoreAnchor = 0,
 	localZOrder = 0,
@@ -17,8 +17,8 @@ return {
 	tag = -1,
 	type = "ProgressTimerTest",
 	visible = 0,
-	width = 512,
-	x = 210,
+	width = "$fill",
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -65,8 +65,8 @@ return {
 	         x = 0.5,
 	         y = 0.5},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      sprite = {
 	         cascadeColorEnabled = 1,
 	         cascadeOpacityEnabled = 1,
@@ -139,8 +139,8 @@ return {
 	         x = 0.5,
 	         y = 0.5},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      sprite = {
 	         cascadeColorEnabled = 1,
 	         cascadeOpacityEnabled = 1,

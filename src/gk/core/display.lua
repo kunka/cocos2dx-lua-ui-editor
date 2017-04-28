@@ -7,8 +7,9 @@
 
 local display = {}
 
-local displayScale = 0.35--0.56--0.4
+local displayScale = 0.35 --0.56--0.4
 display.deviceSizes = {
+    cc.size(1280 * displayScale, 640 * displayScale),
     cc.size(1280 * displayScale, 720 * displayScale),
     cc.size(1280 * displayScale, 853 * displayScale),
     cc.size(1280 * displayScale, 960 * displayScale),
@@ -17,6 +18,7 @@ display.deviceSizes = {
 }
 
 display.deviceSizesDesc = {
+    "1280x640(2:1)",
     "1280x720(16:9)",
     "1280x853(1.5:1)",
     "1280x960(4:3)",
@@ -24,11 +26,17 @@ display.deviceSizesDesc = {
     "720x1280(9:16)",
 }
 
-function display:initWithDesignSize(size)
+-- new resolution policy
+cc.ResolutionPolicy.UNIVERSAL = 5
+display.supportResolutionPolicyDesc = { "UNIVERSAL", "FIXED_HEIGHT", "FIXED_WIDTH" }
+display.supportResolutionPolicy = { cc.ResolutionPolicy.UNIVERSAL, cc.ResolutionPolicy.FIXED_HEIGHT, cc.ResolutionPolicy.FIXED_WIDTH }
+function display:initWithDesignSize(size, resolutionPolicy)
+    display.resolutionPolicy = resolutionPolicy or display.supportResolutionPolicy[cc.UserDefault:getInstance():getIntegerForKey("gk_resolutionPolicy", 1)]
+    display.resolutionPolicyDesc = display.supportResolutionPolicyDesc[table.indexof(display.supportResolutionPolicy, display.resolutionPolicy)]
     if gk.mode == gk.MODE_EDIT then
         display.topHeight = 80
-        display.leftWidth = 210
-        display.rightWidth = 210
+        display.leftWidth = 250
+        display.rightWidth = 250
         display.bottomHeight = 20
     else
         display.topHeight = 0
@@ -43,36 +51,150 @@ function display:initWithDesignSize(size)
     winSize.height = s.height + display.topHeight + display.bottomHeight
     local director = cc.Director:getInstance()
     local view = director:getOpenGLView()
-    view:setFrameSize(winSize.width, winSize.height) -- only valid before coco2d-x 3.11 :(
+    view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
     gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     view:setViewName("!!!") -- not implemented :(
+    --    resolutionPolicy
+    --    if resolutionPolicy == cc.ResolutionPolicy.EXACT_FIT then
+    --        --        local designSize = cc.size(size.width - display.leftWidth - display.rightWidth, size.height - display.topHeight - display.bottomHeight)
+    --        --        view:setDesignResolutionSize(designSize.width, designSize.height, cc.ResolutionPolicy.FIXED_HEIGHT)
+    --    elseif resolutionPolicy == cc.ResolutionPolicy.NO_BORDER then
+    --    elseif resolutionPolicy == cc.ResolutionPolicy.SHOW_ALL then
+    --    elseif resolutionPolicy == cc.ResolutionPolicy.FIXED_HEIGHT then
+    --    elseif resolutionPolicy == cc.ResolutionPolicy.FIXED_WIDTH then
+    --    elseif resolutionPolicy == cc.ResolutionPolicy.SCALE_XY then
+    --    end
 
     local winSize = cc.Director:getInstance():getWinSize()
-    gk.log("display init with winSize(%.1f,%.1f)", winSize.width, winSize.height)
+    gk.log("display init with winSize(%.1f,%.1f), resolutionPolicy = %s", winSize.width, winSize.height, display.resolutionPolicyDesc)
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
     display.width = function() return size.width end
     display.height = function() return size.height end
-    display.xScale = function() return display.winSize().width / display.width() end
-    display.yScale = function() return display.winSize().height / display.height() end
-    display.minScale = function() return math.min(display.xScale(), display.yScale()) end
-    display.maxScale = function() return math.max(display.xScale(), display.yScale()) end
-    display.scaleMin = function(pos, posY)
-        local y = posY and posY or pos.y
-        local x = posY and pos or pos.x
-        local p = cc.p(display.minScale() * x, display.minScale() * y)
-        return p
-    end
-    display.scaleX = function(x)
-        return x * display.xScale()
-    end
-    display.scaleY = function(y)
-        return y * display.yScale()
-    end
-    display.scaleXY = function(pos, posY)
-        local y = posY and posY or pos.y
-        local x = posY and pos or pos.x
-        local p = cc.p(display.xScale() * x, display.yScale() * y)
-        return p
+    local xScale, yScale = display.winSize().width / display.width(), display.winSize().height / display.height()
+    local minScale, maxScale = math.min(xScale, yScale), math.max(xScale, yScale)
+    if display.resolutionPolicy == cc.ResolutionPolicy.FIXED_WIDTH then
+        display.xScale = function() return xScale end
+        display.yScale = function() return xScale end
+        display.minScale = function() return xScale end
+        display.maxScale = function() return xScale end
+        display.scaleX = function(_, x)
+            return x * xScale
+        end
+        display.scaleY = function(_, y)
+            return xScale * y + (display.winSize().height - display.height() * xScale) / 2
+        end
+        display.scaleXY = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(xScale * x, xScale * y + (display.winSize().height - display.height() * xScale) / 2)
+        end
+        display.scaleXRvs = function(_, x)
+            return x / xScale
+        end
+        display.scaleYRvs = function(_, y)
+            return (y - (display.winSize().height - display.height() * xScale) / 2) / xScale
+        end
+        display.scaleXYRvs = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(x / xScale, (y - (display.winSize().height - display.height() * xScale) / 2) / xScale)
+        end
+        display.scaleTP = function(_, y)
+            return xScale * y + (display.winSize().height - display.height() * xScale)
+        end
+        display.scaleBT = function(_, y)
+            return xScale * y
+        end
+        display.scaleLT = display.scaleX
+        display.scaleRT = display.scaleX
+    elseif display.resolutionPolicy == cc.ResolutionPolicy.FIXED_HEIGHT then
+        display.xScale = function() return yScale end
+        display.yScale = function() return yScale end
+        display.minScale = function() return yScale end
+        display.maxScale = function() return yScale end
+        display.scaleX = function(_, x)
+            return x * yScale + (display.winSize().width - display.width() * yScale) / 2
+        end
+        display.scaleY = function(_, y)
+            return yScale * y
+        end
+        display.scaleXY = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(x * yScale + (display.winSize().width - display.width() * yScale) / 2, yScale * y)
+        end
+        display.scaleXRvs = function(_, x)
+            return (x - (display.winSize().width - display.width() * yScale) / 2) / yScale
+        end
+        display.scaleYRvs = function(_, y)
+            return y / yScale
+        end
+        display.scaleXYRvs = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p((x - (display.winSize().width - display.width() * yScale) / 2) / yScale, y / yScale)
+        end
+        display.scaleLT = function(_, x)
+            return x * yScale
+        end
+        display.scaleRT = function(_, x)
+            return x * yScale + (display.winSize().width - display.width() * yScale)
+        end
+        display.scaleTP = display.scaleY
+        display.scaleBT = display.scaleY
+    elseif display.resolutionPolicy == cc.ResolutionPolicy.UNIVERSAL then
+        display.xScale = function() return xScale end
+        display.yScale = function() return yScale end
+        display.minScale = function() return minScale end
+        display.maxScale = function() return maxScale end
+        display.scaleX = function(_, x)
+            return x * xScale
+        end
+        display.scaleY = function(_, y)
+            return y * yScale
+        end
+        display.scaleXY = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(xScale * x, yScale * y)
+        end
+        display.scaleXRvs = function(_, x)
+            return x / xScale
+        end
+        display.scaleYRvs = function(_, y)
+            return y / yScale
+        end
+        display.scaleXYRvs = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(x / xScale, y / yScale)
+        end
+        display.scaleLT = display.scaleX
+        display.scaleRT = display.scaleX
+        display.scaleTP = display.scaleY
+        display.scaleBT = display.scaleY
+    else
+        -- not supported
+        gk.log("display init with not supported resolutionPolicy")
+        display.xScale = function() return minScale end
+        display.yScale = function() return minScale end
+        display.minScale = function() return minScale end
+        display.maxScale = function() return minScale end
+        display.scaleX = function(_, x)
+            return x * xScale
+        end
+        display.scaleY = function(_, y)
+            return y * yScale
+        end
+        display.scaleXY = function(_, pos, posY)
+            local y = posY and posY or pos.y
+            local x = posY and pos or pos.x
+            return cc.p(xScale * x, yScale * y)
+        end
+        display.scaleLT = display.scaleX
+        display.scaleRT = display.scaleX
+        display.scaleTP = display.scaleY
+        display.scaleBT = display.scaleY
     end
     gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
         size.width, size.height, display.winSize().width, display.winSize().height,

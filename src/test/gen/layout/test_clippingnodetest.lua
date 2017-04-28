@@ -18,7 +18,7 @@ return {
 	type = "ClippingNodeTest",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -61,8 +61,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}},
+	         x = "$scaleX",
+	         y = "$scaleY"}},
 	   {
 	      alphaThreshold = 0.5,
 	      cascadeColorEnabled = 1,
@@ -96,8 +96,8 @@ return {
 	         h = "1",
 	         w = "1"},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
@@ -168,8 +168,8 @@ return {
 	         h = "1",
 	         w = "1"},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
@@ -241,8 +241,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
@@ -314,8 +314,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      children = {	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,

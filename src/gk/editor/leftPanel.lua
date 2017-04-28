@@ -42,9 +42,10 @@ function panel:undisplayNode()
     self.selectedNode = nil
 end
 
-function panel:displayDomTree(rootLayer)
+function panel:displayDomTree(rootLayer, force)
     if rootLayer and rootLayer.__info then
-        if self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode then
+        if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info.id == self
+        .lastDisplayingNode.__info.id then
             return
         end
         gk.log("displayDomTree %s", rootLayer.__info.id)
@@ -226,7 +227,10 @@ function panel:displayDomNode(node, layer)
                     self.displayInfoNode:addChild(label)
                     self.draggingNode = label
                 end
-                self.draggingNode:setPosition(cc.pAdd(cc.p(x, y), cc.pSub(p, self.displayInfoNode:convertToNodeSpace(self._touchBegainLocation))))
+                local dragPos = cc.pAdd(cc.p(x, y), cc.pSub(p, self.displayInfoNode:convertToNodeSpace(self._touchBegainLocation)))
+                dragPos.x = dragPos.x - self.displayInfoNode:getPositionX()
+                dragPos.y = dragPos.y - self.displayInfoNode:getPositionY()
+                self.draggingNode:setPosition(dragPos)
 
                 -- find dest container
                 if self.sortedChildren == nil then
@@ -287,9 +291,9 @@ function panel:displayDomNode(node, layer)
                             node:retain()
                             node:removeFromParent()
                             self.parent:rescaleNode(node, container)
-                            local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
-                            local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                            local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
+                            local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                            node.__info.x, node.__info.y = x, y
                             container:addChild(node)
                             node:release()
                             gk.log("dom:move node to %.2f, %.2f", node.__info.x, node.__info.y)

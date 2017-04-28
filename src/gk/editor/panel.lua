@@ -68,13 +68,14 @@ function panel:subscribeEvent()
             action:setTag(-2342)
         end
     end)
-    gk.event:subscribe(self, "displayDomTree", function(node)
+    gk.event:subscribe(self, "displayDomTree", function(...)
         --        self.leftPanel:displayDomTree(node or self.scene.layer)
-        node = node or self.scene.layer
+        --        node = node or self.scene.layer
+        local node = self.scene.layer
         if node then
             gk.util:stopActionByTagSafe(node, -2341)
-            local action = node:runAction(cc.CallFunc:create(function()
-                self.leftPanel:displayDomTree(node or self.scene.layer)
+            local action = node:runAction(cc.CallFunc:create(function(...)
+                self.leftPanel:displayDomTree(node or self.scene.layer, ...)
             end))
             action:setTag(-2341)
         end
@@ -197,10 +198,6 @@ function panel:onNodeCreate(node)
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
-            --            local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
-            --            local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-            --            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
-            --            gk.event:post("displayNode", node)
             p = self:onNodeMoved(node, p)
 
             -- find dest container
@@ -285,19 +282,17 @@ function panel:onNodeCreate(node)
                 node:retain()
                 node:removeFromParent()
                 self:rescaleNode(node, self._containerNode)
-                local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
-                local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                --                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
-                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
+                local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                node.__info.x, node.__info.y = x, y
                 self._containerNode:addChild(node)
                 node:release()
-                gk.log("change node's container %s", node.__info.id)
+                gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
             else
-                local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
-                local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
-                --                node.__info.x, node.__info.y = math.shrink(p.x / scaleX, 0.5), math.shrink(p.y / scaleY, 0.5)
-                node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
-                gk.log("move node to %.2f, %.2f", node.__info.x, node.__info.y)
+                local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
+                local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                node.__info.x, node.__info.y = x, y
+                gk.log("move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
                 --                local delta = self:onNodeMoved(node)
                 --                p = cc.pAdd(p, delta)
             end
@@ -328,7 +323,7 @@ function panel:rescaleNode(node, parent)
             node.__info.scaleXY = { x = "1", y = "1" }
         else
             node.__info.scaleX, node.__info.scaleY = "$minScale", "$minScale"
-            node.__info.scaleXY = { x = "$xScale", y = "$yScale" }
+            node.__info.scaleXY = { x = "$scaleX", y = "$scaleY" }
         end
     end
 end
@@ -390,8 +385,10 @@ function panel:drawNodeCoordinate(node)
         local size = parent:getContentSize()
 
         -- left
-        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x)
-        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y)
+        --        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x, 1)
+        --        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y, 1)
+        local scaleX = generator:parseX(node, 1, node.__info.scaleXY.x)
+        local scaleY = generator:parseY(node, 1, node.__info.scaleXY.y)
         createArrow(x, x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down
         createArrow(y, y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))

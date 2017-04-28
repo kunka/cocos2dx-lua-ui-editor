@@ -135,8 +135,8 @@ function generator:default(type, key)
         self._default["cc.Node"] = {
             lock = 1,
             file = "",
-            scaleXY = { x = 1, y = 1 },
-            scaleSize = { w = 1, h = 1 },
+            scaleXY = { x = "1", y = "1" },
+            scaleSize = { w = "1", h = "1" },
         }
         self._default["cc.Label"] = {
             string = "label",
@@ -212,12 +212,12 @@ function generator:wrap(info, rootTable)
                             proxy[key] = value
                             node.__rootTable = rootTable
                             gk.event:post("postSync")
-                            gk.event:post("displayDomTree")
+                            gk.event:post("displayDomTree", true)
                             gk.event:post("displayNode", node)
                         else
                             proxy[key] = value
                             gk.event:post("postSync")
-                            gk.event:post("displayDomTree")
+                            gk.event:post("displayDomTree", true)
                         end
                     end
                 else
@@ -251,12 +251,36 @@ function generator:wrap(info, rootTable)
     return info
 end
 
-function generator:parseValue(key, node, input)
+function generator:parseValue(key, node, input, ...)
     local v = generator:parseMacroFunc(node, input)
     if v then
-        v = v(key, node)
+        v = v(key, node, ...)
     end
     return v or input
+end
+
+function generator:parseX(node, x, scaleX)
+    local x = generator:parseValue("x", node, x)
+    x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX, x)
+    return math.round(x)
+end
+
+function generator:parseY(node, y, scaleY)
+    local y = generator:parseValue("y", node, y)
+    y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY, y)
+    return math.round(y)
+end
+
+function generator:parseXRvs(node, x, scaleX)
+    local x = generator:parseValue("x", node, x)
+    x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX .. "Rvs", x)
+    return math.round(x)
+end
+
+function generator:parseYRvs(node, y, scaleY)
+    local y = generator:parseValue("y", node, y)
+    y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY .. "Rvs", y)
+    return math.round(y)
 end
 
 function generator:parseMacroFunc(node, input)
@@ -464,6 +488,14 @@ generator.macroFuncs = {
     maxScale = gk.display.maxScale,
     xScale = gk.display.xScale,
     yScale = gk.display.yScale,
+    scaleX = function(key, node, ...) return gk.display:scaleX(...) end,
+    scaleY = function(key, node, ...) return gk.display:scaleY(...) end,
+    scaleXRvs = function(key, node, ...) return gk.display:scaleXRvs(...) end,
+    scaleYRvs = function(key, node, ...) return gk.display:scaleYRvs(...) end,
+    scaleTP = function(key, node, ...) return gk.display:scaleTP(...) end,
+    scaleBT = function(key, node, ...) return gk.display:scaleBT(...) end,
+    scaleLT = function(key, node, ...) return gk.display:scaleLT(...) end,
+    scaleRT = function(key, node, ...) return gk.display:scaleRT(...) end,
     ["win.w"] = function() return gk.display.winSize().width end,
     ["win.h"] = function() return gk.display.winSize().height end,
     -- contentSize, ViewSize
@@ -479,22 +511,17 @@ generator.macroFuncs = {
 generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
     x = function(node, x)
-        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x)
-        local x = math.shrink(x * scaleX, 0.5)
+        local x = generator:parseX(node, x, node.__info.scaleXY.x)
         node:setPositionX(x)
     end,
     y = function(node, y)
-        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y)
-        local y = math.shrink(y * scaleY, 0.5)
+        local y = generator:parseY(node, y, node.__info.scaleXY.y)
         node:setPositionY(y)
     end,
     scaleXY = function(node, var)
-        local scaleX = generator:parseValue("scaleX", node, var.x)
-        local scaleY = generator:parseValue("scaleY", node, var.y)
-        --        local x, y = node.__info.x, node.__info.y
-        local x = generator:parseValue("x", node, node.__info.x)
-        local y = generator:parseValue("y", node, node.__info.y)
-        node:setPosition(cc.p(x * scaleX, y * scaleY))
+        local x = generator:parseX(node, node.__info.x, var.x)
+        local y = generator:parseY(node, node.__info.y, var.y)
+        node:setPosition(x, y)
     end,
     scaleX = function(node, ...)
         node:setScaleX(...)
@@ -789,7 +816,7 @@ generator.nodeSetFuncs = {
             gk.log("enableGlow")
             node:enableGlow(node.__info.effectColor)
         else
-            gk.log("disableEffect")
+            --            gk.log("disableEffect")
             node:disableEffect(cc.LabelEffect.GLOW)
         end
     end,

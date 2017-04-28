@@ -24,13 +24,13 @@ function init:startGame(mode)
 
     local _, lastLaunchEntryKey, launchEntry = self:getConfig()
     gk.lastLaunchEntryKey = lastLaunchEntryKey
-    if gk.mode == gk.MODE_EDIT then
+--    if gk.mode == gk.MODE_EDIT then
         --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, launchEntry)
         gk.SceneManager:replace(path)
-    else
-        gk.SceneManager:replace(launchEntry)
-    end
+--    else
+--        gk.SceneManager:replace(launchEntry)
+--    end
 end
 
 function init:initGameKit(mode)

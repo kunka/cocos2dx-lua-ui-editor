@@ -16,7 +16,7 @@ return {
 	type = "TableCell1",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0,
@@ -59,7 +59,7 @@ return {
 	         r = 102},
 	      scaleSize = {
 	         h = "$minScale",
-	         w = 1},
+	         w = "1"},
 	      scaleXY = {
 	         x = 1,
 	         y = "1"},
@@ -102,7 +102,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"}},
 	         {
 	            cascadeColorEnabled = 1,
@@ -138,7 +138,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"}},
 	         {
 	            additionalKerning = 0,
@@ -190,7 +190,7 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"},
 	            shadow = {
 	               a = 0,
@@ -279,7 +279,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"}},
 	         {
 	            cascadeColorEnabled = 1,
@@ -315,7 +315,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"}},
 	         {
 	            additionalKerning = 0,
@@ -366,7 +366,7 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"},
 	            shadow = {
 	               a = 0,
@@ -455,7 +455,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"}},
 	         {
 	            additionalKerning = 0,
@@ -506,7 +506,7 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
+	               x = "$scaleX",
 	               y = "$minScale"},
 	            shadow = {
 	               a = 0,

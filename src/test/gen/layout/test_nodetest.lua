@@ -18,7 +18,7 @@ return {
 	type = "NodeTest",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -32,8 +32,8 @@ return {
 	      cascadeOpacityEnabled = 1,
 	      file = "Hello.png",
 	      flippedX = 1,
-	      height = 150,
-	      id = "sprite1",
+	      height = 640,
+	      id = "sprite",
 	      ignoreAnchor = 1,
 	      localZOrder = 0,
 	      opacity = 255,
@@ -46,9 +46,9 @@ return {
 	      tag = -1,
 	      type = "cc.Sprite",
 	      visible = 0,
-	      width = 108,
-	      x = 245,
-	      y = 617,
+	      width = 960,
+	      x = 640,
+	      y = 360,
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},
@@ -61,5 +61,5 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}}}}
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

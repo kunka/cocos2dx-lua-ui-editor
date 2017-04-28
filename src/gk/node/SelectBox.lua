@@ -66,7 +66,7 @@ end
 function SelectBox:openPopup()
     gk.log("openPopup")
     self:closePopup()
-    local bg = gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20))
+    local bg = gk.create_scale9_sprite("gk/res/texture/selectbox_bg.png", cc.rect(20, 20, 20, 20))
     local size = self:getContentSize()
     local height = size.height * (#self.selectItems)
     bg:setContentSize(cc.size(size.width, height))
@@ -101,7 +101,7 @@ function SelectBox:openPopup()
             if self.popupLabelDidCreated then
                 self.popupLabelDidCreated(label)
             end
-            local layer = cc.LayerColor:create(cc.c3b(251, 147, 74), size.width, size.height)
+            local layer = cc.LayerColor:create(cc.c3b(0x99, 0xcc, 0x00), size.width, size.height)
             layer:addChild(label)
             label:setPosition(cc.p(size.width / 2, size.height / 2))
             layer:ignoreAnchorPointForPosition(false)

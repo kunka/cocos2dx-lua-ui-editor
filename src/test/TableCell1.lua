@@ -8,4 +8,9 @@
 
 local TableCell1 = class("TableCell1", gk.TableViewCell)
 
+-- must have a __cname and ctor to be injected
+function TableCell1:ctor()
+    TableCell1.super.ctor(self)
+end
+
 return TableCell1

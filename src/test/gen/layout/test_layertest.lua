@@ -18,7 +18,7 @@ return {
 	type = "LayerTest",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -83,11 +83,11 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleSize = {
-	               h = "$yScale",
-	               w = "$xScale"},
+	               h = "$xScale",
+	               w = "$yScale"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"}},
+	               x = "$scaleX",
+	               y = "$scaleY"}},
 	         {
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
@@ -121,8 +121,8 @@ return {
 	               h = "$yScale",
 	               w = "$xScale"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"}},
+	               x = "$scaleX",
+	               y = "$scaleY"}},
 	         {
 	            additionalKerning = 0,
 	            cascadeColorEnabled = 1,
@@ -172,8 +172,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -236,8 +236,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -284,8 +284,8 @@ return {
 	               h = "$yScale",
 	               w = "$xScale"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"}},
+	               x = "$scaleX",
+	               y = "$scaleY"}},
 	         {
 	            additionalKerning = 0,
 	            cascadeColorEnabled = 1,
@@ -335,8 +335,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -386,8 +386,8 @@ return {
 	               h = "$yScale",
 	               w = "$xScale"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            startColor = {
 	               a = 255,
 	               b = 100,
@@ -445,8 +445,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,

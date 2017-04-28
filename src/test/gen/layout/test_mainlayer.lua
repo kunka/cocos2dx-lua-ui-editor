@@ -18,7 +18,7 @@ return {
 	type = "MainLayer",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -36,7 +36,7 @@ return {
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
 	      clipToBD = 0,
-	      direction = 1,
+	      direction = 2,
 	      height = "$fill",
 	      id = "scrollView",
 	      ignoreAnchor = 0,
@@ -112,8 +112,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/msyh.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -182,8 +182,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/msyh.ttf"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -246,8 +246,8 @@ return {
 	               cn = "font/msyh.ttf",
 	               en = "font/Klee.fnt"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -306,8 +306,8 @@ return {
 	            fontFile = {
 	               en = "Helvetica"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -366,8 +366,8 @@ return {
 	            fontFile = {
 	               en = "Helvetica"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,

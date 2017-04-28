@@ -27,13 +27,13 @@ function panel.create(parent)
     local fontSize = 10 * 4
     local fontName = "gk/res/font/Consolas.ttf"
     local scale = 0.25
-    local topY = size.height - 15 - 15
-    local leftX = 10
-    local leftX2 = 50
+    local topY = size.height - 30
+    local leftX = 15
+    local inputWidth1 = 80
+    local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
     local stepX = 51
     local stepY = 25
     local leftX_widget = 10
-    local inputWidth1 = 80
     local createLabel = function(content, x, y)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setScale(scale)
@@ -105,7 +105,7 @@ function panel.create(parent)
 
     local yIndex = 0
     -- device size
-    createLabel("Device", leftX, topY - yIndex * stepY)
+    createLabel("ScreenSize", leftX, topY - yIndex * stepY)
     local items = gk.display.deviceSizesDesc
     local sizeItems = gk.display.deviceSizes
     local index = cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex")
@@ -124,23 +124,25 @@ function panel.create(parent)
     end)
     yIndex = yIndex + 1
 
-    -- Language
-    createLabel("Lans", leftX, topY - yIndex * stepY)
-    local items = gk.resource.lans
-    local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
+    -- ResolutionPolicy
+    createLabel("ResolutionPolicy", leftX, topY - yIndex * stepY)
+    local items = gk.display.supportResolutionPolicyDesc
+    local values = gk.display.supportResolutionPolicy
+    local index = cc.UserDefault:getInstance():getIntegerForKey("gk_resolutionPolicy", 1)
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
-        local lan = items[index]
-        gk.resource:setCurrentLan(lan)
+        local value = gk.display.supportResolutionPolicy[index]
+        cc.UserDefault:getInstance():setIntegerForKey("gk_resolutionPolicy", index)
+        cc.UserDefault:getInstance():flush()
         gk.util:restartGame(gk.mode)
     end)
     yIndex = yIndex + 1
 
     -- right
     local rightX = gk.display.leftWidth + gk.display.winSize().width + leftX
-    local rightX2 = rightX + leftX2 - leftX + 30
+    local rightX2 = size.width - inputWidth1 - leftX
     local yIndex = 0
     -- bg
-    createLabel("Background", rightX, topY - yIndex * stepY)
+    createLabel("BackgroundColor", rightX, topY - yIndex * stepY)
     local items = { "BLACK", "WHITE", "GRAY" }
     local colors = { cc.c4f(0, 0, 0, 1), cc.c4f(1, 1, 1, 1), cc.c4f(0.66, 0.66, 0.66, 1) }
     local index = cc.UserDefault:getInstance():getIntegerForKey("colorIndex", 1)
@@ -159,6 +161,17 @@ function panel.create(parent)
             gk.util:drawNodeBg(root, color, -89)
         end
     end))
+
+    -- Language
+    createLabel("Languages", rightX, topY - yIndex * stepY)
+    local items = gk.resource.lans
+    local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
+    local node = createSelectBox(items, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local lan = items[index]
+        gk.resource:setCurrentLan(lan)
+        gk.util:restartGame(gk.mode)
+    end)
+    yIndex = yIndex + 1
 
     -- widgets
     self.widgets = {
@@ -184,7 +197,8 @@ function panel.create(parent)
     self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
     --    gk.util:drawNodeBounds(self.displayInfoNode)
     -- clipping
-    self.clippingNode = cc.ClippingRectangleNode:create(cc.rect(gk.display.leftWidth, 0, gk.display.winSize().width, self:getContentSize().height))
+    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display.winSize().width, self:getContentSize().height)
+    self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
     self:addChild(self.clippingNode)
     self.clippingNode:addChild(self.displayInfoNode)
 
@@ -230,6 +244,10 @@ function panel.create(parent)
         listener:registerScriptHandler(function(touch, event)
             local location = touch:getLocation()
             self._touchBegainLocation = cc.p(location)
+            local p0 = self:convertToNodeSpace(location)
+            if not cc.rectContainsPoint(clippingRect, p0) then
+                return false
+            end
             local s = node:getContentSize()
             local rect = { x = 0, y = 0, width = s.width, height = s.height }
             local p = node:convertToNodeSpace(location)
@@ -312,12 +330,12 @@ function panel.create(parent)
                     node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        local scaleX = generator:parseValue("scaleX", node, node.__info.scaleXY.x)
-                        local scaleY = generator:parseValue("scaleY", node, node.__info.scaleXY.y)
                         if type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                         else
-                            node.__info.x, node.__info.y = math.round(p.x / scaleX), math.round(p.y / scaleY)
+                            local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
+                            local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                            node.__info.x, node.__info.y = x, y
                         end
                         self._containerNode:addChild(node)
                         gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)

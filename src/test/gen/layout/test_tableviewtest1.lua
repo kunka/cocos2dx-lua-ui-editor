@@ -18,7 +18,7 @@ return {
 	type = "TableViewTest1",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -95,8 +95,8 @@ return {
 	         h = "1",
 	         w = "1"},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      viewSize = {
 	         height = "$fill",
 	         width = "$fill"}}}}

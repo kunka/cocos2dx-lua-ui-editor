@@ -18,7 +18,7 @@ return {
 	type = "SpriteTest",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -48,8 +48,8 @@ return {
 	      type = "cc.Sprite",
 	      visible = 0,
 	      width = 960,
-	      x = 541,
-	      y = 340,
+	      x = 640,
+	      y = 360,
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},
@@ -65,8 +65,8 @@ return {
 	         h = "1",
 	         w = "1"},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}},
+	         x = "$scaleX",
+	         y = "$scaleY"}},
 	   {
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
@@ -101,8 +101,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}},
+	         x = "$scaleX",
+	         y = "$scaleY"}},
 	   {
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
@@ -137,5 +137,5 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}}}}
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

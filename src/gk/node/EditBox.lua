@@ -288,8 +288,8 @@ function EditBox:handleKeyboardEvent()
                 if self.cursorNode then
                     local insertChar = function()
                         local str = self:getInput()
-                        gk.log("[EDITBOX]: insert char '%s' at %d", inputTable[key], self.cursorPos)
                         str = str:insertChar(self.cursorPos + 1, inputTable[key])
+                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", inputTable[key], self.cursorPos, str)
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + 1)
                         if self.onInputChangedCallback then
@@ -307,8 +307,8 @@ function EditBox:handleKeyboardEvent()
                     local deleteChar = function()
                         local str = self:getInput()
                         if self.cursorPos >= 1 and #str >= 1 then
-                            gk.log("[EDITBOX]: delete char at %d", self.cursorPos)
                             str = str:deleteChar(self.cursorPos)
+                            gk.log("[EDITBOX]: delete char at %d, str = %s", self.cursorPos, str)
                             self.label:setString(str)
                             self:changeCursorPos(self.cursorPos - 1)
                             if self.onInputChangedCallback then

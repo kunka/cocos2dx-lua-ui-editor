@@ -114,7 +114,7 @@ local function create_label(info)
     if not label then
         label = cc.Label:createWithSystemFont(info.string, fontFile ~= nil and fontFile or info.defaultSysFont, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         info.fontFile[lan] = label:getSystemFontName()
-        gk.log("warning! create_label use system font %s, string= \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
+        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
     end
     return label
 end
@@ -170,9 +170,9 @@ local function nextFocusNode(current)
         end)
 
         -- test draw
-        for i = 1, #all do
-            gk.util:drawLabelOnNode(all[i], tostring(i))
-        end
+        --        for i = 1, #all do
+        --            gk.util:drawLabelOnNode(all[i], tostring(i))
+        --        end
         if #all > 0 then
             return all[1]
         end

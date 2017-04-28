@@ -63,8 +63,8 @@ return {
 	         h = "$minScale",
 	         w = 1},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      startColor = {
 	         a = 255,
 	         b = 51,
@@ -118,8 +118,8 @@ return {
 	            fontFile = {
 	               en = "nil"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -169,8 +169,8 @@ return {
 	         h = "$minScale",
 	         w = 1},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      startColor = {
 	         a = 255,
 	         b = 247,
@@ -224,8 +224,8 @@ return {
 	            fontFile = {
 	               en = "nil"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -273,8 +273,8 @@ return {
 	         h = "$minScale",
 	         w = 1},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"}},
+	         x = "$scaleX",
+	         y = "$scaleY"}},
 	   {
 	      _flod = true,
 	      bounceable = 0,

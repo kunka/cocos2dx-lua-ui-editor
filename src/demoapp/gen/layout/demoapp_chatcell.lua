@@ -123,8 +123,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"}},
+	               x = "$scaleX",
+	               y = "$scaleY"}},
 	         {
 	            additionalKerning = 0,
 	            cascadeColorEnabled = 1,
@@ -170,8 +170,8 @@ return {
 	            fontFile = {
 	               en = "Helvetica"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -230,8 +230,8 @@ return {
 	            fontFile = {
 	               en = "Helvetica"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -290,8 +290,8 @@ return {
 	            fontFile = {
 	               en = "nil"},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"},
+	               x = "$scaleX",
+	               y = "$scaleY"},
 	            shadow = {
 	               a = 0,
 	               b = 0,
@@ -339,5 +339,5 @@ return {
 	               g = 0,
 	               r = 255},
 	            scaleXY = {
-	               x = "$xScale",
-	               y = "$yScale"}}}}}}
+	               x = "$scaleX",
+	               y = "$scaleY"}}}}}}

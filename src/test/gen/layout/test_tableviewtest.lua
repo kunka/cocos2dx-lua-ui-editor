@@ -46,11 +46,11 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleSize = {
-	         h = "$yScale",
-	         w = "$xScale"},
+	         h = "$scaleY",
+	         w = "$scaleX"},
 	      scaleXY = {
-	         x = "$xScale",
-	         y = "$yScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      viewSize = {
 	         height = 680,
 	         width = 920}}}}

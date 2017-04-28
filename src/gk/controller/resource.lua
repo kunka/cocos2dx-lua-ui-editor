@@ -63,6 +63,7 @@ end
 
 function resource:scanGenNodes(path)
     gk.log("resource:scanGenNodes fullpath = \"%s\"", path .. self.genSrcPath)
+    self.genFullPathPrefix = path
     self.genNodes = {}
     -- scan all gen-able files, TODO: scan sub dirs
     local f = io.popen('ls ' .. path .. self.genSrcPath)
@@ -72,11 +73,12 @@ function resource:scanGenNodes(path)
             local status, clazz = pcall(require, path)
             if status and clazz then
                 -- TODO: other types
-                local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
-                if not isEditable then
-                    local instance = clazz:create()
-                    isEditable = iskindof(instance, "cc.TableViewCell")
-                end
+                local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
+                --                if not isEditable then
+                --                    print("?")
+                --                    local instance = clazz:create()
+                --                    isEditable = iskindof(instance, "cc.TableViewCell")
+                --                end
 
                 if isEditable then
                     local genPath = self:getGenNodePath(clazz.__cname)
@@ -96,6 +98,10 @@ function resource:getGenNodePath(cname)
     else
         return nil
     end
+end
+
+function resource:getGenNodeFullPath(cname)
+    return self.genFullPathPrefix .. self:getGenNodePath(cname)
 end
 
 function resource:require(path)
