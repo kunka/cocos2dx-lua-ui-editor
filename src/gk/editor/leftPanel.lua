@@ -44,8 +44,7 @@ end
 
 function panel:displayDomTree(rootLayer, force)
     if rootLayer and rootLayer.__info then
-        if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info.id == self
-        .lastDisplayingNode.__info.id then
+        if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info.id == self.lastDisplayingNode.__info.id then
             return
         end
         gk.log("displayDomTree %s", rootLayer.__info.id)
@@ -71,7 +70,7 @@ function panel:displayDomTree(rootLayer, force)
                 self:displayOthers({ key })
             end
         end
-        self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + gk.display.bottomHeight))
+        self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + 20))
         -- scroll to displaying node
         if self.displayingDomDepth ~= -1 then
             gk.log("displayingDomDepth = %d", self.displayingDomDepth)
@@ -291,8 +290,8 @@ function panel:displayDomNode(node, layer)
                             node:retain()
                             node:removeFromParent()
                             self.parent:rescaleNode(node, container)
-                            local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
-                            local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                            local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                            local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                             node.__info.x, node.__info.y = x, y
                             container:addChild(node)
                             node:release()

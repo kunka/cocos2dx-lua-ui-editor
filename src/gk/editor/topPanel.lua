@@ -27,7 +27,7 @@ function panel.create(parent)
     local fontSize = 10 * 4
     local fontName = "gk/res/font/Consolas.ttf"
     local scale = 0.25
-    local topY = size.height - 30
+    local topY = size.height - 25
     local leftX = 15
     local inputWidth1 = 80
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
@@ -137,6 +137,17 @@ function panel.create(parent)
     end)
     yIndex = yIndex + 1
 
+    -- Language
+    createLabel("Languages", leftX, topY - yIndex * stepY)
+    local items = gk.resource.lans
+    local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
+    local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local lan = items[index]
+        gk.resource:setCurrentLan(lan)
+        gk.util:restartGame(gk.mode)
+    end)
+    yIndex = yIndex + 1
+
     -- right
     local rightX = gk.display.leftWidth + gk.display.winSize().width + leftX
     local rightX2 = size.width - inputWidth1 - leftX
@@ -162,17 +173,6 @@ function panel.create(parent)
         end
     end))
 
-    -- Language
-    createLabel("Languages", rightX, topY - yIndex * stepY)
-    local items = gk.resource.lans
-    local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
-    local node = createSelectBox(items, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
-        local lan = items[index]
-        gk.resource:setCurrentLan(lan)
-        gk.util:restartGame(gk.mode)
-    end)
-    yIndex = yIndex + 1
-
     -- widgets
     self.widgets = {
         { type = "cc.Node", },
@@ -186,7 +186,7 @@ function panel.create(parent)
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
         { type = "cc.ClippingNode" },
-        { type = "cc.ClippingRectangleNode" },
+        { type = "cc.ClipRectNode" },
         { type = "cc.ProgressTimer" },
     }
     -- content node
@@ -333,8 +333,8 @@ function panel.create(parent)
                         if type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                         else
-                            local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
-                            local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                            local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                            local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                             node.__info.x, node.__info.y = x, y
                         end
                         self._containerNode:addChild(node)

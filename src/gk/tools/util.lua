@@ -89,10 +89,10 @@ function util:registerRestartGameCallback(callback)
                 return
             end
             local key = cc.KeyCodeKey[keyCode + 1]
-            --            gk.log("RestartLayer: onKeypad %s", key)
-            if key == "KEY_R" then
+            gk.log("RestartLayer: onKeypad %s", key)
+            if key == "KEY_F1" then
                 util:restartGame(1)
-            elseif key == "KEY_T" then
+            elseif key == "KEY_F2" then
                 util:restartGame(0)
             end
         end
@@ -170,7 +170,7 @@ function util:drawNode(node, c4f, tag)
         if iskindof(node, "cc.ScrollView") then
             node:add(draw, -1, tg)
         else
-            node:add(draw, 999, tg)
+            node:add(draw, 99999, tg)
         end
         draw:setPosition(cc.p(0, 0))
     end
@@ -181,7 +181,7 @@ function util:drawNode(node, c4f, tag)
     draw:drawRect(cc.p(0.5, 0.5),
         cc.p(0.5, size.height - 0.5),
         cc.p(size.width - 0.5, size.height - 0.5),
-        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(0, 255 / 255, 0, 1))
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 1))
 
     -- anchor point
     local p = node:getAnchorPoint()

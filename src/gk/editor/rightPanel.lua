@@ -132,6 +132,9 @@ function panel:displayNode(node)
             end
         end
     end
+    local onValueChanged = function(bg, defaultValue, value)
+        bg:setColor(tostring(defaultValue) == tostring(value) and cc.c3b(156, 156, 156) or cc.c3b(255, 255, 255))
+    end
 
     local createLabel = function(content, x, y, isTitle)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
@@ -145,7 +148,7 @@ function panel:displayNode(node)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         return label
     end
-    local createInput = function(content, x, y, width, callback)
+    local createInput = function(content, x, y, width, callback, defValue)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF(content, fontName, fontSize)
@@ -162,15 +165,15 @@ function panel:displayNode(node)
         end)
         node:onInputChanged(function(_, input)
             onLabelInputChanged(label, input)
-            --            label:setTextColor(getMacroColor(input))
+            onValueChanged(node.bg, defValue, input)
         end)
-        --        label:setTextColor(getMacroColor(content))
         onLabelInputChanged(label, content)
+        onValueChanged(node.bg, defValue, content)
         node:setPosition(x, y)
         node.enabled = not disabled
         return node
     end
-    local createSelectBox = function(items, index, x, y, width, callback)
+    local createSelectBox = function(items, index, x, y, width, callback, defValue)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
         local label = cc.Label:createWithTTF("", fontName, fontSize)
@@ -191,9 +194,11 @@ function panel:displayNode(node)
         node:onSelectChanged(function(index)
             callback(index)
             onLabelInputChanged(label, items[index])
+            onValueChanged(node.bg, defValue, items[index])
             --            label:setTextColor(getMacroColor(items[index]))
         end)
         onLabelInputChanged(label, items[index])
+        onValueChanged(node.bg, defValue, items[index])
         --        label:setTextColor(getMacroColor(items[index]))
         node.enabled = not disabled
         return node
@@ -276,11 +281,11 @@ function panel:displayNode(node)
         ps[2] = createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
         ps[3] = createInput(tostring(node.__info.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "x", input, "number"))
-        end)
+        end, 0)
         ps[4] = createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         ps[5] = createInput(tostring(node.__info.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "y", input, "number"))
-        end)
+        end, 0)
         yIndex = yIndex + 1
         -- ScaleXY
         createLabel("ScalePos", leftX, topY - stepY * yIndex)
@@ -288,12 +293,12 @@ function panel:displayNode(node)
         local scaleXs = { "1", "$scaleX", "$scaleRT", "$scaleLT" }
         createSelectBox(scaleXs, table.indexof(scaleXs, tostring(node.__info.scaleXY.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.x", scaleXs[index], "string")
-        end)
+        end, 1)
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         local scaleYs = { "1", "$scaleY", "$scaleTP", "$scaleBT" }
         createSelectBox(scaleYs, table.indexof(scaleYs, tostring(node.__info.scaleXY.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.y", scaleYs[index], "string")
-        end)
+        end, 1)
         yIndex = yIndex + 1
         -- NormalizedPosition
         --        nps[1] = createLabel("NPosition", leftX, topY - stepY * yIndex)
@@ -334,11 +339,11 @@ function panel:displayNode(node)
     createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
     createInput(tostring(node.__info.anchor.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
-    end)
+    end, 0.5)
     createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
     createInput(tostring(node.__info.anchor.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.y", input, "number"))
-    end)
+    end, 0.5)
     yIndex = yIndex + 1
     -- ignoreAnchor
     createLabel("IgnoreAnchorPoint", leftX, topY - stepY * yIndex)
@@ -373,12 +378,12 @@ function panel:displayNode(node)
             local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
             createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
                 generator:modify(node, "scaleSize.w", scaleWs[index], "string")
-            end)
+            end, 1)
             createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
             local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
             createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
                 generator:modify(node, "scaleSize.h", scaleHs[index], "string")
-            end)
+            end, 1)
             yIndex = yIndex + 1
         end
     end
@@ -388,22 +393,22 @@ function panel:displayNode(node)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.scaleX), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleX", input, "number"))
-        end)
+        end, 1)
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.scaleY), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleY", input, "number"))
-        end)
+        end, 1)
         yIndex = yIndex + 1
         -- skew
         createLabel("Skew", leftX, topY - stepY * yIndex)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.skewX), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "skewX", input, "number"))
-        end)
+        end, 0)
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.skewY), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "skewY", input, "number"))
-        end)
+        end, 0)
         yIndex = yIndex + 1
     end
     if (isLabel or isSprite or isZoomButton) and not isLayerColor then
@@ -412,15 +417,15 @@ function panel:displayNode(node)
         createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.r), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.r", input, "number"))
-        end)
+        end, 255)
         createLabel("G", leftX_input_short_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.g), leftX_input_short_2, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.g", input, "number"))
-        end)
+        end, 255)
         createLabel("B", leftX_input_short_3_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.b), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
-        end)
+        end, 255)
         yIndex = yIndex + 1
         -- TODO LayerColor at once
     end
@@ -430,23 +435,23 @@ function panel:displayNode(node)
         createLabel("Rotation", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.rotation), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "rotation", input, "number"))
-        end)
+        end, 0)
         -- opacity
         createLabel("Opacity", leftX_input_short_2, topY - stepY * yIndex)
         createInput(tostring(node.__info.opacity), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "opacity", input, "number"))
-        end)
+        end, 255)
         yIndex = yIndex + 1
     end
     -- localZOrder
     createLabel("LocalZOrder", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.localZOrder), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
         editBox:setInput(generator:modify(node, "localZOrder", input, "number"))
-    end)
+    end, 0)
     createLabel("Tag", leftX_input_short_2, topY - stepY * yIndex)
     createInput(tostring(node.__info.tag), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
         editBox:setInput(generator:modify(node, "tag", input, "number"))
-    end)
+    end, -1)
     yIndex = yIndex + 1
     -- cascadeOpacityEnabled
     createLabel("CascadeOpacityEnabled", leftX, topY - stepY * yIndex)
@@ -477,25 +482,26 @@ function panel:displayNode(node)
 
         if not isLayerGradient then
             -- color
-            createLabel("Color4B", leftX, topY - stepY * yIndex)
+            createLabel("Color3B", leftX, topY - stepY * yIndex)
             createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.color.r), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
                 editBox:setInput(generator:modify(node, "color.r", input, "number"))
-            end)
+            end, 255)
             createLabel("G", leftX_input_short_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.color.g), leftX_input_short_2, topY - stepY * yIndex, inputShort, function(editBox, input)
                 editBox:setInput(generator:modify(node, "color.g", input, "number"))
-            end)
+            end, 255)
             createLabel("B", leftX_input_short_3_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.color.b), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
                 editBox:setInput(generator:modify(node, "color.b", input, "number"))
-            end)
+            end, 255)
             yIndex = yIndex + 1
-            createLabel("A", leftX_input_1_left, topY - stepY * yIndex)
-            createInput(tostring(node.__info.color.a), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
-                editBox:setInput(generator:modify(node, "color.a", input, "number"))
-            end)
-            yIndex = yIndex + 1
+            -- use opacity instead of this!
+            --            createLabel("A", leftX_input_1_left, topY - stepY * yIndex)
+            --            createInput(tostring(node.__info.color.a), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
+            --                editBox:setInput(generator:modify(node, "color.a", input, "number"))
+            --            end)
+            --            yIndex = yIndex + 1
         end
 
         if isLayerGradient then
@@ -517,7 +523,7 @@ function panel:displayNode(node)
             createLabel("StartOpacity", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.startOpacity), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
                 editBox:setInput(generator:modify(node, "startOpacity", input, "number"))
-            end)
+            end, 255)
             yIndex = yIndex + 1
             -- endColor4B
             createLabel("EndColor", leftX, topY - stepY * yIndex)
@@ -537,7 +543,7 @@ function panel:displayNode(node)
             createLabel("EndOpacity", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.endOpacity), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
                 editBox:setInput(generator:modify(node, "endOpacity", input, "number"))
-            end)
+            end, 255)
             yIndex = yIndex + 1
             -- Vector
             createLabel("Vector", leftX, topY - stepY * yIndex)
@@ -581,7 +587,7 @@ function panel:displayNode(node)
             end
             createSelectBox(clicks, table.indexof(clicks, tostring(node.__info.onClicked)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
                 generator:modify(node, "onClicked", clicks[index], "string")
-            end)
+            end, "-")
             yIndex = yIndex + 1
         end
         -- sprite file
@@ -606,12 +612,12 @@ function panel:displayNode(node)
         end
         createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
             generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
-        end)
+        end, "ONE")
         yIndex = yIndex + 1
         createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
         createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
             generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
-        end)
+        end, "ONE_MINUS_SRC_ALPHA")
         yIndex = yIndex + 1
         -- flippedX
         createLabel("FippedX", leftX, topY - stepY * yIndex)
@@ -668,7 +674,7 @@ function panel:displayNode(node)
         createLabel("String", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.string), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, "string", input, "string"))
-        end)
+        end, "")
         yIndex = yIndex + 1
         -- overflow
         -- System font only support Overflow::NONE and Overflow::RESIZE_HEIGHT.
@@ -681,18 +687,18 @@ function panel:displayNode(node)
         end
         createSelectBox(overflows, table.indexof(values, node.__info.overflow), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
             generator:modify(node, "overflow", values[index], "number")
-        end)
+        end, "NONE")
         yIndex = yIndex + 1
         -- dimensions
         createLabel("Dimensions", leftX, topY - stepY * yIndex)
         createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.width), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
-        end)
+        end, 0)
         createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.height), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
-        end)
+        end, 0)
         yIndex = yIndex + 1
         -- alignment
         createLabel("Alignment", leftX, topY - stepY * yIndex)
@@ -700,12 +706,12 @@ function panel:displayNode(node)
         local hAligns = { "LEFT", "CENTER", "RIGHT" }
         createSelectBox(hAligns, node.__info.hAlign + 1, leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "hAlign", index - 1, "number")
-        end)
+        end, "LEFT")
         createLabel("V", leftX_input_2_left, topY - stepY * yIndex)
         local vAligns = { "TOP", "CENTER", "BOTTOM" }
         createSelectBox(vAligns, node.__info.vAlign + 1, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "vAlign", index - 1, "number")
-        end)
+        end, "TOP")
         yIndex = yIndex + 1
         -- maxLineWidth
         --        if node.__info.maxLineWidth then
@@ -720,7 +726,7 @@ function panel:displayNode(node)
             createLabel("LineHeight", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.lineHeight), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "lineHeight", input, "number"))
-            end)
+            end, -1)
             yIndex = yIndex + 1
         end
         -- font size
@@ -734,7 +740,7 @@ function panel:displayNode(node)
             createLabel("AdditionalKerning", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.additionalKerning), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "additionalKerning", input, "number"))
-            end)
+            end, 0)
             yIndex = yIndex + 1
         end
         if not isBMFont then
@@ -743,20 +749,20 @@ function panel:displayNode(node)
             createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.textColor.r), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.r", input, "number"))
-            end)
+            end, 255)
             createLabel("G", leftX_input_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.textColor.g), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.g", input, "number"))
-            end)
+            end, 255)
             yIndex = yIndex + 1
             createLabel("B", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.textColor.b), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.b", input, "number"))
-            end)
+            end, 255)
             createLabel("A", leftX_input_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.textColor.a), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "textColor.a", input, "number"))
-            end)
+            end, 255)
             yIndex = yIndex + 1
         end
         if not isSystemFont then
@@ -786,37 +792,37 @@ function panel:displayNode(node)
             createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.r), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.r", input, "number"))
-            end)
+            end, 0)
             createLabel("G", leftX_input_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.g), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.g", input, "number"))
-            end)
+            end, 0)
             yIndex = yIndex + 1
             createLabel("B", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.b), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.b", input, "number"))
-            end)
+            end, 0)
             createLabel("A", leftX_input_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.a), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.a", input, "number"))
-            end)
+            end, 0)
             yIndex = yIndex + 1
             -- offset
             createLabel("Offset", leftX, topY - stepY * yIndex)
             createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.w), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.w", input, "number"))
-            end)
+            end, 0)
             createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.h), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.h", input, "number"))
-            end)
+            end, 0)
             yIndex = yIndex + 1
             -- blurRadius
             createLabel("BlurRadius", leftX, topY - stepY * yIndex)
             createInput(tostring(node.__info.shadow.radius), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
                 editBox:setInput(generator:modify(node, "shadow.radius", input, "number"))
-            end)
+            end, 0)
             yIndex = yIndex + 1
         end
         if isTTF then
@@ -923,12 +929,12 @@ function panel:displayNode(node)
         local scaleWs = { "1", "$scaleX", "$minScale", "$maxScale" }
         createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleSize.w", scaleWs[index], "string")
-        end)
+        end, "1")
         createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
         local scaleHs = { "1", "$scaleY", "$minScale", "$maxScale" }
         createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleSize.h", scaleHs[index], "string")
-        end)
+        end, "1")
         yIndex = yIndex + 1
         -- Direction
         createLabel("Direction", leftX, topY - stepY * yIndex)
@@ -1031,6 +1037,12 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+        -- reverseDirection
+        createLabel("RreverseDirection", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.reverseDirection == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "reverseDirection", selected, "number")
+        end)
+        yIndex = yIndex + 1
         -- barType
         createLabel("BarType", leftX, topY - stepY * yIndex)
         local types = { "RADIAL", "BAR" }
@@ -1038,15 +1050,9 @@ function panel:displayNode(node)
             generator:modify(node, "barType", index - 1, "number")
         end)
         yIndex = yIndex + 1
-        -- reverseDirection
-        createLabel("RreverseDirection", leftX, topY - stepY * yIndex)
-        createCheckBox(node.__info.reverseDirection == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            generator:modify(node, "reverseDirection", selected, "number")
-        end)
-        yIndex = yIndex + 1
         -- percentage
         createLabel("Percentage", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.percentage), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        createInput(tostring(node.__info.percentage), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "percentage", input, "number"))
         end)
         yIndex = yIndex + 1
@@ -1171,7 +1177,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
-    self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + gk.display.bottomHeight + 5))
+    self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + 20))
     if disabled then
         self.displayInfoNode:setOpacity(150)
         gk.util:setRecursiveCascadeOpacityEnabled(self.displayInfoNode, true)

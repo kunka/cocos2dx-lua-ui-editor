@@ -26,6 +26,7 @@ end
 function SelectBox:setScale9SpriteBg(scale9Sprite)
     local contentSize = self:getContentSize()
     scale9Sprite:setContentSize(contentSize)
+    self.bg = scale9Sprite
     local button = gk.Button.new(scale9Sprite)
     self:addChild(button, -1)
     button:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))

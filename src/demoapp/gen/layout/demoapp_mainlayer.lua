@@ -18,8 +18,8 @@ return {
 	type = "MainLayer",
 	visible = 0,
 	width = "$fill",
-	x = 210,
-	y = 20,
+	x = 250,
+	y = 100,
 	anchor = {
 	   x = 0.5,
 	   y = 0.5},
@@ -313,8 +313,8 @@ return {
 	         h = "$minScale",
 	         w = 1},
 	      scaleXY = {
-	         x = 1,
-	         y = "$minScale"},
+	         x = "$scaleX",
+	         y = "$scaleY"},
 	      viewSize = {
 	         height = 978,
 	         width = "$fill"}}}}

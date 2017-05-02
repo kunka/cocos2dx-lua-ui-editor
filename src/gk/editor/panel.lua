@@ -56,9 +56,12 @@ function panel:subscribeEvent()
             --            if type == "cc.TableViewCell" then
             --                return
             --                end
-            --            -- don;t display tablecell in tableView
-            if gk.util:isAncestorsType(node, "cc.TableView") then
-                return
+            --            -- do not display tablecell in tableView
+            local type = tolua.type(node)
+            if type ~= "cc.TableView" then
+                if gk.util:isAncestorsType(node, "cc.TableView") then
+                    return
+                end
             end
 
             gk.util:stopActionByTagSafe(self, -2342)
@@ -289,8 +292,8 @@ function panel:onNodeCreate(node)
                 node:release()
                 gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
             else
-                local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
-                local y = generator:parseYRvs(node, p.y, node.__info.scaleXY.y)
+                local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 node.__info.x, node.__info.y = x, y
                 gk.log("move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
                 --                local delta = self:onNodeMoved(node)
@@ -386,17 +389,17 @@ function panel:drawNodeCoordinate(node)
 
         --        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x, 1)
         --        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y, 1)
---        local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
---        local scaleX = generator:parseXRvs(node, 1, node.__info.scaleXY.x)
---        local scaleY = generator:parseXRvs(node, 1, node.__info.scaleXY.y)
---        -- left
---        createArrow(x, x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
---        -- down
---        createArrow(y, y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
---        -- right
---        createArrow((size.width - x), (size.width - x) / scaleX, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
---        -- top
---        createArrow((size.height - y), (size.height - y) / scaleY, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
+        --        local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
+        --        local scaleX = generator:parseXRvs(node, 1, node.__info.scaleXY.x)
+        --        local scaleY = generator:parseXRvs(node, 1, node.__info.scaleXY.y)
+        --        -- left
+        --        createArrow(x, x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
+        --        -- down
+        --        createArrow(y, y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
+        --        -- right
+        --        createArrow((size.width - x), (size.width - x) / scaleX, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
+        --        -- top
+        --        createArrow((size.height - y), (size.height - y) / scaleY, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
         local disX = generator:parseXRvs(node, x, node.__info.scaleXY.x)
         local disY = generator:parseXRvs(node, y, node.__info.scaleXY.y)
         local disX2 = generator:parseXRvs(node, (size.width - x), node.__info.scaleXY.x)

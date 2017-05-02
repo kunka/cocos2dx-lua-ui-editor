@@ -16,8 +16,8 @@ return {
 	type = "TableCell1",
 	visible = 0,
 	width = "$fill",
-	x = 250,
-	y = 20,
+	x = 240,
+	y = 100,
 	anchor = {
 	   x = 0,
 	   y = 0},

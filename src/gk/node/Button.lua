@@ -88,7 +88,7 @@ end
 
 function Button:setSwallowTouches(swallowTouches)
     if self.swallowTouches ~= swallowTouches then
-        gklog("[%s]: setSwallowTouches %s", self.__cname, swallowTouches)
+        gk.log("[%s]: setSwallowTouches %s", self.__cname, swallowTouches)
         self.swallowTouches = swallowTouches
         if self.touchListener then
             self.touchListener:setSwallowTouches(swallowTouches)

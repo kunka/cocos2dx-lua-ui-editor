@@ -15,7 +15,7 @@ return {
 	type = "ChatCell",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0,
@@ -51,7 +51,7 @@ return {
 	         x = 0.5,
 	         y = 0.5},
 	      color = {
-	         a = 255,
+	         a = 0,
 	         b = 255,
 	         g = 255,
 	         r = 255},

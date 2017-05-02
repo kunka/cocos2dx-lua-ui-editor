@@ -19,7 +19,7 @@ return {
 	type = "SplashLayer",
 	visible = 0,
 	width = "$fill",
-	x = 210,
+	x = 250,
 	y = 20,
 	anchor = {
 	   x = 0.5,
@@ -49,8 +49,8 @@ return {
 	      type = "cc.Sprite",
 	      visible = 0,
 	      width = 1080,
-	      x = "$win.w",
-	      y = "$win.h",
+	      x = 360,
+	      y = 640,
 	      anchor = {
 	         x = 0.5,
 	         y = 0.5},
@@ -63,5 +63,5 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleXY = {
-	         x = "0.5",
-	         y = "0.5"}}}}
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

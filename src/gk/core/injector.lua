@@ -138,7 +138,7 @@ function injector:onNodeCreate(node)
             end
         end
         if gk.mode == gk.MODE_EDIT then
-            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1), -9)
+--            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1), -9)
             node:runAction(cc.CallFunc:create(function()
                 if not iskindof(node, "cc.TableViewCell") then
                     gk.event:post("displayNode", node)
