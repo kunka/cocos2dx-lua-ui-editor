@@ -497,11 +497,11 @@ function panel:displayNode(node)
             end, 255)
             yIndex = yIndex + 1
             -- use opacity instead of this!
-            --            createLabel("A", leftX_input_1_left, topY - stepY * yIndex)
-            --            createInput(tostring(node.__info.color.a), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
-            --                editBox:setInput(generator:modify(node, "color.a", input, "number"))
-            --            end)
-            --            yIndex = yIndex + 1
+            createLabel("A", leftX_input_1_left, topY - stepY * yIndex)
+            createInput(tostring(node.__info.color.a), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
+                editBox:setInput(generator:modify(node, "color.a", input, "number"))
+            end, 255)
+            yIndex = yIndex + 1
         end
 
         if isLayerGradient then
@@ -636,7 +636,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
         -- enabled
         createLabel("Enabled", leftX, topY - stepY * yIndex)
-        createCheckBox(node.__info.enabled == 0, leftX_input_1, topY - stepY * yIndex, function(selected)
+        createCheckBox(node.__info.enabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "enabled", selected, "number")
         end)
         yIndex = yIndex + 1
@@ -941,7 +941,7 @@ function panel:displayNode(node)
         local directions = { "HORIZONTAL", "VERTICAL", "BOTH" }
         createSelectBox(directions, node.__info.direction + 1, leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "direction", index - 1, "number")
-        end)
+        end, "BOTH")
         yIndex = yIndex + 1
         if isTableView then
             -- verticalFillOrder
@@ -954,18 +954,19 @@ function panel:displayNode(node)
         end
         -- ClipToBD
         createLabel("ClipToBD", leftX, topY - stepY * yIndex)
-        createCheckBox(node.__info.clipToBD == 0, leftX_input_1, topY - stepY * yIndex, function(selected)
+        createCheckBox(node.__info.clipToBD == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "clipToBD", selected, "number")
         end)
+        yIndex = yIndex + 1
         -- Bounceable
-        createLabel("Bounceable", leftX3_0, topY - stepY * yIndex)
+        createLabel("Bounceable", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.bounceable == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "bounceable", selected, "number")
         end)
         yIndex = yIndex + 1
         -- touchEnabled
         createLabel("Enabled", leftX, topY - stepY * yIndex)
-        createCheckBox(node.__info.touchEnabled == 0, leftX_input_1, topY - stepY * yIndex, function(selected)
+        createCheckBox(node.__info.touchEnabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "touchEnabled", selected, "number")
         end)
         yIndex = yIndex + 1

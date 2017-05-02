@@ -17,15 +17,19 @@ generator.defValues = {
     rotation = 0,
     opacity = 255,
     anchor = cc.p(0.5, 0.5),
-    color = cc.c3b(255, 255, 255),
     scaleXY = { x = "1", y = "1" },
+    scaleSize = { w = "1", h = "1" },
     localZOrder = 0,
     tag = -1,
     visible = 0,
-    ignoreAnchor = 1,
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
 
+    -- scrollView
+    bounceable = 0,
+    clipToBD = 0,
+    direction = 2,
+    touchEnabled = 0,
     -- label
     additionalKerning = 0,
     enableBold = 1,
@@ -66,9 +70,14 @@ generator.defValues = {
 }
 
 function generator:deflate(node)
-    -- copy
-    node.__info.__self.children = {}
-    local info = clone(node.__info.__self)
+    local info = {}
+    -- add edit properties
+    local keys = table.keys(node.__info.__self)
+    for _, key in ipairs(keys) do
+        if string.len(key) > 0 and key:sub(1, 1) == "_" then
+            info[key] = node.__info.__self[key]
+        end
+    end
 
     -- force set value
     for k, func in pairs(self.nodeGetFuncs) do
@@ -82,6 +91,8 @@ function generator:deflate(node)
                 else
                     info[k] = ret
                 end
+            else
+                info[k] = ret
             end
         end
     end
@@ -113,14 +124,6 @@ function generator:deflate(node)
             info.sprite = self:deflate(sprite)
         end
     end
-
-    -- filter useless properties
-    --    local keys = table.keys(info)
-    --    for _, key in ipairs(keys) do
-    --        if string.len(key) > 0 and key:sub(1, 1) == "_" then
-    --            info[key] = nil
-    --        end
-    --    end
     return info
 end
 
@@ -194,6 +197,7 @@ function generator:default(type, key)
         self._default["Layer"] = {
             width = "$fill",
             height = "$fill",
+            scaleSize = { w = "1", h = "1" },
         }
         self._default["cc.TableViewCell"] = {
             width = "$fill",
@@ -212,14 +216,11 @@ function generator:default(type, key)
             fontSize = 32,
             defaultSysFont = "Helvetica",
         }
-        self._default["cc.Layer"] = {
-            width = "$win.w",
-            height = "$win.h",
-        }
         self._default["cc.LayerColor"] = {
             width = "$win.w",
             height = "$win.h",
             color = cc.c4b(153, 153, 153, 255),
+            scaleSize = { w = "1", h = "1" },
         }
         self._default["cc.ScrollView"] = {
             width = 100,
@@ -239,6 +240,7 @@ function generator:default(type, key)
             height = "$win.h",
             startColor = cc.c4b(0, 0, 0, 255),
             endColor = cc.c4b(255, 255, 255, 255),
+            scaleSize = { w = "1", h = "1" },
         }
         self._default["cc.ProgressTimer"] = {
             sprite = { file = "", type = "cc.Sprite", voidContent = true, lock = 1 },
@@ -658,7 +660,7 @@ generator.nodeSetFuncs = {
             local scaleH = generator:parseValue("scaleH", node, var.h)
             local size = cc.size(w * scaleW, h * scaleH)
             if iskindof(node, "cc.Label") then
-                node:setDimensions(size)
+                node:setDimensions(size.width, size.height)
             else
                 node:setContentSize(size)
             end
@@ -1018,6 +1020,9 @@ generator.nodeGetFuncs = {
     end,
     scaleXY = function(node)
         return node.__info.scaleXY
+    end,
+    scaleSize = function(node)
+        return node.__info.scaleSize
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()

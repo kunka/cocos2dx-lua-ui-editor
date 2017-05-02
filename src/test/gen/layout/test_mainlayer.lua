@@ -4,20 +4,17 @@ return {
 	id = "MainLayer",
 	ignoreAnchor = 0,
 	popOnBack = 1,
+	swallowTouchEvent = 0,
 	type = "MainLayer",
 	width = "$fill",
 	x = 240,
 	y = 100,
 	children = {	   {
 	      _flod = false,
-	      bounceable = 0,
-	      clipToBD = 0,
-	      direction = 2,
 	      height = "$fill",
 	      id = "scrollView",
 	      ignoreAnchor = 0,
 	      parentId = "MainLayer",
-	      touchEnabled = 0,
 	      type = "cc.ScrollView",
 	      width = "$fill",
 	      x = 0,
@@ -26,7 +23,6 @@ return {
 	         height = "$fill",
 	         width = "$fill"},
 	      children = {	         {
-	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
 	            id = "label5",
@@ -48,7 +44,6 @@ return {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
-	            enableWrap = 1,
 	            fontSize = 32,
 	            height = 0,
 	            id = "label5_1",
@@ -85,14 +80,8 @@ return {
 	               en = "font/Klee.fnt"},
 	            scaleXY = {
 	               x = "$scaleX",
-	               y = "$scaleY"},
-	            textColor = {
-	               a = 255,
-	               b = 255,
-	               g = 255,
-	               r = 255}},
+	               y = "$scaleY"}},
 	         {
-	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1",
@@ -128,7 +117,6 @@ return {
 	               x = "$scaleX",
 	               y = "$scaleY"},
 	            children = {	               {
-	                  enableWrap = true,
 	                  fontSize = 32,
 	                  height = 0,
 	                  id = "label2",
@@ -144,7 +132,6 @@ return {
 	            cascadeColorEnabled = 0,
 	            cascadeOpacityEnabled = 0,
 	            enabled = 0,
-	            file = "?",
 	            height = 150,
 	            id = "button1",
 	            onClicked = "-",
@@ -161,7 +148,6 @@ return {
 	               y = "$scaleY"}},
 	         {
 	            enableShadow = 0,
-	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
 	            id = "label3",
@@ -177,15 +163,7 @@ return {
 	               en = "Helvetica"},
 	            scaleXY = {
 	               x = "$scaleX",
-	               y = "$scaleY"},
-	            shadow = {
-	               a = 255,
-	               b = 0,
-	               g = 0,
-	               h = 0,
-	               r = 0,
-	               radius = 0,
-	               w = 0}},
+	               y = "$scaleY"}},
 	         {
 	            fontSize = 32,
 	            height = 0,

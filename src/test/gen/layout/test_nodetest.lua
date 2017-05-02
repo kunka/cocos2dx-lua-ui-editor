@@ -4,6 +4,7 @@ return {
 	id = "NodeTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
+	swallowTouchEvent = 0,
 	type = "NodeTest",
 	width = "$fill",
 	x = 240,
