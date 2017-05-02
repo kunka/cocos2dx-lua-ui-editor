@@ -71,7 +71,7 @@ return {
 	            additionalKerning = 0,
 	            cascadeColorEnabled = 1,
 	            cascadeOpacityEnabled = 1,
-	            clipMarginEnabled = 1,
+
 	            enableWrap = true,
 	            fontSize = 32,
 	            hAlign = 0,
@@ -80,7 +80,7 @@ return {
 	            ignoreAnchor = 1,
 	            lineHeight = 37,
 	            localZOrder = 0,
-	            maxLineWidth = 0,
+
 	            opacity = 255,
 	            outlineSize = 0,
 	            overflow = 0,
@@ -162,7 +162,7 @@ return {
 	      additionalKerning = 0,
 	      cascadeColorEnabled = 1,
 	      cascadeOpacityEnabled = 1,
-	      clipMarginEnabled = 1,
+
 	      enableWrap = true,
 	      fontSize = 32,
 	      hAlign = 0,
@@ -171,7 +171,7 @@ return {
 	      ignoreAnchor = 1,
 	      lineHeight = 37,
 	      localZOrder = 0,
-	      maxLineWidth = 0,
+
 	      opacity = 255,
 	      outlineSize = 0,
 	      overflow = 0,

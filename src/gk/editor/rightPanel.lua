@@ -293,12 +293,12 @@ function panel:displayNode(node)
         local scaleXs = { "1", "$scaleX", "$scaleRT", "$scaleLT" }
         createSelectBox(scaleXs, table.indexof(scaleXs, tostring(node.__info.scaleXY.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.x", scaleXs[index], "string")
-        end, 1)
+        end, generator.defValues["scaleXY"].x)
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         local scaleYs = { "1", "$scaleY", "$scaleTP", "$scaleBT" }
         createSelectBox(scaleYs, table.indexof(scaleYs, tostring(node.__info.scaleXY.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.y", scaleYs[index], "string")
-        end, 1)
+        end, generator.defValues["scaleXY"].y)
         yIndex = yIndex + 1
         -- NormalizedPosition
         --        nps[1] = createLabel("NPosition", leftX, topY - stepY * yIndex)
@@ -339,11 +339,11 @@ function panel:displayNode(node)
     createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
     createInput(tostring(node.__info.anchor.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
-    end, 0.5)
+    end, generator.defValues["anchor"].x)
     createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
     createInput(tostring(node.__info.anchor.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.y", input, "number"))
-    end, 0.5)
+    end, generator.defValues["anchor"].y)
     yIndex = yIndex + 1
     -- ignoreAnchor
     createLabel("IgnoreAnchorPoint", leftX, topY - stepY * yIndex)
@@ -393,22 +393,22 @@ function panel:displayNode(node)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.scaleX), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleX", input, "number"))
-        end, 1)
+        end, generator.defValues["scaleX"])
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.scaleY), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleY", input, "number"))
-        end, 1)
+        end, generator.defValues["scaleY"])
         yIndex = yIndex + 1
         -- skew
         createLabel("Skew", leftX, topY - stepY * yIndex)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.skewX), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "skewX", input, "number"))
-        end, 0)
+        end, generator.defValues["skewX"])
         createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.skewY), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "skewY", input, "number"))
-        end, 0)
+        end, generator.defValues["skewY"])
         yIndex = yIndex + 1
     end
     if (isLabel or isSprite or isZoomButton) and not isLayerColor then
@@ -417,15 +417,15 @@ function panel:displayNode(node)
         createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.r), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.r", input, "number"))
-        end, 255)
+        end, generator.defValues["color"].r)
         createLabel("G", leftX_input_short_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.g), leftX_input_short_2, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.g", input, "number"))
-        end, 255)
+        end, generator.defValues["color"].g)
         createLabel("B", leftX_input_short_3_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.b), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
-        end, 255)
+        end, generator.defValues["color"].b)
         yIndex = yIndex + 1
         -- TODO LayerColor at once
     end
@@ -435,23 +435,23 @@ function panel:displayNode(node)
         createLabel("Rotation", leftX, topY - stepY * yIndex)
         createInput(tostring(node.__info.rotation), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "rotation", input, "number"))
-        end, 0)
+        end, generator.defValues["rotation"])
         -- opacity
         createLabel("Opacity", leftX_input_short_2, topY - stepY * yIndex)
         createInput(tostring(node.__info.opacity), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "opacity", input, "number"))
-        end, 255)
+        end, generator.defValues["opacity"])
         yIndex = yIndex + 1
     end
     -- localZOrder
     createLabel("LocalZOrder", leftX, topY - stepY * yIndex)
     createInput(tostring(node.__info.localZOrder), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
         editBox:setInput(generator:modify(node, "localZOrder", input, "number"))
-    end, 0)
+    end, generator.defValues["localZOrder"])
     createLabel("Tag", leftX_input_short_2, topY - stepY * yIndex)
     createInput(tostring(node.__info.tag), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
         editBox:setInput(generator:modify(node, "tag", input, "number"))
-    end, -1)
+    end, generator.defValues["tag"])
     yIndex = yIndex + 1
     -- cascadeOpacityEnabled
     createLabel("CascadeOpacityEnabled", leftX, topY - stepY * yIndex)

@@ -8,16 +8,81 @@
 
 local generator = {}
 
+-- not save to minimize gen file size
+generator.defValues = {
+    scaleX = "1",
+    scaleY = "1",
+    skewX = 0,
+    skewY = 0,
+    rotation = 0,
+    opacity = 255,
+    anchor = cc.p(0.5, 0.5),
+    color = cc.c3b(255, 255, 255),
+    scaleXY = { x = "1", y = "1" },
+    localZOrder = 0,
+    tag = -1,
+    visible = 0,
+    ignoreAnchor = 1,
+    cascadeOpacityEnabled = 1,
+    cascadeColorEnabled = 1,
+
+    -- label
+    additionalKerning = 0,
+    enableBold = 1,
+    enableGlow = 1,
+    enableItalics = 1,
+    enableOutline = 1,
+    enableShadow = 1,
+    enableStrikethrough = 1,
+    enableUnderline = 1,
+    vAlign = 0,
+    hAlign = 0,
+    lineHeight = -1,
+    overflow = 0,
+    outlineSize = 0,
+    enableWrap = 0,
+    lineBreakWithoutSpace = 1,
+    shadow = {
+        a = 0,
+        b = 0,
+        g = 0,
+        h = 0,
+        r = 0,
+        radius = 0,
+        w = 0
+    },
+    textColor = {
+        a = 255,
+        b = 255,
+        g = 255,
+        r = 255,
+    },
+    effectColor = {
+        a = 255,
+        b = 0,
+        g = 0,
+        r = 0
+    },
+}
+
 function generator:deflate(node)
     -- copy
     node.__info.__self.children = {}
-    local info = node.__info.__self
+    local info = clone(node.__info.__self)
 
     -- force set value
     for k, func in pairs(self.nodeGetFuncs) do
         local ret = func(node)
         if ret then
-            info[k] = ret
+            local def = generator.defValues[k]
+            if def then
+                -- filter def value
+                if (type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret) then
+                    info[k] = nil
+                else
+                    info[k] = ret
+                end
+            end
         end
     end
 
@@ -37,6 +102,9 @@ function generator:deflate(node)
                 table.insert(info.children, c)
             end
         end
+    end
+    if info.children and #info.children == 0 then
+        info.children = nil
     end
 
     if iskindof(node, "cc.ProgressTimer") then
@@ -948,6 +1016,9 @@ generator.nodeGetFuncs = {
     y = function(node)
         return node.__info.y or math.shrink(node:getPositionY() / generator:parseValue("y", node, node.__info.scaleXY.y), 0.5)
     end,
+    scaleXY = function(node)
+        return node.__info.scaleXY
+    end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()
     end,
@@ -1117,7 +1188,7 @@ generator.nodeGetFuncs = {
         return iskindof(node, "cc.Label") and (node.__info.additionalKerning or node:getAdditionalKerning())
     end,
     enableWrap = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.enableWrap or node:isWrapEnabled())
+        return iskindof(node, "cc.Label") and (node.__info.enableWrap or (node:isWrapEnabled() and 0 or 1))
     end,
     lineBreakWithoutSpace = function(node)
         return iskindof(node, "cc.Label") and node.__info.lineBreakWithoutSpace
