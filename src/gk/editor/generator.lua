@@ -262,25 +262,25 @@ end
 function generator:parseX(node, x, scaleX)
     local x = generator:parseValue("x", node, x)
     x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX, x)
-    return math.round(x)
+    return x
 end
 
 function generator:parseY(node, y, scaleY)
     local y = generator:parseValue("y", node, y)
     y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY, y)
-    return math.round(y)
+    return y
 end
 
 function generator:parseXRvs(node, x, scaleX)
     local x = generator:parseValue("x", node, x)
     x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX .. "Rvs", x)
-    return math.round(x)
+    return x
 end
 
 function generator:parseYRvs(node, y, scaleY)
     local y = generator:parseValue("y", node, y)
     y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY .. "Rvs", y)
-    return math.round(y)
+    return y
 end
 
 function generator:parseMacroFunc(node, input)
