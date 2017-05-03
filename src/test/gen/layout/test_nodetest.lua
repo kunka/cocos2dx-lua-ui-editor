@@ -9,11 +9,16 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
 	children = {	   {
 	      file = "Hello.png",
 	      flippedX = 1,
 	      height = 640,
 	      id = "sprite",
+	      ignoreAnchor = 1,
 	      parentId = "NodeTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -24,6 +29,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}}}}

@@ -9,11 +9,16 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
 	children = {	   {
 	      file = "bg.jpg",
 	      flippedX = 1,
 	      height = 720,
 	      id = "bg",
+	      ignoreAnchor = 1,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -24,6 +29,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -32,6 +41,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "top_left",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -46,6 +56,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleTP"},
@@ -54,12 +68,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1",
+	            ignoreAnchor = 1,
 	            parentId = "top_left",
 	            string = "1",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -67,6 +86,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "top_right",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -81,6 +101,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleTP"},
@@ -89,12 +113,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_1",
+	            ignoreAnchor = 1,
 	            parentId = "top_right",
 	            string = "2",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -102,6 +131,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "bottom_left",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -116,6 +146,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleBT"},
@@ -124,12 +158,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_1_1",
+	            ignoreAnchor = 1,
 	            parentId = "bottom_left",
 	            string = "3",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -137,6 +176,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "bottom_right",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -151,6 +191,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleBT"},
@@ -159,12 +203,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_1_1_1",
+	            ignoreAnchor = 1,
 	            parentId = "bottom_right",
 	            string = "4",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -172,6 +221,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "left_top",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -186,6 +236,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleLT",
 	         y = "$scaleY"},
@@ -194,12 +248,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_2",
+	            ignoreAnchor = 1,
 	            parentId = "left_top",
 	            string = "5",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -207,6 +266,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "left_bottom",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -221,6 +281,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleLT",
 	         y = "$scaleY"},
@@ -229,12 +293,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_2_1",
+	            ignoreAnchor = 1,
 	            parentId = "left_bottom",
 	            string = "6",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -242,6 +311,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "right_top",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -256,6 +326,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleRT",
 	         y = "$scaleY"},
@@ -264,12 +338,17 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_2_1_1",
+	            ignoreAnchor = 1,
 	            parentId = "right_top",
 	            string = "7",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
@@ -277,6 +356,7 @@ return {
 	      flippedX = 1,
 	      height = 120,
 	      id = "right_bottom",
+	      ignoreAnchor = 1,
 	      opacity = 156,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$minScale",
@@ -291,6 +371,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleRT",
 	         y = "$scaleY"},
@@ -299,11 +383,16 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label1_2_1_1_1",
+	            ignoreAnchor = 1,
 	            parentId = "right_bottom",
 	            string = "8",
 	            type = "cc.Label",
 	            width = 0,
 	            x = 91,
 	            y = 60,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               en = "Helvetica"}}}}}}

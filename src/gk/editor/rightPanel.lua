@@ -417,15 +417,15 @@ function panel:displayNode(node)
         createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.r), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.r", input, "number"))
-        end, generator.defValues["color"].r)
+        end, 255)
         createLabel("G", leftX_input_short_2_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.g), leftX_input_short_2, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.g", input, "number"))
-        end, generator.defValues["color"].g)
+        end, 255)
         createLabel("B", leftX_input_short_3_left, topY - stepY * yIndex)
         createInput(tostring(node.__info.color.b), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
-        end, generator.defValues["color"].b)
+        end, 255)
         yIndex = yIndex + 1
         -- TODO LayerColor at once
     end

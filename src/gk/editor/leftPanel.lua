@@ -241,6 +241,7 @@ function panel:displayDomNode(node, layer)
                 if self.selectedNode then
                     gk.util:clearDrawNode(self.selectedNode, -2)
                 end
+                self.lastContainerNode = self._containerNode
                 self._containerNode = nil
                 local children = self.sortedChildren
                 for i = #children, 1, -1 do
@@ -269,9 +270,12 @@ function panel:displayDomNode(node, layer)
                             end
                             self._containerNode = node
                             --                            gk.log("dom:find container node %s", self._containerNode.content)
-                            local nd = self.parent.scene.layer[self._containerNode.content]
-                            if nd then
-                                gk.event:post("displayNode", nd)
+                            if self.lastContainerNode ~= self._containerNode then
+                                local nd = self.parent.scene.layer[self._containerNode.content]
+                                if nd then
+                                    gk.event:post("displayNode", nd)
+                                end
+                                self.lastContainerNode = self._containerNode
                             end
                             break
                         end

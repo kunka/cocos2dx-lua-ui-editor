@@ -9,6 +9,10 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
 	children = {	   {
 	      height = 600,
 	      id = "scrollView1",
@@ -18,6 +22,10 @@ return {
 	      width = 200,
 	      x = 20,
 	      y = 20,
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -29,6 +37,7 @@ return {
 	            fontSize = 32,
 	            height = 0,
 	            id = "label3",
+	            ignoreAnchor = 1,
 	            lineHeight = 37,
 	            parentId = "scrollView1",
 	            scaleX = "$minScale",
@@ -38,6 +47,10 @@ return {
 	            width = 200,
 	            x = 99,
 	            y = 203,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255},
 	            fontFile = {
 	               cn = "font/msyh.ttf",
 	               en = "font/Verdana.ttf"},
@@ -52,12 +65,17 @@ return {
 	            type = "cc.Layer",
 	            width = "$win.w",
 	            x = 39,
-	            y = -12}}},
+	            y = -12,
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255}}}},
 	   {
 	      enableWrap = true,
 	      fontSize = 32,
 	      height = 0,
 	      id = "label1",
+	      ignoreAnchor = 1,
 	      lineHeight = 37,
 	      parentId = "ScrollViewTest",
 	      scaleX = "$minScale",
@@ -67,6 +85,10 @@ return {
 	      width = 0,
 	      x = 122,
 	      y = 663,
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      fontFile = {
 	         cn = "font/msyh.ttf",
 	         en = "font/Verdana.ttf"},

@@ -54,16 +54,6 @@ function display:initWithDesignSize(size, resolutionPolicy)
     view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
     gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     view:setViewName("!!!") -- not implemented :(
-    --    resolutionPolicy
-    --    if resolutionPolicy == cc.ResolutionPolicy.EXACT_FIT then
-    --        --        local designSize = cc.size(size.width - display.leftWidth - display.rightWidth, size.height - display.topHeight - display.bottomHeight)
-    --        --        view:setDesignResolutionSize(designSize.width, designSize.height, cc.ResolutionPolicy.FIXED_HEIGHT)
-    --    elseif resolutionPolicy == cc.ResolutionPolicy.NO_BORDER then
-    --    elseif resolutionPolicy == cc.ResolutionPolicy.SHOW_ALL then
-    --    elseif resolutionPolicy == cc.ResolutionPolicy.FIXED_HEIGHT then
-    --    elseif resolutionPolicy == cc.ResolutionPolicy.FIXED_WIDTH then
-    --    elseif resolutionPolicy == cc.ResolutionPolicy.SCALE_XY then
-    --    end
 
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f), resolutionPolicy = %s", winSize.width, winSize.height, display.resolutionPolicyDesc)
@@ -196,6 +186,10 @@ function display:initWithDesignSize(size, resolutionPolicy)
         display.scaleTP = display.scaleY
         display.scaleBT = display.scaleY
     end
+
+    -- actual content size
+    display.contentSize = cc.size(display.xScale() * display.width(), display.yScale() * display.height())
+
     gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
         size.width, size.height, display.winSize().width, display.winSize().height,
         display.xScale(), display.yScale(), display.minScale(), display.maxScale())

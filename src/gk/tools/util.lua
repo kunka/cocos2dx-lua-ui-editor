@@ -181,7 +181,7 @@ function util:drawNode(node, c4f, tag)
     draw:drawRect(cc.p(0.5, 0.5),
         cc.p(0.5, size.height - 0.5),
         cc.p(size.width - 0.5, size.height - 0.5),
-        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 1))
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 0.3))
 
     -- anchor point
     local p = node:getAnchorPoint()
@@ -190,7 +190,7 @@ function util:drawNode(node, c4f, tag)
     if node:isIgnoreAnchorPointForPosition() then
         p.x, p.y = 0, 0
     end
-    draw:drawDot(p, sx ~= 0 and 1.5 / sx or 1.5, cc.c4f(1, 0, 0, 1))
+    draw:drawDot(p, sx ~= 0 and 1 / sx or 1, cc.c4f(1, 0, 0, 1))
 
     if iskindof(node, "cc.ScrollView") then
         -- bg
@@ -287,6 +287,26 @@ function util:drawLineOnNode(node, p1, p2, c4f, tg)
         draw:setPosition(cc.p(0, 0))
     end
     draw:drawLine(p1, p2, c4f)
+    return draw
+end
+
+function util:drawSegmentOnNode(node, p1, p2, radius, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    local dis = cc.pGetDistance(p1, p2)
+    local count = math.round(dis / radius)
+    for i = 1, count, 2 do
+        local pa = cc.pAdd(p1, cc.pMul(cc.pSub(p2, p1), (i - 1) / count))
+        local pb = cc.pAdd(p1, cc.pMul(cc.pSub(p2, p1), i / count))
+        draw:drawLine(pa, pb, c4f)
+    end
     return draw
 end
 
