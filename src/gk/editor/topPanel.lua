@@ -29,7 +29,7 @@ function panel.create(parent)
     local scale = 0.25
     local topY = size.height - 25
     local leftX = 15
-    local inputWidth1 = 80
+    local inputWidth1 = 90
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
     local stepX = 51
     local stepY = 25
@@ -118,10 +118,13 @@ function panel.create(parent)
         size.height = size.height + gk.display.topHeight + gk.display.bottomHeight
         local director = cc.Director:getInstance()
         local view = director:getOpenGLView()
-        view:setFrameSize(size.width, size.height)
+        --        view:setFrameSize(size.width, size.height)
         gk.log("set OpenGLView size(%.1f,%.1f)", size.width, winSize.height)
-        gk.util:restartGame(1)
+        --        gk.util:restartGame(1)
     end)
+    node.enabled = false
+    node:setOpacity(150)
+    node:setCascadeOpacityEnabled(true)
     yIndex = yIndex + 1
 
     -- ResolutionPolicy
@@ -177,7 +180,7 @@ function panel.create(parent)
     self.widgets = {
         { type = "cc.Node", },
         { type = "cc.Sprite", file = "?", },
-        { type = "ccui.Scale9Sprite", file = "?", },
+        --        { type = "ccui.Scale9Sprite", file = "?", },
         { type = "cc.Label", },
         { type = "ZoomButton", file = "?", },
         { type = "cc.Layer", },

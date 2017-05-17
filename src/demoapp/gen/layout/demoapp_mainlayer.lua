@@ -1,4 +1,5 @@
 return {
+	_flod = true,
 	enableKeyPad = 1,
 	height = "$fill",
 	id = "MainLayer",

@@ -7,7 +7,7 @@
 
 local display = {}
 
-local displayScale = 0.35 --0.7
+local displayScale = 0.7
 display.deviceSizes = {
     cc.size(1280 * displayScale, 640 * displayScale),
     cc.size(1280 * displayScale, 720 * displayScale),
@@ -28,6 +28,7 @@ display.deviceSizesDesc = {
 
 -- new resolution policy
 cc.ResolutionPolicy.UNIVERSAL = 5
+cc.UserDefault:getInstance():setIntegerForKey("gk_deviceSizeIndex", 2) -- for cocos2d-x 3.15
 display.supportResolutionPolicyDesc = { "UNIVERSAL", "FIXED_HEIGHT", "FIXED_WIDTH" }
 display.supportResolutionPolicy = { cc.ResolutionPolicy.UNIVERSAL, cc.ResolutionPolicy.FIXED_HEIGHT, cc.ResolutionPolicy.FIXED_WIDTH }
 function display:initWithDesignSize(size, resolutionPolicy)
@@ -51,7 +52,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     winSize.height = s.height + display.topHeight + display.bottomHeight
     local director = cc.Director:getInstance()
     local view = director:getOpenGLView()
-    view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
+--    view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
     gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     view:setViewName("!!!") -- not implemented :(
 

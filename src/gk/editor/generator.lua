@@ -16,7 +16,7 @@ generator.defValues = {
     skewY = 0,
     rotation = 0,
     opacity = 255,
-    anchor = cc.p(0.5, 0.5),
+    anchor = { x = 0.5, y = 0.5 },
     scaleXY = { x = "1", y = "1" },
     scaleSize = { w = "1", h = "1" },
     localZOrder = 0,
@@ -609,7 +609,7 @@ generator.nodeSetFuncs = {
         node:setAnchorPoint(var)
     end,
     ignoreAnchor = function(node, var)
-        node:ignoreAnchorPointForPosition(var == 0)
+        node:setIgnoreAnchorPointForPosition(var == 0)
     end,
     width = function(node, var)
         local width = generator:parseValue("width", node, var)
@@ -647,6 +647,9 @@ generator.nodeSetFuncs = {
             local vs = node.__info.viewSize
             local w = generator:parseValue("width", node, vs.width)
             local h = generator:parseValue("height", node, vs.height)
+            if not w or not h then
+                return
+            end
             local scaleW = generator:parseValue("scaleW", node, var.w)
             local scaleH = generator:parseValue("scaleH", node, var.h)
             node:setViewSize(cc.size(w * scaleW, h * scaleH))
@@ -656,6 +659,9 @@ generator.nodeSetFuncs = {
         else
             local w = generator:parseValue("width", node, node.__info.width)
             local h = generator:parseValue("height", node, node.__info.height)
+            if not w or not h then
+                return
+            end
             local scaleW = generator:parseValue("scaleW", node, var.w)
             local scaleH = generator:parseValue("scaleH", node, var.h)
             local size = cc.size(w * scaleW, h * scaleH)
@@ -1190,7 +1196,7 @@ generator.nodeGetFuncs = {
         return nil
     end,
     additionalKerning = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.additionalKerning or node:getAdditionalKerning())
+        return iskindof(node, "cc.Label") and (node.__info.additionalKerning or (not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) and node:getAdditionalKerning()))
     end,
     enableWrap = function(node)
         return iskindof(node, "cc.Label") and (node.__info.enableWrap or (node:isWrapEnabled() and 0 or 1))

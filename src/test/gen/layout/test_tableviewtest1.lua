@@ -9,6 +9,13 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
+	scaleSize = {
+	   h = "$minScale",
+	   w = "1"},
 	children = {	   {
 	      height = "$win.h",
 	      id = "bg",
@@ -22,7 +29,10 @@ return {
 	         a = 255,
 	         b = 240,
 	         g = 240,
-	         r = 240}},
+	         r = 240},
+	      scaleSize = {
+	         h = "$minScale",
+	         w = "1"}},
 	   {
 	      _flod = true,
 	      direction = 1,
@@ -35,6 +45,13 @@ return {
 	      width = 0,
 	      x = 0,
 	      y = 0,
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
+	      scaleSize = {
+	         h = "$minScale",
+	         w = "1"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},

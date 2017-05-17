@@ -36,7 +36,7 @@ function panel.create(scene)
     local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display.contentSize.width, gk.display.contentSize.height)
     bg:addChild(layer)
     layer:setAnchorPoint(cc.p(0.5, 0.5))
-    layer:ignoreAnchorPointForPosition(false)
+    layer:setIgnoreAnchorPointForPosition(false)
     layer:setPosition(bg:getContentSize().width / 2, bg:getContentSize().height / 2)
     gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
 

@@ -64,8 +64,8 @@ return {
 	            parentId = "scrollView1",
 	            type = "cc.Layer",
 	            width = "$win.w",
-	            x = 39,
-	            y = -12,
+	            x = 106,
+	            y = 90,
 	            color = {
 	               b = 255,
 	               g = 255,

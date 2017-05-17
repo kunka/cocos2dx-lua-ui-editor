@@ -9,11 +9,16 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
 	children = {	   {
 	      file = "stencil.png",
 	      flippedX = 1,
 	      height = 320,
 	      id = "stencil_preview",
+	      ignoreAnchor = 1,
 	      parentId = "ClippingNodeTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -27,6 +32,10 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -34,6 +43,7 @@ return {
 	      alphaThreshold = 0.5,
 	      height = 320,
 	      id = "clippingNode1",
+	      ignoreAnchor = 1,
 	      inverted = 0,
 	      parentId = "ClippingNodeTest",
 	      scaleX = "$minScale",
@@ -45,6 +55,10 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 0},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -53,6 +67,7 @@ return {
 	            flippedX = 1,
 	            height = 640,
 	            id = "sprite1",
+	            ignoreAnchor = 1,
 	            parentId = "clippingNode1",
 	            scaleX = 0.5,
 	            scaleY = 0.5,
@@ -74,6 +89,7 @@ return {
 	      alphaThreshold = 0.5,
 	      height = 320,
 	      id = "clippingNode2",
+	      ignoreAnchor = 1,
 	      inverted = 1,
 	      parentId = "ClippingNodeTest",
 	      scaleX = "$minScale",
@@ -85,6 +101,10 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 0},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -93,6 +113,7 @@ return {
 	            flippedX = 1,
 	            height = 640,
 	            id = "sprite1_1",
+	            ignoreAnchor = 1,
 	            parentId = "clippingNode2",
 	            scaleX = 0.5,
 	            scaleY = 0.5,
@@ -114,6 +135,7 @@ return {
 	      clippingEnabled = 0,
 	      height = 0,
 	      id = "clippingRectNode1",
+	      ignoreAnchor = 1,
 	      parentId = "ClippingNodeTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -129,6 +151,10 @@ return {
 	         width = 100,
 	         x = 0,
 	         y = 0},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -137,6 +163,7 @@ return {
 	            flippedX = 1,
 	            height = 150,
 	            id = "sprite2",
+	            ignoreAnchor = 1,
 	            parentId = "clippingRectNode1",
 	            type = "cc.Sprite",
 	            width = 108,
@@ -144,11 +171,16 @@ return {
 	            y = 0,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1}}}},
+	               src = 1},
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255}}}},
 	   {
 	      clippingEnabled = 1,
 	      height = 0,
 	      id = "clippingRectNode2",
+	      ignoreAnchor = 1,
 	      parentId = "ClippingNodeTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -164,6 +196,10 @@ return {
 	         width = 100,
 	         x = 0,
 	         y = 0},
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -172,6 +208,7 @@ return {
 	            flippedX = 1,
 	            height = 150,
 	            id = "sprite2_1",
+	            ignoreAnchor = 1,
 	            parentId = "clippingRectNode2",
 	            type = "cc.Sprite",
 	            width = 108,
@@ -179,4 +216,8 @@ return {
 	            y = 0,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1}}}}}}
+	               src = 1},
+	            color = {
+	               b = 255,
+	               g = 255,
+	               r = 255}}}}}}

@@ -9,6 +9,13 @@ return {
 	width = "$fill",
 	x = 240,
 	y = 100,
+	color = {
+	   b = 255,
+	   g = 255,
+	   r = 255},
+	scaleSize = {
+	   h = "$minScale",
+	   w = "1"},
 	children = {	   {
 	      direction = 1,
 	      height = 0,
@@ -20,6 +27,13 @@ return {
 	      width = 0,
 	      x = 10,
 	      y = 10,
+	      color = {
+	         b = 255,
+	         g = 255,
+	         r = 255},
+	      scaleSize = {
+	         h = "$minScale",
+	         w = "1"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
