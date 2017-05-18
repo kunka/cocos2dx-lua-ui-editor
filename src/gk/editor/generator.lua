@@ -454,6 +454,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
+    ["ccui.CheckBox"] = function(info, rootTable)
+        local node = ccui.CheckBox:create(info.backGround, info.cross)
+        info.id = info.id or generator:genID("checkBox", rootTable)
+        return node
+    end,
     ["cc.Layer"] = function(info, rootTable)
         local node = cc.Layer:create()
         info.id = info.id or generator:genID("layer", rootTable)
@@ -835,6 +840,10 @@ generator.nodeSetFuncs = {
     end,
     enabled = function(node, var)
         node:setEnabled(var == 0)
+    end,
+    --------------------------- cc.CheckBox   ---------------------------
+    selected = function(node, var)
+        node:setSelected(var == 0)
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node, string)
@@ -1233,6 +1242,16 @@ generator.nodeGetFuncs = {
     end,
     enabled = function(node)
         return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.enabled or (node.enabled and 0 or 1))
+    end,
+    --------------------------- cc.CheckBox   ---------------------------
+    selected = function(node)
+        return iskindof(node, "ccui.CheckBox") and (node.__info.selected or (node.selected and 0 or 1))
+    end,
+    backGround = function(node, var)
+        return iskindof(node, "ccui.CheckBox") and node.__info.backGround
+    end,
+    cross = function(node, var)
+        return iskindof(node, "ccui.CheckBox") and node.__info.cross
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)

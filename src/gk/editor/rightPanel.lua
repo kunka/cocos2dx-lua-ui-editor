@@ -237,6 +237,7 @@ function panel:displayNode(node)
     local isScrollView = iskindof(node, "cc.ScrollView")
     local isTableView = iskindof(node, "cc.TableView")
     local isScale9Sprite = iskindof(node, "ccui.Scale9Sprite")
+    local isCheckBox = iskindof(node, "ccui.CheckBox")
 
     local yIndex = 0
     --------------------------- ID   ---------------------------
@@ -690,6 +691,29 @@ function panel:displayNode(node)
         createLabel("Enabled", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.enabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "enabled", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+    if isCheckBox then
+        createLabel("CheckBox", leftX, topY - stepY * yIndex, true)
+        yIndex = yIndex + 0.6
+        yIndex = yIndex + 0.2
+        createLine(topY - stepY * yIndex)
+        yIndex = yIndex + 0.2
+        -- Selected
+        createLabel("Selected", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.selected == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "selected", selected, "number")
+        end)
+        yIndex = yIndex + 1
+        createLabel("BackGround", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.backGround), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "backGround", input, "string"))
+        end)
+        yIndex = yIndex + 1
+        createLabel("Cross", leftX, topY - stepY * yIndex)
+        createInput(tostring(node.__info.cross), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "cross", input, "string"))
         end)
         yIndex = yIndex + 1
     end

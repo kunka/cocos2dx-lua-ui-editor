@@ -184,6 +184,7 @@ function panel.create(parent)
         { type = "cc.Label", },
         { type = "ZoomButton", file = "?", },
         { type = "SpriteButton", normalSprite = "?", },
+        { type = "ccui.CheckBox", backGround = "gk/res/texture/check_box_normal.png", cross = "gk/res/texture/check_box_selected.png" },
         { type = "cc.Layer", },
         { type = "cc.LayerColor", },
         { type = "cc.LayerGradient", },

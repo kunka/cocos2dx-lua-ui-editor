@@ -13,8 +13,8 @@ local init = {}
 
 --- code dir, launch entry key, launch entry, textureRelativePath, design size
 function init:getConfig()
-    return "test/", "gk_lastLaunchEntry_1", "test/MainLayer", "test/res/texture/", cc.size(1280, 720)
-    --    return "demoapp/", "gk_lastLaunchEntry_2", "demoapp/SplashLayer", "demoapp/res/texture/", cc.size(720, 1280)
+    return "test/", "gk_lastLaunchEntry_1", "test/MainLayer", "test/res/texture/", cc.size(1280, 768)
+    --    return "demoapp/", "gk_lastLaunchEntry_2", "demoapp/SplashLayer", "demoapp/res/texture/", cc.size(768, 1280)
 end
 
 function init:startGame(mode)

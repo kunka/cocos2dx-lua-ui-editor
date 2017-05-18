@@ -13,9 +13,6 @@ return {
 	   b = 255,
 	   g = 255,
 	   r = 255},
-	scaleSize = {
-	   h = "$minScale",
-	   w = "1"},
 	children = {	   {
 	      direction = 1,
 	      height = 0,
@@ -32,11 +29,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      scaleSize = {
-	         h = "$minScale",
-	         w = "1"},
-	      scaleXY = {
-	         x = "$scaleX",
-	         y = "$scaleY"},
+	         h = "$yScale",
+	         w = "$xScale"},
 	      viewSize = {
-	         height = 700,
+	         height = 748,
 	         width = 1260}}}}

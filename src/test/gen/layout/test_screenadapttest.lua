@@ -20,12 +20,12 @@ return {
 	      id = "bg",
 	      ignoreAnchor = 1,
 	      parentId = "ScreenAdaptTest",
-	      scaleX = "$minScale",
-	      scaleY = "$minScale",
+	      scaleX = "$maxScale",
+	      scaleY = "$maxScale",
 	      type = "cc.Sprite",
 	      width = 1280,
 	      x = 640,
-	      y = 360,
+	      y = 384,
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
@@ -49,7 +49,7 @@ return {
 	      type = "cc.Sprite",
 	      width = 183,
 	      x = 275,
-	      y = 720,
+	      y = 768,
 	      anchor = {
 	         x = 0.5,
 	         y = 1},
@@ -94,7 +94,7 @@ return {
 	      type = "cc.Sprite",
 	      width = 183,
 	      x = 1007,
-	      y = 720,
+	      y = 768,
 	      anchor = {
 	         x = 0.5,
 	         y = 1},
