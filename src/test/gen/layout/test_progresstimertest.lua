@@ -41,6 +41,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      sprite = {
+	         file = "",
 	         flippedX = 1,
 	         height = 150,
 	         id = "progressTimer1_sprite",
@@ -84,6 +85,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      sprite = {
+	         file = "",
 	         flippedX = 1,
 	         height = 150,
 	         id = "progressTimer1_1_sprite",

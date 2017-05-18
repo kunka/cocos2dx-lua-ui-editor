@@ -11,10 +11,10 @@ require "gk.init"
 
 local init = {}
 
---- code dir, launch entry key, launch entry, design size
+--- code dir, launch entry key, launch entry, textureRelativePath, design size
 function init:getConfig()
-     return "test/", "gk_lastLaunchEntry_1", "test/MainLayer", cc.size(1280, 720)
---    return "demoapp/", "gk_lastLaunchEntry_2", "demoapp/SplashLayer", cc.size(720, 1280)
+    return "test/", "gk_lastLaunchEntry_1", "test/MainLayer", "test/res/texture/", cc.size(1280, 720)
+    --    return "demoapp/", "gk_lastLaunchEntry_2", "demoapp/SplashLayer", "demoapp/res/texture/", cc.size(720, 1280)
 end
 
 function init:startGame(mode)
@@ -24,21 +24,21 @@ function init:startGame(mode)
 
     local _, lastLaunchEntryKey, launchEntry = self:getConfig()
     gk.lastLaunchEntryKey = lastLaunchEntryKey
---    if gk.mode == gk.MODE_EDIT then
-        --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
-        local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, launchEntry)
-        gk.SceneManager:replace(path)
---    else
---        gk.SceneManager:replace(launchEntry)
---    end
+    --    if gk.mode == gk.MODE_EDIT then
+    --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
+    local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, launchEntry)
+    gk.SceneManager:replace(path)
+    --    else
+    --        gk.SceneManager:replace(launchEntry)
+    --    end
 end
 
 function init:initGameKit(mode)
     gk.mode = mode
-    local dir,_, _, designSize = self:getConfig()
+    local dir, _, _, textureRelativePath, designSize = self:getConfig()
     gk.display:initWithDesignSize(designSize)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
-    gk.resource:setTextureRelativePath("texture/")
+    gk.resource:setTextureRelativePath(textureRelativePath)
     local strings = {
         en = require(dir .. "gen.value.strings"),
         cn = require(dir .. "gen.value.strings_cn"),

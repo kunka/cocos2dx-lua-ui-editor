@@ -48,7 +48,7 @@ return {
 	               h = "1",
 	               w = 1}},
 	         {
-	            file = "avatar.png",
+	            file = "main/avatar.png",
 	            flippedX = 1,
 	            height = 80,
 	            id = "icon",

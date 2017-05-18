@@ -40,7 +40,7 @@ return {
 	      children = {	         {
 	            flippedX = 1,
 	            flippedY = 1,
-	            height = 80,
+	            height = 1.2758778034083e-08,
 	            id = "pop_left",
 	            ignoreAnchor = 1,
 	            parentId = "Member",
@@ -49,7 +49,7 @@ return {
 	            scaleY = "$minScale",
 	            state = 0,
 	            type = "ccui.Scale9Sprite",
-	            width = 300,
+	            width = 108,
 	            x = 120,
 	            y = 100,
 	            anchor = {
@@ -73,7 +73,7 @@ return {
 	         {
 	            file = "avatar.png",
 	            flippedX = 1,
-	            height = 0.00010394786659162,
+	            height = 3.0145466678455e-10,
 	            id = "avatar_left",
 	            ignoreAnchor = 1,
 	            parentId = "Member",
@@ -122,8 +122,8 @@ return {
 	               g = 0,
 	               r = 0},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/Verdana.ttf"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/Verdana.ttf"},
 	            scaleSize = {
 	               h = "$minScale",
 	               w = "1"},
@@ -154,7 +154,7 @@ return {
 	      children = {	         {
 	            flippedX = 1,
 	            flippedY = 1,
-	            height = 80,
+	            height = 1.2758778034083e-08,
 	            id = "pop_right",
 	            ignoreAnchor = 1,
 	            parentId = "Me",
@@ -163,7 +163,7 @@ return {
 	            scaleY = "$minScale",
 	            state = 0,
 	            type = "ccui.Scale9Sprite",
-	            width = 300,
+	            width = 108,
 	            x = 1160,
 	            y = 100,
 	            anchor = {
@@ -187,7 +187,7 @@ return {
 	         {
 	            file = "avatar.png",
 	            flippedX = 1,
-	            height = 0.00010394786659162,
+	            height = 3.0145466678455e-10,
 	            id = "avatar_right",
 	            ignoreAnchor = 1,
 	            parentId = "Me",
@@ -235,8 +235,8 @@ return {
 	               g = 0,
 	               r = 0},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/Verdana.ttf"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/Verdana.ttf"},
 	            scaleSize = {
 	               h = "$minScale",
 	               w = "1"},
@@ -267,7 +267,7 @@ return {
 	      children = {	         {
 	            flippedX = 1,
 	            flippedY = 1,
-	            height = 50,
+	            height = 2.1264634497697e-08,
 	            id = "bg_time",
 	            ignoreAnchor = 1,
 	            parentId = "Time",
@@ -276,7 +276,7 @@ return {
 	            scaleY = "$minScale",
 	            state = 0,
 	            type = "ccui.Scale9Sprite",
-	            width = 120,
+	            width = 108,
 	            x = 640,
 	            y = 25,
 	            capInsets = {
@@ -313,8 +313,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/Verdana.ttf"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/Verdana.ttf"},
 	            scaleSize = {
 	               h = "$minScale",
 	               w = "1"},

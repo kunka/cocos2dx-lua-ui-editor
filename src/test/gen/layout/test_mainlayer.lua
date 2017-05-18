@@ -51,8 +51,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/msyh.ttf"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/msyh.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -74,8 +74,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/msyh.ttf"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/msyh.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -128,6 +128,7 @@ return {
 	            cascadeColorEnabled = 0,
 	            cascadeOpacityEnabled = 0,
 	            enabled = 0,
+	            file = "",
 	            height = 150,
 	            id = "button1",
 	            ignoreAnchor = 1,
@@ -167,8 +168,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "font/msyh.ttf",
-	               en = "font/Klee.fnt"},
+	               cn = "test/res/font/msyh.ttf",
+	               en = "test/res/font/Klee.fnt"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -190,7 +191,7 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               en = "font/msyh.ttf"},
+	               en = "test/res/font/msyh.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
