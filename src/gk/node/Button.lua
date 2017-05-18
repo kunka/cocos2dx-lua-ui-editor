@@ -75,6 +75,9 @@ function Button:setContentNode(node)
 end
 
 function Button:onEnter()
+    if gk.mode == gk.MODE_EDIT and self.__info then
+        return
+    end
     local listener = cc.EventListenerTouchOneByOne:create()
     listener:setSwallowTouches(self.swallowTouches)
     listener:registerScriptHandler(handler(self, self.onTouchBegan), cc.Handler.EVENT_TOUCH_BEGAN)
@@ -127,9 +130,6 @@ function Button:setDisabledProgram(program)
 end
 
 function Button:activate()
-    if gk.mode == gk.MODE_EDIT and self.__info then
-        return
-    end
     if self.enabled then
         if self.callback then
             gk.log("[%s]: activate", self.__cname)
@@ -139,9 +139,6 @@ function Button:activate()
 end
 
 function Button:triggleLongPressed()
-    if gk.mode == gk.MODE_EDIT and self.__info then
-        return
-    end
     if self.enabled then
         if self.longPressdCallback then
             gk.log("[%s]: triggleLongPressed", self.__cname)

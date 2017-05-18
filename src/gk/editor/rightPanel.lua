@@ -230,11 +230,13 @@ function panel:displayNode(node)
     local isLabel = iskindof(node, "cc.Label")
     local isSprite = iskindof(node, "cc.Sprite")
     local isZoomButton = node.__info.type == "ZoomButton"
+    local isSpriteButton = node.__info.type == "SpriteButton"
     local isLayer = iskindof(node, "cc.Layer")
     local isLayerColor = iskindof(node, "cc.LayerColor")
     local isLayerGradient = iskindof(node, "cc.LayerGradient")
     local isScrollView = iskindof(node, "cc.ScrollView")
     local isTableView = iskindof(node, "cc.TableView")
+    local isScale9Sprite = iskindof(node, "ccui.Scale9Sprite")
 
     local yIndex = 0
     --------------------------- ID   ---------------------------
@@ -355,7 +357,8 @@ function panel:displayNode(node)
         -- size
         createLabel("Size", leftX, topY - stepY * yIndex)
         createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
-        local w = createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        local w = createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX_input_1, topY - stepY *
+                yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
         end)
         createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
@@ -363,7 +366,7 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
-        if isSprite then
+        if isSprite and not isScale9Sprite then
             w:setOpacity(150)
             w:setCascadeOpacityEnabled(true)
             w.enabled = false
@@ -411,7 +414,7 @@ function panel:displayNode(node)
         end, generator.defValues["skewY"])
         yIndex = yIndex + 1
     end
-    if (isLabel or isSprite or isZoomButton) and not isLayerColor then
+    if (isLabel or isSprite or isZoomButton or isSpriteButton) and not isLayerColor then
         -- color
         createLabel("Color3B", leftX, topY - stepY * yIndex)
         createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
@@ -566,15 +569,19 @@ function panel:displayNode(node)
     end
 
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
-    if isSprite or isZoomButton then
-        createLabel(isSprite and "Sprite" or "ZoomButton", leftX, topY - stepY * yIndex, true)
+    if isSprite or isZoomButton or isSpriteButton then
+        if isSpriteButton then
+            createLabel("SpriteButton ", leftX, topY - stepY * yIndex, true)
+        else
+            createLabel(isSprite and "Sprite" or "ZoomButton", leftX, topY - stepY * yIndex, true)
+        end
         yIndex = yIndex + 0.6
 
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
 
-        if isZoomButton then
+        if isZoomButton or isSpriteButton then
             -- click event
             createLabel("onClicked", leftX, topY - stepY * yIndex)
             local clicks = { "-" }
@@ -590,35 +597,78 @@ function panel:displayNode(node)
             end, "-")
             yIndex = yIndex + 1
         end
-        -- sprite file
-        createLabel("Sprite", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.file), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, "file", input, "string"))
-        end)
-        yIndex = yIndex + 1
+        if not isSpriteButton then
+            -- sprite file
+            createLabel("Sprite", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.file), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                editBox:setInput(generator:modify(node, "file", input, "string"))
+            end)
+            yIndex = yIndex + 1
+        else
+            -- normalSprite file
+            createLabel("NormalSprite", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.normalSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                editBox:setInput(generator:modify(node, "normalSprite", input, "string"))
+            end)
+            yIndex = yIndex + 1
+            -- selectedSprite file
+            createLabel("SelectSprite", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.selectedSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                editBox:setInput(generator:modify(node, "selectedSprite", input, "string"))
+            end)
+            yIndex = yIndex + 1
+            -- disabledSprite file
+            createLabel("DisableSprite", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.disabledSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                editBox:setInput(generator:modify(node, "disabledSprite", input, "string"))
+            end)
+            yIndex = yIndex + 1
+        end
+        --        -- centerRect
+        --        createLabel("CenterRect", leftX, topY - stepY * yIndex)
+        --        createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
+        --        createInput(tostring(node.__info.centerRect.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        --            editBox:setInput(generator:modify(node, "centerRect.x", input, "number"))
+        --        end)
+        --        createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
+        --        createInput(tostring(node.__info.centerRect.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        --            editBox:setInput(generator:modify(node, "centerRect.y", input, "number"))
+        --        end)
+        --        yIndex = yIndex + 1
+        --        createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
+        --        createInput(tostring(node.__info.centerRect.width), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        --            editBox:setInput(generator:modify(node, "centerRect.width", input, "number"))
+        --        end)
+        --        createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
+        --        createInput(tostring(node.__info.centerRect.height), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        --            editBox:setInput(generator:modify(node, "centerRect.height", input, "number"))
+        --        end)
+        --        yIndex = yIndex + 1
     end
 
     if isSprite then
         -- blendFunc
-        createLabel("blendFunc", leftX, topY - stepY * yIndex)
-        createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
-        local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
-        local getIndex = function(value)
-            for i, key in ipairs(FUNCS) do
-                if gl[key] == value then
-                    return i
+        if not isScale9Sprite then
+            createLabel("blendFunc", leftX, topY - stepY * yIndex)
+            createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
+            local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
+            local getIndex = function(value)
+                for i, key in ipairs(FUNCS) do
+                    if gl[key] == value then
+                        return i
+                    end
                 end
             end
+            createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
+            end, "ONE")
+            yIndex = yIndex + 1
+            createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
+            createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
+            end, "ONE_MINUS_SRC_ALPHA")
+            yIndex = yIndex + 1
         end
-        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
-        end, "ONE")
-        yIndex = yIndex + 1
-        createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
-        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
-        end, "ONE_MINUS_SRC_ALPHA")
-        yIndex = yIndex + 1
         -- flippedX
         createLabel("FlippedX", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.flippedX == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -627,13 +677,15 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
-    if isZoomButton then
-        -- zoomScale
-        createLabel("ZoomScale", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.zoomScale), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-            editBox:setInput(generator:modify(node, "zoomScale", input, "number"))
-        end)
-        yIndex = yIndex + 1
+    if isZoomButton or isSpriteButton then
+        if isZoomButton then
+            -- zoomScale
+            createLabel("ZoomScale", leftX, topY - stepY * yIndex)
+            createInput(tostring(node.__info.zoomScale), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+                editBox:setInput(generator:modify(node, "zoomScale", input, "number"))
+            end)
+            yIndex = yIndex + 1
+        end
         -- enabled
         createLabel("Enabled", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.enabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -926,12 +978,12 @@ function panel:displayNode(node)
         -- ScaleSize
         createLabel("ScaleSize", leftX, topY - stepY * yIndex)
         createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
-        local scaleWs = { "1", "$scaleX", "$minScale", "$maxScale" }
+        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
         createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleSize.w", scaleWs[index], "string")
         end, "1")
         createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
-        local scaleHs = { "1", "$scaleY", "$minScale", "$maxScale" }
+        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
         createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleSize.h", scaleHs[index], "string")
         end, "1")
@@ -1083,19 +1135,12 @@ function panel:displayNode(node)
         end
     end
 
-    local isProgressTimer = iskindof(node, "ccui.Scale9Sprite")
-    if isProgressTimer then
+    if isScale9Sprite then
         createLabel("Scale9Sprite", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
-        -- sprite file
-        createLabel("Sprite", leftX, topY - stepY * yIndex)
-        createInput(tostring(node.__info.file), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, "file", input, "string"))
-        end)
-        yIndex = yIndex + 1
         -- CapInsets
         createLabel("CapInsets", leftX, topY - stepY * yIndex)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
@@ -1200,6 +1245,7 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
+        location.y = -location.y
         if gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().height > self:getContentSize().height then
                 local scrollY = touch:getScrollY()

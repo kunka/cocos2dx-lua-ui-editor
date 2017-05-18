@@ -181,7 +181,7 @@ function util:drawNode(node, c4f, tag)
     draw:drawRect(cc.p(0.5, 0.5),
         cc.p(0.5, size.height - 0.5),
         cc.p(size.width - 0.5, size.height - 0.5),
-        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 0.3))
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 0.5))
 
     -- anchor point
     local p = node:getAnchorPoint()

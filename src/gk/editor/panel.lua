@@ -524,7 +524,7 @@ function panel:handleEvent()
             gk.event:post("postSync")
         elseif key == "KEY_BACKSPACE" then
             -- delete node
-            if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id then
+            if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id and self.displayingNode ~= self.scene.layer then
                 gk.log("delete node %s", self.displayingNode.__info.id)
                 self:removeNodeIndex(self.displayingNode, self.scene.layer)
                 self.displayingNode:removeFromParent()
@@ -567,6 +567,7 @@ function panel:handleEvent()
     --    end, cc.Handler.EVENT_MOUSE_UP)
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
+        --        location.y = -location.y
         location.y = cc.Director:getInstance():getWinSize().height + location.y
         -- find node
         if self.sortedChildren == nil then
@@ -670,7 +671,7 @@ function panel:onNodeMoved(node, destPos, threshold)
     local sx, sy = gk.util:getGlobalScale(node)
     local size = node:getContentSize()
     local drawLine = function(p1, p2)
-        gk.util:drawSegmentOnNode(self.scene.layer, p1, p2, 8, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.25), tag):setPositionZ(0.00000001)
+        gk.util:drawSegmentOnNode(self.scene.layer, p1, p2, 8, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.5), tag):setPositionZ(0.00000001)
         gk.util:drawDotOnNode(self.scene.layer, p1, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.5), tag)
         gk.util:drawDotOnNode(self.scene.layer, p2, cc.c4f(0 / 255, 255 / 255, 102 / 255, 0.5), tag)
     end

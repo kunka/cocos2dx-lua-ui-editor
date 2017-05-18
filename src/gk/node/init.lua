@@ -12,6 +12,7 @@ gk.Button = import(".Button")
 gk.EditBox = import(".EditBox")
 gk.SelectBox = import(".SelectBox")
 gk.ZoomButton = import(".ZoomButton")
+gk.SpriteButton = import(".SpriteButton")
 gk.TableViewCell = import(".TableViewCell")
 
 -- root containers

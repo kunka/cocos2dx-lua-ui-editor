@@ -24,6 +24,7 @@ generator.defValues = {
     visible = 0,
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
+    --    centerRect = cc.rect(0, 0, 0, 0),
 
     -- scrollView
     bounceable = 0,
@@ -84,6 +85,9 @@ function generator:deflate(node)
         local ret = func(node)
         if ret then
             local def = generator.defValues[k]
+            --            if iskindof(node, "ccui.Scale9Sprite") then
+            --                gk.log("get %s, v:%s, def:%s", k, ret, def)
+            --            end
             if def then
                 -- filter def value
                 if (type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret) then
@@ -275,7 +279,7 @@ function generator:wrap(info, rootTable)
                 if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
                     value = string.trim(value)
                     if rootTable[value] then
---                    dump(rootTable[value].__info)
+                        --                    dump(rootTable[value].__info)
                     end
                     if rootTable[value] == nil then
                         local node = rootTable and rootTable[proxy["id"]] or nil
@@ -436,12 +440,17 @@ generator.nodeCreator = {
         return node
     end,
     ["ccui.Scale9Sprite"] = function(info, rootTable)
-        local node = gk.create_scale9_sprite(info.file)
+        local node = gk.create_scale9_sprite(info.file, info.capInsets)
         info.id = info.id or generator:genID("scale9Sprite", rootTable)
         return node
     end,
     ["ZoomButton"] = function(info, rootTable)
         local node = gk.ZoomButton.new(gk.create_sprite(info.file))
+        info.id = info.id or generator:genID("button", rootTable)
+        return node
+    end,
+    ["SpriteButton"] = function(info, rootTable)
+        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite)
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
@@ -582,6 +591,10 @@ generator.macroFuncs = {
             parent = node.__rootTable[node.__info.parentId]
         end
         return parent and parent:getContentSize()[key] or gk.display.winSize()[key]
+        --        if parent and parent.__info and parent.__info[key] then
+        --            return parent.__info[key]
+        --        end
+        --        return parent and parent:getContentSize()[key] or gk.display.winSize()[key]
     end,
 }
 
@@ -619,6 +632,15 @@ generator.nodeSetFuncs = {
         node:setIgnoreAnchorPointForPosition(var == 0)
     end,
     width = function(node, var)
+        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+            return
+        end
+        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+            return
+        end
+        --        if iskindof(node, "cc.TableView") then
+        --            return
+        --        end
         local width = generator:parseValue("width", node, var)
         local ss = node.__info.scaleSize
         local scaleW = generator:parseValue("scaleW", node, ss.w)
@@ -636,6 +658,12 @@ generator.nodeSetFuncs = {
         if iskindof(node, "cc.Label") and node.__info.overflow == 3 then
             return
         end
+        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+            return
+        end
+        --        if iskindof(node, "cc.TableView") then
+        --            return
+        --        end
         local height = generator:parseValue("height", node, var)
         local ss = node.__info.scaleSize
         local scaleH = generator:parseValue("scaleH", node, ss.h)
@@ -749,10 +777,32 @@ generator.nodeSetFuncs = {
             local size = node:getContentSize()
             node.__info.width = size.width
             node.__info.height = size.height
+        elseif iskindof(node, "ccui.Scale9Sprite") then
+            node:setSpriteFrame(gk.create_sprite_frame(var), node.__info.capInsets)
         else
             node:setSpriteFrame(gk.create_sprite_frame(var))
         end
     end,
+    normalSprite = function(node, var)
+        node:setNormalSprite(var)
+        local size = node:getContentSize()
+        node.__info.width = size.width
+        node.__info.height = size.height
+        gk.event:post("displayNode", node)
+    end,
+    selectedSprite = function(node, var)
+        node:setSelectedSprite(var)
+    end,
+    disabledSprite = function(node, var)
+        node:setDisabledSprite(var)
+    end,
+    --    centerRect = function(node, var)
+    --        if node.__info.type == "ZoomButton" then
+    --            -- TODO
+    --        else
+    --            node:setCenterRect(var)
+    --        end
+    --    end,
     --------------------------- cc.Sprite, Button, ccui.Scale9Sprite   ---------------------------
     flippedX = function(node, var)
         node:setFlippedX(var == 0)
@@ -1039,7 +1089,11 @@ generator.nodeGetFuncs = {
         return node.__info.scaleXY
     end,
     scaleSize = function(node)
-        return node.__info.scaleSize
+        if not iskindof(node, "cc.Sprite") then
+            return node.__info.scaleSize
+        else
+            return generator.defValues.scaleSize
+        end
     end,
     anchor = function(node)
         return node.__info.anchor or node:getAnchorPoint()
@@ -1068,7 +1122,7 @@ generator.nodeGetFuncs = {
     width = function(node)
         if iskindof(node, "cc.Label") then
             return node.__info.width or node:getWidth()
-        elseif iskindof(node, "cc.Sprite") then
+        elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
             return node:getContentSize().width
         elseif iskindof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
@@ -1081,7 +1135,7 @@ generator.nodeGetFuncs = {
     height = function(node)
         if iskindof(node, "cc.Label") then
             return node.__info.height or node:getHeight()
-        elseif iskindof(node, "cc.Sprite") then
+        elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
             return node:getContentSize().height
         elseif iskindof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height
@@ -1139,8 +1193,20 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Sprite   ---------------------------
     file = function(node)
-        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton") and node.__info.file)
+        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton" or node.__info.type == "ccui.Scale9Sprite") and node.__info.file)
     end,
+    normalSprite = function(node)
+        return (node.__info.type == "SpriteBUtton" and node.normalSprite or node.__info.normalSprite)
+    end,
+    selectedSprite = function(node)
+        return (node.__info.type == "SpriteBUtton" and node.selectedSprite or node.__info.selectedSprite)
+    end,
+    disabledSprite = function(node)
+        return (node.__info.type == "SpriteBUtton" and node.disabledSprite or node.__info.disabledSprite)
+    end,
+    --    centerRect = function(node)
+    --        return (node.__info.type == "cc.Sprite" and (node.__info.centerRect or node:getCenterRect()))
+    --    end,
     --------------------------- cc.Sprite, ccui.Scale9Sprite   ---------------------------
     flippedX = function(node)
         return ((node.__info.type == "cc.Sprite" or node.__info.type == "ccui.Scale9Sprite") and (node.__info.flippedX or (node:isFlippedX() and 0 or 1)))
@@ -1163,10 +1229,10 @@ generator.nodeGetFuncs = {
         return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
     end,
     onClicked = function(node)
-        return (node.__info.type == "ZoomButton") and (node.__info.onClicked or "-")
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onClicked or "-")
     end,
     enabled = function(node)
-        return (node.__info.type == "ZoomButton") and (node.__info.enabled or (node.enabled and 0 or 1))
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.enabled or (node.enabled and 0 or 1))
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)

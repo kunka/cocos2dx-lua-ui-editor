@@ -500,6 +500,7 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
+        location.y = -location.y
         if gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().height > self:getContentSize().height then
                 local scrollY = touch:getScrollY()

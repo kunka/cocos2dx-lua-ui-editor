@@ -180,9 +180,10 @@ function panel.create(parent)
     self.widgets = {
         { type = "cc.Node", },
         { type = "cc.Sprite", file = "?", },
-        --        { type = "ccui.Scale9Sprite", file = "?", },
+        { type = "ccui.Scale9Sprite", file = "?", },
         { type = "cc.Label", },
         { type = "ZoomButton", file = "?", },
+        { type = "SpriteButton", normalSprite = "?", },
         { type = "cc.Layer", },
         { type = "cc.LayerColor", },
         { type = "cc.LayerGradient", },
@@ -378,6 +379,7 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
+        location.y = -location.y
         local rect = { x = gk.display.leftWidth, y = 0, width = gk.display.winSize().width, height = self:getContentSize().height }
         local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
         if cc.rectContainsPoint(rect, touchP) then
