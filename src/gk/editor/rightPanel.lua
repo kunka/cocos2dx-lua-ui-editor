@@ -250,18 +250,18 @@ function panel:displayNode(node)
         generator:modify(node, "lock", selected, "number")
     end)
     -- widget
-    if node.__info.isWidget == 0 then
-        local w = createLabel("Widget", leftX_input_short_2, topY - stepY * yIndex)
-        local h = createCheckBox(node.__info.isWidget == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            --        generator:modify(node, "isWidget", 1 - selected, "number")
-        end)
-        w:setOpacity(150)
-        w:setCascadeOpacityEnabled(true)
-        w.enabled = false
-        h:setOpacity(150)
-        h:setCascadeOpacityEnabled(true)
-        h:setTouchEnabled(false)
-    end
+    --    if node.__info.isWidget == 0 then
+    --        local w = createLabel("Widget", leftX_input_short_2, topY - stepY * yIndex)
+    --        local h = createCheckBox(node.__info.isWidget == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+    --            --        generator:modify(node, "isWidget", 1 - selected, "number")
+    --        end)
+    --        w:setOpacity(150)
+    --        w:setCascadeOpacityEnabled(true)
+    --        w.enabled = false
+    --        h:setOpacity(150)
+    --        h:setCascadeOpacityEnabled(true)
+    --        h:setTouchEnabled(false)
+    --    end
     yIndex = yIndex + 1
     --------------------------- cc.Node   ---------------------------
     createLabel("Node", leftX, topY - stepY * yIndex, true)
@@ -620,7 +620,7 @@ function panel:displayNode(node)
         end, "ONE_MINUS_SRC_ALPHA")
         yIndex = yIndex + 1
         -- flippedX
-        createLabel("FippedX", leftX, topY - stepY * yIndex)
+        createLabel("FlippedX", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.flippedX == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "flippedX", selected, "number")
         end)

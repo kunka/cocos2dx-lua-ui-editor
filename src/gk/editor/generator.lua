@@ -97,7 +97,7 @@ function generator:deflate(node)
         end
     end
 
-    if not iskindof(node, "cc.TableView") and not info.isWidget then
+    if not iskindof(node, "cc.TableView") and not node.__info.isWidget then
         -- rescan children
         node:sortAllChildren()
         local children = node:getChildren()
@@ -274,12 +274,16 @@ function generator:wrap(info, rootTable)
                 local b = string.byte(value:sub(1, 1))
                 if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
                     value = string.trim(value)
+                    if rootTable[value] then
+--                    dump(rootTable[value].__info)
+                    end
                     if rootTable[value] == nil then
                         local node = rootTable and rootTable[proxy["id"]] or nil
                         if node then
                             -- change id
                             rootTable[value] = node
                             proxy[key] = value
+                            gk.log("change id %s,%s", key, tostring(value))
                             node.__rootTable = rootTable
                             gk.event:post("postSync")
                             gk.event:post("displayDomTree", true)
@@ -500,6 +504,9 @@ generator.nodeCreator = {
         local clazz = gk.resource:require(info.type)
         local node = clazz:create()
         local type = info.type
+        local names = string.split(type, ".")
+        local names = string.split(names[1], "/")
+        type = names[#names]
         type = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
         -- copy info
         local keys = table.keys(node.__info.__self)
@@ -739,8 +746,9 @@ generator.nodeSetFuncs = {
         if node.__info.type == "ZoomButton" then
             node.contentNode:setSpriteFrame(gk.create_sprite_frame(var))
             node:setContentNode(node.contentNode)
-            node.__info.width = nil
-            node.__info.height = nil
+            local size = node:getContentSize()
+            node.__info.width = size.width
+            node.__info.height = size.height
         else
             node:setSpriteFrame(gk.create_sprite_frame(var))
         end
@@ -1015,7 +1023,10 @@ generator.nodeGetFuncs = {
         return node.__info.id
     end,
     type = function(node)
-        return node.__cname or tolua.type(node)
+        return node.__info.isWidget and node.__info.type or node.__cname or tolua.type(node)
+    end,
+    isWidget = function(node)
+        return node.__info.isWidget
     end,
     --------------------------- cc.Node   ---------------------------
     x = function(node)
@@ -1128,7 +1139,7 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Sprite   ---------------------------
     file = function(node)
-        return (node.__info.type == "cc.Sprite" and node.__info.file)
+        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton") and node.__info.file)
     end,
     --------------------------- cc.Sprite, ccui.Scale9Sprite   ---------------------------
     flippedX = function(node)
