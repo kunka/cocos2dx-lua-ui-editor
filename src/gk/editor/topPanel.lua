@@ -101,7 +101,7 @@ function panel.create(parent)
     end
 
     createLine(gk.display.leftWidth)
-    createLine(gk.display.leftWidth + gk.display.winSize().width)
+    createLine(gk.display.leftWidth + gk.display:winSize().width)
 
     local yIndex = 0
     -- device size
@@ -152,7 +152,7 @@ function panel.create(parent)
     yIndex = yIndex + 1
 
     -- right
-    local rightX = gk.display.leftWidth + gk.display.winSize().width + leftX
+    local rightX = gk.display.leftWidth + gk.display:winSize().width + leftX
     local rightX2 = size.width - inputWidth1 - leftX
     local yIndex = 0
     -- bg
@@ -177,23 +177,7 @@ function panel.create(parent)
     end))
 
     -- widgets
-    self.widgets = {
-        { type = "cc.Node", },
-        { type = "cc.Sprite", file = "?", },
-        { type = "ccui.Scale9Sprite", file = "?", },
-        { type = "cc.Label", },
-        { type = "ZoomButton", file = "?", },
-        { type = "SpriteButton", normalSprite = "?", },
-        { type = "ccui.CheckBox", backGround = "gk/res/texture/check_box_normal.png", cross = "gk/res/texture/check_box_selected.png" },
-        { type = "cc.Layer", },
-        { type = "cc.LayerColor", },
-        { type = "cc.LayerGradient", },
-        { type = "cc.ScrollView" },
-        { type = "cc.TableView" },
-        { type = "cc.ClippingNode" },
-        { type = "cc.ClippingRectangleNode" },
-        { type = "cc.ProgressTimer" },
-    }
+    self.widgets = generator.config.supportNodes
     -- content node
     local iconScale = 0.32
     local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets)
@@ -202,7 +186,7 @@ function panel.create(parent)
     self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
     --    gk.util:drawNodeBounds(self.displayInfoNode)
     -- clipping
-    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display.winSize().width, self:getContentSize().height)
+    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width, self:getContentSize().height)
     self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
     self:addChild(self.clippingNode)
     self.clippingNode:addChild(self.displayInfoNode)
@@ -274,7 +258,7 @@ function panel.create(parent)
             if not self.draggingNode then
                 local node = gk.create_sprite(self.widgets[i].file)
                 node:setPosition(pos)
-                node:setScale(gk.display.minScale())
+                node:setScale(gk.display:minScale())
                 self:addChild(node)
                 self.draggingNode = node
                 node:setPositionZ(0.00000001)
@@ -381,14 +365,14 @@ function panel:handleEvent()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
         location.y = -location.y
-        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display.winSize().width, height = self:getContentSize().height }
+        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width, height = self:getContentSize().height }
         local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
         if cc.rectContainsPoint(rect, touchP) then
-            if self.displayInfoNode:getContentSize().width > gk.display.winSize().width then
+            if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
                 local scrollX = touch:getScrollX()
                 local x, y = self.displayInfoNode:getPosition()
                 x = x + scrollX * 10
-                x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display.winSize().width), gk.display.leftWidth)
+                x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display:winSize().width), gk.display.leftWidth)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayInfoOffset = cc.p(x, y)
             end

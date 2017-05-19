@@ -28,4 +28,5 @@ setmetatable(gk.exports, {
 require "gk.core.init"
 require "gk.node.init"
 require "gk.controller.init"
+require "gk.editor.init"
 gk.util = require "gk.tools.util"

@@ -7,68 +7,8 @@
 --
 
 local generator = {}
-
--- not save to minimize gen file size
-generator.defValues = {
-    scaleX = "1",
-    scaleY = "1",
-    skewX = 0,
-    skewY = 0,
-    rotation = 0,
-    opacity = 255,
-    anchor = { x = 0.5, y = 0.5 },
-    scaleXY = { x = "1", y = "1" },
-    scaleSize = { w = "1", h = "1" },
-    localZOrder = 0,
-    tag = -1,
-    visible = 0,
-    cascadeOpacityEnabled = 1,
-    cascadeColorEnabled = 1,
-    --    centerRect = cc.rect(0, 0, 0, 0),
-
-    -- scrollView
-    bounceable = 0,
-    clipToBD = 0,
-    direction = 2,
-    touchEnabled = 0,
-    -- label
-    additionalKerning = 0,
-    enableBold = 1,
-    enableGlow = 1,
-    enableItalics = 1,
-    enableOutline = 1,
-    enableShadow = 1,
-    enableStrikethrough = 1,
-    enableUnderline = 1,
-    vAlign = 0,
-    hAlign = 0,
-    lineHeight = -1,
-    overflow = 0,
-    outlineSize = 0,
-    enableWrap = 0,
-    lineBreakWithoutSpace = 1,
-    shadow = {
-        a = 0,
-        b = 0,
-        g = 0,
-        h = 0,
-        r = 0,
-        radius = 0,
-        w = 0
-    },
-    textColor = {
-        a = 255,
-        b = 255,
-        g = 255,
-        r = 255,
-    },
-    effectColor = {
-        a = 255,
-        b = 0,
-        g = 0,
-        r = 0
-    },
-}
+local config = require("gk.editor.config")
+generator.config = config
 
 function generator:deflate(node)
     local info = {}
@@ -84,7 +24,7 @@ function generator:deflate(node)
     for k, func in pairs(self.nodeGetFuncs) do
         local ret = func(node)
         if ret then
-            local def = generator.defValues[k]
+            local def = config.defValues[k]
             --            if iskindof(node, "ccui.Scale9Sprite") then
             --                gk.log("get %s, v:%s, def:%s", k, ret, def)
             --            end
@@ -191,71 +131,6 @@ function generator:createNode(info, rootNode, rootTable)
     return node
 end
 
-function generator:default(type, key)
-    if not self._default then
-        self._default = {}
-        --------------------------- root container   ---------------------------
-        self._default["Dialog"] = {
-            width = "$fill",
-            height = "$fill",
-        }
-        self._default["Layer"] = {
-            width = "$fill",
-            height = "$fill",
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.TableViewCell"] = {
-            width = "$fill",
-            height = "50",
-        }
-        --------------------------- content node   ---------------------------
-        self._default["cc.Node"] = {
-            lock = 1,
-            file = "",
-            scaleXY = { x = "1", y = "1" },
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.Label"] = {
-            string = "label",
-            fontFile = {},
-            fontSize = 32,
-            defaultSysFont = "Helvetica",
-        }
-        self._default["cc.LayerColor"] = {
-            width = "$win.w",
-            height = "$win.h",
-            color = cc.c4b(153, 153, 153, 255),
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.ScrollView"] = {
-            width = 100,
-            height = 150,
-            _flod = true,
-            viewSize = cc.size(100, 100),
-        }
-        self._default["cc.TableView"] = {
-            width = 100,
-            height = 150,
-            _flod = true,
-            viewSize = cc.size(100, 100),
-        }
-        self._default["ClippingRectangleNode"] = {
-            clippingRegion = cc.rect(0, 0, 100, 100),
-        }
-        self._default["cc.LayerGradient"] = {
-            width = "$win.w",
-            height = "$win.h",
-            startColor = cc.c4b(0, 0, 0, 255),
-            endColor = cc.c4b(255, 255, 255, 255),
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.ProgressTimer"] = {
-            sprite = { file = "", type = "cc.Sprite", voidContent = true, lock = 1 },
-        }
-    end
-    return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
-end
-
 function generator:wrap(info, rootTable)
     local proxy = info
     info = {}
@@ -267,7 +142,7 @@ function generator:wrap(info, rootTable)
             else
                 var = proxy[key]
                 if var == nil then
-                    return self:default(info.type, key)
+                    return self.config:default(info.type, key)
                 else
                     return var
                 end
@@ -368,7 +243,7 @@ function generator:parseMacroFunc(node, input)
     if type(input) == "string" and string.len(input) > 1 and input:sub(1, 1) == "$" then
         local macro = input:sub(2, #input)
         -- global preset get func
-        local func = self.macroFuncs[macro]
+        local func = self.config.macroFuncs[macro]
         if func then
             return func, macro
         end
@@ -575,36 +450,6 @@ function generator:updateSize(node, property)
         end
     end
 end
-
-generator.macroFuncs = {
-    -- Scale
-    minScale = gk.display.minScale,
-    maxScale = gk.display.maxScale,
-    xScale = gk.display.xScale,
-    yScale = gk.display.yScale,
-    scaleX = function(key, node, ...) return gk.display:scaleX(...) end,
-    scaleY = function(key, node, ...) return gk.display:scaleY(...) end,
-    scaleXRvs = function(key, node, ...) return gk.display:scaleXRvs(...) end,
-    scaleYRvs = function(key, node, ...) return gk.display:scaleYRvs(...) end,
-    scaleTP = function(key, node, ...) return gk.display:scaleTP(...) end,
-    scaleBT = function(key, node, ...) return gk.display:scaleBT(...) end,
-    scaleLT = function(key, node, ...) return gk.display:scaleLT(...) end,
-    scaleRT = function(key, node, ...) return gk.display:scaleRT(...) end,
-    ["win.w"] = function() return gk.display.winSize().width end,
-    ["win.h"] = function() return gk.display.winSize().height end,
-    -- contentSize, ViewSize
-    fill = function(key, node)
-        local parent = node:getParent()
-        if not parent and node.__info and node.__info.parentId and node.__rootTable then
-            parent = node.__rootTable[node.__info.parentId]
-        end
-        return parent and parent:getContentSize()[key] or gk.display.winSize()[key]
-        --        if parent and parent.__info and parent.__info[key] then
-        --            return parent.__info[key]
-        --        end
-        --        return parent and parent:getContentSize()[key] or gk.display.winSize()[key]
-    end,
-}
 
 generator.nodeSetFuncs = {
     --------------------------- cc.Node   ---------------------------
@@ -1104,7 +949,7 @@ generator.nodeGetFuncs = {
         if not iskindof(node, "cc.Sprite") then
             return node.__info.scaleSize
         else
-            return generator.defValues.scaleSize
+            return config.defValues.scaleSize
         end
     end,
     anchor = function(node)

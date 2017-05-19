@@ -33,7 +33,7 @@ function Dialog:animateOut()
     if gk.mode ~= gk.MODE_EDIT then
         if self.dialogBg then
             self.dialogBg:setScale(0)
-            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display.minScale())))
+            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display:minScale())))
         end
     end
 end

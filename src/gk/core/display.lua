@@ -52,7 +52,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     winSize.height = s.height + display.topHeight + display.bottomHeight
     local director = cc.Director:getInstance()
     local view = director:getOpenGLView()
---    view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
+    --    view:setFrameSize(winSize.width, winSize.height) -- only valid before cocos2d-x 3.11 :(
     gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
     view:setViewName("!!!") -- not implemented :(
 
@@ -61,7 +61,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
     display.width = function() return size.width end
     display.height = function() return size.height end
-    local xScale, yScale = display.winSize().width / display.width(), display.winSize().height / display.height()
+    local xScale, yScale = display:winSize().width / display.width(), display:winSize().height / display.height()
     local minScale, maxScale = math.min(xScale, yScale), math.max(xScale, yScale)
     if display.resolutionPolicy == cc.ResolutionPolicy.FIXED_WIDTH then
         display.xScale = function() return xScale end
@@ -72,26 +72,26 @@ function display:initWithDesignSize(size, resolutionPolicy)
             return x * xScale
         end
         display.scaleY = function(_, y)
-            return xScale * y + (display.winSize().height - display.height() * xScale) / 2
+            return xScale * y + (display:winSize().height - display.height() * xScale) / 2
         end
         display.scaleXY = function(_, pos, posY)
             local y = posY and posY or pos.y
             local x = posY and pos or pos.x
-            return cc.p(xScale * x, xScale * y + (display.winSize().height - display.height() * xScale) / 2)
+            return cc.p(xScale * x, xScale * y + (display:winSize().height - display.height() * xScale) / 2)
         end
         display.scaleXRvs = function(_, x)
             return x / xScale
         end
         display.scaleYRvs = function(_, y)
-            return (y - (display.winSize().height - display.height() * xScale) / 2) / xScale
+            return (y - (display:winSize().height - display.height() * xScale) / 2) / xScale
         end
         display.scaleXYRvs = function(_, pos, posY)
             local y = posY and posY or pos.y
             local x = posY and pos or pos.x
-            return cc.p(x / xScale, (y - (display.winSize().height - display.height() * xScale) / 2) / xScale)
+            return cc.p(x / xScale, (y - (display:winSize().height - display.height() * xScale) / 2) / xScale)
         end
         display.scaleTP = function(_, y)
-            return xScale * y + (display.winSize().height - display.height() * xScale)
+            return xScale * y + (display:winSize().height - display.height() * xScale)
         end
         display.scaleBT = function(_, y)
             return xScale * y
@@ -104,7 +104,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
         display.minScale = function() return yScale end
         display.maxScale = function() return yScale end
         display.scaleX = function(_, x)
-            return x * yScale + (display.winSize().width - display.width() * yScale) / 2
+            return x * yScale + (display:winSize().width - display.width() * yScale) / 2
         end
         display.scaleY = function(_, y)
             return yScale * y
@@ -112,10 +112,10 @@ function display:initWithDesignSize(size, resolutionPolicy)
         display.scaleXY = function(_, pos, posY)
             local y = posY and posY or pos.y
             local x = posY and pos or pos.x
-            return cc.p(x * yScale + (display.winSize().width - display.width() * yScale) / 2, yScale * y)
+            return cc.p(x * yScale + (display:winSize().width - display.width() * yScale) / 2, yScale * y)
         end
         display.scaleXRvs = function(_, x)
-            return (x - (display.winSize().width - display.width() * yScale) / 2) / yScale
+            return (x - (display:winSize().width - display.width() * yScale) / 2) / yScale
         end
         display.scaleYRvs = function(_, y)
             return y / yScale
@@ -123,13 +123,13 @@ function display:initWithDesignSize(size, resolutionPolicy)
         display.scaleXYRvs = function(_, pos, posY)
             local y = posY and posY or pos.y
             local x = posY and pos or pos.x
-            return cc.p((x - (display.winSize().width - display.width() * yScale) / 2) / yScale, y / yScale)
+            return cc.p((x - (display:winSize().width - display.width() * yScale) / 2) / yScale, y / yScale)
         end
         display.scaleLT = function(_, x)
             return x * yScale
         end
         display.scaleRT = function(_, x)
-            return x * yScale + (display.winSize().width - display.width() * yScale)
+            return x * yScale + (display:winSize().width - display.width() * yScale)
         end
         display.scaleTP = display.scaleY
         display.scaleBT = display.scaleY
@@ -189,11 +189,12 @@ function display:initWithDesignSize(size, resolutionPolicy)
     end
 
     -- actual content size
-    display.contentSize = cc.size(display.xScale() * display.width(), display.yScale() * display.height())
+    display.contentSize = function() return cc.size(display:xScale() * display.width(), display:yScale() * display.height()) end
+    display.designSize = function() return size end
 
     gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
-        size.width, size.height, display.winSize().width, display.winSize().height,
-        display.xScale(), display.yScale(), display.minScale(), display.maxScale())
+        size.width, size.height, display:winSize().width, display:winSize().height,
+        display:xScale(), display:yScale(), display:minScale(), display:maxScale())
 end
 
 function display:addEditorPanel(scene)

@@ -17,7 +17,7 @@ function injector:layer_method_swizz(type, methodName)
                 local vars = { ... }
                 local count = #vars
                 if count <= 2 then
-                    node:setContentSize(gk.display.winSize())
+                    node:setContentSize(gk.display:winSize())
                 end
                 gk.event:post("onNodeCreate", node)
             end
@@ -131,12 +131,12 @@ function injector:onNodeCreate(node)
                 local clazz = require(gk.resource.genNodes[node.__cname].path)
                 local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
                 if isLayer then
-                    node.__info.width = generator:default("Layer", "width")
-                    node.__info.height = generator:default("Layer", "height")
+                    node.__info.width = generator.config:default("Layer", "width")
+                    node.__info.height = generator.config:default("Layer", "height")
                 end
                 if iskindof(node, "cc.TableViewCell") then
-                    node.__info.width = generator:default("cc.TableViewCell", "width")
-                    node.__info.height = generator:default("cc.TableViewCell", "height")
+                    node.__info.width = generator.config:default("cc.TableViewCell", "width")
+                    node.__info.height = generator.config:default("cc.TableViewCell", "height")
                 end
                 self:sync(node)
             end

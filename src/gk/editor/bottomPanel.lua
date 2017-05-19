@@ -18,7 +18,7 @@ function panel.create(parent)
     -- size label
     local fontName = "gk/res/font/Consolas.ttf"
     local content = string.format("designSize(%.0fx%.0f) winSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f) minScale(%.2f)",
-        gk.display.width(), gk.display.height(), gk.display.winSize().width, gk.display.winSize().height, gk.display.xScale(), gk.display.yScale(), gk.display.minScale())
+        gk.display.width(), gk.display.height(), gk.display:winSize().width, gk.display:winSize().height, gk.display:xScale(), gk.display:yScale(), gk.display:minScale())
     local label = cc.Label:createWithTTF(content, fontName, 48)
     label:setScale(0.2)
     local height = 20
