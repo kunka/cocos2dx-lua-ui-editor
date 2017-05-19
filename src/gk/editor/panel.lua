@@ -107,7 +107,7 @@ function panel:subscribeEvent()
     end)
     gk.event:subscribe(self, "syncNow", function(node)
         local injector = require("gk.core.injector")
-        injector:sync(node or self.scene.layer)
+        injector:sync(node or (self.scene and self.scene.layer))
     end)
 end
 

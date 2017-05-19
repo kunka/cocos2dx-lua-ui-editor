@@ -11,6 +11,7 @@ gk.MODE_EDIT = 1
 gk.mode = gk.MODE_RELEASE
 gk.defaultSpritePathDebug = "gk/res/texture/default.png"
 gk.defaultSpritePathRelease = "gk/res/texture/release.png"
+gk.exception = false
 
 -- export global variable
 local __g = _G

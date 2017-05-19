@@ -264,6 +264,11 @@ function panel:displayDomNode(node, layer)
                             elseif nd2:getParent() == nd1 then
                                 break
                             else
+                                if nd1.__info and nd1.__info.isWidget then
+                                    -- TODO: Widget cannot be used as container now!
+                                    gk.log("TODO: Widget cannot be used as container now!")
+                                    return
+                                end
                                 -- change container mode
                                 gk.util:drawNode(node, cc.c4f(1, 0, 0, 1), -2)
                                 self.mode = 2

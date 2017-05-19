@@ -114,6 +114,7 @@ function util:restartGame(mode)
     end
 
     gk.event:post("syncNow")
+    gk.event:init()
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)

@@ -133,7 +133,7 @@ end
 
 function generator:inflate(info, rootNode, rootTable)
     local node = self:createNode(info, rootNode, rootTable)
-    if node and info.children then
+    if node and info.children and not info.isWidget then
         for i = 1, #info.children do
             local child = info.children[i]
             if child and child.id then
@@ -151,6 +151,7 @@ function generator:inflate(info, rootNode, rootTable)
 end
 
 function generator:createNode(info, rootNode, rootTable)
+    gk.log("before createNode %s", info.id)
     info = self:wrap(info, rootTable)
     local node
     if rootNode then
@@ -159,7 +160,7 @@ function generator:createNode(info, rootNode, rootTable)
         local creator = self.nodeCreator[info.isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
-            --            gk.log("createNode %s,%s", node, info.id)
+            gk.log("createNode %s,%s", node, info.id)
         else
             gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
             return nil
@@ -230,11 +231,13 @@ function generator:default(type, key)
             width = 100,
             height = 150,
             _flod = true,
+            viewSize = cc.size(100, 100),
         }
         self._default["cc.TableView"] = {
             width = 100,
             height = 150,
             _flod = true,
+            viewSize = cc.size(100, 100),
         }
         self._default["ClippingRectangleNode"] = {
             clippingRegion = cc.rect(0, 0, 100, 100),

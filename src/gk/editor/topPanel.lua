@@ -191,7 +191,7 @@ function panel.create(parent)
         { type = "cc.ScrollView" },
         { type = "cc.TableView" },
         { type = "cc.ClippingNode" },
-        { type = "cc.ClipRectNode" },
+        { type = "cc.ClippingRectangleNode" },
         { type = "cc.ProgressTimer" },
     }
     -- content node

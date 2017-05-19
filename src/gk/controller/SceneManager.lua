@@ -18,17 +18,35 @@ function SceneManager:createScene(layerName, ...)
     -- init scene at first, need create edit panel
     local scene = cc.Scene:create()
     local clazz = gk.resource:require(layerName)
-    local layer = clazz:create(...)
-    scene:addChild(layer)
-    scene.layer = layer
-    return scene
+    if clazz then
+        local layer
+        local status, _ = xpcall(function(...)
+            layer = clazz:create(...)
+        end, function(msg)
+            local ErrorReporter = require "app.feedback.ErrorReporter"
+            if ErrorReporter then
+                ErrorReporter:reportException(msg)
+            end
+        end)
+        if status then
+            scene:addChild(layer)
+            scene.layer = layer
+            return scene, true
+        else
+            gk.log("SceneManager:createScene error, create layer --> %s failed", layerName)
+            return scene, false
+        end
+    else
+        gk.log("SceneManager:createScene error, create layer class --> %s failed", layerName)
+        return scene, false
+    end
 end
 
 -- layerName:must inherit from Layer
 function SceneManager:push(layerName, ...)
     gk.log("SceneManager:push --> %s", layerName)
-    local scene = self:createScene(layerName, ...)
-    return self:pushScene(scene)
+    local scene, ret = self:createScene(layerName, ...)
+    return self:pushScene(scene), ret
 end
 
 function SceneManager:pushScene(scene)
@@ -41,8 +59,8 @@ end
 
 function SceneManager:replace(layerName, ...)
     gk.log("SceneManager:replace --> %s", layerName)
-    local scene = self:createScene(layerName, ...)
-    return self:replaceScene(scene)
+    local scene, ret = self:createScene(layerName, ...)
+    return self:replaceScene(scene), ret
 end
 
 function SceneManager:replaceScene(scene)
