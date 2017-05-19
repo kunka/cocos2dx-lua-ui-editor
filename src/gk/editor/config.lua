@@ -88,69 +88,71 @@ config.defValues = {
     },
 }
 
+config.defaultProps =
+{
+    --------------------------- root container   ---------------------------
+    Dialog = {
+        width = "$fill",
+        height = "$fill",
+    },
+    Layer = {
+        width = "$fill",
+        height = "$fill",
+        scaleSize = { w = "1", h = "1" },
+    },
+    ["cc.TableViewCell"] = {
+        width = "$fill",
+        height = "50",
+    },
+    --------------------------- content node   ---------------------------
+    ["cc.Node"] = {
+        lock = 1,
+        file = "",
+        scaleXY = { x = "1", y = "1" },
+        scaleSize = { w = "1", h = "1" },
+        anchor = { x = 0.5, y = 0.5 },
+    },
+    ["cc.Label"] = {
+        string = "label",
+        fontFile = {},
+        fontSize = 32,
+        defaultSysFont = "Helvetica",
+    },
+    ["cc.LayerColor"] = {
+        width = "$win.w",
+        height = "$win.h",
+        color = cc.c4b(153, 153, 153, 255),
+        scaleSize = { w = "1", h = "1" },
+    },
+    ["cc.ScrollView"] = {
+        width = 100,
+        height = 150,
+        _flod = true,
+        viewSize = cc.size(100, 100),
+    },
+    ["cc.TableView"] = {
+        width = 100,
+        height = 150,
+        _flod = true,
+        viewSize = cc.size(100, 100),
+    },
+    ClippingRectangleNode = {
+        clippingRegion = cc.rect(0, 0, 100, 100),
+    },
+    ["cc.LayerGradient"] = {
+        width = "$win.w",
+        height = "$win.h",
+        startColor = cc.c4b(0, 0, 0, 255),
+        endColor = cc.c4b(255, 255, 255, 255),
+        scaleSize = { w = "1", h = "1" },
+    },
+    ["cc.ProgressTimer"] = {
+        sprite = { file = "", type = "cc.Sprite", voidContent = true, lock = 1 },
+    },
+}
+
 function config:default(type, key)
-    if not self._default then
-        self._default = {}
-        --------------------------- root container   ---------------------------
-        self._default["Dialog"] = {
-            width = "$fill",
-            height = "$fill",
-        }
-        self._default["Layer"] = {
-            width = "$fill",
-            height = "$fill",
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.TableViewCell"] = {
-            width = "$fill",
-            height = "50",
-        }
-        --------------------------- content node   ---------------------------
-        self._default["cc.Node"] = {
-            lock = 1,
-            file = "",
-            scaleXY = { x = "1", y = "1" },
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.Label"] = {
-            string = "label",
-            fontFile = {},
-            fontSize = 32,
-            defaultSysFont = "Helvetica",
-        }
-        self._default["cc.LayerColor"] = {
-            width = "$win.w",
-            height = "$win.h",
-            color = cc.c4b(153, 153, 153, 255),
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.ScrollView"] = {
-            width = 100,
-            height = 150,
-            _flod = true,
-            viewSize = cc.size(100, 100),
-        }
-        self._default["cc.TableView"] = {
-            width = 100,
-            height = 150,
-            _flod = true,
-            viewSize = cc.size(100, 100),
-        }
-        self._default["ClippingRectangleNode"] = {
-            clippingRegion = cc.rect(0, 0, 100, 100),
-        }
-        self._default["cc.LayerGradient"] = {
-            width = "$win.w",
-            height = "$win.h",
-            startColor = cc.c4b(0, 0, 0, 255),
-            endColor = cc.c4b(255, 255, 255, 255),
-            scaleSize = { w = "1", h = "1" },
-        }
-        self._default["cc.ProgressTimer"] = {
-            sprite = { file = "", type = "cc.Sprite", voidContent = true, lock = 1 },
-        }
-    end
-    return (self._default[type] and self._default[type][key]) or self._default["cc.Node"][key]
+    return (self.defaultProps[type] and self.defaultProps[type][key]) or self.defaultProps["cc.Node"][key]
 end
 
 config.macroFuncs = {

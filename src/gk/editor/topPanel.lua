@@ -177,7 +177,7 @@ function panel.create(parent)
     end))
 
     -- widgets
-    self.widgets = generator.config.supportNodes
+    self.widgets = clone(generator.config.supportNodes)
     -- content node
     local iconScale = 0.32
     local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets)
@@ -197,7 +197,7 @@ function panel.create(parent)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
         if nodeInfo.clazz.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.path, isWidget = 0 })
+            table.insert(self.widgets, { type = nodeInfo.path, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
         end
     end
 
@@ -215,7 +215,7 @@ function panel.create(parent)
         node:setPosition(originPos)
         self.displayInfoNode:addChild(node)
 
-        local names = string.split(self.widgets[i].type, ".")
+        local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
         local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and names[1] or names[#names], fontName, 7 * 4)
         label:setScale(scale)
         label:setDimensions(node:getContentSize().width + stepX * 2 - 8, 60)
@@ -365,9 +365,8 @@ function panel:handleEvent()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
         location.y = -location.y
-        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width, height = self:getContentSize().height }
-        local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
-        if cc.rectContainsPoint(rect, touchP) then
+        location.y = gk.display:winSize().height + gk.display.topHeight + gk.display.bottomHeight - location.y
+        if gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
                 local scrollX = touch:getScrollX()
                 local x, y = self.displayInfoNode:getPosition()

@@ -65,9 +65,9 @@ function panel:displayDomTree(rootLayer, force)
             if key == rootLayer.__cname then
                 cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
                 cc.UserDefault:getInstance():flush()
-                self:displayDomNode(rootLayer, 0)
+                self:displayDomNode(rootLayer, 0, value.genSrcPath .. key)
             else
-                self:displayOthers({ key })
+                self:displayOthers(key, value.genSrcPath .. key)
             end
         end
         self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + 20))
@@ -91,7 +91,7 @@ function panel:displayDomTree(rootLayer, force)
     end
 end
 
-function panel:displayDomNode(node, layer)
+function panel:displayDomNode(node, layer, displayName)
     if tolua.type(node) == "cc.DrawNode" or node:getTag() == -99 then
         return
     end
@@ -102,7 +102,7 @@ function panel:displayDomNode(node, layer)
     local fontSize = 11 * 4
     local scale = 0.25
     local topY = size.height - marginTop
-    local createButton = function(content, x, y)
+    local createButton = function(content, x, y, displayName)
         local group = false
         local children = node:getChildren()
         if children then
@@ -145,16 +145,18 @@ function panel:displayDomNode(node, layer)
             x = x + 11
         end
 
-        local label = cc.Label:createWithSystemFont(string.format("%s(%d", content, node:getLocalZOrder()), fontName, fontSize)
+        local label = cc.Label:createWithSystemFont(string.format("%s(%d", displayName and displayName or content, node:getLocalZOrder()), fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
         label:setDimensions(contentSize.width - x / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(0x99, 0xcc, 0x00))
-        if fixChild then --or (node.__info and node.__info.lock == 1) then
-        label:setTextColor(cc.c3b(200, 200, 200))
-        label:setOpacity(100)
+        if fixChild then
+            --or (node.__info and node.__info.lock == 1) then
+            label:setTextColor(cc.c3b(200, 200, 200))
+            label:setOpacity(100)
         end
+
         if not gk.util:isAncestorsVisible(node) then
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
@@ -162,6 +164,10 @@ function panel:displayDomNode(node, layer)
         if (node.__info and node.__info.lock == 0) then
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
+        end
+        if (node.__info and node.__info.isWidget and node.__info.isWidget == 0) then
+            label:setTextColor(cc.c3b(0xFF, 0x69, 0XB4))
+            label:setOpacity(200)
         end
         label:setScale(scale)
         self.displayInfoNode:addChild(label)
@@ -396,7 +402,7 @@ function panel:displayDomNode(node, layer)
         return label
     end
 
-    createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth)
+    createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth, displayName)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
     if not (node.__info and node.__info.isWidget and node.__info.isWidget == 0) then
@@ -420,7 +426,7 @@ function panel:displayDomNode(node, layer)
     end
 end
 
-function panel:displayOthers(keys)
+function panel:displayOthers(key, displayName)
     local size = self:getContentSize()
     local fontSize = 11 * 4
     local fontName = "Consolas"
@@ -428,7 +434,7 @@ function panel:displayOthers(keys)
     local topY = size.height - 15
     local leftX = 16
     local stepY = 20
-    local createButton = function(content, x, y)
+    local createButton = function(content, x, y, displayName)
         x = x - 11
         local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
         label:setTextColor(cc.c3b(200, 200, 200))
@@ -444,7 +450,7 @@ function panel:displayOthers(keys)
         end)
         x = x + 11
 
-        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        local label = cc.Label:createWithSystemFont(displayName and displayName or content, fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
         label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
         label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
@@ -462,10 +468,10 @@ function panel:displayOthers(keys)
         end)
         return button
     end
-    for _, key in ipairs(keys) do
-        createButton(key, leftX, topY - stepY * self.domDepth)
-        self.domDepth = self.domDepth + 1
-    end
+    --    for _, key in ipairs(keys) do
+    createButton(key, leftX, topY - stepY * self.domDepth, displayName)
+    self.domDepth = self.domDepth + 1
+    --    end
 end
 
 

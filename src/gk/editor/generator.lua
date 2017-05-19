@@ -91,7 +91,6 @@ function generator:inflate(info, rootNode, rootTable)
 end
 
 function generator:createNode(info, rootNode, rootTable)
-    gk.log("before createNode %s", info.id)
     info = self:wrap(info, rootTable)
     local node
     if rootNode then
@@ -100,7 +99,10 @@ function generator:createNode(info, rootNode, rootTable)
         local creator = self.nodeCreator[info.isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
-            gk.log("createNode %s,%s", node, info.id)
+            --            gk.log("createNode %s,%s", node, info.id)
+            if not node then
+                gk.log("createNode error, return nil, type = %s", info.type)
+            end
         else
             gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
             return nil

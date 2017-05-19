@@ -14,9 +14,8 @@ local kDelaySelectActionTag = -0xFFF1
 local kLongPressedActionTag = -0xFFF2
 Button.trackingButton = false
 
-function Button:ctor(contentNode, callback)
+function Button:ctor(contentNode)
     self:enableNodeEvents()
-    self.callback = callback
     self.enabled = true
     self.isSelected = false
     -- TODO: set selected shader

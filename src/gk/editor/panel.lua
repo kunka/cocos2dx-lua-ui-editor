@@ -2,6 +2,7 @@ local panel = {}
 local generator = import(".generator")
 
 local kMoveNodeAction = -1102
+panel.exNodeDisplayer = {}
 function panel.create(scene)
     local self = cc.Layer:create()
     setmetatableindex(self, panel)

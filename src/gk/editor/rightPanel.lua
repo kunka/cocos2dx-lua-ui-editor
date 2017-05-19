@@ -1247,6 +1247,42 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
+    for i = 1, #self.parent.exNodeDisplayer do
+        local ext = self.parent.exNodeDisplayer[i]
+        if node.__info.type == ext:type() or iskindof(node, ext:type()) then
+            createLabel(ext:title(), leftX, topY - stepY * yIndex, true)
+            yIndex = yIndex + 0.6
+            yIndex = yIndex + 0.2
+            createLine(topY - stepY * yIndex)
+            yIndex = yIndex + 0.2
+
+            local stringProps = ext:stringProps()
+            if stringProps then
+                for i = 1, #stringProps do
+                    local prop = stringProps[i]
+                    local key = prop:key()
+                    createLabel(prop:title(), leftX, topY - stepY * yIndex)
+                    createInput(tostring(node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                        editBox:setInput(generator:modify(node, key, input, "string"))
+                    end)
+                    yIndex = yIndex + 1
+                end
+            end
+            local boolProps = ext:boolProps()
+            if boolProps then
+                for i = 1, #boolProps do
+                    local prop = boolProps[i]
+                    local key = prop:key()
+                    createLabel(prop:title(), leftX, topY - stepY * yIndex)
+                    createCheckBox(node.__info[key] == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+                        generator:modify(node, key, selected, "number")
+                    end)
+                    yIndex = yIndex + 1
+                end
+            end
+        end
+    end
+
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + 20))
     if disabled then
         self.displayInfoNode:setOpacity(150)
