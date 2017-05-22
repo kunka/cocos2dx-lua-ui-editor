@@ -239,6 +239,34 @@ function EditBox:handleKeyboardEvent()
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
             gk.log("[EDITBOX]: onKeyPressed %s", key)
+            if key == "KEY_HYPER" then
+                self.commandPressed = true
+                return
+            end
+            if self.commandPressed then
+                if key == "KEY_V" then
+                    local v = io.popen("pbpaste"):read("*all")
+                    gk.log("past string %s", v)
+                    if v and v ~= "" then
+                        local insertChar = function()
+                            local str = self:getInput()
+                            str = str:insertChar(self.cursorPos + 1, v)
+                            gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", v, self.cursorPos, str)
+                            self.label:setString(str)
+                            self:changeCursorPos(self.cursorPos + v:len())
+                            if self.onInputChangedCallback then
+                                self.onInputChangedCallback(self, self:getInput())
+                            end
+                        end
+                        insertChar()
+                        local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
+                            insertChar()
+                        end))))
+                        action:setTag(kInsertCharAction)
+                    end
+                    return
+                end
+            end
             if key == "KEY_LEFT_ARROW" then
                 if self.cursorNode then
                     local moveChar = function()

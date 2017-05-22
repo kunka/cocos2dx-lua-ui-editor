@@ -118,13 +118,14 @@ function panel.create(parent)
         size.height = size.height + gk.display.topHeight + gk.display.bottomHeight
         local director = cc.Director:getInstance()
         local view = director:getOpenGLView()
-        --        view:setFrameSize(size.width, size.height)
+        view:setFrameSize(size.width, size.height)
+        view:setDesignResolutionSize(size.width, size.height, 0)
         gk.log("set OpenGLView size(%.1f,%.1f)", size.width, winSize.height)
-        --        gk.util:restartGame(1)
+        gk.util:restartGame(1)
     end)
-    node.enabled = false
-    node:setOpacity(150)
-    node:setCascadeOpacityEnabled(true)
+    --    node.enabled = false
+    --    node:setOpacity(150)
+    --    node:setCascadeOpacityEnabled(true)
     yIndex = yIndex + 1
 
     -- ResolutionPolicy
@@ -364,8 +365,6 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
-        location.y = -location.y
-        location.y = gk.display:winSize().height + gk.display.topHeight + gk.display.bottomHeight - location.y
         if gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
                 local scrollX = touch:getScrollX()
