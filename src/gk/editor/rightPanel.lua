@@ -103,14 +103,11 @@ function panel:displayNode(node)
                 end
                 if string.len(input) > 0 and input:sub(1, 1) == "@" then
                     v = gk.resource:getString(input:sub(2, #input))
-                else
-                    v = gk.resource:getString(input)
+                    if v ~= "undefined" then
+                        --                    isMacro = true
+                        break
+                    end
                 end
-                if v ~= "undefined" then
-                    --                    isMacro = true
-                    break
-                end
-                --            return v ~= "undefined" and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0)
             end
             --            if v ~= nil then
             --- -                isMacro = true
@@ -1060,10 +1057,16 @@ function panel:displayNode(node)
     local isgkLayer = iskindof(node.class, "Layer")
     local isDialog = iskindof(node.class, "Dialog")
     if isgkLayer or isDialog then
-        -- swallowTouchEvent
-        createLabel("SwallowTouchEvent", leftX, topY - stepY * yIndex)
-        createCheckBox(node.__info.swallowTouchEvent == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            generator:modify(node, "swallowTouchEvent", selected, "number")
+        -- touchEnabled
+        createLabel("TouchEnabled", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.touchEnabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "touchEnabled", selected, "number")
+        end)
+        yIndex = yIndex + 1
+        -- isSwallowTouches
+        createLabel("isSwallowTouches", leftX, topY - stepY * yIndex)
+        createCheckBox(node.__info.isSwallowTouches == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "isSwallowTouches", selected, "number")
         end)
         yIndex = yIndex + 1
         -- enableKeyPad

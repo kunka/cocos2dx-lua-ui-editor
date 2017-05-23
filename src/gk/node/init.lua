@@ -93,7 +93,7 @@ gk.isBMFont = isBMFont
 gk.isSystemFont = isSystemFont
 
 local function create_label(info)
-    local lan = gk.resource:getCurrentLan()
+    local lan = info.lan or gk.resource:getCurrentLan()
     local fontFile = info.fontFile[lan]
     if fontFile == nil then
         -- default use en font as the same

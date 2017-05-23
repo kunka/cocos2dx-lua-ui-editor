@@ -152,7 +152,8 @@ config.defaultProps =
 }
 
 function config:default(type, key)
-    return (self.defaultProps[type] and self.defaultProps[type][key]) or self.defaultProps["cc.Node"][key]
+    -- value copy
+    return (self.defaultProps[type] and clone(self.defaultProps[type][key])) or clone(self.defaultProps["cc.Node"][key])
 end
 
 config.macroFuncs = {

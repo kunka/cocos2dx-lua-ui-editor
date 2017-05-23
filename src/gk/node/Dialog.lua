@@ -51,7 +51,7 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.swallowTouchEvent
+                return self.isSwallowTouches
             end
         else
             if self.popOnTouchInsideBg then
@@ -59,12 +59,12 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.swallowTouchEvent
+                return self.isSwallowTouches
             end
         end
     end
 
-    return self.swallowTouchEvent
+    return self.isSwallowTouches
 end
 
 function Dialog:pop()

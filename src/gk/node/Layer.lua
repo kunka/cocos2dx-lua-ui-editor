@@ -14,7 +14,8 @@ end)
 
 function Layer:ctor()
     gk.log("[%s]: ctor", self.__cname)
-    self.swallowTouchEvent = true
+    self.swallowTouches = true
+    self.touchEnabled = true
     self.enableKeyPad = false
     self.popOnBack = false -- popScene on back
     self:enableNodeEvents()
@@ -39,8 +40,30 @@ function Layer:showDialogNode(dialogNode)
     return dialogNode
 end
 
+function Layer:isTouchEnabled()
+    return self.touchEnabled
+end
+
+function Layer:setTouchEnabled(enabled)
+    self.touchEnabled = enabled
+    if self.touchListener then
+        self.touchListener:setEnabled(enabled)
+    end
+end
+
+function Layer:isSwallowTouches()
+    return self.swallowTouches
+end
+
+function Layer:setSwallowTouches(swallow)
+    self.swallowTouches = swallow
+    if self.touchListener then
+        self.touchListener:setSwallowTouches(swallow)
+    end
+end
+
 function Layer:onTouchBegan(touch, event)
-    return self.swallowTouchEvent
+    return self.isSwallowTouches
 end
 
 function Layer:onTouchMoved(touch, event)
@@ -57,13 +80,15 @@ function Layer:onEnter()
 
     if gk.mode ~= gk.MODE_EDIT then
         local listener = cc.EventListenerTouchOneByOne:create()
-        listener:setSwallowTouches(true)
+        listener:setSwallowTouches(self.swallowTouches)
+        listener:setEnabled(self.touchEnabled)
         listener:registerScriptHandler(handler(self, self.onTouchBegan), cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(handler(self, self.onTouchMoved), cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(handler(self, self.onTouchEnded), cc.Handler.EVENT_TOUCH_ENDED)
         listener:registerScriptHandler(handler(self, self.onTouchCancelled), cc.Handler.EVENT_TOUCH_CANCELLED)
         local eventDispatcher = self:getEventDispatcher()
         eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+        self.touchListener = listener
 
         if self.enableKeyPad and not self.keyBoardListener then
             -- should only add once

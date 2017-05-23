@@ -110,7 +110,7 @@ function resource:loadEditableNodes(path, genSrcPath)
 
         if isEditable then
             local genPath = self:_getGenNodePath(genSrcPath, clazz.__cname)
-            self.genNodes[clazz.__cname] = { path = path, clazz = clazz, genPath = genPath, genSrcPath = genSrcPath }
+            self.genNodes[clazz.__cname] = { path = path, clazz = clazz, genPath = genPath, genSrcPath = genSrcPath, relativePath = genSrcPath .. clazz.__cname }
             gk.log("resource:scanGenNodes file:%s, output:%s", path, genPath)
         end
     end

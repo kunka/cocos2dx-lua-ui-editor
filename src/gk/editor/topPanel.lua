@@ -179,9 +179,18 @@ function panel.create(parent)
 
     -- widgets
     self.widgets = clone(generator.config.supportNodes)
+    -- self pre defined widget
+    local keys = table.keys(gk.resource.genNodes)
+    table.sort(keys, function(k1, k2) return k1 < k2 end)
+    for _, key in ipairs(keys) do
+        local nodeInfo = gk.resource.genNodes[key]
+        if nodeInfo.clazz.isWidget then
+            table.insert(self.widgets, { type = nodeInfo.relativePath, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
+        end
+    end
     -- content node
     local iconScale = 0.32
-    local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets)
+    local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets - 1)
     self.displayInfoNode:setContentSize(cc.size(width, self:getContentSize().height))
     self.displayInfoNode:setAnchorPoint(cc.p(0, 0))
     self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
@@ -191,16 +200,6 @@ function panel.create(parent)
     self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
     self:addChild(self.clippingNode)
     self.clippingNode:addChild(self.displayInfoNode)
-
-    -- self pre defined widget
-    local keys = table.keys(gk.resource.genNodes)
-    table.sort(keys, function(k1, k2) return k1 < k2 end)
-    for _, key in ipairs(keys) do
-        local nodeInfo = gk.resource.genNodes[key]
-        if nodeInfo.clazz.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.path, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
-        end
-    end
 
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
@@ -322,6 +321,8 @@ function panel.create(parent)
                         self.parent:rescaleNode(node, self._containerNode)
                         if type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
+                            node.__info.width = generator.config:default("Layer", "width")
+                            node.__info.height = generator.config:default("Layer", "height")
                         else
                             local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
                             local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))

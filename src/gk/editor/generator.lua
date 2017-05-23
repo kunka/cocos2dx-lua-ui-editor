@@ -26,7 +26,7 @@ function generator:deflate(node)
         if ret then
             local def = config.defValues[k]
             --            if iskindof(node, "ccui.Scale9Sprite") then
-            --                gk.log("get %s, v:%s, def:%s", k, ret, def)
+            --            gk.log("id:%s get %s, v:%s, def:%s", node.__info.id, k, gk.util:tbl2string(ret), gk.util:tbl2string(def))
             --            end
             if def then
                 -- filter def value
@@ -114,15 +114,18 @@ function generator:createNode(info, rootNode, rootTable)
     if rootTable then
         -- warning: duplicated id
         local id = info.id
-        local index = 1
-        while rootTable[id] do
-            id = info.id .. "_" .. tostring(index)
-            index = index + 1
+        if id then
+            local index = 1
+            while rootTable[id] do
+                id = info.id .. "_" .. tostring(index)
+                index = index + 1
+            end
+            info.id = id
+            rootTable[info.id] = node
         end
-        info.id = id
-        rootTable[info.id] = node
         node.__rootTable = rootTable
     end
+
     -- force set value
     for k, func in pairs(self.nodeGetFuncs) do
         local ret = func(node)
@@ -158,9 +161,6 @@ function generator:wrap(info, rootTable)
                 local b = string.byte(value:sub(1, 1))
                 if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
                     value = string.trim(value)
-                    if rootTable[value] then
-                        --                    dump(rootTable[value].__info)
-                    end
                     if rootTable[value] == nil then
                         local node = rootTable and rootTable[proxy["id"]] or nil
                         if node then
@@ -300,7 +300,6 @@ function generator:modify(node, property, input, valueType)
             node.__info[prop1] = value
         end
     end
-    gk.log("modify(%s)\'s property(%s) with value(%s)", node.__info.id, property, input)
     if prop2 then
         return tostring(node.__info[prop1][prop2])
     else
@@ -886,8 +885,8 @@ generator.nodeSetFuncs = {
         node:setVerticalFillOrder(var)
     end,
     --------------------------- Layer   ---------------------------
-    swallowTouchEvent = function(node, var)
-        node.swallowTouchEvent = var == 0
+    isSwallowTouches = function(node, var)
+        node.isSwallowTouches = var == 0
     end,
     enableKeyPad = function(node, var)
         node.enableKeyPad = var == 0
@@ -1215,15 +1214,16 @@ generator.nodeGetFuncs = {
         return iskindof(node, "cc.ScrollView") and (node.__info.bounceable or (node:isBounceable() and 0 or 1))
     end,
     touchEnabled = function(node)
-        return iskindof(node, "cc.ScrollView") and (node.__info.touchEnabled or (node:isTouchEnabled() and 0 or 1))
+        return (iskindof(node, "cc.ScrollView") or iskindof(node.class, "Layer") or iskindof(node.class, "Dialog")) and (node.__info.touchEnabled or
+                (node:isTouchEnabled() and 0 or 1))
     end,
     --------------------------- cc.TableView   ---------------------------
     verticalFillOrder = function(node)
         return iskindof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
     end,
     --------------------------- Layer   ---------------------------
-    swallowTouchEvent = function(node, var)
-        return iskindof(node.class, "Layer") and (node.__info.swallowTouchEvent or (node.swallowTouchEvent and 0 or 1))
+    isSwallowTouches = function(node, var)
+        return iskindof(node.class, "Layer") and (node.__info.isSwallowTouches or (node.isSwallowTouches and 0 or 1))
     end,
     enableKeyPad = function(node, var)
         return iskindof(node.class, "Layer") and (node.__info.enableKeyPad or (node.enableKeyPad and 0 or 1))

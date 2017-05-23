@@ -7,11 +7,11 @@
 
 local display = {}
 
-local displayScale = 0.55
+local displayScale = 0.7
 display.deviceSizes = {
     cc.size(1280 * displayScale, 640 * displayScale),
     cc.size(1280 * displayScale, 720 * displayScale),
-    cc.size(1280 * displayScale, 853 * displayScale),
+    cc.size(1280 * displayScale, 768 * displayScale),
     cc.size(1280 * displayScale, 960 * displayScale),
     cc.size(1280 * displayScale, 1280 * displayScale),
     cc.size(720 * displayScale, 1280 * displayScale),
@@ -20,7 +20,7 @@ display.deviceSizes = {
 display.deviceSizesDesc = {
     "1280x640(2:1)",
     "1280x720(16:9)",
-    "1280x853(1.5:1)",
+    "1280x768(1.67:1)",
     "1280x960(4:3)",
     "1280x1280(1:1)",
     "720x1280(9:16)",

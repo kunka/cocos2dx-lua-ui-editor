@@ -490,4 +490,61 @@ function util:table_eq(table1, table2)
     return recurse(table1, table2)
 end
 
+----------------------------------------- table -------------------------------------------------
+local function spairs(t, order)
+    -- collect the keys
+    local keys = {}
+    for k in pairs(t) do keys[#keys + 1] = k
+    end
+
+    -- if order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys
+    if order then
+        table.sort(keys, function(a, b) return order(t, a, b)
+        end)
+    else
+        table.sort(keys)
+    end
+
+    -- return the iterator function
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
+local function formatString(str, len)
+    local s = string.format("%s", str)
+    while string.len(s) < len do
+        s = s .. " "
+    end
+    return s
+end
+
+function util:tbl2string(obj)
+    if obj and type(obj) == "table" then
+        local log = "{\n"
+        for k, v in spairs(obj) do
+            if type(v) == "table" and v ~= obj then
+                --            log = log .. k .. " : " .. tbl2string(v) .. ",\n"
+                if table.nums(v) < 10 then
+                    log = log .. formatString(k, 18) .. " : \n" .. util:tbl2string(v) .. ",\n"
+                else
+                    log = log .. k .. " :     " .. "{?}" .. "\n"
+                end
+            end
+            if type(v) ~= "function" and type(v) ~= "table" and type(v) ~= "userdata" then
+                log = log .. formatString(k, 18) .. " : " .. tostring(v) .. "\n"
+            end
+        end
+        log = log .. "}"
+        return log
+    else
+        return tostring(obj)
+    end
+end
+
 return util

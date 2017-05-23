@@ -117,9 +117,12 @@ function injector:onNodeCreate(node)
         local generator = require("gk.editor.generator")
         if status then
             gk.log("initRootContainer with file %s", path)
+            --            node.__info = generator:wrap({ type = node.__cname }, node)
             node.__info = generator:wrap({ type = node.__cname }, node)
             generator:inflate(info, node, node)
             node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+            node.__info.scaleXY = { x = "1", y = "1" }
+            --            node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
         else
             if gk.mode == gk.MODE_EDIT then
                 -- init first time
@@ -127,7 +130,6 @@ function injector:onNodeCreate(node)
                 node.__info = generator:wrap({ type = node.__cname }, node)
                 node.__info.id = node.__cname
                 node[node.__info.id] = node
-                node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
                 local clazz = require(gk.resource.genNodes[node.__cname].path)
                 local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
                 if isLayer then
@@ -138,6 +140,8 @@ function injector:onNodeCreate(node)
                     node.__info.width = generator.config:default("cc.TableViewCell", "width")
                     node.__info.height = generator.config:default("cc.TableViewCell", "height")
                 end
+                node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+                node.__info.scaleXY = { x = "1", y = "1" }
                 self:sync(node)
             end
         end
