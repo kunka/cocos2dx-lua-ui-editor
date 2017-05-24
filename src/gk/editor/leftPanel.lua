@@ -92,7 +92,7 @@ function panel:displayDomTree(rootLayer, force)
 end
 
 function panel:displayDomNode(node, layer, displayName)
-    if tolua.type(node) == "cc.DrawNode" or node:getTag() == -99 then
+    if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) then
         return
     end
     local fixChild = node.__info == nil

@@ -982,6 +982,8 @@ generator.nodeGetFuncs = {
             return node.__info.width or node:getWidth()
         elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
             return node:getContentSize().width
+        elseif node.__info.type == "ZoomButton" then
+            return node:getContentSize().width
         elseif iskindof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
         elseif iskindof(node, "cc.ScrollView") then
@@ -994,6 +996,8 @@ generator.nodeGetFuncs = {
         if iskindof(node, "cc.Label") then
             return node.__info.height or node:getHeight()
         elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+            return node:getContentSize().height
+        elseif node.__info.type == "ZoomButton" then
             return node:getContentSize().height
         elseif iskindof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height

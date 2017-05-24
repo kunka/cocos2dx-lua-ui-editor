@@ -40,14 +40,28 @@ function Button:ctor(contentNode)
 end
 
 function Button:_addChild(child, zorder, tag)
-    if tag then
-        self.__addChild(self, child, zorder, tag)
-    elseif zorder then
-        self.__addChild(self, child, zorder)
-    else
-        self.__addChild(self, child)
+    -- replace default sprite
+    if self.contentNode and not self.contentNode.__info and child.__info then
+        self.contentNode:removeFromParent()
+        self.contentNode = nil
     end
-    if #self:getChildren() == 1 then
+
+    if self.contentNode then
+        if tag then
+            self.contentNode:addChild(child, zorder, tag)
+        elseif zorder then
+            self.contentNode:addChild(child, zorder)
+        else
+            self.contentNode:addChild(child)
+        end
+    else
+        if tag then
+            self.__addChild(self, child, zorder, tag)
+        elseif zorder then
+            self.__addChild(self, child, zorder)
+        else
+            self.__addChild(self, child)
+        end
         self:setContentNode(child)
     end
 end
@@ -71,6 +85,10 @@ function Button:setContentNode(node)
             gk.util:drawNode(self)
         end))
     end
+end
+
+function Button:getContentSize()
+    return self.contentNode and self.contentNode:getContentSize() or cc.size(0, 0)
 end
 
 function Button:onEnter()

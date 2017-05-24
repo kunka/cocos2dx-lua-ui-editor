@@ -360,7 +360,7 @@ function panel:drawNodeCoordinate(node)
         end
         local x, y = node:getPositionX(), node:getPositionY()
         self.coordinateNode = cc.Node:create()
-        self.coordinateNode:setTag(-99)
+        self.coordinateNode:setTag(gk.util.tags.boundsTag)
         parent:addChild(self.coordinateNode, 99999)
         self.coordinateNode:setCascadeOpacityEnabled(true)
 
@@ -526,6 +526,11 @@ function panel:handleEvent()
         elseif key == "KEY_BACKSPACE" then
             -- delete node
             if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id and self.displayingNode ~= self.scene.layer then
+                local parent = self.displayingNode:getParent()
+                if parent and parent.__info and parent.__info.type == "ZoomButton" then
+                    gk.log("[Waring] cannot delete child of ZooomButton!")
+                    return
+                end
                 gk.log("delete node %s", self.displayingNode.__info.id)
                 self:removeNodeIndex(self.displayingNode, self.scene.layer)
                 self.displayingNode:removeFromParent()

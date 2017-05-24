@@ -235,6 +235,8 @@ function panel:displayNode(node)
     local isTableView = iskindof(node, "cc.TableView")
     local isScale9Sprite = iskindof(node, "ccui.Scale9Sprite")
     local isCheckBox = iskindof(node, "ccui.CheckBox")
+    local isgkLayer = iskindof(node.class, "Layer")
+    local isDialog = iskindof(node.class, "Dialog")
 
     local yIndex = 0
     --------------------------- ID   ---------------------------
@@ -567,17 +569,26 @@ function panel:displayNode(node)
     end
 
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
-    if isSprite or isZoomButton or isSpriteButton then
-        if isSpriteButton then
-            createLabel("SpriteButton ", leftX, topY - stepY * yIndex, true)
-        else
-            createLabel(isSprite and "Sprite" or "ZoomButton", leftX, topY - stepY * yIndex, true)
-        end
+    if isScale9Sprite then
+        createLabel("Scale9Sprite", leftX, topY - stepY * yIndex, true)
         yIndex = yIndex + 0.6
-
         yIndex = yIndex + 0.2
         createLine(topY - stepY * yIndex)
         yIndex = yIndex + 0.2
+    end
+    if isSprite or isZoomButton or isSpriteButton then
+        if not isScale9Sprite then
+            if isSpriteButton then
+                createLabel("SpriteButton ", leftX, topY - stepY * yIndex, true)
+            else
+                createLabel(isSprite and "Sprite" or "ZoomButton", leftX, topY - stepY * yIndex, true)
+            end
+            yIndex = yIndex + 0.6
+
+            yIndex = yIndex + 0.2
+            createLine(topY - stepY * yIndex)
+            yIndex = yIndex + 0.2
+        end
 
         if isZoomButton or isSpriteButton then
             -- click event
@@ -644,29 +655,27 @@ function panel:displayNode(node)
         --        yIndex = yIndex + 1
     end
 
-    if isSprite then
+    if isSprite and not isScale9Sprite then
         -- blendFunc
-        if not isScale9Sprite then
-            createLabel("blendFunc", leftX, topY - stepY * yIndex)
-            createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
-            local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
-            local getIndex = function(value)
-                for i, key in ipairs(FUNCS) do
-                    if gl[key] == value then
-                        return i
-                    end
+        createLabel("blendFunc", leftX, topY - stepY * yIndex)
+        createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
+        local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
+        local getIndex = function(value)
+            for i, key in ipairs(FUNCS) do
+                if gl[key] == value then
+                    return i
                 end
             end
-            createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
-            end, "ONE")
-            yIndex = yIndex + 1
-            createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
-            createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
-            end, "ONE_MINUS_SRC_ALPHA")
-            yIndex = yIndex + 1
         end
+        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
+        end, "ONE")
+        yIndex = yIndex + 1
+        createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
+        createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
+        end, "ONE_MINUS_SRC_ALPHA")
+        yIndex = yIndex + 1
         -- flippedX
         createLabel("FlippedX", leftX, topY - stepY * yIndex)
         createCheckBox(node.__info.flippedX == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -1054,8 +1063,6 @@ function panel:displayNode(node)
         yIndex = yIndex + 0.2
     end
 
-    local isgkLayer = iskindof(node.class, "Layer")
-    local isDialog = iskindof(node.class, "Dialog")
     if isgkLayer or isDialog then
         -- touchEnabled
         createLabel("TouchEnabled", leftX, topY - stepY * yIndex)
@@ -1163,11 +1170,6 @@ function panel:displayNode(node)
     end
 
     if isScale9Sprite then
-        createLabel("Scale9Sprite", leftX, topY - stepY * yIndex, true)
-        yIndex = yIndex + 0.6
-        yIndex = yIndex + 0.2
-        createLine(topY - stepY * yIndex)
-        yIndex = yIndex + 0.2
         -- CapInsets
         createLabel("CapInsets", leftX, topY - stepY * yIndex)
         createLabel("X", leftX_input_1_left, topY - stepY * yIndex)

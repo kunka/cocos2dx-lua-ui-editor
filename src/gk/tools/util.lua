@@ -76,7 +76,15 @@ function string.deleteChar(str, index)
     return str
 end
 
+string.toHex = function(s)
+    return string.gsub(s, "(.)", function(x) return string.format("%02X", string.byte(x)) end)
+end
+
 ------------ g----------------------------- restart game  -------------------------------------------------
+function util:registerOnRestartGameCallback(callback)
+    util.onRestartGameCallback = callback
+end
+
 function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
     if not util.restartLayer then
@@ -108,11 +116,14 @@ function util:restartGame(mode)
     gk.log("===================================================================")
     gk.log("=====================    restart game    ==========================")
     gk.log("===================================================================")
-    if util.restartLayer then
-        util.restartLayer:release()
-        util.restartLayer = nil
+    if self.restartLayer then
+        self.restartLayer:release()
+        self.restartLayer = nil
     end
 
+    if self.onRestartGameCallback then
+        self.onRestartGameCallback()
+    end
     gk.event:post("syncNow")
     gk.event:init()
     local scene = cc.Scene:create()
@@ -137,6 +148,11 @@ util.tags = util.tags and util.tags or {
     labelTag = 0xFFF1,
     boundsTag = 0xFFF2,
 }
+
+function util:isDebugNode(node)
+    local tag = node and node:getTag() or -1
+    return table.indexof(table.values(util.tags), tag)
+end
 
 function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.drawTag
@@ -546,5 +562,6 @@ function util:tbl2string(obj)
         return tostring(obj)
     end
 end
+
 
 return util

@@ -185,7 +185,7 @@ function panel.create(parent)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
         if nodeInfo.clazz.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.relativePath, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
+            table.insert(self.widgets, { type = nodeInfo.relativePath, cname = nodeInfo.clazz.__cname, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
         end
     end
     -- content node
@@ -216,7 +216,8 @@ function panel.create(parent)
         self.displayInfoNode:addChild(node)
 
         local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
-        local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and names[1] or names[#names], fontName, 7 * 4)
+        --        local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and names[1] or names[#names], fontName, 7 * 4)
+        local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and self.widgets[i].cname or names[#names], fontName, 7 * 4)
         label:setScale(scale)
         label:setDimensions(node:getContentSize().width + stepX * 2 - 8, 60)
         --        label:setOverflow(2)
