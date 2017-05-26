@@ -16,7 +16,7 @@ function SelectBox:ctor(size, items, index)
     self:setContentSize(size)
     self.selectItems = items
     self.selectIndex = index or 1
-    self.enabled = true
+    self.isEnabled = true
 end
 
 function SelectBox:onSelectChanged(callback)
@@ -31,7 +31,7 @@ function SelectBox:setScale9SpriteBg(scale9Sprite)
     self:addChild(button, -1)
     button:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
     button:onClicked(function()
-        if self.enabled then
+        if self.isEnabled then
             self:openPopup()
         end
     end)

@@ -16,7 +16,7 @@ Button.trackingButton = false
 
 function Button:ctor(contentNode)
     self:enableNodeEvents()
-    self.enabled = true
+    self.isEnabled = true
     self.isSelected = false
     -- TODO: set selected shader
     self.disabledProgram = nil -- set shader of disabled state
@@ -35,18 +35,15 @@ function Button:ctor(contentNode)
         self:_addChild(...)
     end
     if contentNode then
-        self:addChild(contentNode)
+        self:_addChild(contentNode)
+    else
+        self:setContentNode(nil)
     end
 end
 
 function Button:_addChild(child, zorder, tag)
-    -- replace default sprite
-    if self.contentNode and not self.contentNode.__info and child.__info then
-        self.contentNode:removeFromParent()
-        self.contentNode = nil
-    end
-
-    if self.contentNode then
+    local isDebugNode = gk.util:isDebugTag(tag)
+    if self.contentNode and not isDebugNode then
         if tag then
             self.contentNode:addChild(child, zorder, tag)
         elseif zorder then
@@ -62,11 +59,13 @@ function Button:_addChild(child, zorder, tag)
         else
             self.__addChild(self, child)
         end
-        self:setContentNode(child)
+        if not isDebugNode then
+            self:setContentNode(child)
+        end
     end
 end
 
-function Button:getNode()
+function Button:getContentNode()
     return self.contentNode
 end
 
@@ -74,21 +73,21 @@ function Button:setContentNode(node)
     --    assert(node:getParent() ~= self, "Button's content node cannot be added again!")
     self.contentNode = node
 
-    local contentSize = node:getContentSize()
-    local anchorPoint = node:getAnchorPoint()
-    node:setPosition(cc.p(contentSize.width * anchorPoint.x, contentSize.height * anchorPoint.y))
-    self:setContentSize(contentSize)
-
-    -- test draw
-    if GK_DRAW_BUTTON then
-        self:runAction(cc.CallFunc:create(function()
-            gk.util:drawNode(self)
-        end))
+    if node then
+        local contentSize = node:getContentSize()
+        local anchorPoint = node:getAnchorPoint()
+        node:setPosition(cc.p(contentSize.width * anchorPoint.x, contentSize.height * anchorPoint.y))
+        self:setContentSize(contentSize)
+        if gk.mode == gk.MODE_EDIT and node.__info then
+            node.__info.lock = 0
+        end
+    else
+        self:setContentSize(cc.size(120, 60))
     end
 end
 
 function Button:getContentSize()
-    return self.contentNode and self.contentNode:getContentSize() or cc.size(0, 0)
+    return self.contentNode and self.contentNode:getContentSize() or cc.size(120, 60)
 end
 
 function Button:onEnter()
@@ -134,8 +133,16 @@ function Button:updateDelaySelect()
     end
 end
 
+function Button:onSelectChanged(callback)
+    self.onSelectChangedCallback = callback
+end
+
+function Button:onEnableChanged(callback)
+    self.onEnableChangedCallback = callback
+end
+
 function Button:onClicked(callback)
-    self.callback = callback
+    self.onClickedCallback = callback
 end
 
 function Button:onLongPressed(callback)
@@ -147,34 +154,62 @@ function Button:setDisabledProgram(program)
 end
 
 function Button:activate()
-    if self.enabled then
-        if self.callback then
-            gk.log("[%s]: activate", self.__cname)
-            self.callback(self)
+    if self.isEnabled then
+        if self.onClickedCallback then
+            --            gk.log("[%s]: activate", self.__cname)
+            self.onClickedCallback(self)
         end
     end
 end
 
 function Button:triggleLongPressed()
-    if self.enabled then
+    if self.isEnabled then
         if self.longPressdCallback then
-            gk.log("[%s]: triggleLongPressed", self.__cname)
+            --            gk.log("[%s]: triggleLongPressed", self.__cname)
             self.longPressdCallback(self)
         end
     end
 end
 
 function Button:selected()
-    self.isSelected = true
+    if not self.isSelected then
+        self.isSelected = true
+        if self.onSelectChangedCallback then
+            self.onSelectChangedCallback(self, self.isSelected)
+        end
+    end
 end
 
 function Button:unselected()
-    self.isSelected = false
+    if self.isSelected then
+        self.isSelected = false
+        if self.onSelectChangedCallback then
+            self.onSelectChangedCallback(self, self.isSelected)
+        end
+    end
+end
+
+function Button:enable()
+    if not self.isSelected then
+        self.isSelected = true
+        if self.onSelectChangedCallback then
+            self.onSelectChangedCallback(self, self.isSelected)
+        end
+    end
+end
+
+function Button:disable()
+    if self.isSelected then
+        self.isSelected = false
+        if self.onSelectChangedCallback then
+            self.onSelectChangedCallback(self, self.isSelected)
+        end
+    end
 end
 
 function Button:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.enabled or not camera then
+    if not self.isEnabled or not camera then
         return false
     end
     if not gk.util:isAncestorsVisible(self) then
@@ -267,14 +302,17 @@ end
 
 function Button:setEnabled(enabled)
     if self.enabled ~= enabled then
-        gk.log("[%s]: setEnabled %s", self.__cname, enabled)
-        self.enabled = enabled
+        --        gk.log("[%s]: setEnabled %s", self.__cname, enabled)
+        self.isEnabled = enabled
         if self.disabledProgram then
             if enabled then
                 self:restoreCascadeProgram(self)
             else
                 self:setCascadeProgram(self)
             end
+        end
+        if self.onEnableChangedCallback then
+            self.onEnableChangedCallback(self, enabled)
         end
     end
 end

@@ -10,11 +10,11 @@ local config = {}
 
 config.supportNodes = {
     { type = "cc.Node", },
-    { type = "cc.Sprite", file = "?", },
-    { type = "ccui.Scale9Sprite", file = "?", },
+    { type = "cc.Sprite", },
+    { type = "ccui.Scale9Sprite", },
     { type = "cc.Label", },
-    { type = "ZoomButton", file = "?", },
-    { type = "SpriteButton", normalSprite = "?", },
+    { type = "ZoomButton", },
+    { type = "SpriteButton", },
     { type = "ccui.CheckBox", backGround = "gk/res/texture/check_box_normal.png", cross = "gk/res/texture/check_box_selected.png" },
     { type = "cc.Layer", },
     { type = "cc.LayerColor", },

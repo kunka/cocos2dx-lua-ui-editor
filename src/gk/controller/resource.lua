@@ -11,8 +11,36 @@ local resource = {}
 ----------------------------- texture relative path -----------------------------------
 resource.textureRelativePath = ""
 function resource:setTextureRelativePath(path)
-    gk.log("resource.setTextureRelativePath \"%s\"", path)
+    gk.log("resource:setTextureRelativePath \"%s\"", path)
     self.textureRelativePath = path
+end
+
+function resource:scanFontFiles(path)
+    if not self.fontFiles then
+        self.fontFiles = {}
+        self:scanFontDir(path)
+    end
+end
+
+function resource:scanFontDir(dir)
+    if not dir or dir == "" then
+        return
+    end
+    gk.log("resource:scanFontDir dir = \"%s\"", dir)
+    -- scan all font files
+    local f = io.popen('ls ' .. dir)
+    if f then
+        for name in f:lines() do
+            if name:ends(".fnt") or name:ends(".ttf") then
+                table.insert(self.fontFiles, "font/" .. name)
+                gk.log("resource:scanFontfile:%s", "font/" .. name)
+            elseif not name:find("%.") then
+                self:scanFontDir(dir .. name .. "/")
+            end
+        end
+    end
+
+    table.sort(self.fontFiles, function(k1, k2) return k1 < k2 end)
 end
 
 ----------------------------------- lans and strings -----------------------------------
@@ -66,27 +94,18 @@ function resource:scanGenNodes(path)
     self.genFullPathPrefix = path
     self.genNodes = {}
     self:scanDir(path .. self.genSrcPath, self.genSrcPath)
-    -- scan all gen-able files, TODO: scan sub dirs
-    --    local f = io.popen('ls ' .. path .. self.genSrcPath)
-    --    if f then
-    --        for name in f:lines() do
-    --            if name:ends(".lua") then
-    --                local path = self.genSrcPath .. name
-    --                self:loadEditableNodes(path)
-    --            else
-    --            end
-    --        end
-    --    end
 end
 
 function resource:scanDir(dir, genSrcPath)
     if not dir or dir == "" then
         return
     end
-    --    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
+    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
     -- scan all gen-able files
     local f = io.popen('ls ' .. dir)
     if f then
+        print("打印F数据")
+        print(f:lines())
         for name in f:lines() do
             if name:ends(".lua") then
                 self:loadEditableNodes(dir .. name, genSrcPath)

@@ -70,12 +70,14 @@ function panel:subscribeEvent()
                     return
                 end
             end
-
-            gk.util:stopActionByTagSafe(self, -2342)
-            local action = self:runAction(cc.CallFunc:create(function()
-                self:displayNode(node)
-            end))
-            action:setTag(-2342)
+            local layer = self.scene.layer
+            if layer then
+                gk.util:stopActionByTagSafe(layer, -2342)
+                local action = layer:runAction(cc.CallFunc:create(function()
+                    self:displayNode(node)
+                end))
+                action:setTag(-2342)
+            end
         end
     end)
     gk.event:subscribe(self, "displayDomTree", function(...)
@@ -120,6 +122,9 @@ function panel:onNodeCreate(node)
     self.multiSelectNodes = self.multiSelectNodes or {}
     --    gk.log("onNodeCreate onCreate %s %s", node, node.__info)
     node:onNodeEvent("enter", function()
+        if gk.exception then
+            return
+        end
         if not node.__info or not node.__info.id then
             return
         end
@@ -137,6 +142,8 @@ function panel:onNodeCreate(node)
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
+            self.draggingNode = nil
+            self._containerNode = nil
             if not self.commandPressed then
                 for _, nd in ipairs(self.multiSelectNodes) do
                     gk.util:clearDrawNode(nd)
@@ -145,6 +152,11 @@ function panel:onNodeCreate(node)
                 --                gk.event:post("undisplayNode")
             end
             if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
+                --                if self.displayingNode and self.displayingNode ~= self.scene.layer and node ~= self.displayingNode and gk.util:hitTest(self.displayingNode,
+                --                    touch) then
+                --                    -- priority use pre displayingNode
+                --                    return false
+                --                end
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -202,9 +214,10 @@ function panel:onNodeCreate(node)
             if node.__info and node.__info.lock == 0 then
                 return
             end
-            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
                 return
             end
+            self.draggingNode = node
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
@@ -219,12 +232,19 @@ function panel:onNodeCreate(node)
                 local nd = children[i]
                 local canBeContainer = false
                 repeat
+                    if nd.__rootTable ~= self.scene.layer then
+                        -- widget
+                        break
+                    end
                     if not node or nd == node or not gk.util:isAncestorsVisible(nd) then
                         break
                     end
+                    if gk.util:isAncestorOf(node, nd) then
+                        break
+                    end
                     if nd.__info then
-                        if nd.__info.lock == 0 or nd.__info.isWidget == 0 then
-                            break
+                        if nd.__info.lock == 0 then --or nd.__info.isWidget then
+                        break
                         end
                     end
                     if gk.util:isAncestorsType(nd, "cc.TableView") then
@@ -261,6 +281,7 @@ function panel:onNodeCreate(node)
             if self.commandPressed then
                 return
             end
+            self.draggingNode = nil
             local location = touch:getLocation()
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
@@ -269,7 +290,7 @@ function panel:onNodeCreate(node)
                 gk.event:post("displayDomTree")
                 return
             end
-            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget == 0 then
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
                 gk.event:post("displayDomTree")
                 return
             end
@@ -290,6 +311,11 @@ function panel:onNodeCreate(node)
                     (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
                 node:retain()
+                -- zoom button child
+                local parent = node:getParent()
+                if parent and parent.__info and parent.__info.type == "ZoomButton" and parent:getContentNode() == node then
+                    parent:setContentNode(nil)
+                end
                 node:removeFromParent()
                 self:rescaleNode(node, self._containerNode)
                 local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
@@ -310,6 +336,7 @@ function panel:onNodeCreate(node)
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
             self.sortedChildren = nil
+            self._containerNode = nil
         end, cc.Handler.EVENT_TOUCH_ENDED)
         listener:registerScriptHandler(function(touch, event)
             cc.Director:getInstance():setDepthTest(false)
@@ -374,23 +401,23 @@ function panel:drawNodeCoordinate(node)
             if width < 0 then
                 return
             end
+            local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
+            arrow:setContentSize(cc.size(width / scale, 57))
+            arrow:setScale(scale)
+            arrow:setPosition(x, y)
+            arrow:setRotation(rotation)
+            arrow:setAnchorPoint(cc.p(0, 0.5))
+            arrow:setOpacity(100)
+            self.coordinateNode:addChild(arrow)
             if width > 30 then
-                local arrow = gk.create_scale9_sprite("gk/res/texture/arrow.png", cc.rect(0, 13, 40, 5))
-                arrow:setContentSize(cc.size(width / scale, 57))
-                arrow:setScale(scale)
-                arrow:setPosition(x, y)
-                arrow:setRotation(rotation)
-                arrow:setAnchorPoint(cc.p(0, 0.5))
-                arrow:setOpacity(100)
-                self.coordinateNode:addChild(arrow)
+                -- label
+                local label = cc.Label:createWithSystemFont(tostring(math.round(dis)), "Arial", 50)
+                label:setScale(scale)
+                label:setColor(cc.c3b(200, 100, 200))
+                label:setAnchorPoint(ap.x, ap.y)
+                label:setPosition(p)
+                self.coordinateNode:addChild(label)
             end
-            -- label
-            local label = cc.Label:createWithSystemFont(tostring(math.round(dis)), "Arial", 50)
-            label:setScale(scale)
-            label:setColor(cc.c3b(200, 100, 200))
-            label:setAnchorPoint(ap.x, ap.y)
-            label:setPosition(p)
-            self.coordinateNode:addChild(label)
         end
         local size = parent:getContentSize()
 
@@ -435,6 +462,20 @@ function panel:displayNode(node)
     self:drawNodeCoordinate(node)
 
     self.rightPanel:displayNode(node)
+
+    -- print info
+    if node.__rootTable and node.__rootTable.__info then
+        gk.log("rootTableId = %s", node.__rootTable.__info.id)
+    end
+    if node.__info then
+        gk.log("parentId = %s", node.__info.parentId)
+    end
+    if node.__info.isWidget then
+        gk.log("isWidget = true")
+    end
+    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
+        gk.log("isWidgetChild = true")
+    end
 end
 
 function panel:handleEvent()
@@ -454,6 +495,11 @@ function panel:handleEvent()
 
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode and self.displayingNode.__info then
+            if self.displayingNode.__rootTable ~= self.scene.layer then
+                gk.log("[Warning] cannot modify widget's children")
+                return
+            end
+
             -- copy node
             if self.commandPressed then
                 if key == "KEY_C" then
@@ -526,11 +572,11 @@ function panel:handleEvent()
         elseif key == "KEY_BACKSPACE" then
             -- delete node
             if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id and self.displayingNode ~= self.scene.layer then
-                local parent = self.displayingNode:getParent()
-                if parent and parent.__info and parent.__info.type == "ZoomButton" then
-                    gk.log("[Waring] cannot delete child of ZooomButton!")
-                    return
-                end
+                --                local parent = self.displayingNode:getParent()
+                --                if parent and parent.__info and parent.__info.type == "ZoomButton" then
+                --                    gk.log("[Waring] cannot delete child of ZooomButton!")
+                --                    return
+                --                end
                 gk.log("delete node %s", self.displayingNode.__info.id)
                 self:removeNodeIndex(self.displayingNode, self.scene.layer)
                 self.displayingNode:removeFromParent()

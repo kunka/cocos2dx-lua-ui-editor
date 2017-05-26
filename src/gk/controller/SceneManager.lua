@@ -114,6 +114,16 @@ function SceneManager:printSceneStack()
     end
 end
 
+function SceneManager:showDialog(dialogType, ...)
+    local clazz = gk.resource:require(dialogType, ...)
+    if clazz then
+        local dialog = clazz:create(...)
+        self:showDialogNode(dialog)
+    else
+        gk.log("SceneManager:showDialog error, create dialog class --> %s failed", dialogType)
+    end
+end
+
 function SceneManager:showDialogNode(dialogNode)
     local scene = SceneManager:getRunningScene()
     if scene and scene.layer and scene.layer.showDialogNode then

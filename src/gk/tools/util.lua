@@ -82,7 +82,8 @@ end
 
 ------------ g----------------------------- restart game  -------------------------------------------------
 function util:registerOnRestartGameCallback(callback)
-    util.onRestartGameCallback = callback
+    self.onRestartGameCallbacks = self.onRestartGameCallbacks or {}
+    table.insert(self.onRestartGameCallbacks, callback)
 end
 
 function util:registerRestartGameCallback(callback)
@@ -121,11 +122,12 @@ function util:restartGame(mode)
         self.restartLayer = nil
     end
 
-    if self.onRestartGameCallback then
-        self.onRestartGameCallback()
-    end
     gk.event:post("syncNow")
     gk.event:init()
+    for _, callback in ipairs(self.onRestartGameCallbacks) do
+        callback()
+    end
+    self.onRestartGameCallbacks = {}
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
@@ -145,12 +147,16 @@ end
 
 util.tags = util.tags and util.tags or {
     drawTag = 0xFFF0,
-    labelTag = 0xFFF1,
-    boundsTag = 0xFFF2,
+    drawParentTag = 0xFFF1,
+    labelTag = 0xFFF2,
+    boundsTag = 0xFFF3,
 }
 
 function util:isDebugNode(node)
     local tag = node and node:getTag() or -1
+    return table.indexof(table.values(util.tags), tag)
+end
+function util:isDebugTag(tag)
     return table.indexof(table.values(util.tags), tag)
 end
 
@@ -163,6 +169,20 @@ function util:clearDrawNode(node, tag)
     if draw then
         draw:clear()
         draw:stopAllActions()
+    end
+    -- parent
+    if node:getParent() then
+        node = node:getParent()
+        local tg = tag or util.tags.drawParentTag
+        local draw = node:getChildByTag(tg)
+        if iskindof(node, "cc.ScrollView") then
+            draw = node:getContainer():getChildByTag(tg)
+        end
+        local draw = node:getChildByTag(tg)
+        if draw then
+            draw:clear()
+            draw:stopAllActions()
+        end
     end
 end
 
@@ -244,10 +264,16 @@ function util:drawNode(node, c4f, tag)
     if DEBUG and not tag then
         draw:stopAllActions()
         draw:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
-            draw:clear()
             util:drawNode(node, c4f)
         end)))
     end
+
+    -- draw parent
+    local tg = tag or util.tags.drawParentTag
+    if node:getParent() then
+        self:drawNodeBounds(node:getParent(), cc.c4f(0, 0, 255 / 255, 0.1), util.tags.drawParentTag)
+    end
+
     return draw
 end
 
@@ -259,7 +285,15 @@ function util:drawNodeBounds(node, c4f, tg)
     end
     if not draw then
         draw = cc.DrawNode:create()
-        node:add(draw, 999, tg)
+        if iskindof(node, "cc.ScrollView") then
+            node:add(draw, -1, tg)
+        else
+            if tg == util.tags.drawParentTag then
+                node:add(draw, -1, tg)
+            else
+                node:add(draw, 9999, tg)
+            end
+        end
         draw:setPosition(cc.p(0, 0))
     end
     draw:clear()

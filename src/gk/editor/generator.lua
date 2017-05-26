@@ -41,23 +41,30 @@ function generator:deflate(node)
         end
     end
 
-    if not iskindof(node, "cc.TableView") and not node.__info.isWidget then
+    if not iskindof(node, "cc.TableView") then
+        -- and not node.__info.isWidget then
         -- rescan children
         node:sortAllChildren()
         local children = node:getChildren()
         if iskindof(node, "cc.ScrollView") then
             children = node:getContainer():getChildren()
         end
+        local isWidget = node.__info.isWidget
         for i = 1, #children do
             local child = children[i]
             if child and child.__info and child.__info.id then
-                info.children = info.children or {}
-                local c = self:deflate(child)
-                c.parentId = info.id
-                table.insert(info.children, c)
+                if isWidget and child.__rootTable == node then
+                    -- ignore widget child
+                else
+                    info.children = info.children or {}
+                    local c = self:deflate(child)
+                    c.parentId = info.id
+                    table.insert(info.children, c)
+                end
             end
         end
     end
+
     if info.children and #info.children == 0 then
         info.children = nil
     end
@@ -72,10 +79,11 @@ function generator:deflate(node)
 end
 
 function generator:inflate(info, rootNode, rootTable)
+    local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
-    if node and info.children and not info.isWidget then
-        for i = 1, #info.children do
-            local child = info.children[i]
+    if node and children then
+        for i = 1, #children do
+            local child = children[i]
             if child and child.id then
                 local c = self:inflate(child, nil, rootTable)
                 if c then
@@ -164,6 +172,8 @@ function generator:wrap(info, rootTable)
                     if rootTable[value] == nil then
                         local node = rootTable and rootTable[proxy["id"]] or nil
                         if node then
+                            -- clear old
+                            rootTable[proxy["id"]] = nil
                             -- change id
                             rootTable[value] = node
                             proxy[key] = value
@@ -324,7 +334,8 @@ generator.nodeCreator = {
         return node
     end,
     ["ZoomButton"] = function(info, rootTable)
-        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
+        --        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
+        local node = gk.ZoomButton.new()
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
@@ -489,7 +500,7 @@ generator.nodeSetFuncs = {
         if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
             return
         end
-        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+        if node.__info.type == "ZoomButton" then
             return
         end
         --        if iskindof(node, "cc.TableView") then
@@ -515,6 +526,9 @@ generator.nodeSetFuncs = {
         if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
             return
         end
+        if node.__info.type == "ZoomButton" then
+            return
+        end
         --        if iskindof(node, "cc.TableView") then
         --            return
         --        end
@@ -532,6 +546,9 @@ generator.nodeSetFuncs = {
         generator:updateSize(node, "height")
     end,
     scaleSize = function(node, var)
+        if node.__info.type == "ZoomButton" then
+            return
+        end
         if iskindof(node, "cc.ScrollView") then
             local vs = node.__info.viewSize
             local w = generator:parseValue("width", node, vs.width)
@@ -626,11 +643,11 @@ generator.nodeSetFuncs = {
         -- TODO: iskind of bug
         --        if iskindof(node, "Button") then
         if node.__info.type == "ZoomButton" then
-            node.contentNode:setSpriteFrame(gk.create_sprite_frame(var))
-            node:setContentNode(node.contentNode)
-            local size = node:getContentSize()
-            node.__info.width = size.width
-            node.__info.height = size.height
+            --            node.contentNode:setSpriteFrame(gk.create_sprite_frame(var))
+            --            node:setContentNode(node.contentNode)
+            --            local size = node:getContentSize()
+            --            node.__info.width = size.width
+            --            node.__info.height = size.height
         elseif iskindof(node, "ccui.Scale9Sprite") then
             node:setSpriteFrame(gk.create_sprite_frame(var), node.__info.capInsets)
         else
@@ -678,10 +695,40 @@ generator.nodeSetFuncs = {
     zoomScale = function(node, var)
         node:setZoomScale(var)
     end,
+    zoomEnabled = function(node, var)
+        node:setZoomEnabled(var == 0)
+    end,
     onClicked = function(node, var)
         local func, macro = generator:parseCustomMacroFunc(node, var)
         if func then
             node:onClicked(function(...)
+                gk.log("[%s] %s", node.__rootTable.__cname, macro)
+                func(node.__rootTable, ...)
+            end)
+        end
+    end,
+    onSelectChanged = function(node, var)
+        local func, macro = generator:parseCustomMacroFunc(node, var)
+        if func then
+            node:onSelectChanged(function(...)
+                gk.log("[%s] %s", node.__rootTable.__cname, macro)
+                func(node.__rootTable, ...)
+            end)
+        end
+    end,
+    onEnableChanged = function(node, var)
+        local func, macro = generator:parseCustomMacroFunc(node, var)
+        if func then
+            node:onEnableChanged(function(...)
+                gk.log("[%s] %s", node.__rootTable.__cname, macro)
+                func(node.__rootTable, ...)
+            end)
+        end
+    end,
+    onLongPressed = function(node, var)
+        local func, macro = generator:parseCustomMacroFunc(node, var)
+        if func then
+            node:onLongPressed(function(...)
                 gk.log("[%s] %s", node.__rootTable.__cname, macro)
                 func(node.__rootTable, ...)
             end)
@@ -884,7 +931,7 @@ generator.nodeSetFuncs = {
     verticalFillOrder = function(node, var)
         node:setVerticalFillOrder(var)
     end,
-    --------------------------- Layer   ---------------------------
+    --------------------------- Layer, Dialog  ---------------------------
     isSwallowTouches = function(node, var)
         node.isSwallowTouches = var == 0
     end,
@@ -893,6 +940,12 @@ generator.nodeSetFuncs = {
     end,
     popOnBack = function(node, var)
         node.popOnBack = var == 0
+    end,
+    popOnTouchOutsideBg = function(node, var)
+        node.popOnTouchOutsideBg = var == 0
+    end,
+    popOnTouchInsideBg = function(node, var)
+        node.popOnTouchInsideBg = var == 0
     end,
     --------------------------- cc.ClippingNode   ---------------------------
     inverted = function(node, var)
@@ -1055,7 +1108,8 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Sprite   ---------------------------
     file = function(node)
-        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton" or node.__info.type == "ccui.Scale9Sprite") and node.__info.file)
+        --        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ZoomButton" or node.__info.type == "ccui.Scale9Sprite") and node.__info.file)
+        return ((node.__info.type == "cc.Sprite" or node.__info.type == "ccui.Scale9Sprite") and node.__info.file)
     end,
     normalSprite = function(node)
         return (node.__info.type == "SpriteBUtton" and node.normalSprite or node.__info.normalSprite)
@@ -1088,13 +1142,26 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node)
+        --        return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
         return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
+    end,
+    zoomEnabled = function(node)
+        return (node.__info.type == "ZoomButton") and (node.__info.zoomEnabled or (node:getZoomEnabled() and 0 or 1))
     end,
     onClicked = function(node)
         return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onClicked or "-")
     end,
+    onSelectChanged = function(node)
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onSelectChanged or "-")
+    end,
+    onEnableChanged = function(node)
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onEnableChanged or "-")
+    end,
+    onLongPressed = function(node)
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onLongPressed or "-")
+    end,
     enabled = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.enabled or (node.enabled and 0 or 1))
+        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.enabled or (node.isEnabled and 0 or 1))
     end,
     --------------------------- cc.CheckBox   ---------------------------
     selected = function(node)
@@ -1225,7 +1292,7 @@ generator.nodeGetFuncs = {
     verticalFillOrder = function(node)
         return iskindof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
     end,
-    --------------------------- Layer   ---------------------------
+    --------------------------- Layer,Dialog   ---------------------------
     isSwallowTouches = function(node, var)
         return iskindof(node.class, "Layer") and (node.__info.isSwallowTouches or (node.isSwallowTouches and 0 or 1))
     end,
@@ -1234,6 +1301,12 @@ generator.nodeGetFuncs = {
     end,
     popOnBack = function(node, var)
         return iskindof(node.class, "Layer") and (node.__info.popOnBack or (node.popOnBack and 0 or 1))
+    end,
+    popOnTouchOutsideBg = function(node, var)
+        return iskindof(node.class, "Dialog") and (node.__info.popOnTouchOutsideBg or (node.popOnTouchOutsideBg and 0 or 1))
+    end,
+    popOnTouchInsideBg = function(node, var)
+        return iskindof(node.class, "Dialog") and (node.__info.popOnTouchInsideBg or (node.popOnTouchInsideBg and 0 or 1))
     end,
     --------------------------- cc.ClippingNode   ---------------------------
     inverted = function(node, var)

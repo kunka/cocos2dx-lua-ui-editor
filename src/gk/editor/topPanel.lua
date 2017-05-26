@@ -59,7 +59,7 @@ function panel.create(parent)
             callback(...)
         end)
         node:setPosition(x, y)
-        node.enabled = false
+        node.isEnabled = false
         return node
     end
     local createCheckBox = function(selected, x, y, callback)
@@ -147,7 +147,9 @@ function panel.create(parent)
     local index = table.indexof(gk.resource.lans, gk.resource:getCurrentLan())
     local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
         local lan = items[index]
-        gk.resource:setCurrentLan(lan)
+        gk.util:registerOnRestartGameCallback(function()
+            gk.resource:setCurrentLan(lan)
+        end)
         gk.util:restartGame(gk.mode)
     end)
     yIndex = yIndex + 1
@@ -158,14 +160,14 @@ function panel.create(parent)
     local yIndex = 0
     -- bg
     createLabel("BackgroundColor", rightX, topY - yIndex * stepY)
-    local items = { "BLACK", "WHITE", "GRAY" }
-    local colors = { cc.c4f(0, 0, 0, 1), cc.c4f(1, 1, 1, 1), cc.c4f(0.66, 0.66, 0.66, 1) }
-    local index = cc.UserDefault:getInstance():getIntegerForKey("colorIndex", 1)
+    local items = gk.display.editorBgColorsDesc
+    local colors = gk.display.editorBgColors
+    local index = cc.UserDefault:getInstance():getIntegerForKey("gk_colorIndex", 1)
     local node = createSelectBox(items, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
         local color = colors[index]
         local root = gk.util:getRootNode(self)
         gk.util:drawNodeBg(root, color, -89)
-        cc.UserDefault:getInstance():setIntegerForKey("colorIndex", index)
+        cc.UserDefault:getInstance():setIntegerForKey("gk_colorIndex", index)
         cc.UserDefault:getInstance():flush()
     end)
     yIndex = yIndex + 1
@@ -279,7 +281,7 @@ function panel.create(parent)
                         break
                     end
                     if node.__info then
-                        if node.__info.lock == 0 or node.__info.isWidget == 0 then
+                        if node.__info.lock == 0 or node.__info.isWidget then
                             break
                         end
                     end
@@ -320,7 +322,9 @@ function panel.create(parent)
                     node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        if type == "cc.Layer" then
+                        if widget.isWidget and widget.isWidget then
+                            node.__info.x, node.__info.y = 0, 0
+                        elseif type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                             node.__info.width = generator.config:default("Layer", "width")
                             node.__info.height = generator.config:default("Layer", "height")

@@ -26,6 +26,16 @@ display.deviceSizesDesc = {
     "720x1280(9:16)",
 }
 
+display.editorBgColors = {
+    cc.c4f(0, 0, 0, 0),
+    cc.c4f(1, 1, 1, 1),
+    cc.c4f(0.66, 0.66, 0.66, 1),
+    cc.c4f(71 / 255, 71 / 255, 71 / 255, 255 / 255),
+}
+display.editorBgColorsDesc = {
+    "TRANSPARENT", "WHITE", "GRAY", "DARKGRAY"
+}
+
 -- new resolution policy
 cc.ResolutionPolicy.UNIVERSAL = 5
 display.supportResolutionPolicyDesc = { "UNIVERSAL", "FIXED_HEIGHT", "FIXED_WIDTH" }
@@ -201,6 +211,9 @@ function display:addEditorPanel(scene)
     gk.log("display:addEditorPanel")
     local panel = require("gk.editor.panel")
     scene:addChild(panel.create(scene), 9999999)
+    local colors = gk.display.editorBgColors
+    local index = cc.UserDefault:getInstance():getIntegerForKey("gk_colorIndex", 1)
+    gk.util:drawNodeBg(scene, colors[index], -89)
 end
 
 return display

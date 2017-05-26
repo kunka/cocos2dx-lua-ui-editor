@@ -19,22 +19,13 @@ function Dialog:ctor()
     self.popOnTouchInsideBg = false
 end
 
-function Dialog:addMaskLayer(opacity)
-    if gk.mode ~= gk.MODE_EDIT then
-        -- black cover bg
-        local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, 0))
-        self:addChild(layerColor, -1)
-        layerColor:runAction(cc.FadeTo:create(0.15, opacity and opacity or 156))
-        self.maskLayer = layerColor
-    end
-end
-
 function Dialog:animateOut()
-    if gk.mode ~= gk.MODE_EDIT then
-        if self.dialogBg then
-            self.dialogBg:setScale(0)
-            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display:minScale())))
-        end
+    if self.dialogBg then
+        self.dialogBg:setScale(0)
+        self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display:minScale())))
+    end
+    if self.maskLayer then
+        self.maskLayer:runAction(cc.FadeTo:create(0.15, CFG_BLACK_COVER_OPACITY and CFG_BLACK_COVER_OPACITY or 156))
     end
 end
 
@@ -68,14 +59,18 @@ function Dialog:onTouchBegan(touch, event)
 end
 
 function Dialog:pop()
-    gk.log("[%s]: popDialog --> %s", self.parent.__cname, self.__cname)
-    table.removebyvalue(self.parent.dialogsStack, self)
-    self:retain()
-    if self.onPopCallback then
-        self.onPopCallback()
+    if self.parent then
+        gk.log("[%s]: popDialog --> %s", self.parent.__cname, self.__cname)
+        table.removebyvalue(self.parent.dialogsStack, self)
+        self:retain()
+        if self.onPopCallback then
+            self.onPopCallback()
+        end
+        self:release()
+        self:removeFromParent()
+    else
+        gk.log("[%s]: pop error, parent is nil", self.__cname)
     end
-    self:release()
-    self:removeFromParent()
 end
 
 function Dialog:onKeyBack()

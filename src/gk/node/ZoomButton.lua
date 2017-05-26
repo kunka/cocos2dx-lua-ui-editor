@@ -11,6 +11,12 @@ local ZoomButton = class("ZoomButton", Button)
 -- TODO: use global
 local kZoomActionTag = -0xFFFFF1
 
+function ZoomButton:ctor(...)
+    ZoomButton.super.ctor(self, ...)
+    self.zoomScale = 1
+    self.zoomEnabled = true
+end
+
 function ZoomButton:setContentNode(node)
     ZoomButton.super.setContentNode(self, node)
     -- default scale
@@ -34,6 +40,14 @@ function ZoomButton:getZoomScale()
     return self.zoomScale
 end
 
+function ZoomButton:setZoomEnabled(enabled)
+    self.zoomEnabled = enabled
+end
+
+function ZoomButton:getZoomEnabled()
+    return self.zoomEnabled
+end
+
 function ZoomButton:setSafeAnchor(anchorX, anchorY)
     local contentSize = self:getContentSize()
     local oldAnchor = self:getAnchorPoint()
@@ -45,7 +59,7 @@ function ZoomButton:setSafeAnchor(anchorX, anchorY)
 end
 
 function ZoomButton:selected()
-    if self.enabled and not self.isSelected then
+    if self.isEnabled and not self.isSelected and self.zoomEnabled then
         --        gk.log("ZoomButton:selected")
         local action = self:getActionByTag(kZoomActionTag)
         if action then
@@ -62,11 +76,11 @@ function ZoomButton:selected()
         self.originalAnchor = self:getAnchorPoint()
         self:setSafeAnchor(0.5, 0.5)
     end
-    self.isSelected = true
+    ZoomButton.super.selected(self)
 end
 
 function ZoomButton:unselected()
-    if self.enabled and self.isSelected then
+    if self.isEnabled and self.isSelected and self.zoomEnabled then
         --        gk.log("ZoomButton:unselected")
         gk.util:stopActionByTagSafe(self, kZoomActionTag)
         local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.zoomScale) / 2), self.originalScaleY * (1 + (1 - self.zoomScale) / 2))
@@ -79,7 +93,7 @@ function ZoomButton:unselected()
         zoomAction:setTag(kZoomActionTag)
         self:runAction(zoomAction)
     end
-    self.isSelected = false
+    ZoomButton.super.unselected(self)
 end
 
 return ZoomButton

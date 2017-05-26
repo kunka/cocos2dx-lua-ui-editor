@@ -21,7 +21,7 @@ function EditBox:ctor(size)
     self:handleKeyboardEvent()
     self.cursorChar = "|"
     self.cursorPos = 0
-    self.enabled = true
+    self.isEnabled = true
     self.focusable = true
 end
 
@@ -87,7 +87,7 @@ end
 
 function EditBox:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.enabled or not self:isVisible() or not camera then
+    if not self.isEnabled or not self:isVisible() or not camera then
         self:unfocus()
         return false
     end
@@ -269,7 +269,7 @@ function EditBox:handleKeyboardEvent()
                         end
                     end
                     moveChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.08), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
                         moveChar()
                     end))))
                     action:setTag(kCursorMoveAction)
@@ -281,7 +281,7 @@ function EditBox:handleKeyboardEvent()
                         self:changeCursorPos(self.cursorPos + 1)
                     end
                     moveChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.08), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
                         moveChar()
                     end))))
                     action:setTag(kCursorMoveAction)
@@ -325,6 +325,16 @@ function EditBox:handleKeyboardEvent()
                 end
             elseif keyCode == delete then
                 if self.cursorNode then
+                    if self.shiftPressed then
+                        -- clear
+                        gk.log("[EDITBOX]: clear all chars")
+                        self.label:setString("")
+                        self:changeCursorPos(0)
+                        if self.onInputChangedCallback then
+                            self.onInputChangedCallback(self, self:getInput())
+                        end
+                        return
+                    end
                     local deleteChar = function()
                         local str = self:getInput()
                         if self.cursorPos >= 1 and #str >= 1 then
@@ -338,7 +348,7 @@ function EditBox:handleKeyboardEvent()
                         end
                     end
                     deleteChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.08), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
                         deleteChar()
                     end))))
                     action:setTag(kDeleteCharAction)

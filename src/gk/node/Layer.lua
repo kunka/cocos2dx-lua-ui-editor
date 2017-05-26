@@ -78,36 +78,34 @@ end
 function Layer:onEnter()
     gk.log("[%s]: onEnter", self.__cname)
 
-    if gk.mode ~= gk.MODE_EDIT then
-        local listener = cc.EventListenerTouchOneByOne:create()
-        listener:setSwallowTouches(self.swallowTouches)
-        listener:setEnabled(self.touchEnabled)
-        listener:registerScriptHandler(handler(self, self.onTouchBegan), cc.Handler.EVENT_TOUCH_BEGAN)
-        listener:registerScriptHandler(handler(self, self.onTouchMoved), cc.Handler.EVENT_TOUCH_MOVED)
-        listener:registerScriptHandler(handler(self, self.onTouchEnded), cc.Handler.EVENT_TOUCH_ENDED)
-        listener:registerScriptHandler(handler(self, self.onTouchCancelled), cc.Handler.EVENT_TOUCH_CANCELLED)
-        local eventDispatcher = self:getEventDispatcher()
-        eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
-        self.touchListener = listener
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(self.swallowTouches)
+    listener:setEnabled(self.touchEnabled)
+    listener:registerScriptHandler(handler(self, self.onTouchBegan), cc.Handler.EVENT_TOUCH_BEGAN)
+    listener:registerScriptHandler(handler(self, self.onTouchMoved), cc.Handler.EVENT_TOUCH_MOVED)
+    listener:registerScriptHandler(handler(self, self.onTouchEnded), cc.Handler.EVENT_TOUCH_ENDED)
+    listener:registerScriptHandler(handler(self, self.onTouchCancelled), cc.Handler.EVENT_TOUCH_CANCELLED)
+    local eventDispatcher = self:getEventDispatcher()
+    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+    self.touchListener = listener
 
-        if self.enableKeyPad and not self.keyBoardListener then
-            -- should only add once
-            local function onKeyReleased(keyCode, event)
-                if gk.focusNode then
-                    return
-                end
-                local key = cc.KeyCodeKey[keyCode + 1]
-                if key == "KEY_ESCAPE" then
-                    gk.log("[%s]: onKeypad %s", self.__cname, key)
-                    self:handleKeyBack(self)
-                end
+    if self.enableKeyPad and not self.keyBoardListener then
+        -- should only add once
+        local function onKeyReleased(keyCode, event)
+            if gk.focusNode then
+                return
             end
-
-            local listener = cc.EventListenerKeyboard:create()
-            listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
-            cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
-            self.keyBoardListener = listener
+            local key = cc.KeyCodeKey[keyCode + 1]
+            if key == "KEY_ESCAPE" then
+                gk.log("[%s]: onKeypad %s", self.__cname, key)
+                self:handleKeyBack(self)
+            end
         end
+
+        local listener = cc.EventListenerKeyboard:create()
+        listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
+        cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+        self.keyBoardListener = listener
     end
 end
 
