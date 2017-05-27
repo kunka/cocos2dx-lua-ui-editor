@@ -282,22 +282,23 @@ function panel:displayNode(node)
     local leftX_input_short_3_left = leftX_input_short_3 - gapX / 2
     local checkbox_right = size.width - leftX
 
-    local isLabel = iskindof(node, "cc.Label")
-    local isSprite = iskindof(node, "cc.Sprite")
-    local isZoomButton = node.__info.type == "ZoomButton"
-    local isSpriteButton = node.__info.type == "SpriteButton"
-    local isLayer = iskindof(node, "cc.Layer")
-    local isLayerColor = iskindof(node, "cc.LayerColor")
-    local isLayerGradient = iskindof(node, "cc.LayerGradient")
-    local isScrollView = iskindof(node, "cc.ScrollView")
-    local isTableView = iskindof(node, "cc.TableView")
-    local isScale9Sprite = iskindof(node, "ccui.Scale9Sprite")
-    local isCheckBox = iskindof(node, "ccui.CheckBox")
-    local isClippingRectangleNode = iskindof(node, "cc.ClippingRectangleNode")
-    local isProgressTimer = iskindof(node, "cc.ProgressTimer")
-    local isClippingNode = iskindof(node, "cc.ClippingNode")
-    local isgkLayer = iskindof(node.class, "Layer")
-    local isgkDialog = iskindof(node.class, "Dialog")
+    local isLabel = gk.util:instanceof(node, "cc.Label")
+    local isSprite = gk.util:instanceof(node, "cc.Sprite")
+    local isZoomButton = gk.util:instanceof(node, "ZoomButton")
+    local isSpriteButton = gk.util:instanceof(node, "SpriteButton")
+    local isToggleButton = gk.util:instanceof(node, "ToggleButton")
+    local isLayer = gk.util:instanceof(node, "cc.Layer")
+    local isLayerColor = gk.util:instanceof(node, "cc.LayerColor")
+    local isLayerGradient = gk.util:instanceof(node, "cc.LayerGradient")
+    local isScrollView = gk.util:instanceof(node, "cc.ScrollView")
+    local isTableView = gk.util:instanceof(node, "cc.TableView")
+    local isScale9Sprite = gk.util:instanceof(node, "ccui.Scale9Sprite")
+    local isCheckBox = gk.util:instanceof(node, "ccui.CheckBox")
+    local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
+    local isProgressTimer = gk.util:instanceof(node, "cc.ProgressTimer")
+    local isClippingNode = gk.util:instanceof(node, "cc.ClippingNode")
+    local isgkLayer = gk.util:instanceof(node, "Layer")
+    local isgkDialog = gk.util:instanceof(node, "Dialog")
     local isRootNode = self.parent.scene.layer == node
     local voidContent = node.__info and node.__info.voidContent
 
@@ -594,79 +595,115 @@ function panel:displayNode(node)
     if isScale9Sprite then
         createTitle("Scale9Sprite")
     end
-    if isSprite or isZoomButton or isSpriteButton then
-        if not isScale9Sprite then
-            if isSpriteButton then
-                createTitle("SpriteButton")
-            else
-                createTitle(isSprite and "Sprite" or "ZoomButton")
+    if isSprite then
+        createTitle("Sprite")
+    end
+    if isSprite then
+        -- sprite file
+        self:createLabel("Sprite", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.file), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "file", input, "string"))
+        end)
+        yIndex = yIndex + 1
+    end
+    if isZoomButton or isSpriteButton then
+        if isSpriteButton then
+            createTitle("SpriteButton")
+        else
+            if isToggleButton then
+                createTitle("ToggleButton(Tag:1~n continuous)")
+            elseif isZoomButton then
+                createTitle("ZoomButton")
             end
         end
 
-        if isZoomButton or isSpriteButton then
-            -- click event
-            self:createLabel("onClicked", leftX, topY - stepY * yIndex)
-            local funcs = { "-" }
-            -- search click callback format like "onXXX"
-            -- TODO: super class's click function
-            for key, value in pairs(self.parent.scene.layer.class) do
-                --                if type(value) == "function" and key:sub(1, 2) == "on" and key:sub(key:len() - 6, key:len()) == "Clicked" then
-                if type(value) == "function" and key:sub(1, 2) == "on" then
-                    table.insert(funcs, "&" .. key)
+        if isToggleButton then
+            -- event
+            self:createLabel("SelectedTag", leftX, topY - stepY * yIndex)
+            local tags = { 1 }
+            -- search tag  callback format like "onXXX"
+            local children = node:getChildren()
+            for i = 1, #children do
+                local child = children[i]
+                if child and child.__info and child.__info.id then
+                    if child.__info.tag ~= -1 then
+                        table.insert(tags, child.__info.tag)
+                    end
                 end
             end
-            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onClicked)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "onClicked", funcs[index], "string")
-            end, "-")
+            self:createSelectBox(tags, table.indexof(tags, tostring(node.__info.selectedTag)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "selectedTag", tags[index], "number")
+            end, 1)
             yIndex = yIndex + 1
-
-            -- onSelectChanged event
-            self:createLabel("onSelectChanged", leftX, topY - stepY * yIndex)
+            -- onSelectedTagChanged event
+            self:createLabel("onSelectTagChanged", leftX, topY - stepY * yIndex)
             local funcs = { "-" }
             for key, value in pairs(self.parent.scene.layer.class) do
                 if type(value) == "function" and key:sub(1, 2) == "on" then
                     table.insert(funcs, "&" .. key)
                 end
             end
-            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onSelectChanged)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "onSelectChanged", funcs[index], "string")
-            end, "-")
-            yIndex = yIndex + 1
-
-            -- onDisableChanged event
-            self:createLabel("onEnableChanged", leftX, topY - stepY * yIndex)
-            local funcs = { "-" }
-            for key, value in pairs(self.parent.scene.layer.class) do
-                if type(value) == "function" and key:sub(1, 2) == "on" then
-                    table.insert(funcs, "&" .. key)
-                end
-            end
-            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onEnableChanged)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "onEnableChanged", funcs[index], "string")
-            end, "-")
-            yIndex = yIndex + 1
-
-            -- onLongPressed event
-            self:createLabel("onLongPressed", leftX, topY - stepY * yIndex)
-            local funcs = { "-" }
-            for key, value in pairs(self.parent.scene.layer.class) do
-                if type(value) == "function" and key:sub(1, 2) == "on" then
-                    table.insert(funcs, "&" .. key)
-                end
-            end
-            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onLongPressed)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                generator:modify(node, "onLongPressed", funcs[index], "string")
+            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onSelectedTagChanged)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "onSelectedTagChanged", funcs[index], "string")
             end, "-")
             yIndex = yIndex + 1
         end
-        if isSprite then
-            -- sprite file
-            self:createLabel("Sprite", leftX, topY - stepY * yIndex)
-            self:createInput(tostring(node.__info.file), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                editBox:setInput(generator:modify(node, "file", input, "string"))
-            end)
-            yIndex = yIndex + 1
+
+        -- click event
+        self:createLabel("onClicked", leftX, topY - stepY * yIndex)
+        local funcs = { "-" }
+        -- search click callback format like "onXXX"
+        -- TODO: super class's click function
+        for key, value in pairs(self.parent.scene.layer.class) do
+            --                if type(value) == "function" and key:sub(1, 2) == "on" and key:sub(key:len() - 6, key:len()) == "Clicked" then
+            if type(value) == "function" and key:sub(1, 2) == "on" then
+                table.insert(funcs, "&" .. key)
+            end
         end
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onClicked)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "onClicked", funcs[index], "string")
+        end, "-")
+        yIndex = yIndex + 1
+
+        -- onSelectChanged event
+        self:createLabel("onSelectChanged", leftX, topY - stepY * yIndex)
+        local funcs = { "-" }
+        for key, value in pairs(self.parent.scene.layer.class) do
+            if type(value) == "function" and key:sub(1, 2) == "on" then
+                table.insert(funcs, "&" .. key)
+            end
+        end
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onSelectChanged)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "onSelectChanged", funcs[index], "string")
+        end, "-")
+        yIndex = yIndex + 1
+
+        -- onDisableChanged event
+        self:createLabel("onEnableChanged", leftX, topY - stepY * yIndex)
+        local funcs = { "-" }
+        for key, value in pairs(self.parent.scene.layer.class) do
+            if type(value) == "function" and key:sub(1, 2) == "on" then
+                table.insert(funcs, "&" .. key)
+            end
+        end
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onEnableChanged)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "onEnableChanged", funcs[index], "string")
+        end, "-")
+        yIndex = yIndex + 1
+
+        -- onLongPressed event
+        self:createLabel("onLongPressed", leftX, topY - stepY * yIndex)
+        local funcs = { "-" }
+        for key, value in pairs(self.parent.scene.layer.class) do
+            if type(value) == "function" and key:sub(1, 2) == "on" then
+                table.insert(funcs, "&" .. key)
+            end
+        end
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.onLongPressed)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "onLongPressed", funcs[index], "string")
+        end, "-")
+        yIndex = yIndex + 1
+
         if isSpriteButton then
             -- normalSprite file
             self:createLabel("NormalSprite", leftX, topY - stepY * yIndex)
@@ -860,9 +897,6 @@ function panel:displayNode(node)
         local fontFile = node.__info.fontFile[lan]
         local isTTF = gk.isTTF(fontFile)
         local isBMFont = gk.isBMFont(fontFile)
-        print(fontFile)
-        print(isTTF)
-        print(isBMFont)
         local isSystemFont = not isTTF and not isBMFont
         createTitle(string.format("Label_%s(%s)", lan, isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
         -- font file
@@ -1330,7 +1364,7 @@ function panel:displayNode(node)
     -- custom ext node
     for i = 1, #self.parent.exNodeDisplayer do
         local ext = self.parent.exNodeDisplayer[i]
-        if node.__info.type == ext:type() or iskindof(node, ext:type()) then
+        if node.__info.type == ext:type() or gk.util:instanceof(node, ext:type()) then
             createTitle(ext:title())
             local stringProps = ext:stringProps()
             if stringProps then

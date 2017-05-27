@@ -25,6 +25,7 @@ function SceneManager:createScene(layerName, ...)
         end, function(msg)
             local ErrorReporter = require "app.feedback.ErrorReporter"
             if ErrorReporter then
+                local msg = debug.traceback(msg, 3)
                 ErrorReporter:reportException(msg)
             end
         end)

@@ -120,7 +120,8 @@ function resource:loadEditableNodes(path, genSrcPath)
     local status, clazz = pcall(require, path)
     if status and clazz then
         -- TODO: other types
-        local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
+--        local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
+        local isEditable = gk.util:iskindof(clazz, "Layer") or gk.util:iskindof(clazz, "TableViewCell")
         --                if not isEditable then
         --                    print("?")
         --                    local instance = clazz:create()

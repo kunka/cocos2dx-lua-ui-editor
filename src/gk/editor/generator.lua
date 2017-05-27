@@ -25,7 +25,7 @@ function generator:deflate(node)
         local ret = func(node)
         if ret then
             local def = config.defValues[k]
-            --            if iskindof(node, "ccui.Scale9Sprite") then
+            --            if gk.util:instanceof(node, "ccui.Scale9Sprite") then
             --            gk.log("id:%s get %s, v:%s, def:%s", node.__info.id, k, gk.util:tbl2string(ret), gk.util:tbl2string(def))
             --            end
             if def then
@@ -41,12 +41,12 @@ function generator:deflate(node)
         end
     end
 
-    if not iskindof(node, "cc.TableView") then
+    if not gk.util:instanceof(node, "cc.TableView") then
         -- and not node.__info.isWidget then
         -- rescan children
         node:sortAllChildren()
         local children = node:getChildren()
-        if iskindof(node, "cc.ScrollView") then
+        if gk.util:instanceof(node, "cc.ScrollView") then
             children = node:getContainer():getChildren()
         end
         local isWidget = node.__info.isWidget
@@ -69,7 +69,7 @@ function generator:deflate(node)
         info.children = nil
     end
 
-    if iskindof(node, "cc.ProgressTimer") then
+    if gk.util:instanceof(node, "cc.ProgressTimer") then
         local sprite = node:getSprite()
         if sprite then
             info.sprite = self:deflate(sprite)
@@ -334,13 +334,17 @@ generator.nodeCreator = {
         return node
     end,
     ["ZoomButton"] = function(info, rootTable)
-        --        local node = gk.ZoomButton.new(gk.create_sprite(info.file))
         local node = gk.ZoomButton.new()
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
     ["SpriteButton"] = function(info, rootTable)
         local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite)
+        info.id = info.id or generator:genID("button", rootTable)
+        return node
+    end,
+    ["ToggleButton"] = function(info, rootTable)
+        local node = gk.ToggleButton.new()
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
@@ -497,20 +501,20 @@ generator.nodeSetFuncs = {
         node:setIgnoreAnchorPointForPosition(var == 0)
     end,
     width = function(node, var)
-        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+        if gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite") then
             return
         end
         if node.__info.type == "ZoomButton" then
             return
         end
-        --        if iskindof(node, "cc.TableView") then
+        --        if gk.util:instanceof(node, "cc.TableView") then
         --            return
         --        end
         local width = generator:parseValue("width", node, var)
         local ss = node.__info.scaleSize
         local scaleW = generator:parseValue("scaleW", node, ss.w)
         width = width * scaleW
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             node:setWidth(width)
         else
             local size = node:getContentSize()
@@ -520,23 +524,23 @@ generator.nodeSetFuncs = {
         generator:updateSize(node, "width")
     end,
     height = function(node, var)
-        if iskindof(node, "cc.Label") and node.__info.overflow == 3 then
+        if gk.util:instanceof(node, "cc.Label") and node.__info.overflow == 3 then
             return
         end
-        if iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+        if gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite") then
             return
         end
         if node.__info.type == "ZoomButton" then
             return
         end
-        --        if iskindof(node, "cc.TableView") then
+        --        if gk.util:instanceof(node, "cc.TableView") then
         --            return
         --        end
         local height = generator:parseValue("height", node, var)
         local ss = node.__info.scaleSize
         local scaleH = generator:parseValue("scaleH", node, ss.h)
         height = height * scaleH
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             node:setHeight(height)
         else
             local size = node:getContentSize()
@@ -549,7 +553,7 @@ generator.nodeSetFuncs = {
         if node.__info.type == "ZoomButton" then
             return
         end
-        if iskindof(node, "cc.ScrollView") then
+        if gk.util:instanceof(node, "cc.ScrollView") then
             local vs = node.__info.viewSize
             local w = generator:parseValue("width", node, vs.width)
             local h = generator:parseValue("height", node, vs.height)
@@ -559,7 +563,7 @@ generator.nodeSetFuncs = {
             local scaleW = generator:parseValue("scaleW", node, var.w)
             local scaleH = generator:parseValue("scaleH", node, var.h)
             node:setViewSize(cc.size(w * scaleW, h * scaleH))
-            if iskindof(node, "cc.TableView") then
+            if gk.util:instanceof(node, "cc.TableView") then
                 node:reloadData()
             end
         else
@@ -571,7 +575,7 @@ generator.nodeSetFuncs = {
             local scaleW = generator:parseValue("scaleW", node, var.w)
             local scaleH = generator:parseValue("scaleH", node, var.h)
             local size = cc.size(w * scaleW, h * scaleH)
-            if iskindof(node, "cc.Label") then
+            if gk.util:instanceof(node, "cc.Label") then
                 node:setDimensions(size.width, size.height)
             else
                 node:setContentSize(size)
@@ -609,7 +613,7 @@ generator.nodeSetFuncs = {
     --    end,
     --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node, var)
-        if iskindof(node, "cc.LayerColor") then
+        if gk.util:instanceof(node, "cc.LayerColor") then
             -- LayerColor has no setColor interface
         else
             node:setColor(var)
@@ -640,15 +644,7 @@ generator.nodeSetFuncs = {
     end,
     --------------------------- cc.Sprite, Button   ---------------------------
     file = function(node, var)
-        -- TODO: iskind of bug
-        --        if iskindof(node, "Button") then
-        if node.__info.type == "ZoomButton" then
-            --            node.contentNode:setSpriteFrame(gk.create_sprite_frame(var))
-            --            node:setContentNode(node.contentNode)
-            --            local size = node:getContentSize()
-            --            node.__info.width = size.width
-            --            node.__info.height = size.height
-        elseif iskindof(node, "ccui.Scale9Sprite") then
+        if gk.util:instanceof(node, "ccui.Scale9Sprite") then
             node:setSpriteFrame(gk.create_sprite_frame(var), node.__info.capInsets)
         else
             node:setSpriteFrame(gk.create_sprite_frame(var))
@@ -725,6 +721,15 @@ generator.nodeSetFuncs = {
             end)
         end
     end,
+    onSelectedTagChanged = function(node, var)
+        local func, macro = generator:parseCustomMacroFunc(node, var)
+        if func then
+            node:onSelectedTagChanged(function(...)
+                gk.log("[%s] %s", node.__rootTable.__cname, macro)
+                func(node.__rootTable, ...)
+            end)
+        end
+    end,
     onLongPressed = function(node, var)
         local func, macro = generator:parseCustomMacroFunc(node, var)
         if func then
@@ -736,6 +741,9 @@ generator.nodeSetFuncs = {
     end,
     enabled = function(node, var)
         node:setEnabled(var == 0)
+    end,
+    selectedTag = function(node, var)
+        node:setSelectedTag(var)
     end,
     --------------------------- cc.CheckBox   ---------------------------
     selected = function(node, var)
@@ -911,7 +919,7 @@ generator.nodeSetFuncs = {
         local scaleW = generator:parseValue("scaleW", node, ss.w)
         local scaleH = generator:parseValue("scaleH", node, ss.h)
         node:setViewSize(cc.size(w * scaleW, h * scaleH))
-        if iskindof(node, "cc.TableView") then
+        if gk.util:instanceof(node, "cc.TableView") then
             node:reloadData()
         end
     end,
@@ -1000,7 +1008,7 @@ generator.nodeGetFuncs = {
         return node.__info.scaleXY
     end,
     scaleSize = function(node)
-        if not iskindof(node, "cc.Sprite") then
+        if not gk.util:instanceof(node, "cc.Sprite") then
             return node.__info.scaleSize
         else
             return config.defValues.scaleSize
@@ -1031,30 +1039,30 @@ generator.nodeGetFuncs = {
         return node.__info.opacity or node:getOpacity()
     end,
     width = function(node)
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             return node.__info.width or node:getWidth()
-        elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+        elseif gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite") then
             return node:getContentSize().width
-        elseif node.__info.type == "ZoomButton" then
+        elseif gk.util:instanceof(node, "ZoomButton") then
             return node:getContentSize().width
-        elseif iskindof(node, "cc.Layer") then
+        elseif gk.util:instanceof(node, "cc.Layer") then
             return node.__info.width or node:getContentSize().width
-        elseif iskindof(node, "cc.ScrollView") then
+        elseif gk.util:instanceof(node, "cc.ScrollView") then
             return node.__info.width or node:getViewSize().width
         else
             return node.__info.width or node:getContentSize().width
         end
     end,
     height = function(node)
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             return node.__info.height or node:getHeight()
-        elseif iskindof(node, "cc.Sprite") and not iskindof(node, "ccui.Scale9Sprite") then
+        elseif gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite") then
             return node:getContentSize().height
-        elseif node.__info.type == "ZoomButton" then
+        elseif gk.util:instanceof(node, "ZoomButton") then
             return node:getContentSize().height
-        elseif iskindof(node, "cc.Layer") then
+        elseif gk.util:instanceof(node, "cc.Layer") then
             return node.__info.height or node:getContentSize().height
-        elseif iskindof(node, "cc.ScrollView") then
+        elseif gk.util:instanceof(node, "cc.ScrollView") then
             return node.__info.height or node:getViewSize().height
         else
             return node.__info.height or node:getContentSize().height
@@ -1077,7 +1085,7 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- cc.Sprite cc.Label cc.LayerColor cc.LayerGradient   ---------------------------
     color = function(node)
-        if iskindof(node, "cc.LayerColor") then
+        if gk.util:instanceof(node, "cc.LayerColor") then
             return node.__info.color
         else
             return node.__info.color or node:getColor()
@@ -1129,7 +1137,7 @@ generator.nodeGetFuncs = {
     end,
     --------------------------- ccui.Scale9Sprite   ---------------------------
     capInsets = function(node)
-        return iskindof(node, "ccui.Scale9Sprite") and (node.__info.capInsets or node:getCapInsets())
+        return gk.util:instanceof(node, "ccui.Scale9Sprite") and (node.__info.capInsets or node:getCapInsets())
     end,
     flippedY = function(node)
         return (node.__info.type == "ccui.Scale9Sprite" and (node.__info.flippedY or (node:isFlippedY() and 0 or 1)))
@@ -1143,66 +1151,72 @@ generator.nodeGetFuncs = {
     --------------------------- ZoomButton   ---------------------------
     zoomScale = function(node)
         --        return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
-        return (node.__info.type == "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
+        return gk.util:instanceof(node, "ZoomButton") and (node.__info.zoomScale or node:getZoomScale())
     end,
     zoomEnabled = function(node)
-        return (node.__info.type == "ZoomButton") and (node.__info.zoomEnabled or (node:getZoomEnabled() and 0 or 1))
+        return gk.util:instanceof(node, "ZoomButton") and (node.__info.zoomEnabled or (node:getZoomEnabled() and 0 or 1))
     end,
     onClicked = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onClicked or "-")
+        return gk.util:instanceof(node, "Button") and (node.__info.onClicked or "-")
     end,
     onSelectChanged = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onSelectChanged or "-")
+        return gk.util:instanceof(node, "Button") and (node.__info.onSelectChanged or "-")
     end,
     onEnableChanged = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onEnableChanged or "-")
+        return gk.util:instanceof(node, "Button") and (node.__info.onEnableChanged or "-")
     end,
     onLongPressed = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.onLongPressed or "-")
+        return gk.util:instanceof(node, "Button") and (node.__info.onLongPressed or "-")
+    end,
+    onSelectedTagChanged = function(node)
+        return gk.util:instanceof(node, "ToggleButton") and (node.__info.onSelectedTagChanged or "-")
     end,
     enabled = function(node)
-        return (node.__info.type == "ZoomButton" or node.__info.type == "SpriteButton") and (node.__info.enabled or (node.isEnabled and 0 or 1))
+        return gk.util:instanceof(node, "Button") and (node.__info.enabled or (node.isEnabled and 0 or 1))
+    end,
+    selectedTag = function(node)
+        return gk.util:instanceof(node, "ToggleButton") and (node.__info.selectedTag or (node:getSelectedTag()))
     end,
     --------------------------- cc.CheckBox   ---------------------------
     selected = function(node)
-        return iskindof(node, "ccui.CheckBox") and (node.__info.selected or (node.selected and 0 or 1))
+        return gk.util:instanceof(node, "ccui.CheckBox") and (node.__info.selected or (node.selected and 0 or 1))
     end,
     backGround = function(node, var)
-        return iskindof(node, "ccui.CheckBox") and node.__info.backGround
+        return gk.util:instanceof(node, "ccui.CheckBox") and node.__info.backGround
     end,
     cross = function(node, var)
-        return iskindof(node, "ccui.CheckBox") and node.__info.cross
+        return gk.util:instanceof(node, "ccui.CheckBox") and node.__info.cross
     end,
     --------------------------- cc.Label   ---------------------------
     string = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.string or node:getString())
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.string or node:getString())
     end,
     hAlign = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.hAlign or node:getHorizontalAlignment())
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.hAlign or node:getHorizontalAlignment())
     end,
     vAlign = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.vAlign or node:getVerticalAlignment())
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.vAlign or node:getVerticalAlignment())
     end,
     overflow = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.overflow or node:getOverflow())
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.overflow or node:getOverflow())
     end,
     lineHeight = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.lineHeight or -1)
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.lineHeight or -1)
     end,
     --    maxLineWidth = function(node)
-    --        return iskindof(node, "cc.Label") and (node.__info.maxLineWidth or node:getMaxLineWidth())
+    --        return gk.util:instanceof(node, "cc.Label") and (node.__info.maxLineWidth or node:getMaxLineWidth())
     --    end,
     fontFile = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.fontFile)
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.fontFile)
     end,
     fontSize = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.fontSize)
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.fontSize)
     end,
     --    clipMarginEnabled = function(node)
-    --        return iskindof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
+    --        return gk.util:instanceof(node, "cc.Label") and (node.__info.clipMarginEnabled or (node:isClipMarginEnabled() and 0 or 1))
     --    end,
     textColor = function(node, var)
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
             if not gk.isBMFont(fontFile) then
@@ -1212,19 +1226,19 @@ generator.nodeGetFuncs = {
         return nil
     end,
     additionalKerning = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.additionalKerning or (not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) and node:getAdditionalKerning()))
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.additionalKerning or (not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) and node:getAdditionalKerning()))
     end,
     enableWrap = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.enableWrap or (node:isWrapEnabled() and 0 or 1))
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.enableWrap or (node:isWrapEnabled() and 0 or 1))
     end,
     lineBreakWithoutSpace = function(node)
-        return iskindof(node, "cc.Label") and node.__info.lineBreakWithoutSpace
+        return gk.util:instanceof(node, "cc.Label") and node.__info.lineBreakWithoutSpace
     end,
     enableShadow = function(node)
-        return iskindof(node, "cc.Label") and node.__info.enableShadow
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableShadow
     end,
     shadow = function(node)
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             if node.__info.shadow then
                 return node.__info.shadow
             else
@@ -1236,16 +1250,16 @@ generator.nodeGetFuncs = {
         end
     end,
     enableOutline = function(node)
-        return iskindof(node, "cc.Label") and node.__info.enableOutline
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableOutline
     end,
     enableGlow = function(node)
-        return iskindof(node, "cc.Label") and node.__info.enableGlow
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableGlow
     end,
     outlineSize = function(node)
-        return iskindof(node, "cc.Label") and (node.__info.outlineSize or node:getOutlineSize())
+        return gk.util:instanceof(node, "cc.Label") and (node.__info.outlineSize or node:getOutlineSize())
     end,
     effectColor = function(node)
-        if iskindof(node, "cc.Label") then
+        if gk.util:instanceof(node, "cc.Label") then
             if node.__info.effectColor then
                 return node.__info.effectColor
             else
@@ -1255,88 +1269,88 @@ generator.nodeGetFuncs = {
         end
     end,
     enableItalics = function(node, var)
-        return iskindof(node, "cc.Label") and node.__info.enableItalics
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableItalics
     end,
     enableBold = function(node, var)
-        return iskindof(node, "cc.Label") and node.__info.enableBold
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableBold
     end,
     enableUnderline = function(node, var)
-        return iskindof(node, "cc.Label") and node.__info.enableUnderline
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableUnderline
     end,
     enableStrikethrough = function(node, var)
-        return iskindof(node, "cc.Label") and node.__info.enableStrikethrough
+        return gk.util:instanceof(node, "cc.Label") and node.__info.enableStrikethrough
     end, --    np = function(node)
     --        return node.__info.np or node:getNormalizedPosition()
     --    end,
     --------------------------- cc.ScrollView   ---------------------------
     viewSize = function(node)
-        return iskindof(node, "cc.ScrollView") and (node.__info.viewSize or node:getViewSize())
+        return gk.util:instanceof(node, "cc.ScrollView") and (node.__info.viewSize or node:getViewSize())
     end,
     direction = function(node)
-        return iskindof(node, "cc.ScrollView") and (node.__info.direction or node:getDirection())
+        return gk.util:instanceof(node, "cc.ScrollView") and (node.__info.direction or node:getDirection())
     end,
     visible = function(node)
         return node.__info.visible or (node:isVisible() and 0 or 1)
     end,
     clipToBD = function(node)
-        return iskindof(node, "cc.ScrollView") and (node.__info.clipToBD or (node:isClippingToBounds() and 0 or 1))
+        return gk.util:instanceof(node, "cc.ScrollView") and (node.__info.clipToBD or (node:isClippingToBounds() and 0 or 1))
     end,
     bounceable = function(node)
-        return iskindof(node, "cc.ScrollView") and (node.__info.bounceable or (node:isBounceable() and 0 or 1))
+        return gk.util:instanceof(node, "cc.ScrollView") and (node.__info.bounceable or (node:isBounceable() and 0 or 1))
     end,
     touchEnabled = function(node)
-        return (iskindof(node, "cc.ScrollView") or iskindof(node.class, "Layer") or iskindof(node.class, "Dialog")) and (node.__info.touchEnabled or
+        return (gk.util:instanceof(node, "cc.ScrollView") or gk.util:instanceof(node, "Layer")) and (node.__info.touchEnabled or
                 (node:isTouchEnabled() and 0 or 1))
     end,
     --------------------------- cc.TableView   ---------------------------
     verticalFillOrder = function(node)
-        return iskindof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
+        return gk.util:instanceof(node, "cc.TableView") and (node.__info.verticalFillOrder or node:getVerticalFillOrder())
     end,
     --------------------------- Layer,Dialog   ---------------------------
     isSwallowTouches = function(node, var)
-        return iskindof(node.class, "Layer") and (node.__info.isSwallowTouches or (node.isSwallowTouches and 0 or 1))
+        return gk.util:instanceof(node, "Layer") and (node.__info.isSwallowTouches or (node.isSwallowTouches and 0 or 1))
     end,
     enableKeyPad = function(node, var)
-        return iskindof(node.class, "Layer") and (node.__info.enableKeyPad or (node.enableKeyPad and 0 or 1))
+        return gk.util:instanceof(node, "Layer") and (node.__info.enableKeyPad or (node.enableKeyPad and 0 or 1))
     end,
     popOnBack = function(node, var)
-        return iskindof(node.class, "Layer") and (node.__info.popOnBack or (node.popOnBack and 0 or 1))
+        return gk.util:instanceof(node, "Layer") and (node.__info.popOnBack or (node.popOnBack and 0 or 1))
     end,
     popOnTouchOutsideBg = function(node, var)
-        return iskindof(node.class, "Dialog") and (node.__info.popOnTouchOutsideBg or (node.popOnTouchOutsideBg and 0 or 1))
+        return gk.util:instanceof(node, "Dialog") and (node.__info.popOnTouchOutsideBg or (node.popOnTouchOutsideBg and 0 or 1))
     end,
     popOnTouchInsideBg = function(node, var)
-        return iskindof(node.class, "Dialog") and (node.__info.popOnTouchInsideBg or (node.popOnTouchInsideBg and 0 or 1))
+        return gk.util:instanceof(node, "Dialog") and (node.__info.popOnTouchInsideBg or (node.popOnTouchInsideBg and 0 or 1))
     end,
     --------------------------- cc.ClippingNode   ---------------------------
     inverted = function(node, var)
-        return iskindof(node, "cc.ClippingNode") and (node.__info.inverted or (node:isInverted() and 0 or 1))
+        return gk.util:instanceof(node, "cc.ClippingNode") and (node.__info.inverted or (node:isInverted() and 0 or 1))
     end,
     alphaThreshold = function(node)
-        return iskindof(node, "cc.ClippingNode") and (node.__info.alphaThreshold or node:getAlphaThreshold())
+        return gk.util:instanceof(node, "cc.ClippingNode") and (node.__info.alphaThreshold or node:getAlphaThreshold())
     end,
     --------------------------- cc.ClippingRectangleNode   ---------------------------
     clippingRegion = function(node)
-        return iskindof(node, "cc.ClippingRectangleNode") and (node.__info.clippingRegion or node:getClippingRegion())
+        return gk.util:instanceof(node, "cc.ClippingRectangleNode") and (node.__info.clippingRegion or node:getClippingRegion())
     end,
     clippingEnabled = function(node)
-        return iskindof(node, "cc.ClippingRectangleNode") and (node.__info.clippingEnabled or (node:isClippingEnabled() and 0 or 1))
+        return gk.util:instanceof(node, "cc.ClippingRectangleNode") and (node.__info.clippingEnabled or (node:isClippingEnabled() and 0 or 1))
     end,
     --------------------------- cc.ProgressTimer   ---------------------------
     barType = function(node)
-        return iskindof(node, "cc.ProgressTimer") and (node.__info.barType or node:getType())
+        return gk.util:instanceof(node, "cc.ProgressTimer") and (node.__info.barType or node:getType())
     end,
     percentage = function(node)
-        return iskindof(node, "cc.ProgressTimer") and (node.__info.percentage or node:getPercentage())
+        return gk.util:instanceof(node, "cc.ProgressTimer") and (node.__info.percentage or node:getPercentage())
     end,
     reverseDirection = function(node, var)
-        return iskindof(node, "cc.ProgressTimer") and (node.__info.reverseDirection or (node:isReverseDirection() and 0 or 1))
+        return gk.util:instanceof(node, "cc.ProgressTimer") and (node.__info.reverseDirection or (node:isReverseDirection() and 0 or 1))
     end,
     midpoint = function(node)
-        return iskindof(node, "cc.ProgressTimer") and (node.__info.midpoint or node:getMidpoint())
+        return gk.util:instanceof(node, "cc.ProgressTimer") and (node.__info.midpoint or node:getMidpoint())
     end,
     barChangeRate = function(node)
-        return iskindof(node, "cc.ProgressTimer") and (node.__info.barChangeRate or node:getBarChangeRate())
+        return gk.util:instanceof(node, "cc.ProgressTimer") and (node.__info.barChangeRate or node:getBarChangeRate())
     end,
 }
 

@@ -130,13 +130,13 @@ function injector:onNodeCreate(node)
                 node.__info = generator:wrap({ type = node.__cname }, node)
                 node.__info.id = node.__cname
                 node[node.__info.id] = node
-                local clazz = require(gk.resource.genNodes[node.__cname].path)
-                local isLayer = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog")
+--                local clazz = require(gk.resource.genNodes[node.__cname].path)
+                local isLayer = gk.util:instanceof(node, "Layer")
                 if isLayer then
                     node.__info.width = generator.config:default("Layer", "width")
                     node.__info.height = generator.config:default("Layer", "height")
                 end
-                if iskindof(node, "cc.TableViewCell") then
+                if gk.util:instanceof(node, "TableViewCell") then
                     node.__info.width = generator.config:default("cc.TableViewCell", "width")
                     node.__info.height = generator.config:default("cc.TableViewCell", "height")
                 end
@@ -148,7 +148,7 @@ function injector:onNodeCreate(node)
         if gk.mode == gk.MODE_EDIT then
             --            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1), -9)
             node:runAction(cc.CallFunc:create(function()
-                if not iskindof(node, "cc.TableViewCell") then
+                if not gk.util:instanceof(node, "TableViewCell") then
                     gk.event:post("displayNode", node)
                 end
                 gk.event:post("displayDomTree")

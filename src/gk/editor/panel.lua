@@ -131,7 +131,7 @@ function panel:onNodeCreate(node)
         -- cannot select and move tableView cell which is auto gen
         local c = node:getParent()
         while c ~= nil do
-            if iskindof(c, "cc.TableView") then
+            if gk.util:instanceof(c, "cc.TableView") then
                 return
             end
             c = c:getParent()
@@ -261,7 +261,7 @@ function panel:onNodeCreate(node)
                     --                    if cc.rectContainsPoint(rect, p) then
                     --                        return
                     --                    end
-                    local s = iskindof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
+                    local s = gk.util:instanceof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = nd:convertToNodeSpace(location)
                     if cc.rectContainsPoint(rect, p) then
@@ -311,9 +311,9 @@ function panel:onNodeCreate(node)
                     (not (type == "cc.ScrollView" and self._containerNode:getContainer() == node:getParent())) then
                 local p = self._containerNode:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
                 node:retain()
-                -- zoom button child
+                -- button child
                 local parent = node:getParent()
-                if parent and parent.__info and parent.__info.type == "ZoomButton" and parent:getContentNode() == node then
+                if parent and parent.__info and gk.util:instanceof(parent, "Button") and parent:getContentNode() == node then
                     parent:setContentNode(nil)
                 end
                 node:removeFromParent()
@@ -453,7 +453,7 @@ function panel:displayNode(node)
     if not node or not node.__info then
         return
     end
-    gk.log("displayNode %s", node.__info.id)
+    gk.log("displayNode --------------------- %s", node.__info.id)
     self:undisplayNode()
     self.displayingNode = node
     if node ~= self.scene.layer then
@@ -465,16 +465,16 @@ function panel:displayNode(node)
 
     -- print info
     if node.__rootTable and node.__rootTable.__info then
-        gk.log("rootTableId = %s", node.__rootTable.__info.id)
+        gk.log("%s.rootTableId = %s", node.__info.id, node.__rootTable.__info.id)
     end
     if node.__info then
-        gk.log("parentId = %s", node.__info.parentId)
+        gk.log("%s.parentId = %s", node.__info.id, node.__info.parentId)
     end
     if node.__info.isWidget then
-        gk.log("isWidget = true")
+        gk.log("%s:isWidget = true", node.__info.id)
     end
     if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
-        gk.log("isWidgetChild = true")
+        gk.log("%s:isWidget's Child = true", node.__info.id)
     end
 end
 
@@ -578,7 +578,17 @@ function panel:handleEvent()
                 --                    return
                 --                end
                 gk.log("delete node %s", self.displayingNode.__info.id)
+                -- button child
+                local parent = self.displayingNode:getParent()
+                if parent and parent.__info and gk.util:instanceof(parent, "Button") and parent:getContentNode() == self.displayingNode then
+                    gk.log("set conteng node nil %s", parent.__info)
+                    parent:setContentNode(nil)
+                end
                 self:removeNodeIndex(self.displayingNode, self.scene.layer)
+                if self.coordinateNode then
+                    self.coordinateNode:removeFromParent()
+                    self.coordinateNode = nil
+                end
                 self.displayingNode:removeFromParent()
                 self.displayingNode = nil
                 gk.event:post("postSync")

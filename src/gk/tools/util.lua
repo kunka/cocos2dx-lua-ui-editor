@@ -156,6 +156,7 @@ function util:isDebugNode(node)
     local tag = node and node:getTag() or -1
     return table.indexof(table.values(util.tags), tag)
 end
+
 function util:isDebugTag(tag)
     return table.indexof(table.values(util.tags), tag)
 end
@@ -163,7 +164,7 @@ end
 function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
-    if iskindof(node, "cc.ScrollView") then
+    if self:instanceof(node, "cc.ScrollView") then
         draw = node:getContainer():getChildByTag(tg)
     end
     if draw then
@@ -175,7 +176,7 @@ function util:clearDrawNode(node, tag)
         node = node:getParent()
         local tg = tag or util.tags.drawParentTag
         local draw = node:getChildByTag(tg)
-        if iskindof(node, "cc.ScrollView") then
+        if self:instanceof(node, "cc.ScrollView") then
             draw = node:getContainer():getChildByTag(tg)
         end
         local draw = node:getChildByTag(tg)
@@ -197,14 +198,14 @@ end
 function util:drawNode(node, c4f, tag)
     local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
-    if iskindof(node, "cc.ScrollView") then
+    if self:instanceof(node, "cc.ScrollView") then
         draw = node:getContainer():getChildByTag(tg)
     end
     if draw then
         draw:clear()
     else
         draw = cc.DrawNode:create()
-        if iskindof(node, "cc.ScrollView") then
+        if self:instanceof(node, "cc.ScrollView") then
             node:add(draw, -1, tg)
         else
             node:add(draw, 99999, tg)
@@ -229,13 +230,13 @@ function util:drawNode(node, c4f, tag)
     end
     draw:drawDot(p, sx ~= 0 and 1 / sx or 1, cc.c4f(1, 0, 0, 1))
 
-    if iskindof(node, "cc.ScrollView") then
+    if self:instanceof(node, "cc.ScrollView") then
         -- bg
         local p1 = cc.p(0, 0)
         local p2 = cc.p(size.width, size.height)
         draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
     end
-    if iskindof(node, "cc.ClippingRectangleNode") then
+    if self:instanceof(node, "cc.ClippingRectangleNode") then
         -- clipping rect
         local rect = node:getClippingRegion()
         draw:drawRect(cc.p(rect.x + 0.5, rect.y + 0.5),
@@ -243,7 +244,7 @@ function util:drawNode(node, c4f, tag)
             cc.p(rect.x + rect.width - 0.5, rect.y + rect.height - 0.5),
             cc.p(rect.x + 0.5, rect.y + rect.height - 0.5), c4f and c4f or cc.c4f(155 / 255, 0, 0, 1))
     end
-    if iskindof(node, "ccui.Scale9Sprite") then
+    if self:instanceof(node, "ccui.Scale9Sprite") then
         -- capInsets
         local rect = node:getCapInsets()
         local sprite = node:getSprite()
@@ -285,7 +286,7 @@ function util:drawNodeBounds(node, c4f, tg)
     end
     if not draw then
         draw = cc.DrawNode:create()
-        if iskindof(node, "cc.ScrollView") then
+        if self:instanceof(node, "cc.ScrollView") then
             node:add(draw, -1, tg)
         else
             if tg == util.tags.drawParentTag then
@@ -311,7 +312,7 @@ end
 function util:drawLabelOnNode(node, content, c3b, tag)
     local tg = tag or util.tags.labelTag
     local label = node:getChildByTag(tg)
-    if iskindof(node, "cc.ScrollView") then
+    if self:instanceof(node, "cc.ScrollView") then
         label = node:getContainer():getChildByTag(tg)
     end
     if not label then
@@ -448,7 +449,7 @@ end
 function util:isAncestorsType(node, type)
     local c = node
     while c ~= nil do
-        if iskindof(c, type) then
+        if self:instanceof(c, type) then
             return true
         end
         c = c:getParent()
@@ -597,5 +598,57 @@ function util:tbl2string(obj)
     end
 end
 
+local iskindof_
+iskindof_ = function(cls, name)
+    local __index = rawget(cls, "__index")
+    if type(__index) == "table" and rawget(__index, "__cname") == name then return true end
+
+    if rawget(cls, "__cname") == name then return true end
+    -- fix crash
+    if not __index then return false end
+    if type(__index) == "function" then return false end
+    -- fix crash
+    local __supers = rawget(__index, "__supers")
+    if not __supers then return false end
+    for _, super in ipairs(__supers) do
+        if iskindof_(super, name) then return true end
+    end
+    return false
+end
+
+function util:iskindof(classObj, classname)
+    if type(classObj) == "table" then
+        if classObj.__cname == classname then
+            return true
+        else
+            local mt = getmetatable(classObj)
+            if mt then
+                return iskindof_(mt, classname)
+            end
+        end
+    else
+        return false
+    end
+end
+
+function util:instanceof(obj, classname)
+    local t = type(obj)
+    if t ~= "table" and t ~= "userdata" then return false end
+    if obj.class and self:iskindof(obj.class, classname) then
+        return true
+    end
+
+    local mt
+    if t == "userdata" then
+        if tolua.iskindof(obj, classname) then return true end
+        mt = tolua.getpeer(obj)
+    else
+        mt = getmetatable(obj)
+    end
+    if mt then
+        return iskindof_(mt, classname)
+    end
+    return false
+end
 
 return util

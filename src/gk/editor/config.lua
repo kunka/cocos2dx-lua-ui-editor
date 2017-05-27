@@ -15,6 +15,7 @@ config.supportNodes = {
     { type = "cc.Label", },
     { type = "ZoomButton", },
     { type = "SpriteButton", },
+    { type = "ToggleButton", },
     { type = "ccui.CheckBox", backGround = "gk/res/texture/check_box_normal.png", cross = "gk/res/texture/check_box_selected.png" },
     { type = "cc.Layer", },
     { type = "cc.LayerColor", },
@@ -86,6 +87,11 @@ config.defValues = {
         g = 0,
         r = 0
     },
+    onClicked = "-",
+    onSelectChanged = "-",
+    onEnableChanged = "-",
+    onLongPressed = "-",
+    onSelectedTagChanged = "-",
 }
 
 config.defaultProps =

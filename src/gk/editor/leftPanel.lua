@@ -320,9 +320,9 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                             local p = cc.p(node:getPosition())
                             p = container:convertToNodeSpace(node:getParent():convertToWorldSpace(p))
                             node:retain()
-                            -- zoom button child
+                            -- button child
                             local parent = node:getParent()
-                            if parent and parent.__info and parent.__info.type == "ZoomButton" and parent:getContentNode() == node then
+                            if parent and parent.__info and gk.util:instanceof(parent, "Button") and parent:getContentNode() == node then
                                 parent:setContentNode(nil)
                             end
                             node:removeFromParent()
@@ -458,7 +458,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         end
     end
 
-    if iskindof(node, "cc.ProgressTimer") then
+    if gk.util:instanceof(node, "cc.ProgressTimer") then
         local sprite = node:getSprite()
         self:displayDomNode(sprite, layer)
     end
