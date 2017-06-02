@@ -44,7 +44,7 @@ function ZoomButton:setZoomEnabled(enabled)
     self.zoomEnabled = enabled
 end
 
-function ZoomButton:getZoomEnabled()
+function ZoomButton:isZoomEnabled()
     return self.zoomEnabled
 end
 
@@ -58,42 +58,38 @@ function ZoomButton:setSafeAnchor(anchorX, anchorY)
     self:setPositionY(self:getPositionY() + diffY)
 end
 
-function ZoomButton:selected()
-    if self.isEnabled and not self.isSelected and self.zoomEnabled then
+function ZoomButton:setSelected(selected)
+    if self.enabled and selected ~= self.selected and self.zoomEnabled then
         --        gk.log("ZoomButton:selected")
-        local action = self:getActionByTag(kZoomActionTag)
-        if action then
-            self:stopAction(action)
+        if selected then
+            local action = self:getActionByTag(kZoomActionTag)
+            if action then
+                self:stopAction(action)
+            else
+                self.originalScaleX = self:getScaleX()
+                self.originalScaleY = self:getScaleY()
+            end
+
+            local zoomAction = cc.ScaleTo:create(0.03, self.originalScaleX * self.zoomScale, self.originalScaleY * self.zoomScale)
+            zoomAction:setTag(kZoomActionTag)
+            self:runAction(zoomAction)
+
+            self.originalAnchor = self:getAnchorPoint()
+            self:setSafeAnchor(0.5, 0.5)
         else
-            self.originalScaleX = self:getScaleX()
-            self.originalScaleY = self:getScaleY()
+            gk.util:stopActionByTagSafe(self, kZoomActionTag)
+            local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.zoomScale) / 2), self.originalScaleY * (1 + (1 - self.zoomScale) / 2))
+            local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.zoomScale + 1), 0.5 * self.originalScaleY * (self.zoomScale + 1))
+            local action3 = cc.ScaleTo:create(0.06, self.originalScaleX, self.originalScaleY)
+            local actionAll = cc.Sequence:create(action1, action2, action3)
+            local zoomAction = cc.Sequence:create(actionAll, cc.CallFunc:create(function()
+                self:setSafeAnchor(self.originalAnchor.x, self.originalAnchor.y)
+            end))
+            zoomAction:setTag(kZoomActionTag)
+            self:runAction(zoomAction)
         end
-
-        local zoomAction = cc.ScaleTo:create(0.03, self.originalScaleX * self.zoomScale, self.originalScaleY * self.zoomScale)
-        zoomAction:setTag(kZoomActionTag)
-        self:runAction(zoomAction)
-
-        self.originalAnchor = self:getAnchorPoint()
-        self:setSafeAnchor(0.5, 0.5)
     end
-    ZoomButton.super.selected(self)
-end
-
-function ZoomButton:unselected()
-    if self.isEnabled and self.isSelected and self.zoomEnabled then
-        --        gk.log("ZoomButton:unselected")
-        gk.util:stopActionByTagSafe(self, kZoomActionTag)
-        local action1 = cc.ScaleTo:create(0.04, self.originalScaleX * (1 + (1 - self.zoomScale) / 2), self.originalScaleY * (1 + (1 - self.zoomScale) / 2))
-        local action2 = cc.ScaleTo:create(0.04, 0.5 * self.originalScaleX * (self.zoomScale + 1), 0.5 * self.originalScaleY * (self.zoomScale + 1))
-        local action3 = cc.ScaleTo:create(0.06, self.originalScaleX, self.originalScaleY)
-        local actionAll = cc.Sequence:create(action1, action2, action3)
-        local zoomAction = cc.Sequence:create(actionAll, cc.CallFunc:create(function()
-            self:setSafeAnchor(self.originalAnchor.x, self.originalAnchor.y)
-        end))
-        zoomAction:setTag(kZoomActionTag)
-        self:runAction(zoomAction)
-    end
-    ZoomButton.super.unselected(self)
+    ZoomButton.super.setSelected(self, selected)
 end
 
 return ZoomButton

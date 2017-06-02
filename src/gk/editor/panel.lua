@@ -55,8 +55,8 @@ function panel:subscribeEvent()
         self:undisplayNode()
     end)
     gk.event:subscribe(self, "displayNode", function(node)
-        local voidContent = node.__info and node.__info.voidContent
-        if voidContent then
+        local _voidContent = node.__info and node.__info._voidContent
+        if _voidContent then
             self:displayNode(node)
         else
             --            local type = tolua.type(node)
@@ -151,7 +151,7 @@ function panel:onNodeCreate(node)
                 self.multiSelectNodes = {}
                 --                gk.event:post("undisplayNode")
             end
-            if node.__info and node.__info.lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
+            if node.__info and node.__info._lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
                 --                if self.displayingNode and self.displayingNode ~= self.scene.layer and node ~= self.displayingNode and gk.util:hitTest(self.displayingNode,
                 --                    touch) then
                 --                    -- priority use pre displayingNode
@@ -211,10 +211,10 @@ function panel:onNodeCreate(node)
             if self.commandPressed then
                 return
             end
-            if node.__info and node.__info.lock == 0 then
+            if node.__info and node.__info._lock == 0 then
                 return
             end
-            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
                 return
             end
             self.draggingNode = node
@@ -243,7 +243,7 @@ function panel:onNodeCreate(node)
                         break
                     end
                     if nd.__info then
-                        if nd.__info.lock == 0 then --or nd.__info.isWidget then
+                        if nd.__info._lock == 0 then --or nd.__info._isWidget then
                         break
                         end
                     end
@@ -286,11 +286,11 @@ function panel:onNodeCreate(node)
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
-            if node.__info and node.__info.lock == 0 then
+            if node.__info and node.__info._lock == 0 then
                 gk.event:post("displayDomTree")
                 return
             end
-            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
+            if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
                 gk.event:post("displayDomTree")
                 return
             end
@@ -470,11 +470,11 @@ function panel:displayNode(node)
     if node.__info then
         gk.log("%s.parentId = %s", node.__info.id, node.__info.parentId)
     end
-    if node.__info.isWidget then
-        gk.log("%s:isWidget = true", node.__info.id)
+    if node.__info._isWidget then
+        gk.log("%s:_isWidget = true", node.__info.id)
     end
-    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget then
-        gk.log("%s:isWidget's Child = true", node.__info.id)
+    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
+        gk.log("%s:_isWidget's Child = true", node.__info.id)
     end
 end
 

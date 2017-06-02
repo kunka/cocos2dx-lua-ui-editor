@@ -118,28 +118,17 @@ function injector:onNodeCreate(node)
         if status then
             gk.log("initRootContainer with file %s", path)
             --            node.__info = generator:wrap({ type = node.__cname }, node)
-            node.__info = generator:wrap({ type = node.__cname }, node)
+            node.__info = generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
             generator:inflate(info, node, node)
             node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
             node.__info.scaleXY = { x = "1", y = "1" }
-            --            node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
         else
             if gk.mode == gk.MODE_EDIT then
                 -- init first time
                 gk.log("initRootContainer first time %s ", path)
-                node.__info = generator:wrap({ type = node.__cname }, node)
+                node.__info = generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
                 node.__info.id = node.__cname
                 node[node.__info.id] = node
---                local clazz = require(gk.resource.genNodes[node.__cname].path)
-                local isLayer = gk.util:instanceof(node, "Layer")
-                if isLayer then
-                    node.__info.width = generator.config:default("Layer", "width")
-                    node.__info.height = generator.config:default("Layer", "height")
-                end
-                if gk.util:instanceof(node, "TableViewCell") then
-                    node.__info.width = generator.config:default("cc.TableViewCell", "width")
-                    node.__info.height = generator.config:default("cc.TableViewCell", "height")
-                end
                 node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
                 node.__info.scaleXY = { x = "1", y = "1" }
                 self:sync(node)

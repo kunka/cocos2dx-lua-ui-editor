@@ -57,7 +57,7 @@ function panel:displayDomTree(rootLayer, force)
         self.displayingDomDepth = -1
         self.lastDisplayingPos = self.lastDisplayingPos or cc.p(0, 0)
         -- force unflod
-        rootLayer.__info._flod = false
+        rootLayer.__info._fold = false
 
         -- other layout
         local keys = table.keys(gk.resource.genNodes)
@@ -134,12 +134,12 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
             x = x - 11
             local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
             label:setTextColor(cc.c3b(200, 200, 200))
-            if fixChild or not node.__info._flod then
+            if fixChild or not node.__info._fold then
                 label:setRotation(90)
             end
             label:setDimensions(10 / scale, 10 / scale)
             local button = gk.ZoomButton.new(label)
-            if fixChild or not node.__info._flod then
+            if fixChild or not node.__info._fold then
                 button:setScale(scale, scale * 0.6)
                 button:setPosition(x - 3, y)
             else
@@ -152,9 +152,9 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 if fixChild then
                     return
                 end
-                gk.log("fold container %s, %s", node.__info.id, node.__info._flod)
-                node.__info._flod = not node.__info._flod
-                gk.log("fold container %s, %s", node.__info.id, node.__info._flod)
+                gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
+                node.__info._fold = not node.__info._fold
+                gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
                 gk.event:post("displayDomTree")
             end)
             x = x + 11
@@ -167,11 +167,11 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(0x99, 0xcc, 0x00))
-        if fixChild or widgetParent or (node.__info and node.__info.lock == 0) or not gk.util:isAncestorsVisible(node) then
+        if fixChild or widgetParent or (node.__info and node.__info._lock == 0) or not gk.util:isAncestorsVisible(node) then
             label:setTextColor(cc.c3b(200, 200, 200))
             label:setOpacity(100)
         end
-        if (node.__info and node.__info.isWidget) then
+        if (node.__info and node.__info._isWidget) then
             label:setTextColor(cc.c3b(0x33, 0x99, 0xDD))
             label:setOpacity(200)
         end
@@ -213,8 +213,8 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 if not self.draggingNode and cc.rectContainsPoint(rect, p) then
                     gk.log("dom:choose node %s", content)
                     local nd = widgetParent and widgetParent[content] or self.parent.scene.layer[content]
-                    local voidContent = realNode.__info and realNode.__info.voidContent
-                    if nd or voidContent then
+                    local _voidContent = realNode.__info and realNode.__info._voidContent
+                    if nd or _voidContent then
                         if self.selectedNode ~= node then
                             if self.selectedNode then
                                 gk.util:clearDrawNode(self.selectedNode, -2)
@@ -224,8 +224,8 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                         gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
                         gk.event:post("displayNode", nd)
                     end
-                    if voidContent or widgetParent then
-                        gk.log("[Warning] cannot modify voidContent or widget's children")
+                    if _voidContent or widgetParent then
+                        gk.log("[Warning] cannot modify _voidContent or widget's children")
                         return false
                     end
                     return true
@@ -287,7 +287,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                             elseif nd2:getParent() == nd1 then
                                 break
                             else
-                                --                                if nd1.__info and nd1.__info.isWidget then
+                                --                                if nd1.__info and nd1.__info._isWidget then
                                 -- TODO: Widget cannot be used as container now!
                                 --                                    gk.log("TODO: Widget cannot be used as container now!")
                                 --                                    return
@@ -435,11 +435,11 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     layer = layer + 1
     local preWidgetParent = widgetParent
     local widgetParent = widgetParent
-    if (node.__info and node.__info.isWidget) then
+    if (node.__info and node.__info._isWidget) then
         widgetParent = node
     end
 
-    if fixChild or not node.__info._flod then
+    if fixChild or not node.__info._fold then
         node:sortAllChildren()
         local children = node:getChildren()
         if children then

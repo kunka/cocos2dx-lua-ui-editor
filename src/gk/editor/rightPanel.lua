@@ -255,7 +255,7 @@ function panel:displayNode(node)
     end
     local size = self:getContentSize()
     self.contentSize = size
-    self.disabled = node.__rootTable and node.__rootTable.__info and node.__rootTable.__info.isWidget
+    self.disabled = node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget
 
     local topY = size.height - 20
     local stepY = 25
@@ -294,13 +294,14 @@ function panel:displayNode(node)
     local isTableView = gk.util:instanceof(node, "cc.TableView")
     local isScale9Sprite = gk.util:instanceof(node, "ccui.Scale9Sprite")
     local isCheckBox = gk.util:instanceof(node, "ccui.CheckBox")
+    local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
     local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
     local isProgressTimer = gk.util:instanceof(node, "cc.ProgressTimer")
     local isClippingNode = gk.util:instanceof(node, "cc.ClippingNode")
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
     local isRootNode = self.parent.scene.layer == node
-    local voidContent = node.__info and node.__info.voidContent
+    local _voidContent = node.__info and node.__info._voidContent
 
     local yIndex = 0
     local function createTitle(title)
@@ -322,10 +323,10 @@ function panel:displayNode(node)
         -- only display id when dragging
         return
     end
-    -- lock
+    -- _lock
     self:createLabel("Lock", leftX, topY - stepY * yIndex)
-    self:createCheckBox(node.__info.lock == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-        generator:modify(node, "lock", selected, "number")
+    self:createCheckBox(node.__info._lock == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+        generator:modify(node, "_lock", selected, "number")
     end)
     yIndex = yIndex + 1
 
@@ -379,16 +380,12 @@ function panel:displayNode(node)
     if not isLabel and not isTableView then
         self:createLabel("Size", leftX, topY - stepY * yIndex)
         self:createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
-        local width = generator.nodeGetFuncs["width"](node)
-        local height = generator.nodeGetFuncs["height"](node)
-        --        local w = self:createInput(node.__info.width or string.format("%.2f", node:getContentSize().width), leftX_input_1, topY - stepY *
-        local w = self:createInput(width, leftX_input_1, topY - stepY *
+        local w = self:createInput(node.__info.width, leftX_input_1, topY - stepY *
                 yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "width", input, "number"))
         end)
         self:createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
-        --        local h = self:createInput(node.__info.height or string.format("%.2f", node:getContentSize().height), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        local h = self:createInput(height, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        local h = self:createInput(node.__info.height, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
@@ -582,16 +579,19 @@ function panel:displayNode(node)
                 editBox:setInput(generator:modify(node, "vector.y", input, "number"))
             end)
             yIndex = yIndex + 1
-            -- isCompressedInterpolation
-            self:createLabel("IsCompressedInterpolation", leftX, topY - stepY * yIndex)
-            self:createCheckBox(node.__info.isCompressedInterpolation == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-                generator:modify(node, "isCompressedInterpolation", selected, "number")
+            -- CompressedInterpolation
+            self:createLabel("CompressedInterpolation", leftX, topY - stepY * yIndex)
+            self:createCheckBox(node.__info.compressedInterpolation == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+                generator:modify(node, "compressedInterpolation", selected, "number")
             end)
             yIndex = yIndex + 1
         end
     end
 
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
+    if isEditBox then
+        createTitle("EditBox")
+    end
     if isScale9Sprite then
         createTitle("Scale9Sprite")
     end
@@ -704,26 +704,6 @@ function panel:displayNode(node)
         end, "-")
         yIndex = yIndex + 1
 
-        if isSpriteButton then
-            -- normalSprite file
-            self:createLabel("NormalSprite", leftX, topY - stepY * yIndex)
-            self:createInput(tostring(node.__info.normalSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                editBox:setInput(generator:modify(node, "normalSprite", input, "string"))
-            end)
-            yIndex = yIndex + 1
-            -- selectedSprite file
-            self:createLabel("SelectSprite", leftX, topY - stepY * yIndex)
-            self:createInput(tostring(node.__info.selectedSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                editBox:setInput(generator:modify(node, "selectedSprite", input, "string"))
-            end)
-            yIndex = yIndex + 1
-            -- disabledSprite file
-            self:createLabel("DisableSprite", leftX, topY - stepY * yIndex)
-            self:createInput(tostring(node.__info.disabledSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                editBox:setInput(generator:modify(node, "disabledSprite", input, "string"))
-            end)
-            yIndex = yIndex + 1
-        end
         --        -- centerRect
         --        self:createLabel("CenterRect", leftX, topY - stepY * yIndex)
         --        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
@@ -744,6 +724,36 @@ function panel:displayNode(node)
         --            editBox:setInput(generator:modify(node, "centerRect.height", input, "number"))
         --        end)
         --        yIndex = yIndex + 1
+    end
+
+    if isEditBox then
+        -- string
+        self:createLabel("PlaceHolder", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.placeHolder), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "placeHolder", input, "string"))
+        end, "")
+        yIndex = yIndex + 1
+    end
+
+    if isSpriteButton or isEditBox then
+        -- normalSprite file
+        self:createLabel("NormalSprite", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.normalSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "normalSprite", input, "string"))
+        end)
+        yIndex = yIndex + 1
+        -- selectedSprite file
+        self:createLabel("SelectSprite", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.selectedSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "selectedSprite", input, "string"))
+        end)
+        yIndex = yIndex + 1
+        -- disabledSprite file
+        self:createLabel("DisableSprite", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.disabledSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "disabledSprite", input, "string"))
+        end)
+        yIndex = yIndex + 1
     end
 
     if isSprite and not isScale9Sprite then
@@ -1230,10 +1240,10 @@ function panel:displayNode(node)
             generator:modify(node, "touchEnabled", selected, "number")
         end)
         yIndex = yIndex + 1
-        -- isSwallowTouches
-        self:createLabel("isSwallowTouches", leftX, topY - stepY * yIndex)
-        self:createCheckBox(node.__info.isSwallowTouches == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            generator:modify(node, "isSwallowTouches", selected, "number")
+        -- swallowTouches
+        self:createLabel("SwallowTouches", leftX, topY - stepY * yIndex)
+        self:createCheckBox(node.__info.swallowTouches == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+            generator:modify(node, "swallowTouches", selected, "number")
         end)
         yIndex = yIndex + 1
         -- enableKeyPad

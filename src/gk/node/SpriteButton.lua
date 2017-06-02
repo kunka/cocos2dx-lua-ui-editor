@@ -20,7 +20,7 @@ end
 
 function SpriteButton:setNormalSprite(normalSprite)
     self.normalSprite = normalSprite
-    if self.isEnabled and not self.isSelected then
+    if self.enabled and not self.selected then
         self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.normalSprite))
         self:setContentNode(self.contentNode)
     end
@@ -28,34 +28,27 @@ end
 
 function SpriteButton:setSelectedSprite(selectedSprite)
     self.selectedSprite = selectedSprite
-    if self.isEnabled and self.isSelected then
+    if self.enabled and self.selected then
         self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.selectedSprite))
     end
 end
 
 function SpriteButton:setDisabledSprite(disabledSprite)
     self.disabledSprite = disabledSprite
-    if not self.isEnabled then
+    if not self.enabled then
         self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.disabledSprite))
     end
 end
 
-function SpriteButton:selected()
-    if self.isEnabled and not self.isSelected then
-        self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.selectedSprite))
+function SpriteButton:setSelected(selected)
+    if self.enabled and self.selected ~= selected then
+        self.contentNode:setSpriteFrame(gk.create_sprite_frame(selected and self.selectedSprite or self.normalSprite))
     end
-    SpriteButton.super.selected(self)
-end
-
-function SpriteButton:unselected()
-    if self.isEnabled and self.isSelected then
-        self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.normalSprite))
-    end
-    SpriteButton.super.unselected(self)
+    SpriteButton.super.setSelected(self, selected)
 end
 
 function SpriteButton:setEnabled(enabled)
-    if self.isEnabled ~= enabled then
+    if self.enabled ~= enabled then
         SpriteButton.super.setEnabled(self, enabled)
         if enabled then
             self.contentNode:setSpriteFrame(gk.create_sprite_frame(self.normalSprite))

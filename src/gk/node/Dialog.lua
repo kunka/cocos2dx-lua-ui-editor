@@ -19,6 +19,22 @@ function Dialog:ctor()
     self.popOnTouchInsideBg = false
 end
 
+function Dialog:setPopOnTouchInsideBg(var)
+    self.popOnTouchInsideBg = var
+end
+
+function Dialog:isPopOnTouchInsideBg()
+    return self.popOnTouchInsideBg
+end
+
+function Dialog:setPopOnTouchOutsideBg(var)
+    self.popOnTouchOutsideBg = var
+end
+
+function Dialog:isPopOnTouchOutsideBg()
+    return self.popOnTouchOutsideBg
+end
+
 function Dialog:animateOut()
     if self.dialogBg then
         self.dialogBg:setScale(0)

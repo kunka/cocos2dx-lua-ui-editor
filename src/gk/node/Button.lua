@@ -16,8 +16,8 @@ Button.trackingButton = false
 
 function Button:ctor(contentNode)
     self:enableNodeEvents()
-    self.isEnabled = true
-    self.isSelected = false
+    self.enabled = true
+    self.selected = false
     -- TODO: set selected shader
     self.disabledProgram = nil -- set shader of disabled state
     self.cascadeProgramEnable = true -- set shader of all children(not Label child)
@@ -79,15 +79,15 @@ function Button:setContentNode(node)
         node:setPosition(cc.p(contentSize.width * anchorPoint.x, contentSize.height * anchorPoint.y))
         self:setContentSize(contentSize)
         if gk.mode == gk.MODE_EDIT and node.__info then
-            node.__info.lock = 0
+            node.__info._lock = 0
         end
     else
-        self:setContentSize(cc.size(120, 60))
+        self:setContentSize(cc.size(150, 50))
     end
 end
 
 function Button:getContentSize()
-    return self.contentNode and self.contentNode:getContentSize() or cc.size(120, 60)
+    return self.contentNode and self.contentNode:getContentSize() or cc.size(150, 50)
 end
 
 function Button:onEnter()
@@ -154,7 +154,7 @@ function Button:setDisabledProgram(program)
 end
 
 function Button:activate()
-    if self.isEnabled then
+    if self.enabled then
         if self.onClickedCallback then
             --            gk.log("[%s]: activate", self.__cname)
             self.onClickedCallback(self)
@@ -163,7 +163,7 @@ function Button:activate()
 end
 
 function Button:triggleLongPressed()
-    if self.isEnabled then
+    if self.enabled then
         if self.longPressdCallback then
             --            gk.log("[%s]: triggleLongPressed", self.__cname)
             self.longPressdCallback(self)
@@ -171,45 +171,35 @@ function Button:triggleLongPressed()
     end
 end
 
-function Button:selected()
-    if not self.isSelected then
-        self.isSelected = true
+function Button:setSelected(selected)
+    if self.selected ~= selected then
+        self.selected = selected
         if self.onSelectChangedCallback then
-            self.onSelectChangedCallback(self, self.isSelected)
+            self.onSelectChangedCallback(self, self.selected)
         end
     end
 end
 
-function Button:unselected()
-    if self.isSelected then
-        self.isSelected = false
-        if self.onSelectChangedCallback then
-            self.onSelectChangedCallback(self, self.isSelected)
+function Button:isSelected()
+    return self.selected
+end
+
+function Button:setEnabled(enabled)
+    if self.enabled ~= enabled then
+        self.enabled = enabled
+        if self.onEnableChangedCallback then
+            self.onEnableChangedCallback(self, self.enabled)
         end
     end
 end
 
-function Button:enable()
-    if not self.isSelected then
-        self.isSelected = true
-        if self.onSelectChangedCallback then
-            self.onSelectChangedCallback(self, self.isSelected)
-        end
-    end
-end
-
-function Button:disable()
-    if self.isSelected then
-        self.isSelected = false
-        if self.onSelectChangedCallback then
-            self.onSelectChangedCallback(self, self.isSelected)
-        end
-    end
+function Button:isEnabled()
+    return self.enabled
 end
 
 function Button:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.isEnabled or not camera then
+    if not self.enabled or not camera then
         return false
     end
     if not gk.util:isAncestorsVisible(self) then
@@ -221,13 +211,13 @@ function Button:onTouchBegan(touch, event)
         self:updateDelaySelect()
         if self.delaySelect then
             local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
-                if self.trackingTouch and not self.isSelected then
-                    self:selected()
+                if self.trackingTouch and not self.selected then
+                    self:setSelected(true)
                 end
             end)))
             action:setTag(kDelaySelectActionTag)
         else
-            self:selected()
+            self:setSelected(true)
         end
         self.longPressdTriggled = false
         local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
@@ -290,9 +280,7 @@ end
 
 function Button:stopTracking()
     --    gk.log("Button:stopTracking")
-    if self.isSelected then
-        self:unselected()
-    end
+    self:setSelected(false)
     self.trackingTouch = false
     Button.trackingButton = false
     --    gk.log("Button.tracking false")
@@ -303,7 +291,7 @@ end
 function Button:setEnabled(enabled)
     if self.enabled ~= enabled then
         --        gk.log("[%s]: setEnabled %s", self.__cname, enabled)
-        self.isEnabled = enabled
+        self.enabled = enabled
         if self.disabledProgram then
             if enabled then
                 self:restoreCascadeProgram(self)
@@ -315,6 +303,10 @@ function Button:setEnabled(enabled)
             self.onEnableChangedCallback(self, enabled)
         end
     end
+end
+
+function Button:isEnabled()
+    return self.isEnabled
 end
 
 function Button:onExit()

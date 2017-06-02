@@ -186,8 +186,8 @@ function panel.create(parent)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
-        if nodeInfo.clazz.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.relativePath, cname = nodeInfo.clazz.__cname, displayName = nodeInfo.genSrcPath .. key, isWidget = 0 })
+        if nodeInfo.clazz._isWidget then
+            table.insert(self.widgets, { type = nodeInfo.relativePath, cname = nodeInfo.clazz.__cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
         end
     end
     -- content node
@@ -206,7 +206,7 @@ function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = gk.create_sprite(self.widgets[i].file)
-        if self.widgets[i].isWidget then
+        if self.widgets[i]._isWidget then
             node:setColor(cc.c3b(0xCC, 0xFF, 0x66))
         end
         node.type = self.widgets[i].type
@@ -218,8 +218,8 @@ function panel.create(parent)
         self.displayInfoNode:addChild(node)
 
         local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
-        --        local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and names[1] or names[#names], fontName, 7 * 4)
-        local label = cc.Label:createWithSystemFont(self.widgets[i].isWidget and self.widgets[i].cname or names[#names], fontName, 7 * 4)
+        --        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and names[1] or names[#names], fontName, 7 * 4)
+        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, 7 * 4)
         label:setScale(scale)
         label:setDimensions(node:getContentSize().width + stepX * 2 - 8, 60)
         --        label:setOverflow(2)
@@ -281,7 +281,7 @@ function panel.create(parent)
                         break
                     end
                     if node.__info then
-                        if node.__info.lock == 0 or node.__info.isWidget then
+                        if node.__info._lock == 0 or node.__info._isWidget then
                             break
                         end
                     end
@@ -322,12 +322,8 @@ function panel.create(parent)
                     node = generator:createNode(info, nil, self.parent.scene.layer)
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        if widget.isWidget and widget.isWidget then
+                        if widget._isWidget or type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
-                        elseif type == "cc.Layer" then
-                            node.__info.x, node.__info.y = 0, 0
-                            node.__info.width = generator.config:default("Layer", "width")
-                            node.__info.height = generator.config:default("Layer", "height")
                         else
                             local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
                             local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))

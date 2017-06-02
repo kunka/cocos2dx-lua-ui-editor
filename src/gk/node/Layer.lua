@@ -40,6 +40,7 @@ function Layer:showDialogNode(dialogNode)
     return dialogNode
 end
 
+
 function Layer:isTouchEnabled()
     return self.touchEnabled
 end
@@ -60,6 +61,22 @@ function Layer:setSwallowTouches(swallow)
     if self.touchListener then
         self.touchListener:setSwallowTouches(swallow)
     end
+end
+
+function Layer:isEnableKeyPad()
+    return self.enableKeyPad
+end
+
+function Layer:setEnableKeyPad(enabled)
+    self.enableKeyPad = enabled
+end
+
+function Layer:isPopOnBack()
+    return self.popOnBack
+end
+
+function Layer:setPopOnBack(enabled)
+    self.popOnBack = enabled
 end
 
 function Layer:onTouchBegan(touch, event)
