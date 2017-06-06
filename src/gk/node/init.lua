@@ -15,11 +15,13 @@ gk.ZoomButton = import(".ZoomButton")
 gk.ToggleButton = import(".ToggleButton")
 gk.SpriteButton = import(".SpriteButton")
 gk.TableViewCell = import(".TableViewCell")
+gk.Widget = import(".Widget")
 
 -- root containers
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")
 gk.injector:ctor_method_swizz(gk.Dialog, "ctor")
 gk.injector:ctor_method_swizz(gk.TableViewCell, "ctor")
+gk.injector:ctor_method_swizz(gk.Widget, "ctor")
 
 ----------------------------------------- create sprite  -------------------------------------------------
 

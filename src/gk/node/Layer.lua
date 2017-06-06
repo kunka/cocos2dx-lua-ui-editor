@@ -80,7 +80,7 @@ function Layer:setPopOnBack(enabled)
 end
 
 function Layer:onTouchBegan(touch, event)
-    return self.isSwallowTouches
+    return self.swallowTouches
 end
 
 function Layer:onTouchMoved(touch, event)

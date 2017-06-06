@@ -28,9 +28,13 @@ function resource:scanFontDir(dir)
     end
     gk.log("resource:scanFontDir dir = \"%s\"", dir)
     -- scan all font files
-    local f = io.popen('ls ' .. dir)
+    local f = io.popen('ls ' .. dir, "r")
     if f then
+        local lines = {}
         for name in f:lines() do
+            table.insert(lines, name)
+        end
+        for _, name in ipairs(lines) do
             if name:ends(".fnt") or name:ends(".ttf") then
                 table.insert(self.fontFiles, "font/" .. name)
                 gk.log("resource:scanFontfile:%s", "font/" .. name)
@@ -38,6 +42,7 @@ function resource:scanFontDir(dir)
                 self:scanFontDir(dir .. name .. "/")
             end
         end
+        f:close()
     end
 
     table.sort(self.fontFiles, function(k1, k2) return k1 < k2 end)
@@ -102,17 +107,20 @@ function resource:scanDir(dir, genSrcPath)
     end
     gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
     -- scan all gen-able files
-    local f = io.popen('ls ' .. dir)
+    local f = io.popen('ls ' .. dir, "r")
     if f then
-        print("打印F数据")
-        print(f:lines())
+        local lines = {}
         for name in f:lines() do
+            table.insert(lines, name)
+        end
+        for _, name in ipairs(lines) do
             if name:ends(".lua") then
                 self:loadEditableNodes(dir .. name, genSrcPath)
             elseif not name:find("%.") then
                 self:scanDir(dir .. name .. "/", genSrcPath .. name .. "/")
             end
         end
+        f:close()
     end
 end
 
@@ -120,8 +128,8 @@ function resource:loadEditableNodes(path, genSrcPath)
     local status, clazz = pcall(require, path)
     if status and clazz then
         -- TODO: other types
---        local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
-        local isEditable = gk.util:iskindof(clazz, "Layer") or gk.util:iskindof(clazz, "TableViewCell")
+        --        local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
+        local isEditable = gk.util:iskindof(clazz, "Layer") or gk.util:iskindof(clazz, "TableViewCell") or gk.util:iskindof(clazz, "Widget")
         --                if not isEditable then
         --                    print("?")
         --                    local instance = clazz:create()

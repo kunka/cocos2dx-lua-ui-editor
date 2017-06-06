@@ -11,12 +11,12 @@ local Layer = import(".Layer")
 local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
-    Dialog.super.ctor(self)
     -- set dialog bg, use to animate out
     self.enableKeyPad = false
     self.popOnBack = true -- popScene on back
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
+    Dialog.super.ctor(self)
 end
 
 function Dialog:setPopOnTouchInsideBg(var)
@@ -58,7 +58,7 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.isSwallowTouches
+                return self.swallowTouches
             end
         else
             if self.popOnTouchInsideBg then
@@ -66,12 +66,12 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.isSwallowTouches
+                return self.swallowTouches
             end
         end
     end
 
-    return self.isSwallowTouches
+    return self.swallowTouches
 end
 
 function Dialog:pop()

@@ -277,12 +277,13 @@ function panel.create(parent)
                 local node = children[i]
                 local canBeContainer = false
                 repeat
-                    if not node then
+                    if not node or node.__rootTable ~= self.parent.scene.layer then
+                        -- widget
                         break
                     end
                     if node.__info then
-                        if node.__info._lock == 0 or node.__info._isWidget then
-                            break
+                        if node.__info._lock == 0 then -- or node.__info._isWidget then
+                        break
                         end
                     end
                     if gk.util:isAncestorsType(node, "cc.TableView") then
@@ -295,9 +296,9 @@ function panel.create(parent)
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
                     local p = node:convertToNodeSpace(location)
                     if gk.util:isAncestorsVisible(node) and cc.rectContainsPoint(rect, p) then
-                        local type = node.__cname and node.__cname or tolua.type(node)
                         if self._containerNode ~= node then
                             self._containerNode = node
+                            local type = node.__cname and node.__cname or tolua.type(node)
                             gk.log("find container node %s, id = %s", type, node.__info.id)
                             gk.event:post("displayNode", node)
                         end

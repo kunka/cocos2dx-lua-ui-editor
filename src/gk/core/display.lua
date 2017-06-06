@@ -7,7 +7,7 @@
 
 local display = {}
 
-local displayScale = 0.7
+local displayScale = 0.68
 display.deviceSizes = {
     cc.size(1280 * displayScale, 640 * displayScale),
     cc.size(1280 * displayScale, 720 * displayScale),
@@ -45,8 +45,8 @@ function display:initWithDesignSize(size, resolutionPolicy)
     display.resolutionPolicyDesc = display.supportResolutionPolicyDesc[table.indexof(display.supportResolutionPolicy, display.resolutionPolicy)]
     if gk.mode == gk.MODE_EDIT then
         display.topHeight = 100
-        display.leftWidth = 240
-        display.rightWidth = 240
+        display.leftWidth = 250
+        display.rightWidth = 250
         display.bottomHeight = 100
     else
         display.topHeight = 0

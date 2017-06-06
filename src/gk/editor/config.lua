@@ -11,7 +11,10 @@ local config = {}
 config.supportNodes = {
     { type = "cc.Node", },
     { type = "cc.Sprite", },
-    { type = "ccui.Scale9Sprite", },
+    {
+        type = "ccui.Scale9Sprite",
+        capInsets = cc.rect(0, 0, 0, 0),
+    },
     { type = "cc.Label", string = "label", fontFile = { en = "Arial" }, fontSize = 32, },
     { type = "ZoomButton", },
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
@@ -47,18 +50,18 @@ config.supportNodes = {
     {
         type = "cc.ScrollView",
         _fold = true,
-        width = 100,
-        height = 150,
+        width = 200,
+        height = 500,
         _fold = true,
-        viewSize = cc.size(100, 100),
+        viewSize = cc.size(200, 300),
     },
     {
         type = "cc.TableView",
         _fold = true,
-        width = 100,
-        height = 150,
+        width = 200,
+        height = 500,
         _fold = true,
-        viewSize = cc.size(100, 100),
+        viewSize = cc.size(200, 300),
     },
     { type = "cc.ClippingNode" },
     { type = "cc.ClippingRectangleNode", clippingRegion = cc.rect(0, 0, 100, 100), },
@@ -83,6 +86,7 @@ config.defValues = {
     anchor = { x = 0.5, y = 0.5 },
     scaleXY = { x = "1", y = "1" },
     scaleSize = { w = "1", h = "1" },
+    scaleOffset = { x = "1", y = "1" },
     localZOrder = 0,
     tag = -1,
     visible = 0,
@@ -143,86 +147,6 @@ config.defValues = {
     onLongPressed = "-",
     onSelectedTagChanged = "-",
 }
---
---config.defaultProps =
---{
---    --------------------------- root container   ---------------------------
---    Dialog = {
---        width = "$fill",
---        height = "$fill",
---    },
---    Layer = {
---        width = "$fill",
---        height = "$fill",
---        scaleSize = { w = "1", h = "1" },
---    },
---    ["cc.TableViewCell"] = {
---        width = "$fill",
---        height = "50",
---    },
---    --------------------------- content node   ---------------------------
---    ["cc.Node"] = {
---        _lock = 1,
---        file = "",
---        scaleXY = { x = "1", y = "1" },
---        scaleSize = { w = "1", h = "1" },
---        anchor = { x = 0.5, y = 0.5 },
---    },
---    ["cc.Label"] = {
---        string = "label",
---        fontFile = {},
---        fontSize = 32,
---        defaultSysFont = "Helvetica",
---    },
---    ["cc.LayerColor"] = {
---        width = "$win.w",
---        height = "$win.h",
---        color = cc.c4b(153, 153, 153, 255),
---        scaleSize = { w = "1", h = "1" },
---    },
---    ["cc.ScrollView"] = {
---        width = 100,
---        height = 150,
---        _fold = true,
---        viewSize = cc.size(100, 100),
---    },
---    ["cc.TableView"] = {
---        width = 100,
---        height = 150,
---        _fold = true,
---        viewSize = cc.size(100, 100),
---    },
---    ClippingRectangleNode = {
---        clippingRegion = cc.rect(0, 0, 100, 100),
---    },
---    ["cc.LayerGradient"] = {
---        width = "$win.w",
---        height = "$win.h",
---        startColor = cc.c4b(0, 0, 0, 255),
---        endColor = cc.c4b(255, 255, 255, 255),
---        scaleSize = { w = "1", h = "1" },
---    },
---    ["cc.ProgressTimer"] = {
---        sprite = { file = "", type = "cc.Sprite", _voidContent = true, _lock = 1 },
---    },
---    ["ccui.CheckBox"] = {
---        backGround = "gk/res/texture/check_box_normal.png",
---        cross = "gk/res/texture/check_box_selected.png"
---    },
---    ["ccui.EditBox"] = {
---        width = 200,
---        height = 40,
---        capInsets = cc.rect(20, 20, 20, 20),
---        normalSprite = "gk/res/texture/edbox_bg.png",
---        selectedSprite = "gk/res/texture/edbox_bg.png",
---        disabledSprite = "gk/res/texture/edbox_bg.png"
---    },
---}
---
---function config:default(type, key)
---    -- value copy
---    return (self.defaultProps[type] and clone(self.defaultProps[type][key])) or clone(self.defaultProps["cc.Node"][key])
---end
 
 config.macroFuncs = {
     -- Scale
@@ -290,6 +214,9 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+                return
+            end
             local width = gk.generator:parseValue("width", node, var)
             local ss = node.__info.scaleSize
             local scaleW = gk.generator:parseValue("w", node, ss.w)
@@ -313,6 +240,9 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+                return
+            end
             if gk.util:instanceof(node, "cc.Label") and node.__info.overflow == 3 then
                 return
             end
@@ -333,33 +263,40 @@ config.editableProps = {
     scaleSize = {
         getter = function(_) return { w = "1", h = "1" } end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "cc.ScrollView") then
-                local vs = node.__info.viewSize
-                local w = gk.generator:parseValue("width", node, vs.width)
-                local h = gk.generator:parseValue("height", node, vs.height)
-                if not w or not h then
-                    return
-                end
-                local scaleW = gk.generator:parseValue("w", node, var.w)
-                local scaleH = gk.generator:parseValue("h", node, var.h)
-                node:setViewSize(cc.size(w * scaleW, h * scaleH))
-                if gk.util:instanceof(node, "cc.TableView") then
-                    node:reloadData()
-                end
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+                return
+            end
+            local w = gk.generator:parseValue("width", node, node.__info.width)
+            local h = gk.generator:parseValue("height", node, node.__info.height)
+            if not w or not h then
+                return
+            end
+            local scaleW = gk.generator:parseValue("w", node, var.w)
+            local scaleH = gk.generator:parseValue("h", node, var.h)
+            local size = cc.size(w * scaleW, h * scaleH)
+            if gk.util:instanceof(node, "cc.Label") then
+                node:setDimensions(size.width, size.height)
             else
-                local w = gk.generator:parseValue("width", node, node.__info.width)
-                local h = gk.generator:parseValue("height", node, node.__info.height)
-                if not w or not h then
-                    return
-                end
-                local scaleW = gk.generator:parseValue("w", node, var.w)
-                local scaleH = gk.generator:parseValue("h", node, var.h)
-                local size = cc.size(w * scaleW, h * scaleH)
-                if gk.util:instanceof(node, "cc.Label") then
-                    node:setDimensions(size.width, size.height)
-                else
-                    node:setContentSize(size)
-                end
+                node:setContentSize(size)
+            end
+            gk.generator:updateSize(node, "width")
+            gk.generator:updateSize(node, "height")
+        end
+    },
+    scaleViewSize = {
+        getter = function(_) return { w = "1", h = "1" } end,
+        setter = function(node, var)
+            local vs = node.__info.viewSize
+            local w = gk.generator:parseValue("width", node, vs.width)
+            local h = gk.generator:parseValue("height", node, vs.height)
+            if not w or not h then
+                return
+            end
+            local scaleW = gk.generator:parseValue("w", node, var.w)
+            local scaleH = gk.generator:parseValue("h", node, var.h)
+            node:setViewSize(cc.size(w * scaleW, h * scaleH))
+            if gk.util:instanceof(node, "cc.TableView") then
+                node:reloadData()
             end
         end
     },
@@ -368,7 +305,12 @@ config.editableProps = {
         getter = function(_) return "" end,
         setter = function(node, var)
             if gk.util:instanceof(node, "ccui.Scale9Sprite") then
-                node:setSpriteFrame(gk.create_sprite_frame(var), node.__info.capInsets)
+                local sf = gk.create_sprite_frame(var)
+                if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
+                    local rect = sf:getRect()
+                    node.__info.capInsets = cc.rect(rect.width / 3, rect.height / 3, rect.width / 3, rect.height / 3)
+                end
+                node:setSpriteFrame(sf, node.__info.capInsets)
                 -- need refresh ...
                 node.__info.width, node.__info.height = node.__info.width, node.__info.height
             else
@@ -599,7 +541,7 @@ config.editableProps = {
     },
     -- ccui.Scale9Sprite, ccui.EditBox
     capInsets = {
-        getter = function(_) return cc.rect(20, 20, 20, 20) end,
+        getter = function(_) return cc.rect(0, 0, 0, 0) end,
         setter = function(node, var)
             if gk.util:instanceof(node, "ccui.Scale9Sprite") then
                 node:setCapInsets(var)
@@ -635,6 +577,31 @@ config.editableProps = {
             end
         end
     },
+    -- cc.ScrollView
+    contentOffset = {
+        getter = function(node) return node:getContentOffset() end,
+        setter = function(node, var)
+            local w = gk.generator:parseValue("x", node, var.x)
+            local h = gk.generator:parseValue("y", node, var.y)
+            local ss = node.__info.scaleOffset
+            local scaleW = gk.generator:parseValue("x", node, ss.x)
+            local scaleH = gk.generator:parseValue("y", node, ss.y)
+            local offset = cc.p(w * scaleW, h * scaleH)
+            node:setContentOffset(offset)
+        end
+    },
+    scaleOffset = {
+        getter = function(_) return { x = "1", y = "1" } end,
+        setter = function(node, var)
+            local ss = node.__info.contentOffset
+            local w = gk.generator:parseValue("x", node, ss.x)
+            local h = gk.generator:parseValue("y", node, ss.y)
+            local scaleW = gk.generator:parseValue("x", node, var.x)
+            local scaleH = gk.generator:parseValue("y", node, var.y)
+            local offset = cc.p(w * scaleW, h * scaleH)
+            node:setContentOffset(offset)
+        end
+    },
 }
 
 function config:registerProp(key, alias)
@@ -662,7 +629,7 @@ end
 function config:registerBoolProp(key, alias)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
-        getter = function(node) return node["is" .. alias](node) and 0 or 1 end,
+        getter = function(node)  return node["is" .. alias](node) and 0 or 1 end,
         setter = function(node, var) node["set" .. alias](node, var == 0) end
     }
 end
@@ -677,6 +644,21 @@ function config:registerFuncProp(key)
                     gk.log("[%s] %s", node.__rootTable.__cname, macro)
                     func(node.__rootTable, ...)
                 end)
+            end
+        end
+    }
+end
+
+function config:registerScriptHandler(key, handler)
+    config.editableProps[key] = {
+        getter = function(node) return "-" end,
+        setter = function(node, var)
+            local func, macro = gk.generator:parseCustomMacroFunc(node, var)
+            if func then
+                node:setDelegate()
+                node:registerScriptHandler(function(...)
+                    func(node.__rootTable, ...)
+                end, handler)
             end
         end
     }
@@ -739,6 +721,7 @@ config:registerBoolProp("zoomEnabled")
 -- ToggleButton
 config:registerFuncProp("onSelectedTagChanged")
 config:registerProp("selectedTag")
+config:registerBoolProp("autoToggle")
 
 -- cc.Layer, cc.Dialog
 config:registerBoolProp("swallowTouches")
@@ -766,6 +749,8 @@ config:registerProp("overflow")
 config:registerProp("direction")
 config:registerBoolProp("clipToBD", "ClippingToBounds")
 config:registerBoolProp("bounceable")
+config:registerScriptHandler("didScroll", cc.SCROLLVIEW_SCRIPT_SCROLL)
+
 -- cc.TableView
 config:registerProp("verticalFillOrder")
 

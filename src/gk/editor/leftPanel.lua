@@ -213,6 +213,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 if not self.draggingNode and cc.rectContainsPoint(rect, p) then
                     gk.log("dom:choose node %s", content)
                     local nd = widgetParent and widgetParent[content] or self.parent.scene.layer[content]
+                    nd = nd or realNode
                     local _voidContent = realNode.__info and realNode.__info._voidContent
                     if nd or _voidContent then
                         if self.selectedNode ~= node then
@@ -334,6 +335,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                             node:release()
                             gk.log("dom:move node to %.2f, %.2f", node.__info.x, node.__info.y)
                             gk.event:post("displayDomTree")
+                            self._containerNode = nil
                             return
                         end
                     elseif self.mode == 1 then

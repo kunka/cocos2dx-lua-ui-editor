@@ -264,7 +264,7 @@ function panel:displayNode(node)
     -- margin left
     local leftX = 15
     -- input middle 1 left x
-    local leftX_input_1 = 90
+    local leftX_input_1 = 100
     -- input width
     local inputLong = size.width - leftX - leftX_input_1
     local inputMiddle = (inputLong - gapX) / 2
@@ -287,6 +287,7 @@ function panel:displayNode(node)
     local isZoomButton = gk.util:instanceof(node, "ZoomButton")
     local isSpriteButton = gk.util:instanceof(node, "SpriteButton")
     local isToggleButton = gk.util:instanceof(node, "ToggleButton")
+    local isButton = gk.util:instanceof(node, "Button")
     local isLayer = gk.util:instanceof(node, "cc.Layer")
     local isLayerColor = gk.util:instanceof(node, "cc.LayerColor")
     local isLayerGradient = gk.util:instanceof(node, "cc.LayerGradient")
@@ -348,19 +349,19 @@ function panel:displayNode(node)
         -- ScaleXY
         self:createLabel("ScalePos", leftX, topY - stepY * yIndex)
         self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        local scaleXs = { "1", "$scaleX", "$scaleRT", "$scaleLT" }
+        local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
         self:createSelectBox(scaleXs, table.indexof(scaleXs, tostring(node.__info.scaleXY.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.x", scaleXs[index], "string")
         end, generator.config.defValues["scaleXY"].x)
         self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        local scaleYs = { "1", "$scaleY", "$scaleTP", "$scaleBT" }
+        local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
         self:createSelectBox(scaleYs, table.indexof(scaleYs, tostring(node.__info.scaleXY.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
             generator:modify(node, "scaleXY.y", scaleYs[index], "string")
         end, generator.config.defValues["scaleXY"].y)
         yIndex = yIndex + 1
     end
     -- anchor
-    self:createLabel("Anchor", leftX, topY - stepY * yIndex)
+    self:createLabel("AnchorPoint", leftX, topY - stepY * yIndex)
     self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
     self:createInput(tostring(node.__info.anchor.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
@@ -378,7 +379,7 @@ function panel:displayNode(node)
     yIndex = yIndex + 1
     -- size
     if not isLabel and not isTableView then
-        self:createLabel("Size", leftX, topY - stepY * yIndex)
+        self:createLabel("ContentSize", leftX, topY - stepY * yIndex)
         self:createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
         local w = self:createInput(node.__info.width, leftX_input_1, topY - stepY *
                 yIndex, inputMiddle, function(editBox, input)
@@ -389,7 +390,7 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "height", input, "number"))
         end)
         yIndex = yIndex + 1
-        if isSprite and not isScale9Sprite then
+        if (isSprite and not isScale9Sprite) or isButton then
             w:setOpacity(150)
             w:setCascadeOpacityEnabled(true)
             w.isEnabled = false
@@ -595,7 +596,7 @@ function panel:displayNode(node)
     if isScale9Sprite then
         createTitle("Scale9Sprite")
     end
-    if isSprite then
+    if isSprite and not isScale9Sprite then
         createTitle("Sprite")
     end
     if isSprite then
@@ -620,18 +621,20 @@ function panel:displayNode(node)
         if isToggleButton then
             -- event
             self:createLabel("SelectedTag", leftX, topY - stepY * yIndex)
-            local tags = { 1 }
-            -- search tag  callback format like "onXXX"
+            local tags = { 0 }
+            -- search tag
             local children = node:getChildren()
             for i = 1, #children do
                 local child = children[i]
                 if child and child.__info and child.__info.id then
                     if child.__info.tag ~= -1 then
-                        table.insert(tags, child.__info.tag)
+                        if not table.indexof(tags, child.__info.tag) then
+                            table.insert(tags, child.__info.tag)
+                        end
                     end
                 end
             end
-            self:createSelectBox(tags, table.indexof(tags, tostring(node.__info.selectedTag)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            self:createSelectBox(tags, table.indexof(tags, node.__info.selectedTag), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
                 generator:modify(node, "selectedTag", tags[index], "number")
             end, 1)
             yIndex = yIndex + 1
@@ -784,7 +787,7 @@ function panel:displayNode(node)
         end)
         yIndex = yIndex + 1
     end
-    if isScale9Sprite then
+    if isScale9Sprite or isEditBox then
         -- CapInsets
         self:createLabel("CapInsets", leftX, topY - stepY * yIndex)
         self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
@@ -805,6 +808,8 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "capInsets.height", input, "number"))
         end)
         yIndex = yIndex + 1
+    end
+    if isScale9Sprite then
         -- RenderingType
         self:createLabel("RenderingType", leftX, topY - stepY * yIndex)
         local types = { "SIMPLE", "SLICE" }
@@ -844,6 +849,14 @@ function panel:displayNode(node)
             self:createLabel("ZoomEnabled", leftX, topY - stepY * yIndex)
             self:createCheckBox(node.__info.zoomEnabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
                 generator:modify(node, "zoomEnabled", selected, "number")
+            end)
+            yIndex = yIndex + 1
+        end
+        if isToggleButton then
+            -- AutoToggle
+            self:createLabel("AutoToggle", leftX, topY - stepY * yIndex)
+            self:createCheckBox(node.__info.autoToggle == 0, checkbox_right, topY - stepY * yIndex, function(selected)
+                generator:modify(node, "autoToggle", selected, "number")
             end)
             yIndex = yIndex + 1
         end
@@ -1173,17 +1186,17 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "viewSize.height", input, "number"))
         end)
         yIndex = yIndex + 1
-        -- ScaleSize
-        self:createLabel("ScaleSize", leftX, topY - stepY * yIndex)
+        -- scaleViewSize
+        self:createLabel("ScaleViewSize", leftX, topY - stepY * yIndex)
         self:createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
         local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
-        self:createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleSize.w)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
-            generator:modify(node, "scaleSize.w", scaleWs[index], "string")
+        self:createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleViewSize.w)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
+            generator:modify(node, "scaleViewSize.w", scaleWs[index], "string")
         end, "1")
         self:createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
         local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
-        self:createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleSize.h)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
-            generator:modify(node, "scaleSize.h", scaleHs[index], "string")
+        self:createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleViewSize.h)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
+            generator:modify(node, "scaleViewSize.h", scaleHs[index], "string")
         end, "1")
         yIndex = yIndex + 1
         -- Direction
@@ -1202,6 +1215,33 @@ function panel:displayNode(node)
             end)
             yIndex = yIndex + 1
         end
+        self:createLabel("ContentOff", leftX, topY - stepY * yIndex)
+        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
+        local w = self:createInput(node.__info.contentOffset.x, leftX_input_1, topY - stepY *
+                yIndex, inputMiddle, function(editBox, input)
+            editBox:setInput(generator:modify(node, "contentOffset.x", input, "number"))
+        end)
+        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
+        local h = self:createInput(node.__info.contentOffset.y, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+            editBox:setInput(generator:modify(node, "contentOffset.y", input, "number"))
+        end)
+        yIndex = yIndex + 1
+        -- ScaleOffset
+        self:createLabel("ScaleOffset", leftX, topY - stepY * yIndex)
+        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
+        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+        self:createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleOffset.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle,
+            function(index)
+                generator:modify(node, "scaleOffset.x", scaleWs[index], "string")
+            end, 1)
+        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
+        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+        self:createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleOffset.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle,
+            function(index)
+                generator:modify(node, "scaleOffset.y", scaleHs[index], "string")
+            end, 1)
+        yIndex = yIndex + 1
+
         -- ClipToBD
         self:createLabel("ClipToBD", leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info.clipToBD == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -1219,6 +1259,18 @@ function panel:displayNode(node)
         self:createCheckBox(node.__info.touchEnabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "touchEnabled", selected, "number")
         end)
+        yIndex = yIndex + 1
+        -- scroll event
+        self:createLabel("DidScroll", leftX, topY - stepY * yIndex)
+        local funcs = { "-" }
+        for key, value in pairs(self.parent.scene.layer.class) do
+            if type(value) == "function" and key:sub(1, 2) == "on" then
+                table.insert(funcs, "&" .. key)
+            end
+        end
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.didScroll)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, "didScroll", funcs[index], "string")
+        end, "-")
         yIndex = yIndex + 1
     end
 

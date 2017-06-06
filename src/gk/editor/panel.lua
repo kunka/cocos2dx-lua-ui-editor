@@ -279,6 +279,7 @@ function panel:onNodeCreate(node)
         end, cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(function(touch, event)
             if self.commandPressed then
+                self._containerNode = nil
                 return
             end
             self.draggingNode = nil
@@ -287,15 +288,18 @@ function panel:onNodeCreate(node)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
             if node.__info and node.__info._lock == 0 then
+                self._containerNode = nil
                 gk.event:post("displayDomTree")
                 return
             end
             if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
+                self._containerNode = nil
                 gk.event:post("displayDomTree")
                 return
             end
             if p.x == self._touchBegainPos.x and p.y == self._touchBegainPos.y then
                 gk.event:post("displayDomTree")
+                self._containerNode = nil
                 return
             end
             -- move out of screen, cancel modify
@@ -332,16 +336,17 @@ function panel:onNodeCreate(node)
                 --                local delta = self:onNodeMoved(node)
                 --                p = cc.pAdd(p, delta)
             end
+            self.sortedChildren = nil
+            self._containerNode = nil
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")
-            self.sortedChildren = nil
-            self._containerNode = nil
         end, cc.Handler.EVENT_TOUCH_ENDED)
         listener:registerScriptHandler(function(touch, event)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
             node:setPosition(self._originPos)
+            self._containerNode = nil
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end)
@@ -350,7 +355,7 @@ end
 function panel:rescaleNode(node, parent)
     if node:isIgnoreAnchorPointForPosition() then
         -- Layer, ScrollView ...
-        node.__info.scaleX, node.__info.scaleY = 1, 1
+        node.__info.scaleX, node.__info.scaleY = "1", "1"
     else
         -- normal node
         local sx, sy = gk.util:getGlobalScale(parent)
@@ -456,7 +461,7 @@ function panel:displayNode(node)
     gk.log("displayNode --------------------- %s", node.__info.id)
     self:undisplayNode()
     self.displayingNode = node
-    if node ~= self.scene.layer then
+    if node ~= self.scene.layer or node.class._isWidget then
         gk.util:drawNode(node)
     end
     self:drawNodeCoordinate(node)
@@ -507,11 +512,15 @@ function panel:handleEvent()
                     self.copyingNode = self.displayingNode
                     return
                 elseif key == "KEY_V" and self.copyingNode then
-                    --                    local info = clone(self.copyingNode.__info)
+                    -- local info = clone(self.copyingNode.__info)
+                    -- clear id info
                     local info = clone(generator:deflate(self.copyingNode))
+                    generator:resetIds(info)
                     local node = generator:inflate(info, nil, self.scene.layer)
                     if node then
-                        node.__info.x, node.__info.y = node.__info.x + 20, node.__info.y + 20
+                        self.copyingNodeTimes = self.copyingNodeTimes or 0
+                        self.copyingNodeTimes = self.copyingNodeTimes + 1
+                        node.__info.x, node.__info.y = node.__info.x + 20 * self.copyingNodeTimes, node.__info.y + 20 * self.copyingNodeTimes
                         self.copyingNode:getParent():addChild(node)
                         gk.log("paste node %s", node.__info.id)
                         gk.event:post("postSync")
@@ -565,6 +574,7 @@ function panel:handleEvent()
             gk.event:post("displayNode", self.displayingNode)
         end
         self.copyingNode = nil
+        self.copyingNodeTimes = 0
 
         if key == "KEY_S" then
             -- save

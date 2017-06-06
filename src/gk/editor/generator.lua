@@ -17,16 +17,21 @@ function generator:deflate(node)
         if k ~= "children" and generator.config.editableProps[k] ~= nil then
             local def = config.defValues[k]
             if def then
-                -- filter def value
-                if (type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret) then
+                -- filter def value, except widget
+                if (not (node.class and node.class._isWidget)) and ((type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret)) then
                     info[k] = nil
                 else
-                    info[k] = ret
+                    info[k] = clone(ret)
                 end
             else
-                info[k] = ret
+                info[k] = clone(ret)
             end
         end
+    end
+    if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+        info["width"] = nil
+        info["height"] = nil
+        info["scaleSize"] = nil
     end
 
     if not gk.util:instanceof(node, "cc.TableView") then
@@ -66,13 +71,25 @@ function generator:deflate(node)
     return info
 end
 
+function generator:resetIds(info)
+    info.id = nil
+    if info.children then
+        for i = 1, #info.children do
+            local child = info.children[i]
+            if child then
+                self:resetIds(child)
+            end
+        end
+    end
+end
+
 function generator:inflate(info, rootNode, rootTable)
     local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
     if node and children then
         for i = 1, #children do
             local child = children[i]
-            if child and child.id then
+            if child then
                 local c = self:inflate(child, nil, rootTable)
                 if c then
                     node:addChild(c)
@@ -161,7 +178,7 @@ function generator:wrap(info, rootTable)
                             -- change id
                             rootTable[value] = node
                             proxy[key] = value
-                            gk.log("change id %s,%s", key, tostring(value))
+                            --                            gk.log("change id %s,%s", key, tostring(value))
                             node.__rootTable = rootTable
                             gk.event:post("postSync")
                             gk.event:post("displayDomTree", true)

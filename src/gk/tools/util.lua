@@ -165,7 +165,8 @@ function util:clearDrawNode(node, tag)
     local tg = tag or util.tags.drawTag
     local draw = node:getChildByTag(tg)
     if self:instanceof(node, "cc.ScrollView") then
-        draw = node:getContainer():getChildByTag(tg)
+        return
+        --        draw = node:getContainer():getChildByTag(tg)
     end
     if draw then
         draw:clear()
@@ -234,7 +235,7 @@ function util:drawNode(node, c4f, tag)
         -- bg
         local p1 = cc.p(0, 0)
         local p2 = cc.p(size.width, size.height)
-        draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.5))
+        draw:drawSolidRect(p1, p2, cc.c4f(0.68, 0.68, 0.68, 0.1))
     end
     if self:instanceof(node, "cc.ClippingRectangleNode") then
         -- clipping rect

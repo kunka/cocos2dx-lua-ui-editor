@@ -109,33 +109,37 @@ function injector:onNodeCreate(node)
         if not path then
             return
         end
-        if gk.mode == gk.MODE_EDIT then
-            -- reload package
-            package.loaded[path] = nil
-        end
+        -- reload package
+        package.loaded[path] = nil
         local status, info = pcall(require, path)
-        local generator = require("gk.editor.generator")
         if status then
             gk.log("initRootContainer with file %s", path)
             --            node.__info = generator:wrap({ type = node.__cname }, node)
-            node.__info = generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
-            generator:inflate(info, node, node)
-            node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            node.__info.scaleXY = { x = "1", y = "1" }
+            node.__info = gk.generator:wrap({ type = node.__cname }, node)
+            info = clone(info)
+            gk.generator:inflate(info, node, node)
+            if not (node.class and node.class._isWidget) then
+                node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+                node.__info.width, node.__info.height = "$fill", "$fill"
+                node.__info.scaleXY = { x = "1", y = "1" }
+            end
         else
             if gk.mode == gk.MODE_EDIT then
                 -- init first time
                 gk.log("initRootContainer first time %s ", path)
-                node.__info = generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
+                node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
                 node.__info.id = node.__cname
                 node[node.__info.id] = node
                 node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
+                node.__info.width, node.__info.height = "$fill", "$fill"
                 node.__info.scaleXY = { x = "1", y = "1" }
                 self:sync(node)
             end
         end
         if gk.mode == gk.MODE_EDIT then
-            --            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1), -9)
+            --            if node.class and not node.class._isWidget then
+            --                gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1))
+            --            end
             node:runAction(cc.CallFunc:create(function()
                 if not gk.util:instanceof(node, "TableViewCell") then
                     gk.event:post("displayNode", node)
