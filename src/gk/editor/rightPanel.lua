@@ -32,7 +32,7 @@ function panel:undisplayNode()
     self.displayInfoNode:removeAllChildren()
 end
 
-local onLabelInputChanged = function(label, input)
+local onLabelInputChanged = function(node, label, input)
     local isMacro = true
     repeat
         local v = generator:parseMacroFunc(node, input)
@@ -141,10 +141,10 @@ function panel:createInput(content, x, y, width, callback, defValue)
         callback(...)
     end)
     node:onInputChanged(function(_, input)
-        onLabelInputChanged(label, input)
+        onLabelInputChanged(self.displayingNode, label, input)
         onValueChanged(node.bg, defValue, input)
     end)
-    onLabelInputChanged(label, content)
+    onLabelInputChanged(self.displayingNode, label, content)
     onValueChanged(node.bg, defValue, content)
     node:setPosition(x, y)
     node.isEnabled = not self.disabled
@@ -168,10 +168,10 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
         callback(...)
     end)
     node:onInputChanged(function(_, input)
-        onLabelInputChanged(label, input)
+        onLabelInputChanged(self.displayingNode, label, input)
         onValueChanged(node.bg, defValue, input)
     end)
-    onLabelInputChanged(label, content)
+    onLabelInputChanged(self.displayingNode, label, content)
     onValueChanged(node.bg, defValue, content)
     node:setPosition(x, y)
     node.isEnabled = not self.disabled
@@ -188,7 +188,7 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
 
     local contentSize = node:getContentSize()
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
-    label:setTextColor(cc.c3b(45, 35, 255))
+    label:setTextColor(cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
     label:setDimensions(10 / scale, 10 / scale)
     local button = gk.ZoomButton.new(label)
@@ -232,14 +232,31 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     node:setPosition(x, y)
     node:onSelectChanged(function(index)
         callback(index)
-        onLabelInputChanged(label, items[index])
+        onLabelInputChanged(self.displayingNode, label, items[index])
         onValueChanged(node.bg, defValue, items[index])
         --            label:setTextColor(getMacroColor(items[index]))
     end)
-    onLabelInputChanged(label, items[index])
+    onLabelInputChanged(self.displayingNode, label, items[index])
     onValueChanged(node.bg, defValue, items[index])
     --        label:setTextColor(getMacroColor(items[index]))
     node.isEnabled = not self.disabled
+
+    local contentSize = node:getContentSize()
+    local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
+    label:setTextColor(cc.c3b(0x33, 0x33, 166))
+    label:setRotation(90)
+    label:setDimensions(10 / scale, 10 / scale)
+    local btnWidth = 12 / scale
+    local button = gk.ZoomButton.new(label)
+    button:setScale(-1.2, 0.7)
+    button:setPosition(contentSize.width - btnWidth, contentSize.height / 2 - 3)
+    node:addChild(button, 999)
+    button:setAnchorPoint(1, 0.5)
+    button:onClicked(function()
+        if node.isEnabled then
+            node:openPopup()
+        end
+    end)
     return node
 end
 
@@ -256,6 +273,7 @@ function panel:displayNode(node)
     local size = self:getContentSize()
     self.contentSize = size
     self.disabled = node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget
+    self.displayingNode = node
 
     local topY = size.height - 20
     local stepY = 25
@@ -417,12 +435,22 @@ function panel:displayNode(node)
     if not isScrollView then
         -- scale
         self:createLabel("Scale", leftX, topY - stepY * yIndex)
+        local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+        local s = tostring(node.__info.scaleX)
+        if not table.indexof(scales, s) then
+            table.insert(scales, s)
+        end
         self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.scaleX), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        self:createSelectAndInput(s, scales, table.indexof(scales, s), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleX", input, "number"))
         end, generator.config.defValues["scaleX"])
         self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.scaleY), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+        local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+        local s = tostring(node.__info.scaleY)
+        if not table.indexof(scales, s) then
+            table.insert(scales, s)
+        end
+        self:createSelectAndInput(s, scales, table.indexof(scales, s), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
             editBox:setInput(generator:modify(node, "scaleY", input, "number"))
         end, generator.config.defValues["scaleY"])
         yIndex = yIndex + 1
@@ -1215,32 +1243,34 @@ function panel:displayNode(node)
             end)
             yIndex = yIndex + 1
         end
-        self:createLabel("ContentOff", leftX, topY - stepY * yIndex)
-        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        local w = self:createInput(node.__info.contentOffset.x, leftX_input_1, topY - stepY *
-                yIndex, inputMiddle, function(editBox, input)
-            editBox:setInput(generator:modify(node, "contentOffset.x", input, "number"))
-        end)
-        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        local h = self:createInput(node.__info.contentOffset.y, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-            editBox:setInput(generator:modify(node, "contentOffset.y", input, "number"))
-        end)
-        yIndex = yIndex + 1
-        -- ScaleOffset
-        self:createLabel("ScaleOffset", leftX, topY - stepY * yIndex)
-        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
-        self:createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleOffset.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle,
-            function(index)
-                generator:modify(node, "scaleOffset.x", scaleWs[index], "string")
-            end, 1)
-        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
-        self:createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleOffset.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle,
-            function(index)
-                generator:modify(node, "scaleOffset.y", scaleHs[index], "string")
-            end, 1)
-        yIndex = yIndex + 1
+        if not isTableView then
+            self:createLabel("ContentOff", leftX, topY - stepY * yIndex)
+            self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
+            local w = self:createInput(node.__info.contentOffset.x, leftX_input_1, topY - stepY *
+                    yIndex, inputMiddle, function(editBox, input)
+                editBox:setInput(generator:modify(node, "contentOffset.x", input, "number"))
+            end)
+            self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
+            local h = self:createInput(node.__info.contentOffset.y, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
+                editBox:setInput(generator:modify(node, "contentOffset.y", input, "number"))
+            end)
+            yIndex = yIndex + 1
+            -- ScaleOffset
+            self:createLabel("ScaleOffset", leftX, topY - stepY * yIndex)
+            self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
+            local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+            self:createSelectBox(scaleWs, table.indexof(scaleWs, tostring(node.__info.scaleOffset.x)), leftX_input_1, topY - stepY * yIndex, inputMiddle,
+                function(index)
+                    generator:modify(node, "scaleOffset.x", scaleWs[index], "string")
+                end, 1)
+            self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
+            local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+            self:createSelectBox(scaleHs, table.indexof(scaleHs, tostring(node.__info.scaleOffset.y)), leftX_input_2, topY - stepY * yIndex, inputMiddle,
+                function(index)
+                    generator:modify(node, "scaleOffset.y", scaleHs[index], "string")
+                end, 1)
+            yIndex = yIndex + 1
+        end
 
         -- ClipToBD
         self:createLabel("ClipToBD", leftX, topY - stepY * yIndex)
@@ -1260,6 +1290,58 @@ function panel:displayNode(node)
             generator:modify(node, "touchEnabled", selected, "number")
         end)
         yIndex = yIndex + 1
+        if isTableView then
+            -- event
+            self:createLabel("NumOfCells", leftX, topY - stepY * yIndex)
+            local funcs = { "-" }
+            for key, value in pairs(self.parent.scene.layer.class) do
+                if type(value) == "function" and key:len() > 4 and key:sub(1, 4) == "cell" then
+                    table.insert(funcs, "&" .. key)
+                end
+            end
+            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.cellNums)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "cellNums", funcs[index], "string")
+            end, "-")
+            yIndex = yIndex + 1
+
+            -- event
+            self:createLabel("CellSizeForIndex", leftX, topY - stepY * yIndex)
+            local funcs = { "-" }
+            for key, value in pairs(self.parent.scene.layer.class) do
+                if type(value) == "function" and key:len() > 4 and key:sub(1, 4) == "cell" then
+                    table.insert(funcs, "&" .. key)
+                end
+            end
+            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.cellSizeForIndex)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "cellSizeForIndex", funcs[index], "string")
+            end, "-")
+            yIndex = yIndex + 1
+
+            -- event
+            self:createLabel("CellAtIndex", leftX, topY - stepY * yIndex)
+            local funcs = { "-" }
+            for key, value in pairs(self.parent.scene.layer.class) do
+                if type(value) == "function" and key:len() > 4 and key:sub(1, 4) == "cell" then
+                    table.insert(funcs, "&" .. key)
+                end
+            end
+            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.cellAtIndex)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "cellAtIndex", funcs[index], "string")
+            end, "-")
+            yIndex = yIndex + 1
+            -- event
+            self:createLabel("CellTouched", leftX, topY - stepY * yIndex)
+            local funcs = { "-" }
+            for key, value in pairs(self.parent.scene.layer.class) do
+                if type(value) == "function" and key:len() > 4 and key:sub(1, 4) == "cell" then
+                    table.insert(funcs, "&" .. key)
+                end
+            end
+            self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info.cellTouched)), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "cellTouched", funcs[index], "string")
+            end, "-")
+            yIndex = yIndex + 1
+        end
         -- scroll event
         self:createLabel("DidScroll", leftX, topY - stepY * yIndex)
         local funcs = { "-" }
@@ -1436,7 +1518,19 @@ function panel:displayNode(node)
                     self:createLabel(prop:title(), leftX, topY - stepY * yIndex)
                     self:createInput(tostring(node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
                         editBox:setInput(generator:modify(node, key, input, "string"))
-                    end)
+                    end, prop.default and prop:default())
+                    yIndex = yIndex + 1
+                end
+            end
+            local numProps = ext:numProps()
+            if numProps then
+                for i = 1, #numProps do
+                    local prop = numProps[i]
+                    local key = prop:key()
+                    self:createLabel(prop:title(), leftX, topY - stepY * yIndex)
+                    self:createInput(tostring(node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                        editBox:setInput(generator:modify(node, key, input, "number"))
+                    end, prop.default and prop:default())
                     yIndex = yIndex + 1
                 end
             end

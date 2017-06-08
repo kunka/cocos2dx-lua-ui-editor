@@ -80,7 +80,7 @@ string.toHex = function(s)
     return string.gsub(s, "(.)", function(x) return string.format("%02X", string.byte(x)) end)
 end
 
------------- g----------------------------- restart game  -------------------------------------------------
+----------------------------------------- restart game  -------------------------------------------------
 function util:registerOnRestartGameCallback(callback)
     self.onRestartGameCallbacks = self.onRestartGameCallbacks or {}
     table.insert(self.onRestartGameCallbacks, callback)
@@ -100,9 +100,14 @@ function util:registerRestartGameCallback(callback)
             local key = cc.KeyCodeKey[keyCode + 1]
             gk.log("RestartLayer: onKeypad %s", key)
             if key == "KEY_F1" then
+                -- debug mode, restart with current editing node
                 util:restartGame(1)
             elseif key == "KEY_F2" then
+                -- release mode, restart with cureent entry
                 util:restartGame(0)
+            elseif key == "KEY_F3" then
+                -- release mode, restart with default entry
+                util:restartGame(2)
             end
         end
 
@@ -143,6 +148,16 @@ function util:restartGame(mode)
             util.restartGameCallback(mode)
         end
     end))
+end
+
+function util:registerOnErrorCallback(callback)
+    self.onErrorCallback = callback
+end
+
+function util:reportError(msg)
+    if util.onErrorCallback then
+        util.onErrorCallback(msg)
+    end
 end
 
 util.tags = util.tags and util.tags or {

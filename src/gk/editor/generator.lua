@@ -112,10 +112,13 @@ function generator:createNode(info, rootNode, rootTable)
             node = creator(info, rootTable)
             --            gk.log("createNode %s,%s", node, info.id)
             if not node then
-                gk.log("createNode error, return nil, type = %s", info.type)
+                local msg = gk.log("createNode error, return nil, type = %s", info.type)
+                gk.util:reportError(msg)
+                return nil
             end
         else
-            gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
+            local msg = gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
+            gk.util:reportError(msg)
             return nil
         end
     end
@@ -373,11 +376,13 @@ generator.nodeCreator = {
     end,
     ["cc.ScrollView"] = function(info, rootTable)
         local node = cc.ScrollView:create(cc.size(info.width, info.height))
+        node:setDelegate()
         info.id = info.id or generator:genID("scrollView", rootTable)
         return node
     end,
     ["cc.TableView"] = function(info, rootTable)
         local node = cc.TableView:create(cc.size(info.width, info.height))
+        node:setDelegate()
         info.id = info.id or generator:genID("tableView", rootTable)
         return node
     end,
@@ -428,15 +433,17 @@ generator.nodeCreator = {
 }
 
 function generator:genID(type, rootTable)
+    local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+
     local index = 1
     while true do
-        if rootTable[string.format("%s%d", type, index)] == nil then
+        if rootTable[string.format("%s%d", tp, index)] == nil then
             break
         else
             index = index + 1
         end
     end
-    return string.format("%s%d", type, index)
+    return string.format("%s%d", tp, index)
 end
 
 function generator:updateSize(node, property)

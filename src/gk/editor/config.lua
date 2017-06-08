@@ -214,7 +214,7 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
                 return
             end
             local width = gk.generator:parseValue("width", node, var)
@@ -240,7 +240,7 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
                 return
             end
             if gk.util:instanceof(node, "cc.Label") and node.__info.overflow == 3 then
@@ -263,7 +263,7 @@ config.editableProps = {
     scaleSize = {
         getter = function(_) return { w = "1", h = "1" } end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
                 return
             end
             local w = gk.generator:parseValue("width", node, node.__info.width)
@@ -629,7 +629,7 @@ end
 function config:registerBoolProp(key, alias)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
-        getter = function(node)  return node["is" .. alias](node) and 0 or 1 end,
+        getter = function(node) return node["is" .. alias](node) and 0 or 1 end,
         setter = function(node, var) node["set" .. alias](node, var == 0) end
     }
 end
@@ -655,9 +655,8 @@ function config:registerScriptHandler(key, handler)
         setter = function(node, var)
             local func, macro = gk.generator:parseCustomMacroFunc(node, var)
             if func then
-                node:setDelegate()
                 node:registerScriptHandler(function(...)
-                    func(node.__rootTable, ...)
+                    return func(node.__rootTable, ...)
                 end, handler)
             end
         end
@@ -753,6 +752,10 @@ config:registerScriptHandler("didScroll", cc.SCROLLVIEW_SCRIPT_SCROLL)
 
 -- cc.TableView
 config:registerProp("verticalFillOrder")
+config:registerScriptHandler("cellNums", cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+config:registerScriptHandler("cellSizeForIndex", cc.TABLECELL_SIZE_FOR_INDEX)
+config:registerScriptHandler("cellAtIndex", cc.TABLECELL_SIZE_AT_INDEX)
+config:registerScriptHandler("cellTouched", cc.TABLECELL_TOUCHED)
 
 -- cc.ClippingNode
 config:registerBoolProp("inverted")

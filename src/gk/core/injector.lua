@@ -118,7 +118,7 @@ function injector:onNodeCreate(node)
             node.__info = gk.generator:wrap({ type = node.__cname }, node)
             info = clone(info)
             gk.generator:inflate(info, node, node)
-            if not (node.class and node.class._isWidget) then
+            if not (node.class and node.class._isWidget) and not gk.util:instanceof(node, "TableViewCell") then
                 node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
                 node.__info.width, node.__info.height = "$fill", "$fill"
                 node.__info.scaleXY = { x = "1", y = "1" }
@@ -128,7 +128,7 @@ function injector:onNodeCreate(node)
                 -- init first time
                 gk.log("initRootContainer first time %s ", path)
                 node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
-                node.__info.id = node.__cname
+                node.__info.id = gk.generator:genID(node.__cname, node)
                 node[node.__info.id] = node
                 node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
                 node.__info.width, node.__info.height = "$fill", "$fill"

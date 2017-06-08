@@ -186,8 +186,8 @@ function panel.create(parent)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
-        if nodeInfo.clazz._isWidget then
-            table.insert(self.widgets, { type = nodeInfo.relativePath, cname = nodeInfo.clazz.__cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
+        if nodeInfo.isWidget then
+            table.insert(self.widgets, { type = nodeInfo.path, cname = nodeInfo.cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
         end
     end
     -- content node

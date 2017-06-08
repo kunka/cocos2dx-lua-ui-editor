@@ -103,6 +103,7 @@ function Button:onEnter()
     local eventDispatcher = self:getEventDispatcher()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
     self.touchListener = listener
+    self:updateDelaySelect()
 end
 
 function Button:setSwallowTouches(swallowTouches)
@@ -121,8 +122,7 @@ function Button:updateDelaySelect()
         self.delaySelect = false
         local c = self:getParent()
         while c ~= nil do
-            local type = tolua.type(c)
-            if type == "cc.ScrollView" then
+            if gk.util:instanceof(c, "cc.ScrollView") then
                 self.delaySelect = true
                 self:setSwallowTouches(false)
                 gk.log("[%s]: In ScrollView, auto set delaySelect = true, swallowTouches = false", self.__cname)

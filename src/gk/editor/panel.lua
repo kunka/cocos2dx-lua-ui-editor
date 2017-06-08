@@ -356,7 +356,7 @@ function panel:rescaleNode(node, parent)
     if node:isIgnoreAnchorPointForPosition() then
         -- Layer, ScrollView ...
         node.__info.scaleX, node.__info.scaleY = "1", "1"
-    else
+    elseif not (self.scene.layer and self.scene.layer.class and self.scene.layer.class._isWidget) and not gk.util:instanceof(self.scene.layer, "TableViewCell") then
         -- normal node
         local sx, sy = gk.util:getGlobalScale(parent)
         gk.log("rescaleNode(%s) sx %f, sy %f", node.__info.id, sx, sy)
@@ -462,6 +462,8 @@ function panel:displayNode(node)
     self:undisplayNode()
     self.displayingNode = node
     if node ~= self.scene.layer or node.class._isWidget then
+        gk.util:drawNode(node)
+    elseif node == self.scene.layer and gk.util:instanceof(node, "TableViewCell") then
         gk.util:drawNode(node)
     end
     self:drawNodeCoordinate(node)

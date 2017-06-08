@@ -128,17 +128,16 @@ function resource:loadEditableNodes(path, genSrcPath)
     local status, clazz = pcall(require, path)
     if status and clazz then
         -- TODO: other types
-        --        local isEditable = iskindof(clazz, "Layer") or iskindof(clazz, "Dialog") or iskindof(clazz, "TableViewCell")
         local isEditable = gk.util:iskindof(clazz, "Layer") or gk.util:iskindof(clazz, "TableViewCell") or gk.util:iskindof(clazz, "Widget")
-        --                if not isEditable then
-        --                    print("?")
-        --                    local instance = clazz:create()
-        --                    isEditable = iskindof(instance, "cc.TableViewCell")
-        --                end
-
         if isEditable then
             local genPath = self:_getGenNodePath(genSrcPath, clazz.__cname)
-            self.genNodes[clazz.__cname] = { path = path, clazz = clazz, genPath = genPath, genSrcPath = genSrcPath, relativePath = genSrcPath .. clazz.__cname }
+            self.genNodes[clazz.__cname] = {
+                isWidget = clazz._isWidget,
+                cname = clazz.__cname,
+                genPath = genPath,
+                genSrcPath = genSrcPath,
+                path = genSrcPath .. clazz.__cname
+            }
             gk.log("resource:scanGenNodes file:%s, output --> %s", genSrcPath .. clazz.__cname, genPath)
         end
     end
@@ -170,6 +169,33 @@ function resource:require(path)
     end
     gk.log("resource:require --> %s failed", path)
     return nil
+end
+
+function resource:flush(path)
+    gk.log("resource:flush --> %s", path)
+    local info = {
+        fontFiles = self.fontFiles,
+        genNodes = self.genNodes,
+    }
+    -- root container node
+    local table2lua = require("gk.tools.table2lua")
+    if gk.exception then
+        gk.log(table2lua.encode_pretty(info))
+        gk.log("[Warning!] exception occured! please fix it then flush to file!")
+    else
+        gk.log("flush to file: " .. path .. (io.writefile(path, table2lua.encode_pretty(info)) and " success!" or " failed!!!"))
+    end
+end
+
+function resource:load(path)
+    gk.log("resource:load --> %s", path)
+    local status, info = pcall(require, path)
+    if status then
+        self.fontFiles = info.fontFiles
+        self.genNodes = info.genNodes
+    else
+        gk.log("resource:load --> %s failed", path)
+    end
 end
 
 return resource

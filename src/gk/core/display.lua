@@ -46,7 +46,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     if gk.mode == gk.MODE_EDIT then
         display.topHeight = 100
         display.leftWidth = 250
-        display.rightWidth = 250
+        display.rightWidth = 260
         display.bottomHeight = 100
     else
         display.topHeight = 0
@@ -59,13 +59,15 @@ function display:initWithDesignSize(size, resolutionPolicy)
     local winSize = {}
     winSize.width = s.width + display.leftWidth + display.rightWidth
     winSize.height = s.height + display.topHeight + display.bottomHeight
-    local director = cc.Director:getInstance()
-    local view = director:getOpenGLView()
-    view:setFrameSize(winSize.width, winSize.height)
-    view:setDesignResolutionSize(winSize.width, winSize.height, 0)
-    gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
-    view:setViewName("!!!") -- not implemented :(
-
+    local platform = cc.Application:getInstance():getTargetPlatform()
+    if platform == 2 then
+        local director = cc.Director:getInstance()
+        local view = director:getOpenGLView()
+        view:setFrameSize(winSize.width, winSize.height)
+        view:setDesignResolutionSize(winSize.width, winSize.height, 0)
+        gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
+        view:setViewName("!!!") -- not implemented :(
+    end
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f), resolutionPolicy = %s", winSize.width, winSize.height, display.resolutionPolicyDesc)
     display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end

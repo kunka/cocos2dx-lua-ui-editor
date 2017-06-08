@@ -23,11 +23,8 @@ function SceneManager:createScene(layerName, ...)
         local status, _ = xpcall(function(...)
             layer = clazz:create(...)
         end, function(msg)
-            local ErrorReporter = require "app.feedback.ErrorReporter"
-            if ErrorReporter then
-                local msg = debug.traceback(msg, 3)
-                ErrorReporter:reportException(msg)
-            end
+            local msg = debug.traceback(msg, 3)
+            gk.util:reportError(msg)
         end)
         if status then
             scene:addChild(layer)
