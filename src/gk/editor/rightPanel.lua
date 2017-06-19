@@ -18,7 +18,7 @@ function panel.create(parent)
 
     local size = self:getContentSize()
     local createLine = function(y)
-        gk.util:drawLineOnNode(self, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
+        gk.util:drawLineOnNode(self, cc.p(10, y), cc.p(size.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -999)
     end
     createLine(size.height - 0.5)
     self.displayInfoNode = cc.Node:create()
@@ -67,6 +67,9 @@ local onLabelInputChanged = function(node, label, input)
                     break
                 end
             end
+        end
+        if gk.audio:isValidEvent(input) then
+            break
         end
         --            if v ~= nil then
         --- -                isMacro = true
@@ -125,8 +128,9 @@ function panel:createCheckBox(selected, x, y, callback)
     return node
 end
 
-function panel:createInput(content, x, y, width, callback, defValue)
-    local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
+function panel:createInput(content, x, y, width, callback, defValue, lines)
+    lines = lines or 1
+    local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
     local label = cc.Label:createWithTTF(content, fontName, fontSize)
     label:setTextColor(cc.c3b(0, 0, 0))
@@ -136,7 +140,6 @@ function panel:createInput(content, x, y, width, callback, defValue)
     label:setDimensions(contentSize.width - 15, contentSize.height)
     self.displayInfoNode:addChild(node)
     node:setScale(scale)
-    node:setAnchorPoint(0, 0.5)
     node:onEditEnded(function(...)
         callback(...)
     end)
@@ -146,7 +149,8 @@ function panel:createInput(content, x, y, width, callback, defValue)
     end)
     onLabelInputChanged(self.displayingNode, label, content)
     onValueChanged(node.bg, defValue, content)
-    node:setPosition(x, y)
+    node:setAnchorPoint(0, 1)
+    node:setPosition(x, y + 16 / 2)
     node.isEnabled = not self.disabled
     return node
 end
@@ -262,7 +266,7 @@ end
 
 function panel:createLine(y)
     y = y + 12
-    gk.util:drawLineOnNode(self.displayInfoNode, cc.p(10, y), cc.p(self.contentSize.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -2)
+    gk.util:drawLineOnNode(self.displayInfoNode, cc.p(10, y), cc.p(self.contentSize.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -999)
 end
 
 function panel:displayNode(node)
@@ -312,11 +316,12 @@ function panel:displayNode(node)
     local isScrollView = gk.util:instanceof(node, "cc.ScrollView")
     local isTableView = gk.util:instanceof(node, "cc.TableView")
     local isScale9Sprite = gk.util:instanceof(node, "ccui.Scale9Sprite")
-    local isCheckBox = gk.util:instanceof(node, "ccui.CheckBox")
+    local isCheckBox = gk.util:instanceof(node, "CheckBox")
     local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
     local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
     local isProgressTimer = gk.util:instanceof(node, "cc.ProgressTimer")
     local isClippingNode = gk.util:instanceof(node, "cc.ClippingNode")
+    local isTmxTiledMap = gk.util:instanceof(node, "cc.TMXTiledMap")
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
     local isRootNode = self.parent.scene.layer == node
@@ -383,11 +388,11 @@ function panel:displayNode(node)
     self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
     self:createInput(tostring(node.__info.anchor.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.x", input, "number"))
-    end, generator.config.defValues["anchor"].x)
+    end) --, generator.config.defValues["anchor"].x)
     self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
     self:createInput(tostring(node.__info.anchor.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
         editBox:setInput(generator:modify(node, "anchor.y", input, "number"))
-    end, generator.config.defValues["anchor"].y)
+    end) --, generator.config.defValues["anchor"].y)
     yIndex = yIndex + 1
     -- ignoreAnchor
     self:createLabel("IgnoreAnchorPoint", leftX, topY - stepY * yIndex)
@@ -696,6 +701,13 @@ function panel:displayNode(node)
         end, "-")
         yIndex = yIndex + 1
 
+        -- clickedSid
+        self:createLabel("ClickedSid", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.clickedSid), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clickedSid", input, "string"))
+        end, "")
+        yIndex = yIndex + 1
+
         -- onSelectChanged event
         self:createLabel("onSelectChanged", leftX, topY - stepY * yIndex)
         local funcs = { "-" }
@@ -771,23 +783,23 @@ function panel:displayNode(node)
         self:createLabel("NormalSprite", leftX, topY - stepY * yIndex)
         self:createInput(tostring(node.__info.normalSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, "normalSprite", input, "string"))
-        end)
+        end, "")
         yIndex = yIndex + 1
         -- selectedSprite file
         self:createLabel("SelectSprite", leftX, topY - stepY * yIndex)
         self:createInput(tostring(node.__info.selectedSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, "selectedSprite", input, "string"))
-        end)
+        end, "")
         yIndex = yIndex + 1
         -- disabledSprite file
         self:createLabel("DisableSprite", leftX, topY - stepY * yIndex)
         self:createInput(tostring(node.__info.disabledSprite), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, "disabledSprite", input, "string"))
-        end)
+        end, "")
         yIndex = yIndex + 1
     end
 
-    if isSprite and not isScale9Sprite then
+    if node.setBlendFunc and type(node.setBlendFunc) == "function" then
         -- blendFunc
         self:createLabel("blendFunc", leftX, topY - stepY * yIndex)
         self:createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
@@ -808,6 +820,8 @@ function panel:displayNode(node)
             generator:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
         end, "ONE_MINUS_SRC_ALPHA")
         yIndex = yIndex + 1
+    end
+    if isSprite and not isScale9Sprite then
         -- flippedX
         self:createLabel("FlippedX", leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info.flippedX == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -903,16 +917,6 @@ function panel:displayNode(node)
             generator:modify(node, "selected", selected, "number")
         end)
         yIndex = yIndex + 1
-        self:createLabel("BackGround", leftX, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.backGround), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, "backGround", input, "string"))
-        end)
-        yIndex = yIndex + 1
-        self:createLabel("Cross", leftX, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.cross), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, "cross", input, "string"))
-        end)
-        yIndex = yIndex + 1
     end
     --------------------------- cc.Label   ---------------------------
     if isLabel then
@@ -968,8 +972,8 @@ function panel:displayNode(node)
         self:createLabel("String", leftX, topY - stepY * yIndex)
         self:createInput(tostring(node.__info.string), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, "string", input, "string"))
-        end, "")
-        yIndex = yIndex + 1
+        end, "", 1.6)
+        yIndex = yIndex + 1.4
         -- overflow
         -- System font only support Overflow::NONE and Overflow::RESIZE_HEIGHT.
         self:createLabel("Overflow", leftX, topY - stepY * yIndex)
@@ -1501,6 +1505,16 @@ function panel:displayNode(node)
         self:createLabel("ClippingEnabled", leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info.clippingEnabled == 0, checkbox_right, topY - stepY * yIndex, function(selected)
             generator:modify(node, "clippingEnabled", selected, "number")
+        end)
+        yIndex = yIndex + 1
+    end
+
+    if isTmxTiledMap then
+        createTitle("TmxTiledMap")
+        -- TMXFile
+        self:createLabel("TMXFile", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.tmx), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "tmx", input, "string"))
         end)
         yIndex = yIndex + 1
     end

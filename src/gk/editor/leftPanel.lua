@@ -74,15 +74,32 @@ function panel:displayDomTree(rootLayer, force)
                 end
             end
         end)
+        --        self.domTree = {}
+        --        for _, key in ipairs(keys) do
+        --            local value = gk.resource.genNodes[key]
+        --            local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
+        --            local ks = string.split(displayName, "/")
+        --            local parent = self.domTree
+        --            for i = 1, #ks - 1 do
+        --                local group = ks[i]
+        --                if not parent[group] then
+        --                    parent[group] = { group = group, children = {} }
+        --                end
+        --                parent = parent[group]
+        --            end
+        --            local var = ks[#ks]
+        --            table.insert(parent, var)
+        --        end
+        --        dump(self.domTree)
+
         for _, key in ipairs(keys) do
             local value = gk.resource.genNodes[key]
+            local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
             if key == rootLayer.__cname then
                 cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
                 cc.UserDefault:getInstance():flush()
-                local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
                 self:displayDomNode(rootLayer, 0, displayName)
             else
-                local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
                 self:displayOthers(key, displayName)
             end
         end
@@ -100,7 +117,10 @@ function panel:displayDomTree(rootLayer, force)
                 --                dump(self.lastDisplayingPos)
                 self.displayInfoNode:setPosition(self.lastDisplayingPos)
                 local dt = 0.2 + 0.2 * math.abs(self.lastDisplayingPos.y - y) / 150
-                self.displayInfoNode:runAction(cc.EaseSineOut:create(cc.MoveTo:create(dt, cc.p(0, y))))
+                if dt > 0.5 then
+                    dt = 0.5
+                end
+                self.displayInfoNode:runAction(cc.EaseInOut:create(cc.MoveTo:create(dt, cc.p(0, y)), 2))
                 self.lastDisplayingPos = cc.p(0, y)
             end
         end
@@ -108,7 +128,7 @@ function panel:displayDomTree(rootLayer, force)
 end
 
 function panel:displayDomNode(node, layer, displayName, widgetParent)
-    if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) then
+    if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) or node:getTag() > 9999 then
         return
     end
     local fixChild = node.__info == nil
@@ -155,6 +175,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
                 node.__info._fold = not node.__info._fold
                 gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
+                gk.event:post("displayNode", node)
                 gk.event:post("displayDomTree")
             end)
             x = x + 11
@@ -191,9 +212,9 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         -- select
         if self.parent.displayingNode == node then
             self.displayingDomDepth = self.domDepth
-            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
-                gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
-            end)))
+            --            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
+            gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+            --            end)))
             self.selectedNode = label
         end
         -- drag button
@@ -441,20 +462,28 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         widgetParent = node
     end
 
+    if node ~= self.lastDisplayingNode and gk.util:isAncestorOf(node, self.lastDisplayingNode) then
+        -- force unfold
+        node.__info._fold = false
+    end
     if fixChild or not node.__info._fold then
+        if tolua.type(node) == "cc.TMXLayer" then
+            return
+        end
         node:sortAllChildren()
         local children = node:getChildren()
         if children then
             for i = 1, #children do
                 local child = children[i]
-                if child then --and child.__info and child.__info.id then
-                if child.__rootTable == widgetParent then
-                    self:displayDomNode(child, layer, nil, widgetParent)
-                elseif child.__rootTable == preWidgetParent then
-                    self:displayDomNode(child, layer, nil, preWidgetParent)
-                else
-                    self:displayDomNode(child, layer, nil, nil)
-                end
+                if child then
+                    --and child.__info and child.__info.id then
+                    if child.__rootTable == widgetParent then
+                        self:displayDomNode(child, layer, nil, widgetParent)
+                    elseif child.__rootTable == preWidgetParent then
+                        self:displayDomNode(child, layer, nil, preWidgetParent)
+                    else
+                        self:displayDomNode(child, layer, nil, nil)
+                    end
                 end
             end
         end
@@ -551,7 +580,7 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
-        if gk.util:touchInNode(self, location) then
+        if self.displayInfoNode and gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().height > self:getContentSize().height then
                 local scrollY = touch:getScrollY()
                 local x, y = self.displayInfoNode:getPosition()

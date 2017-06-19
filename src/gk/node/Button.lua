@@ -29,6 +29,8 @@ function Button:ctor(contentNode)
     self.trackingTouch = false
     self.delaySelect = nil -- optimize for button in ScrollView
     self.swallowTouches = true
+    self.autoSelected = true -- auto select and unselect when touch
+    self.clickedSid = "" -- sound id, when clicked
 
     self.__addChild = self.addChild
     self.addChild = function(_self, ...)
@@ -63,6 +65,14 @@ function Button:_addChild(child, zorder, tag)
             self:setContentNode(child)
         end
     end
+end
+
+function Button:getClickedSid()
+    return self.clickedSid
+end
+
+function Button:setClickedSid(sid)
+    self.clickedSid = sid
 end
 
 function Button:getContentNode()
@@ -155,6 +165,9 @@ end
 
 function Button:activate()
     if self.enabled then
+        if self.clickedSid then
+            gk.audio:playEffect(self.clickedSid)
+        end
         if self.onClickedCallback then
             --            gk.log("[%s]: activate", self.__cname)
             self.onClickedCallback(self)
@@ -172,7 +185,7 @@ function Button:triggleLongPressed()
 end
 
 function Button:setSelected(selected)
-    if self.selected ~= selected then
+    if self.enabled and self.selected ~= selected then
         self.selected = selected
         if self.onSelectChangedCallback then
             self.onSelectChangedCallback(self, self.selected)
@@ -209,15 +222,17 @@ function Button:onTouchBegan(touch, event)
     if not Button.trackingButton and gk.util:hitTest(self, touch) then
         --        gk.log("Button:onTouchBegan")
         self:updateDelaySelect()
-        if self.delaySelect then
-            local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
-                if self.trackingTouch and not self.selected then
-                    self:setSelected(true)
-                end
-            end)))
-            action:setTag(kDelaySelectActionTag)
-        else
-            self:setSelected(true)
+        if self.autoSelected then
+            if self.delaySelect then
+                local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
+                    if self.trackingTouch and not self.selected then
+                        self:setSelected(true)
+                    end
+                end)))
+                action:setTag(kDelaySelectActionTag)
+            else
+                self:setSelected(true)
+            end
         end
         self.longPressdTriggled = false
         local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
@@ -280,7 +295,9 @@ end
 
 function Button:stopTracking()
     --    gk.log("Button:stopTracking")
-    self:setSelected(false)
+    if self.autoSelected then
+        self:setSelected(false)
+    end
     self.trackingTouch = false
     Button.trackingButton = false
     --    gk.log("Button.tracking false")

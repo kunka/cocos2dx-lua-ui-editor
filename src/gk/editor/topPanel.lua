@@ -31,9 +31,9 @@ function panel.create(parent)
     local leftX = 15
     local inputWidth1 = 90
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
-    local stepX = 51
+    local stepX = 65 --51
     local stepY = 25
-    local leftX_widget = 10
+    local leftX_widget = 15 --10
     local createLabel = function(content, x, y)
         local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
         label:setScale(scale)
@@ -219,17 +219,17 @@ function panel.create(parent)
 
         local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
         --        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and names[1] or names[#names], fontName, 7 * 4)
-        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, 7 * 4)
+        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, fontSize)
         label:setScale(scale)
-        label:setDimensions(node:getContentSize().width + stepX * 2 - 8, 60)
-        --        label:setOverflow(2)
-        --                gk.util:drawNodeBounds(label)
+        label:setDimensions(node:getContentSize().width + stepX * 2, 60)
+        label:setOverflow(2)
+        --        gk.util:drawNodeBounds(label)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setTextColor(cc.c3b(189, 189, 189))
         self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0.5, 0.5)
-        label:setPosition(originPos.x, originPos.y - 35)
+        label:setPosition(originPos.x, originPos.y - 40)
 
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
@@ -277,7 +277,7 @@ function panel.create(parent)
                 local node = children[i]
                 local canBeContainer = false
                 repeat
-                    if not node or node.__rootTable ~= self.parent.scene.layer then
+                    if not node or (node.__rootTable and node.__rootTable ~= self.parent.scene.layer) then
                         -- widget
                         break
                     end
@@ -371,8 +371,13 @@ function panel:handleEvent()
         if gk.util:touchInNode(self, location) then
             if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
                 local scrollX = touch:getScrollX()
+                -- mouse cannot scroll horizontal
+                local scrollY = 0
+                if scrollX < 50 then
+                    scrollY = touch:getScrollY()
+                end
                 local x, y = self.displayInfoNode:getPosition()
-                x = x + scrollX * 10
+                x = x + scrollX * 10 + scrollY * 10
                 x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display:winSize().width), gk.display.leftWidth)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayInfoOffset = cc.p(x, y)

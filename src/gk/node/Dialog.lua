@@ -13,7 +13,7 @@ local Dialog = class("Dialog", Layer)
 function Dialog:ctor()
     -- set dialog bg, use to animate out
     self.enableKeyPad = false
-    self.popOnBack = true -- popScene on back
+    self.popOnBack = true -- popDialogc on back
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
     Dialog.super.ctor(self)
@@ -35,13 +35,24 @@ function Dialog:isPopOnTouchOutsideBg()
     return self.popOnTouchOutsideBg
 end
 
+function Dialog:addMaskLayer()
+    local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, Dialog.MASK_OPACITY and Dialog.MASK_OPACITY or 200))
+    self:addChild(layerColor, -1)
+    self.maskLayer = layerColor
+end
+
 function Dialog:animateOut()
-    if self.dialogBg then
-        self.dialogBg:setScale(0)
-        self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, gk.display:minScale())))
-    end
-    if self.maskLayer then
-        self.maskLayer:runAction(cc.FadeTo:create(0.15, CFG_BLACK_COVER_OPACITY and CFG_BLACK_COVER_OPACITY or 156))
+    if gk.mode ~= gk.MODE_EDIT then
+        if self.dialogBg then
+            local scale = self.dialogBg:getScale()
+            self.dialogBg:setScale(0)
+            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, scale)))
+        end
+        if self.maskLayer then
+            local opacity = self.maskLayer:getOpacity()
+            self.maskLayer:setOpacity(0)
+            self.maskLayer:runAction(cc.FadeTo:create(0.15, opacity))
+        end
     end
 end
 
@@ -52,7 +63,7 @@ function Dialog:onTouchBegan(touch, event)
         local s = self.dialogBg:getContentSize()
         local rect = { x = 0, y = 0, width = s.width, height = s.height }
         local touchP = self.dialogBg:convertToNodeSpace(touchBeginPoint)
-        if not cc.rectContainsPoint(rect, touchP) then
+        if not cc.rectContainsPoint(rect, touchP) and gk.mode ~= gk.MODE_EDIT then
             if self.popOnTouchOutsideBg then
                 gk.log("[%s]: popOnTouchOutsideBg", self.__cname)
                 self:runAction(cc.CallFunc:create(function()

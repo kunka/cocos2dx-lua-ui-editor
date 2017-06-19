@@ -15,6 +15,8 @@ local kDeleteCharAction = -0xFFFF1
 local kCursorBlinkAction = -0xFFFF2
 local kCursorMoveAction = -0xFFFF3
 local kInsertCharAction = -0xFFFF4
+local kRepeatActionDur = 0.12
+local kRepeatInsertActionDur = 0.15
 function EditBox:ctor(size)
     self:enableNodeEvents()
     self:setContentSize(size)
@@ -166,6 +168,7 @@ function EditBox:unfocus()
         gk.focusNode = nil
         self.isFocus = false
         gk.util:clearDrawNode(self, -2)
+        self.cursorNode:stopAllActions()
         self:stopBlinkCursor()
         if self.onEditEndedCallback then
             self.onEditEndedCallback(self, self:getInput())
@@ -195,7 +198,7 @@ end
 function EditBox:changeCursorPos(newPos)
     local input = self.label:getString()
     if newPos >= 0 and newPos <= input:len() then
-        gk.log("[EDITBOX]: change cursorPos %d --> %d", self.cursorPos, newPos)
+        --        gk.log("[EDITBOX]: change cursorPos %d --> %d", self.cursorPos, newPos)
         self.cursorPos = newPos
 
         if not self.cursorNode then
@@ -238,27 +241,46 @@ function EditBox:handleKeyboardEvent()
     local function onKeyPressed(keyCode, event)
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
-            gk.log("[EDITBOX]: onKeyPressed %s", key)
+            --            gk.log("[EDITBOX]: onKeyPressed %s", key)
+            gk.util:stopActionByTagSafe(self.cursorNode, kDeleteCharAction)
+            gk.util:stopActionByTagSafe(self.cursorNode, kCursorMoveAction)
+            gk.util:stopActionByTagSafe(self.cursorNode, kInsertCharAction)
+
             if key == "KEY_HYPER" then
                 self.commandPressed = true
+                return
+            elseif key == "KEY_SHIFT" then
+                self.shiftPressed = true
                 return
             end
             if self.commandPressed then
                 if key == "KEY_V" then
                     local v = io.popen("pbpaste"):read("*all")
-                    gk.log("past string %s", v)
                     if v and v ~= "" then
+                        --                        gk.log("past string %s", v)
                         local str = self:getInput()
                         str = str:insertChar(self.cursorPos + 1, v)
-                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", v, self.cursorPos, str)
+                        --                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", v, self.cursorPos, str)
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + v:len())
                         if self.onInputChangedCallback then
                             self.onInputChangedCallback(self, self:getInput())
                         end
                     end
-                    return
+                elseif key == "KEY_C" or key == "KEY_X" then
+                    local str = self:getInput()
+                    io.popen("printf " .. str .. " | pbcopy")
+                    local v = io.popen("pbpaste"):read("*all")
+                    --                    gk.log("copy string %s", v)
+                    if key == "KEY_X" then
+                        self.label:setString("")
+                        self:changeCursorPos(0)
+                        if self.onInputChangedCallback then
+                            self.onInputChangedCallback(self, self:getInput())
+                        end
+                    end
                 end
+                return
             end
             if key == "KEY_LEFT_ARROW" then
                 if self.cursorNode then
@@ -269,7 +291,7 @@ function EditBox:handleKeyboardEvent()
                         end
                     end
                     moveChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatActionDur), cc.CallFunc:create(function()
                         moveChar()
                     end))))
                     action:setTag(kCursorMoveAction)
@@ -281,14 +303,11 @@ function EditBox:handleKeyboardEvent()
                         self:changeCursorPos(self.cursorPos + 1)
                     end
                     moveChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatActionDur), cc.CallFunc:create(function()
                         moveChar()
                     end))))
                     action:setTag(kCursorMoveAction)
                 end
-                return
-            elseif key == "KEY_SHIFT" then
-                self.shiftPressed = true
                 return
             elseif key == "KEY_TAB" then
                 local next = gk.nextFocusNode(self)
@@ -305,12 +324,13 @@ function EditBox:handleKeyboardEvent()
             --            dump(inputTable)
             local delete = table.indexof(cc.KeyCodeKey, "KEY_BACKSPACE") - 1
             local enter = table.indexof(cc.KeyCodeKey, "KEY_ENTER") - 1
+            local esc = table.indexof(cc.KeyCodeKey, "KEY_ESCAPE") - 1
             if inputTable[key] then
                 if self.cursorNode then
                     local insertChar = function()
                         local str = self:getInput()
                         str = str:insertChar(self.cursorPos + 1, inputTable[key])
-                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", inputTable[key], self.cursorPos, str)
+                        --                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", inputTable[key], self.cursorPos, str)
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + 1)
                         if self.onInputChangedCallback then
@@ -318,7 +338,7 @@ function EditBox:handleKeyboardEvent()
                         end
                     end
                     insertChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatInsertActionDur), cc.CallFunc:create(function()
                         insertChar()
                     end))))
                     action:setTag(kInsertCharAction)
@@ -327,7 +347,7 @@ function EditBox:handleKeyboardEvent()
                 if self.cursorNode then
                     if self.shiftPressed then
                         -- clear
-                        gk.log("[EDITBOX]: clear all chars")
+                        --                        gk.log("[EDITBOX]: clear all chars")
                         self.label:setString("")
                         self:changeCursorPos(0)
                         if self.onInputChangedCallback then
@@ -339,7 +359,7 @@ function EditBox:handleKeyboardEvent()
                         local str = self:getInput()
                         if self.cursorPos >= 1 and #str >= 1 then
                             str = str:deleteChar(self.cursorPos)
-                            gk.log("[EDITBOX]: delete char at %d, str = %s", self.cursorPos, str)
+                            --                            gk.log("[EDITBOX]: delete char at %d, str = %s", self.cursorPos, str)
                             self.label:setString(str)
                             self:changeCursorPos(self.cursorPos - 1)
                             if self.onInputChangedCallback then
@@ -348,12 +368,12 @@ function EditBox:handleKeyboardEvent()
                         end
                     end
                     deleteChar()
-                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.15), cc.CallFunc:create(function()
+                    local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatActionDur), cc.CallFunc:create(function()
                         deleteChar()
                     end))))
                     action:setTag(kDeleteCharAction)
                 end
-            elseif keyCode == enter then
+            elseif keyCode == enter or keyCode == esc then
                 self:unfocus()
             end
         end
@@ -363,18 +383,14 @@ function EditBox:handleKeyboardEvent()
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
             --            gk.log("%s:onKeyReleased %s", "EditBox", key)
-            if key == "KEY_BACKSPACE" then
-                gk.util:stopActionByTagSafe(self.cursorNode, kDeleteCharAction)
-            end
-            if key == "KEY_LEFT_ARROW" or key == "KEY_RIGHT_ARROW" then
-                gk.util:stopActionByTagSafe(self.cursorNode, kCursorMoveAction)
-            end
-            local inputTable = self:getInputTable(self.shiftPressed)
-            if inputTable[key] then
-                gk.util:stopActionByTagSafe(self.cursorNode, kInsertCharAction)
-            end
+            gk.util:stopActionByTagSafe(self.cursorNode, kDeleteCharAction)
+            gk.util:stopActionByTagSafe(self.cursorNode, kCursorMoveAction)
+            gk.util:stopActionByTagSafe(self.cursorNode, kInsertCharAction)
             if key == "KEY_SHIFT" then
                 self.shiftPressed = false
+            end
+            if key == "KEY_HYPER" then
+                self.commandPressed = false
             end
         end
     end

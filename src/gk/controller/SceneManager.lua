@@ -116,7 +116,8 @@ function SceneManager:showDialog(dialogType, ...)
     local clazz = gk.resource:require(dialogType, ...)
     if clazz then
         local dialog = clazz:create(...)
-        self:showDialogNode(dialog)
+        return self:showDialogNode(dialog)
+        
     else
         gk.log("SceneManager:showDialog error, create dialog class --> %s failed", dialogType)
     end

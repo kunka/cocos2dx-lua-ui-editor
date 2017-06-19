@@ -106,7 +106,7 @@ function Layer:onEnter()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
     self.touchListener = listener
 
-    if self.enableKeyPad and not self.keyBoardListener then
+    if self.enableKeyPad and not self.keyBoardListener and gk.mode ~= gk.MODE_EDIT then
         -- should only add once
         local function onKeyReleased(keyCode, event)
             if gk.focusNode then

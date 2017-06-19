@@ -512,7 +512,6 @@ function panel:handleEvent()
                 if key == "KEY_C" then
                     gk.log("copy node %s", self.displayingNode.__info.id)
                     self.copyingNode = self.displayingNode
-                    return
                 elseif key == "KEY_V" and self.copyingNode then
                     -- local info = clone(self.copyingNode.__info)
                     -- clear id info
@@ -529,8 +528,23 @@ function panel:handleEvent()
                         gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
                     end
-                    return
                 end
+                return
+            end
+            if key == "KEY_L" then
+                if self.displayingNode then
+                    self.displayingNode.__info._lock = self.displayingNode.__info._lock == 0 and 1 or 0
+                    gk.event:post("displayNode", self.displayingNode)
+                    gk.event:post("displayDomTree")
+                end
+                return
+            elseif key == "KEY_F" then
+                if self.displayingNode then
+                    self.displayingNode.__info._fold = not self.displayingNode.__info._fold
+                    gk.event:post("displayNode", self.displayingNode)
+                    gk.event:post("displayDomTree")
+                end
+                return
             end
 
             -- TODO: hold
@@ -572,8 +586,8 @@ function panel:handleEvent()
                 end)))
                 action:setTag(kMoveNodeAction)
                 self:onNodeMoved(self.displayingNode, nil, 0)
+                gk.event:post("displayNode", self.displayingNode)
             end
-            gk.event:post("displayNode", self.displayingNode)
         end
         self.copyingNode = nil
         self.copyingNodeTimes = 0

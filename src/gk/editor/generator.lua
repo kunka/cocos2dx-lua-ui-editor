@@ -341,8 +341,8 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
-    ["ccui.CheckBox"] = function(info, rootTable)
-        local node = ccui.CheckBox:create(info.backGround, info.cross)
+    ["CheckBox"] = function(info, rootTable)
+        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
         info.id = info.id or generator:genID("checkBox", rootTable)
         return node
     end,
@@ -406,6 +406,14 @@ generator.nodeCreator = {
             local node = cc.ProgressTimer:create(sprite)
             info.id = info.id or generator:genID("progressTimer", rootTable)
             sprite.__info.id = info.id .. "_sprite"
+            return node
+        end
+        return nil
+    end,
+    ["cc.TMXTiledMap"] = function(info, rootTable)
+        if info.tmx then
+            local node = cc.TMXTiledMap:create(info.tmx)
+            info.id = info.id or generator:genID("tmxTiledMap", rootTable)
             return node
         end
         return nil

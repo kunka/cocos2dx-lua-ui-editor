@@ -14,6 +14,7 @@ gk.SelectBox = import(".SelectBox")
 gk.ZoomButton = import(".ZoomButton")
 gk.ToggleButton = import(".ToggleButton")
 gk.SpriteButton = import(".SpriteButton")
+gk.CheckBox = import(".CheckBox")
 gk.TableViewCell = import(".TableViewCell")
 gk.Widget = import(".Widget")
 
@@ -27,16 +28,10 @@ gk.injector:ctor_method_swizz(gk.Widget, "ctor")
 
 -- name : sprite name or spriteFrame name
 local function create_sprite(name)
-    name = name or ""
-    if name == "" then
+    if not name or name == "" then
         return cc.Sprite:create(gk.resource.defaultSpritePath)
     end
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
-    if spriteFrame then
-        return cc.Sprite:createWithSpriteFrame(spriteFrame), true
-    end
-    -- absolute path
-    spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame), true
     end

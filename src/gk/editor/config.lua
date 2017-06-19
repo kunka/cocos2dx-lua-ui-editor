@@ -19,7 +19,7 @@ config.supportNodes = {
     { type = "ZoomButton", },
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
     { type = "ToggleButton", },
-    { type = "ccui.CheckBox", backGround = "gk/res/texture/check_box_normal.png", cross = "gk/res/texture/check_box_selected.png" },
+    { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
     {
         type = "ccui.EditBox",
         normalSprite = "gk/res/texture/edbox_bg.png",
@@ -69,6 +69,10 @@ config.supportNodes = {
         type = "cc.ProgressTimer",
         sprite = { file = "", type = "cc.Sprite", _voidContent = true, _lock = 1 },
     },
+    {
+        type = "cc.TMXTiledMap",
+        tmx = "gk/res/data/default.tmx",
+    },
 }
 
 -- defValues, not modified properties, will not be saved, minimize gen file size
@@ -83,7 +87,6 @@ config.defValues = {
     skewY = 0,
     rotation = 0,
     opacity = 255,
-    anchor = { x = 0.5, y = 0.5 },
     scaleXY = { x = "1", y = "1" },
     scaleSize = { w = "1", h = "1" },
     scaleOffset = { x = "1", y = "1" },
@@ -548,15 +551,12 @@ config.editableProps = {
             end
         end
     },
-    -- ccui.EditBox, SpriteButton
+    -- ccui.EditBox, SpriteButton, CheckBox
     normalSprite = {
         getter = function(_) return "" end,
         setter = function(node, var)
             if gk.util:instanceof(node, "SpriteButton") then
                 node:setNormalSprite(var)
-                local size = node:getContentSize()
-                node.__info.width = size.width
-                node.__info.height = size.height
                 gk.event:post("displayNode", node)
             end
         end
@@ -714,7 +714,8 @@ config:registerFuncProp("onSelectChanged")
 config:registerFuncProp("onEnableChanged")
 config:registerFuncProp("onLongPressed")
 config:registerBoolProp("enabled")
--- zoomButton
+config:registerProp("clickedSid")
+-- ZoomButton
 config:registerProp("zoomScale")
 config:registerBoolProp("zoomEnabled")
 -- ToggleButton
@@ -770,13 +771,14 @@ config:registerBoolProp("reverseDirection")
 config:registerProp("midpoint")
 config:registerProp("barChangeRate")
 
--- ccui.CheckBox
+-- CheckBox
 config:registerBoolProp("selected")
-config:registerDefaultGetterProp("backGround", "gk/res/texture/check_box_normal.png")
-config:registerDefaultGetterProp("cross", "gk/res/texture/check_box_selected.png")
 
 -- ccui.EditBox
 config:registerProp("placeHolder")
+
+-- cc.TMXTiledMap
+config:registerPlaneProp("tmx")
 
 function config:getDefaultValue(node, key)
     local prop = config.editableProps[key]

@@ -325,21 +325,21 @@ function util:drawNodeBounds(node, c4f, tg)
     return draw
 end
 
-function util:drawLabelOnNode(node, content, c3b, tag)
+function util:drawLabelOnNode(node, content, fontSize, pos, c3b, tag)
     local tg = tag or util.tags.labelTag
     local label = node:getChildByTag(tg)
     if self:instanceof(node, "cc.ScrollView") then
         label = node:getContainer():getChildByTag(tg)
     end
     if not label then
-        label = cc.Label:createWithSystemFont(content, "Arial", 12)
+        label = cc.Label:createWithSystemFont(content, "Arial", fontSize and fontSize or 12)
         local size = node:getContentSize()
-        label:setPosition(cc.p(size.width, size.height))
+        label:setPosition(pos and pos or cc.p(size.width, size.height))
         node:add(label, 999, tg)
     else
         label:setString(content)
     end
-    label:setTextColor(c3b and c3b or cc.c4f(0, 255, 0))
+    label:setTextColor(c3b and c3b or cc.c3b(0, 255, 0))
     local sx, sy = util:getGlobalScale(node)
     label:setScale(1 / sx)
 end
@@ -354,6 +354,7 @@ function util:drawLineOnNode(node, p1, p2, c4f, tg)
         node:add(draw, 999, tg)
         draw:setPosition(cc.p(0, 0))
     end
+    c4f = c4f or cc.c4f(1, 0, 1, 1)
     draw:drawLine(p1, p2, c4f)
     return draw
 end
@@ -403,7 +404,7 @@ function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
         node:add(draw, 999, tg)
         draw:setPosition(cc.p(0, 0))
     end
-    draw:drawSolidRect(p1, p2, c4f)
+    draw:drawSolidRect(p1, p2, c4f or cc.c4f(1, 0, 0, 0.2))
     return draw
 end
 
@@ -665,6 +666,81 @@ function util:instanceof(obj, classname)
         return iskindof_(mt, classname)
     end
     return false
+end
+
+
+local function dump_value_(v)
+    if type(v) == "string" then
+        v = "\"" .. v .. "\""
+    end
+    return tostring(v)
+end
+
+function util:dump(value, description, nesting)
+    if type(nesting) ~= "number" then nesting = 3 end
+
+    local lookupTable = {}
+    local result = {}
+
+    local traceback = string.split(debug.traceback("", 2), "\n")
+    gk.log("dump from: " .. string.trim(traceback[3]))
+
+    local function dump_(value, description, indent, nest, keylen)
+        description = description or "<var>"
+        local spc = ""
+        if type(keylen) == "number" then
+            spc = string.rep(" ", keylen - string.len(dump_value_(description)))
+        end
+        if type(value) ~= "table" then
+            result[#result + 1] = string.format("%s%s%s = %s", indent, dump_value_(description), spc, dump_value_(value))
+        elseif lookupTable[tostring(value)] then
+            result[#result + 1] = string.format("%s%s%s = *REF*", indent, dump_value_(description), spc)
+        else
+            lookupTable[tostring(value)] = true
+            if nest > nesting then
+                result[#result + 1] = string.format("%s%s = *MAX NESTING*", indent, dump_value_(description))
+            else
+                result[#result + 1] = string.format("%s%s = {", indent, dump_value_(description))
+                local indent2 = indent .. "    "
+                local keys = {}
+                local keylen = 0
+                local values = {}
+                for k, v in pairs(value) do
+                    keys[#keys + 1] = k
+                    local vk = dump_value_(k)
+                    local vkl = string.len(vk)
+                    if vkl > keylen then keylen = vkl end
+                    values[k] = v
+                end
+                table.sort(keys, function(a, b)
+                    if type(a) == "number" and type(b) == "number" then
+                        return a < b
+                    else
+                        return tostring(a) < tostring(b)
+                    end
+                end)
+                for i, k in ipairs(keys) do
+                    dump_(values[k], k, indent2, nest + 1, keylen)
+                end
+                result[#result + 1] = string.format("%s}", indent)
+            end
+        end
+    end
+
+    dump_(value, description, "- ", 1)
+
+    for i, line in ipairs(result) do
+        gk.log(line)
+    end
+end
+
+function util:floatEql(f1, f2)
+    local EPSILON = 0.00001
+    return ((f1 - EPSILON) < f2) and (f2 < (f1 + EPSILON))
+end
+
+function util:pointEql(p1, p2)
+    return self:floatEql(p1.x, p2.x) and self:floatEql(p1.y, p2.y)
 end
 
 return util
