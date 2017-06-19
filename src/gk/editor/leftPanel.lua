@@ -59,50 +59,73 @@ function panel:displayDomTree(rootLayer, force)
         -- force unflod
         rootLayer.__info._fold = false
 
-        -- other layout
-        local keys = table.keys(gk.resource.genNodes)
-        table.sort(keys, function(k1, k2)
-            local dir1, dir2 = gk.resource.genNodes[k1].genSrcPath, gk.resource.genNodes[k2].genSrcPath
-            if dir1 == dir2 then
-                return k1 < k2
-            else
-                local len1, len2 = #dir1:split("/"), #dir2:split("/")
-                if len1 == len2 then
-                    return dir1 < dir2
+        -- scan layouts
+        if not self.domTree then
+            local keys = table.keys(gk.resource.genNodes)
+            table.sort(keys, function(k1, k2)
+                local dir1, dir2 = gk.resource.genNodes[k1].genSrcPath, gk.resource.genNodes[k2].genSrcPath
+                if dir1 == dir2 then
+                    return k1 < k2
                 else
-                    return len1 > len2
+                    local len1, len2 = #dir1:split("/"), #dir2:split("/")
+                    if len1 == len2 then
+                        return dir1 < dir2
+                    else
+                        return len1 > len2
+                    end
                 end
-            end
-        end)
-        --        self.domTree = {}
-        --        for _, key in ipairs(keys) do
-        --            local value = gk.resource.genNodes[key]
-        --            local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
-        --            local ks = string.split(displayName, "/")
-        --            local parent = self.domTree
-        --            for i = 1, #ks - 1 do
-        --                local group = ks[i]
-        --                if not parent[group] then
-        --                    parent[group] = { group = group, children = {} }
-        --                end
-        --                parent = parent[group]
-        --            end
-        --            local var = ks[#ks]
-        --            table.insert(parent, var)
-        --        end
-        --        dump(self.domTree)
-
-        for _, key in ipairs(keys) do
-            local value = gk.resource.genNodes[key]
-            local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
-            if key == rootLayer.__cname then
-                cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
-                cc.UserDefault:getInstance():flush()
-                self:displayDomNode(rootLayer, 0, displayName)
-            else
-                self:displayOthers(key, displayName)
+            end)
+            self.domTree = { _children = {}, _fold = false }
+            for _, key in ipairs(keys) do
+                local value = gk.resource.genNodes[key]
+                local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
+                local ks = string.split(displayName, "/")
+                local parent = self.domTree
+                for i = 1, #ks - 1 do
+                    local group = ks[i]
+                    if not parent[group] then
+                        local fold = cc.UserDefault:getInstance():getBoolForKey("gkdom_" .. group)
+                        parent[group] = { _children = {}, _fold = fold }
+                    end
+                    parent = parent[group]
+                end
+                local var = ks[#ks]
+                table.insert(parent._children, var)
             end
         end
+
+        local value = gk.resource.genNodes[rootLayer.__cname]
+        local displayingPath = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. rootLayer.__cname or value.genSrcPath
+
+        self.displayDom = self.displayDom or function(rootLayer, dom, layer)
+            local keys = table.keys(dom)
+            table.sort(keys)
+            for _, key in ipairs(keys) do
+                if key ~= "_fold" and key ~= "_children" then
+                    if string.find(displayingPath, key .. "/") then
+                        -- force unfold
+                        dom[key]._fold = false
+                    end
+                    self:displayGroup(key, layer, nil, dom[key])
+                    if not dom[key]._fold then
+                        self.displayDom(rootLayer, dom[key], layer + 1)
+                    end
+                end
+            end
+            for _, child in ipairs(dom._children) do
+                local value = gk.resource.genNodes[child]
+                local displayName = child --value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. child or value.genSrcPath
+                if child == rootLayer.__cname then
+                    cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
+                    cc.UserDefault:getInstance():flush()
+                    self:displayDomNode(rootLayer, layer, displayName)
+                else
+                    self:displayOthers(child, layer, displayName)
+                end
+            end
+        end
+        self.displayDom(rootLayer, self.domTree, 0)
+
         self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + 20))
         -- scroll to displaying node
         if self.displayingDomDepth ~= -1 then
@@ -157,14 +180,14 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
             if fixChild or not node.__info._fold then
                 label:setRotation(90)
             end
-            label:setDimensions(10 / scale, 10 / scale)
+            --            label:setDimensions(15 / scale, 10 / scale)
             local button = gk.ZoomButton.new(label)
             if fixChild or not node.__info._fold then
-                button:setScale(scale, scale * 0.6)
-                button:setPosition(x - 3, y)
+                button:setScale(scale, scale * 0.8)
+                button:setPosition(x, y)
             else
-                button:setScale(scale * 0.6, scale)
-                button:setPosition(x + 1, y)
+                button:setScale(scale * 0.8, scale)
+                button:setPosition(x + 3, y)
             end
             self.displayInfoNode:addChild(button)
             button:setAnchorPoint(0, 0.5)
@@ -178,7 +201,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 gk.event:post("displayNode", node)
                 gk.event:post("displayDomTree")
             end)
-            x = x + 11
+            x = x + 11 + 3
         end
 
         local string = string.format("%s(%d", displayName and displayName or (fixChild and "*" .. content or content), node:getLocalZOrder())
@@ -495,7 +518,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     end
 end
 
-function panel:displayOthers(key, displayName)
+function panel:displayOthers(key, layer, displayName)
     local size = self:getContentSize()
     local fontSize = 11 * 4
     local fontName = "Consolas"
@@ -505,19 +528,19 @@ function panel:displayOthers(key, displayName)
     local stepY = 20
     local createButton = function(content, x, y, displayName)
         x = x - 11
-        local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
+        local label = cc.Label:createWithSystemFont("◉", fontName, fontSize)
         label:setTextColor(cc.c3b(200, 200, 200))
         label:setDimensions(10 / scale, 10 / scale)
         label:setContentSize(10 / scale, 10 / scale)
         local button = gk.ZoomButton.new(label)
-        button:setScale(scale * 0.6, scale)
+        button:setScale(scale, scale)
         self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
         button:setPosition(x + 1, y)
         button:onClicked(function()
             gk.event:post("unfoldRootLayout", content)
         end)
-        x = x + 11
+        x = x + 11 + 3
 
         local label = cc.Label:createWithSystemFont(displayName and displayName or content, fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
@@ -538,11 +561,66 @@ function panel:displayOthers(key, displayName)
         return button
     end
     --    for _, key in ipairs(keys) do
-    createButton(key, leftX, topY - stepY * self.domDepth, displayName)
+    createButton(key, leftX + stepX * layer, topY - stepY * self.domDepth, displayName)
     self.domDepth = self.domDepth + 1
     --    end
 end
 
+function panel:displayGroup(key, layer, displayName, domItem)
+    local size = self:getContentSize()
+    local fontSize = 11 * 4
+    local fontName = "Consolas"
+    local scale = 0.25
+    local topY = size.height - 15
+    local leftX = 16
+    local stepY = 20
+    local createButton = function(content, x, y, displayName)
+        x = x - 11
+
+        local label = cc.Label:createWithSystemFont("❑", fontName, fontSize)
+        label:setTextColor(cc.c3b(180, 120, 75))
+        label:setDimensions(10 / scale, 10 / scale)
+        label:setContentSize(10 / scale, 10 / scale)
+        local button = gk.ZoomButton.new(label)
+        button:setScale(scale, scale)
+        self.displayInfoNode:addChild(button)
+        button:setAnchorPoint(0, 0.5)
+        button:setPosition(x + 1, y)
+        button:onClicked(function()
+            domItem._fold = not domItem._fold
+            gk.event:post("displayDomTree")
+            cc.UserDefault:getInstance():setBoolForKey("gkdom_" .. key, domItem._fold)
+            cc.UserDefault:getInstance():flush()
+
+            --            gk.event:post("unfoldRootLayout", content)
+        end)
+        x = x + 11 + 3
+
+        local label = cc.Label:createWithSystemFont(displayName and displayName or content, fontName, fontSize)
+        local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
+        label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
+        label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        label:setTextColor(cc.c3b(180, 120, 75))
+        local button = gk.ZoomButton.new(label)
+        button:setScale(scale)
+        self.displayInfoNode:addChild(button)
+        button:setAnchorPoint(0, 0.5)
+        button:setPosition(x, y)
+        button:onClicked(function()
+            domItem._fold = not domItem._fold
+            gk.event:post("displayDomTree")
+            cc.UserDefault:getInstance():setBoolForKey("gkdom_" .. key, domItem._fold)
+            cc.UserDefault:getInstance():flush()
+            --            gk.log("post changeRootLayout")
+            --            gk.event:post("changeRootLayout", content)
+        end)
+        return button
+    end
+    createButton(key, leftX + stepX * layer, topY - stepY * self.domDepth, key or displayName)
+    self.domDepth = self.domDepth + 1
+end
 
 function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     if isRootNode then
