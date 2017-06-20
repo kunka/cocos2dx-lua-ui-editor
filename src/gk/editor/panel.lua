@@ -85,9 +85,10 @@ function panel:subscribeEvent()
         --        node = node or self.scene.layer
         local node = self.scene.layer
         if node then
+            local param = { ... }
             gk.util:stopActionByTagSafe(node, -2341)
-            local action = node:runAction(cc.CallFunc:create(function(...)
-                self.leftPanel:displayDomTree(node or self.scene.layer, ...)
+            local action = node:runAction(cc.CallFunc:create(function()
+                self.leftPanel:displayDomTree(node or self.scene.layer, unpack(param))
             end))
             action:setTag(-2341)
         end
@@ -535,14 +536,14 @@ function panel:handleEvent()
                 if self.displayingNode then
                     self.displayingNode.__info._lock = self.displayingNode.__info._lock == 0 and 1 or 0
                     gk.event:post("displayNode", self.displayingNode)
-                    gk.event:post("displayDomTree")
+                    gk.event:post("displayDomTree", true, true)
                 end
                 return
             elseif key == "KEY_F" then
                 if self.displayingNode then
                     self.displayingNode.__info._fold = not self.displayingNode.__info._fold
                     gk.event:post("displayNode", self.displayingNode)
-                    gk.event:post("displayDomTree")
+                    gk.event:post("displayDomTree", true, true)
                 end
                 return
             end

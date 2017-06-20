@@ -127,16 +127,15 @@ function generator:createNode(info, rootNode, rootTable)
     -- index node
     if rootTable then
         -- warning: duplicated id
-        local id = info.id
-        if id then
-            local index = 1
-            while rootTable[id] do
-                id = info.id .. "_" .. tostring(index)
-                index = index + 1
-            end
+        if rootTable[info.id] then
+            local id = generator:genID(node.__info.type, rootTable)
+            local pre = info.id
+            local otherNode = rootTable[info.id]
             info.id = id
-            rootTable[info.id] = node
+            -- restore
+            rootTable[pre] = otherNode
         end
+        rootTable[info.id] = node
         node.__rootTable = rootTable
     end
 
@@ -420,13 +419,7 @@ generator.nodeCreator = {
     end,
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
-        local clazz = gk.resource:require(info.type)
-        local node = clazz:create()
-        local type = info.type
-        local names = string.split(type, ".")
-        local names = string.split(names[1], "/")
-        type = names[#names]
-        type = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+        local node = gk.injector:inflateNode(info.type)
         -- copy info
         local keys = table.keys(node.__info.__self)
         for _, key in ipairs(keys) do
@@ -434,13 +427,16 @@ generator.nodeCreator = {
                 info.__self[key] = node.__info.__self[key]
             end
         end
-        info.id = info.id or generator:genID(type, rootTable)
+        info.id = info.id or generator:genID(info.type, rootTable)
         info._lock = 0
         return node
     end,
 }
 
 function generator:genID(type, rootTable)
+    local names = string.split(type, ".")
+    local names = string.split(names[1], "/")
+    type = names[#names]
     local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
 
     local index = 1

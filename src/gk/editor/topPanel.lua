@@ -31,7 +31,7 @@ function panel.create(parent)
     local leftX = 15
     local inputWidth1 = 90
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
-    local stepX = 65 --51
+    local stepX = 64 --51
     local stepY = 25
     local leftX_widget = 15 --10
     local createLabel = function(content, x, y)

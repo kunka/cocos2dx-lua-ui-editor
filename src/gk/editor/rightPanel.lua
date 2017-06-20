@@ -194,10 +194,11 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
     label:setTextColor(cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
-    label:setDimensions(10 / scale, 10 / scale)
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     local button = gk.ZoomButton.new(label)
-    button:setScale(-1.2, 0.7)
-    button:setPosition(contentSize.width - btnWidth, contentSize.height / 2 - 3)
+    button:setScale(1, 0.8)
+    button:setPosition(contentSize.width - 15, contentSize.height / 2)
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
@@ -249,11 +250,11 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
     label:setTextColor(cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
-    label:setDimensions(10 / scale, 10 / scale)
-    local btnWidth = 12 / scale
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     local button = gk.ZoomButton.new(label)
-    button:setScale(-1.2, 0.7)
-    button:setPosition(contentSize.width - btnWidth, contentSize.height / 2 - 3)
+    button:setScale(1, 0.8)
+    button:setPosition(contentSize.width - 15, contentSize.height / 2)
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
@@ -355,7 +356,7 @@ function panel:displayNode(node)
     yIndex = yIndex + 1
 
     --------------------------- cc.Node   ---------------------------
-    createTitle("Node")
+    createTitle("cc.Node")
 
     -- position
     if not isRootNode then
@@ -535,7 +536,7 @@ function panel:displayNode(node)
 
     --------------------------- cc.LayerColor   ---------------------------
     if isLayerColor then
-        createTitle(isLayerGradient and "LayerGradient" or "LayerColor")
+        createTitle(isLayerGradient and "cc.LayerGradient" or "cc.LayerColor")
 
         if not isLayerGradient then
             -- color
@@ -624,13 +625,13 @@ function panel:displayNode(node)
 
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
     if isEditBox then
-        createTitle("EditBox")
+        createTitle("ccui.EditBox")
     end
     if isScale9Sprite then
-        createTitle("Scale9Sprite")
+        createTitle("ccui.Scale9Sprite")
     end
     if isSprite and not isScale9Sprite then
-        createTitle("Sprite")
+        createTitle("cc.Sprite")
     end
     if isSprite then
         -- sprite file
@@ -642,12 +643,12 @@ function panel:displayNode(node)
     end
     if isZoomButton or isSpriteButton then
         if isSpriteButton then
-            createTitle("SpriteButton")
+            createTitle("gk.SpriteButton")
         else
             if isToggleButton then
-                createTitle("ToggleButton(Tag:1~n continuous)")
+                createTitle("gk.ToggleButton(Tag:1~n continuous)")
             elseif isZoomButton then
-                createTitle("ZoomButton")
+                createTitle("gk.ZoomButton")
             end
         end
 
@@ -701,13 +702,6 @@ function panel:displayNode(node)
         end, "-")
         yIndex = yIndex + 1
 
-        -- clickedSid
-        self:createLabel("ClickedSid", leftX, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.clickedSid), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, "clickedSid", input, "string"))
-        end, "")
-        yIndex = yIndex + 1
-
         -- onSelectChanged event
         self:createLabel("onSelectChanged", leftX, topY - stepY * yIndex)
         local funcs = { "-" }
@@ -746,27 +740,6 @@ function panel:displayNode(node)
             generator:modify(node, "onLongPressed", funcs[index], "string")
         end, "-")
         yIndex = yIndex + 1
-
-        --        -- centerRect
-        --        self:createLabel("CenterRect", leftX, topY - stepY * yIndex)
-        --        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        --        self:createInput(tostring(node.__info.centerRect.x), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        --            editBox:setInput(generator:modify(node, "centerRect.x", input, "number"))
-        --        end)
-        --        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        --        self:createInput(tostring(node.__info.centerRect.y), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        --            editBox:setInput(generator:modify(node, "centerRect.y", input, "number"))
-        --        end)
-        --        yIndex = yIndex + 1
-        --        self:createLabel("W", leftX_input_1_left, topY - stepY * yIndex)
-        --        self:createInput(tostring(node.__info.centerRect.width), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        --            editBox:setInput(generator:modify(node, "centerRect.width", input, "number"))
-        --        end)
-        --        self:createLabel("H", leftX_input_2_left, topY - stepY * yIndex)
-        --        self:createInput(tostring(node.__info.centerRect.height), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        --            editBox:setInput(generator:modify(node, "centerRect.height", input, "number"))
-        --        end)
-        --        yIndex = yIndex + 1
     end
 
     if isEditBox then
@@ -908,9 +881,16 @@ function panel:displayNode(node)
             generator:modify(node, "enabled", selected, "number")
         end)
         yIndex = yIndex + 1
+
+        -- clickedSid
+        self:createLabel("ClickedSid", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.clickedSid), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, "clickedSid", input, "string"))
+        end, "")
+        yIndex = yIndex + 1
     end
     if isCheckBox then
-        createTitle("CheckBox")
+        createTitle("gk.CheckBox")
         -- Selected
         self:createLabel("Selected", leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info.selected == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -929,10 +909,10 @@ function panel:displayNode(node)
                 local isBMFont = gk.isBMFont(fontFile)
                 local isSystemFont = not isTTF and not isBMFont
                 --            createTitle(string.format("Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
-                local label = createTitle(string.format("Label_%s(%s)", lan, isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+                local label = createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
                 label:setOpacity(150)
                 -- font file
-                local label = self:createLabel("FontFile", leftX, topY - stepY * yIndex)
+                local label = self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
                 label:setOpacity(150)
                 local fonts = clone(gk.resource.fontFiles)
                 local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(node.__info.fontFile[lan])
@@ -953,9 +933,9 @@ function panel:displayNode(node)
         local isTTF = gk.isTTF(fontFile)
         local isBMFont = gk.isBMFont(fontFile)
         local isSystemFont = not isTTF and not isBMFont
-        createTitle(string.format("Label_%s(%s)", lan, isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+        createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
         -- font file
-        self:createLabel("FontFile", leftX, topY - stepY * yIndex)
+        self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
         local fonts = clone(gk.resource.fontFiles)
         local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(node.__info.fontFile[lan])
         if not table.indexof(fonts, font) then
@@ -1205,7 +1185,7 @@ function panel:displayNode(node)
 
     --------------------------- cc.ScrollView, cc.TableView  ---------------------------
     if isScrollView then
-        createTitle(isTableView and "TableView" or "ScrollView")
+        createTitle(isTableView and "cc.TableView" or "cc.ScrollView")
 
         -- viewSize
         self:createLabel("ViewSize", leftX, topY - stepY * yIndex)
@@ -1363,11 +1343,11 @@ function panel:displayNode(node)
     --------------------------- cc.Layer   ---------------------------
     if isLayer and not isLayerColor and not isScrollView then
         if isgkDialog then
-            createTitle("gkDialog")
+            createTitle("gk.Dialog")
         elseif isgkLayer then
-            createTitle("gkLayer")
+            createTitle("gk.Layer")
         else
-            createTitle("Layer")
+            createTitle("cc.Layer")
         end
     end
 
@@ -1411,7 +1391,7 @@ function panel:displayNode(node)
     end
 
     if isClippingNode then
-        createTitle("ClippingNode")
+        createTitle("cc.ClippingNode")
         --        -- stencil
         --        self:createLabel("StencilID", leftX, topY - stepY * yIndex)
         --        self:createInput(tostring(node.__info.stencil), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
@@ -1433,7 +1413,7 @@ function panel:displayNode(node)
     end
 
     if isProgressTimer then
-        createTitle("ProgressTimer")
+        createTitle("cc.ProgressTimer")
         -- reverseDirection
         self:createLabel("RreverseDirection", leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info.reverseDirection == 0, checkbox_right, topY - stepY * yIndex, function(selected)
@@ -1480,7 +1460,7 @@ function panel:displayNode(node)
     end
 
     if isClippingRectangleNode then
-        createTitle("ClippingRectangleNode")
+        createTitle("cc.ClippingRectangleNode")
         -- ClippingRegion
         self:createLabel("ClipRegion", leftX, topY - stepY * yIndex)
         self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
@@ -1510,7 +1490,7 @@ function panel:displayNode(node)
     end
 
     if isTmxTiledMap then
-        createTitle("TmxTiledMap")
+        createTitle("cc.TMXTiledMap")
         -- TMXFile
         self:createLabel("TMXFile", leftX, topY - stepY * yIndex)
         self:createInput(tostring(node.__info.tmx), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)

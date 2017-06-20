@@ -42,12 +42,13 @@ function panel:undisplayNode()
     self.selectedNode = nil
 end
 
-function panel:displayDomTree(rootLayer, force)
+function panel:displayDomTree(rootLayer, force, notForceUnfold)
     if rootLayer and rootLayer.__info then
         if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info.id == self.lastDisplayingNode.__info.id then
             return
         end
-        gk.log("displayDomTree %s", rootLayer.__info.id)
+        local forceUnfold = not notForceUnfold
+        gk.log("displayDomTree %s, %s", rootLayer.__info.id, forceUnfold)
         self.lastDisplayingNode = self.parent.displayingNode
         -- current layout
         self:undisplayNode()
@@ -55,9 +56,10 @@ function panel:displayDomTree(rootLayer, force)
         self:addChild(self.displayInfoNode)
         self.domDepth = 0
         self.displayingDomDepth = -1
+        self.foldDomDepth = -1
         self.lastDisplayingPos = self.lastDisplayingPos or cc.p(0, 0)
         -- force unflod
-        rootLayer.__info._fold = false
+        --        rootLayer.__info._fold = false
 
         -- scan layouts
         if not self.domTree then
@@ -97,18 +99,18 @@ function panel:displayDomTree(rootLayer, force)
         local value = gk.resource.genNodes[rootLayer.__cname]
         local displayingPath = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. rootLayer.__cname or value.genSrcPath
 
-        self.displayDom = self.displayDom or function(rootLayer, dom, layer)
+        self.displayDom = self.displayDom or function(rootLayer, dom, layer, forceUnfold)
             local keys = table.keys(dom)
             table.sort(keys)
             for _, key in ipairs(keys) do
                 if key ~= "_fold" and key ~= "_children" then
-                    if string.find(displayingPath, key .. "/") then
+                    if forceUnfold and string.find(displayingPath, key .. "/") then
                         -- force unfold
                         dom[key]._fold = false
                     end
                     self:displayGroup(key, layer, nil, dom[key])
                     if not dom[key]._fold then
-                        self.displayDom(rootLayer, dom[key], layer + 1)
+                        self.displayDom(rootLayer, dom[key], layer + 1, forceUnfold)
                     end
                 end
             end
@@ -124,11 +126,11 @@ function panel:displayDomTree(rootLayer, force)
                 end
             end
         end
-        self.displayDom(rootLayer, self.domTree, 0)
+        self.displayDom(rootLayer, self.domTree, 0, forceUnfold)
 
         self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + 20))
         -- scroll to displaying node
-        if self.displayingDomDepth ~= -1 then
+        if self.displayingDomDepth ~= -1 and forceUnfold then
             gk.log("displayingDomDepth = %d", self.displayingDomDepth)
             local size = self.displayInfoNode:getContentSize()
             if size.height > self:getContentSize().height then
@@ -146,6 +148,9 @@ function panel:displayDomTree(rootLayer, force)
                 self.displayInfoNode:runAction(cc.EaseInOut:create(cc.MoveTo:create(dt, cc.p(0, y)), 2))
                 self.lastDisplayingPos = cc.p(0, y)
             end
+        elseif (not forceUnfold) or (self.displayingDomDepth ~= -1 and self.foldDomDepth and self.foldDomDepth > self.displayingDomDepth) then
+            -- fold node below displaying node
+            self.displayInfoNode:setPosition(self.lastDisplayingPos)
         end
     end
 end
@@ -174,20 +179,22 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
             end
         end
         if group then
-            x = x - 11
+            x = x - 11 + 3
             local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
             label:setTextColor(cc.c3b(200, 200, 200))
+            label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+            label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
             if fixChild or not node.__info._fold then
                 label:setRotation(90)
             end
-            --            label:setDimensions(15 / scale, 10 / scale)
+            label:setDimensions(12 / scale, 20 / scale)
             local button = gk.ZoomButton.new(label)
             if fixChild or not node.__info._fold then
                 button:setScale(scale, scale * 0.8)
-                button:setPosition(x, y)
+                button:setPosition(x - 4, y)
             else
                 button:setScale(scale * 0.8, scale)
-                button:setPosition(x + 3, y)
+                button:setPosition(x, y)
             end
             self.displayInfoNode:addChild(button)
             button:setAnchorPoint(0, 0.5)
@@ -195,13 +202,11 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 if fixChild then
                     return
                 end
-                gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
                 node.__info._fold = not node.__info._fold
-                gk.log("fold container %s, %s", node.__info.id, node.__info._fold)
                 gk.event:post("displayNode", node)
-                gk.event:post("displayDomTree")
+                gk.event:post("displayDomTree", true, true)
             end)
-            x = x + 11 + 3
+            x = x + 11
         end
 
         local string = string.format("%s(%d", displayName and displayName or (fixChild and "*" .. content or content), node:getLocalZOrder())
@@ -528,15 +533,17 @@ function panel:displayOthers(key, layer, displayName)
     local stepY = 20
     local createButton = function(content, x, y, displayName)
         x = x - 11
-        local label = cc.Label:createWithSystemFont("◉", fontName, fontSize)
+        local label = cc.Label:createWithSystemFont("◉", fontName, fontSize - 5)
         label:setTextColor(cc.c3b(200, 200, 200))
-        label:setDimensions(10 / scale, 10 / scale)
-        label:setContentSize(10 / scale, 10 / scale)
+        label:setDimensions(12 / scale, 20 / scale)
+        label:setContentSize(12 / scale, 20 / scale)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         local button = gk.ZoomButton.new(label)
         button:setScale(scale, scale)
         self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
-        button:setPosition(x + 1, y)
+        button:setPosition(x + 1, y - 1)
         button:onClicked(function()
             gk.event:post("unfoldRootLayout", content)
         end)
@@ -577,18 +584,21 @@ function panel:displayGroup(key, layer, displayName, domItem)
     local createButton = function(content, x, y, displayName)
         x = x - 11
 
-        local label = cc.Label:createWithSystemFont("❑", fontName, fontSize)
+        local label = cc.Label:createWithSystemFont("❑", fontName, fontSize + 5)
         label:setTextColor(cc.c3b(180, 120, 75))
-        label:setDimensions(10 / scale, 10 / scale)
-        label:setContentSize(10 / scale, 10 / scale)
+        label:setDimensions(12 / scale, 20 / scale)
+        label:setContentSize(12 / scale, 20 / scale)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         local button = gk.ZoomButton.new(label)
         button:setScale(scale, scale)
         self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
-        button:setPosition(x + 1, y)
+        button:setPosition(x + 1, y - 1)
         button:onClicked(function()
             domItem._fold = not domItem._fold
-            gk.event:post("displayDomTree")
+            self.foldDomDepth = self.domDepth
+            gk.event:post("displayDomTree", true, true)
             cc.UserDefault:getInstance():setBoolForKey("gkdom_" .. key, domItem._fold)
             cc.UserDefault:getInstance():flush()
 
@@ -610,7 +620,8 @@ function panel:displayGroup(key, layer, displayName, domItem)
         button:setPosition(x, y)
         button:onClicked(function()
             domItem._fold = not domItem._fold
-            gk.event:post("displayDomTree")
+            self.foldDomDepth = self.domDepth
+            gk.event:post("displayDomTree", true, true)
             cc.UserDefault:getInstance():setBoolForKey("gkdom_" .. key, domItem._fold)
             cc.UserDefault:getInstance():flush()
             --            gk.log("post changeRootLayout")
