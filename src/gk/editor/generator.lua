@@ -417,6 +417,14 @@ generator.nodeCreator = {
         end
         return nil
     end,
+    ["cc.ParticleSystemQuad"] = function(info, rootTable)
+        if info.particle then
+            local node = cc.ParticleSystemQuad:create(info.particle)
+            info.id = info.id or generator:genID("particleSystemQuad", rootTable)
+            return node
+        end
+        return nil
+    end,
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
         local node = gk.injector:inflateNode(info.type)

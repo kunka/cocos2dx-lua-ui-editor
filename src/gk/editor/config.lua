@@ -73,6 +73,10 @@ config.supportNodes = {
         type = "cc.TMXTiledMap",
         tmx = "gk/res/data/default.tmx",
     },
+    {
+        type = "cc.ParticleSystemQuad",
+        particle = "gk/res/particle/Galaxy.plist",
+    },
 }
 
 -- defValues, not modified properties, will not be saved, minimize gen file size
@@ -89,6 +93,7 @@ config.defValues = {
     opacity = 255,
     scaleXY = { x = "1", y = "1" },
     scaleSize = { w = "1", h = "1" },
+    scaleViewSize = { w = "1", h = "1" },
     scaleOffset = { x = "1", y = "1" },
     localZOrder = 0,
     tag = -1,
@@ -615,6 +620,19 @@ function config:registerProp(key, alias)
     }
 end
 
+function config:registerStringProp(key, alias)
+    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
+    config.editableProps[key] = {
+        getter = function(node) return node["get" .. alias](node) end,
+        setter = function(node, var)
+            local v = gk.generator:parseValue(key, node, var)
+            node["set" .. alias](node, v)
+        end
+    }
+
+
+end
+
 function config:registerFloatProp(key, alias)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
@@ -779,6 +797,10 @@ config:registerProp("placeHolder")
 
 -- cc.TMXTiledMap
 config:registerPlaneProp("tmx")
+
+-- cc.ParticleSystemQuad
+config:registerPlaneProp("particle")
+config:registerStringProp("totalParticles")
 
 function config:getDefaultValue(node, key)
     local prop = config.editableProps[key]

@@ -10,9 +10,12 @@ local generator = import(".generator")
 local panel = {}
 
 local marginTop = 15
-local leftX = 16
+local leftX = 20
 local stepY = 20
 local stepX = 11
+local fontSize = 11 * 4
+local fontName = "Consolas"
+local scale = 0.25
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
     local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.leftWidth, winSize.height - gk.display.topHeight)
@@ -162,9 +165,6 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     local fixChild = node.__info == nil
     local realNode = node
     local size = self:getContentSize()
-    local fontName = "Consolas"
-    local fontSize = 11 * 4
-    local scale = 0.25
     local topY = size.height - marginTop
     local createButton = function(content, x, y, displayName)
         local group = false
@@ -525,12 +525,7 @@ end
 
 function panel:displayOthers(key, layer, displayName)
     local size = self:getContentSize()
-    local fontSize = 11 * 4
-    local fontName = "Consolas"
-    local scale = 0.25
-    local topY = size.height - 15
-    local leftX = 16
-    local stepY = 20
+    local topY = size.height - marginTop
     local createButton = function(content, x, y, displayName)
         x = x - 11
         local label = cc.Label:createWithSystemFont("◉", fontName, fontSize - 5)
@@ -575,12 +570,7 @@ end
 
 function panel:displayGroup(key, layer, displayName, domItem)
     local size = self:getContentSize()
-    local fontSize = 11 * 4
-    local fontName = "Consolas"
-    local scale = 0.25
-    local topY = size.height - 15
-    local leftX = 16
-    local stepY = 20
+    local topY = size.height - marginTop
     local createButton = function(content, x, y, displayName)
         x = x - 11
 
