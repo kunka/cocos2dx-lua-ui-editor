@@ -151,7 +151,7 @@ function injector:onNodeCreate(node)
 end
 
 function injector:sync(node)
-    if node and gk.resource.genNodes[node.__cname] then
+    if CFG_SCAN_NODES and node and gk.resource.genNodes[node.__cname] then
         -- root container node
         local generator = require("gk.editor.generator")
         local nd = node or self.scene.layer

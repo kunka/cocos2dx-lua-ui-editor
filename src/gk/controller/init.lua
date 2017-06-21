@@ -7,3 +7,4 @@
 
 gk.SceneManager = import(".SceneManager")
 gk.resource = import(".resource")
+gk.shader = import(".shader")

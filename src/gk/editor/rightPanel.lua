@@ -68,6 +68,10 @@ local onLabelInputChanged = function(node, label, input)
         if gk.audio:isValidEvent(input) then
             break
         end
+        if gk.shader:getCachedGLProgram(input) then
+            break
+        end
+
         isMacro = false
     until true
     label:setTextColor(isMacro and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
@@ -146,6 +150,7 @@ function panel:createInput(content, x, y, width, callback, defValue, lines)
 end
 
 function panel:createSelectAndInput(content, items, index, x, y, width, callback, defValue)
+    index = index or 1
     local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
     local label = cc.Label:createWithTTF(content, fontName, fontSize)
@@ -208,6 +213,7 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
 end
 
 function panel:createSelectBox(items, index, x, y, width, callback, defValue)
+    index = index or 1
     local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
     local label = cc.Label:createWithTTF("", fontName, fontSize)
@@ -219,8 +225,8 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
         return label
     end)
     local contentSize = node:getContentSize()
-    label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
-    label:setDimensions(contentSize.width - 25, contentSize.height)
+    label:setPosition(cc.p(contentSize.width / 2 - 12, contentSize.height / 2 - 5))
+    label:setDimensions(contentSize.width - 45, contentSize.height)
     self.displayInfoNode:addChild(node)
     node:setScale(scale)
     node:setAnchorPoint(0, 0.5)
@@ -312,8 +318,10 @@ function panel:displayNode(node)
     local isClippingNode = gk.util:instanceof(node, "cc.ClippingNode")
     local isTmxTiledMap = gk.util:instanceof(node, "cc.TMXTiledMap")
     local isParticleSystemQuad = gk.util:instanceof(node, "cc.ParticleSystemQuad")
+    local isLayout = gk.util:instanceof(node, "ccui.Layout")
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
+
     local isRootNode = self.parent.scene.layer == node
     local _voidContent = node.__info and node.__info._voidContent
 
@@ -378,8 +386,8 @@ function panel:displayNode(node)
 
     local function createSelectBoxLong(title, vars, key, type, default, callback)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createSelectBox(vars, node.__info[key] + 1, leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            generator:modify(node, key, index - 1, type)
+        self:createSelectBox(vars, type == "number" and (node.__info[key] + 1) or table.indexof(vars, node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+            generator:modify(node, key, type == "number" and (index - 1) or vars[index], type)
             if callback then
                 callback()
             end
@@ -542,6 +550,13 @@ function panel:displayNode(node)
         end
     end
 
+    --------------------------- ccui.Layout   ---------------------------
+    -- if isLayout then
+    -- createTitle("ccui.Layout")
+    -- local types = { "ABSOLUTE", "VERTICAL", "HORIZONTAL", "RELATIVE" }
+    -- createSelectBoxLong("LayoutType", types, "layoutType", "number", "ABSOLUTE")
+    -- end
+
     --------------------------- cc.Sprite, ZoomButton   ---------------------------
     if isEditBox then
         createTitle("ccui.EditBox")
@@ -553,7 +568,11 @@ function panel:displayNode(node)
         createTitle("cc.Sprite")
     end
     if isSprite then
-        createInputLong("Sprite", "file", "string")
+        createInputLong("Sprite", "file", "string", "")
+        --        if not isScale9Sprite then
+        --            createInputMiddle("CenterRect", "X", "Y", "centerRect.x", "centerRect.y", "number", 0, 0)
+        --            createInputMiddle("", "W", "H", "centerRect.width", "centerRect.height", "number", 0, 0)
+        --        end
     end
     if isZoomButton or isSpriteButton then
         if isSpriteButton then
@@ -596,14 +615,29 @@ function panel:displayNode(node)
         createFunc("onLongPressed", "onLongPressed", "on")
     end
 
-    if isEditBox then
-        createInputLong("PlaceHolder", "placeHolder", "string")
-    end
-
     if isSpriteButton or isEditBox then
         createInputLong("NormalSprite", "normalSprite", "string", "")
-        createInputLong("SelectSprite", "selectSprite", "string", "")
-        createInputLong("DisableSprite", "disableSprite", "string", "")
+        createInputLong("SelectedSprite", "selectedSprite", "string", "")
+        createInputLong("DisabledSprite", "disabledSprite", "string", "")
+    end
+    if isScale9Sprite or isEditBox then
+        createInputMiddle("CapInsets", "X", "Y", "capInsets.x", "capInsets.y", "number")
+        createInputMiddle("", "W", "H", "capInsets.width", "capInsets.height", "number")
+    end
+    if isEditBox then
+        createInputLong("Text", "text", "string", "")
+        createInputLong("Placeholder", "placeHolder", "string", "")
+        createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
+        createInputMiddle("PlaceholderFontSize", "", "", nil, "placeholderFontSize", "number")
+        createInputMiddle("MaxLength", "", "", nil, "maxLength", "number", -1)
+        local hAligns = { "LEFT", "CENTER", "RIGHT" }
+        createSelectBoxLong("HAlignment", hAligns, "textHAlign", "number", "LEFT")
+        local modes = { "ANY", "EMAIL_ADDRESS", "NUMERIC", "PHONE_NUMBER", "URL", "DECIMAL", "SINGLE_LINE" }
+        createSelectBoxLong("InputMode", modes, "inputMode", "number", "ANY")
+        local modes = { "PASSWORD", "SENSITIVE", "INITIAL_CAPS_WORD", "INITIAL_CAPS_SENTENCE", "INITIAL_CAPS_ALL_CHARACTER", "LOWERCASE_ALL_CHARACTERS" }
+        createSelectBoxLong("InputFlag", modes, "inputFlag", "number", "INITIAL_CAPS_ALL_CHARACTER")
+        local modes = { "DEFAULT", "DONE", "SEND", "SEARCH", "GO", "NEXT" }
+        createSelectBoxLong("ReturnType", modes, "returnType", "number", "DEFAULT")
     end
 
     if node.setBlendFunc and type(node.setBlendFunc) == "function" then
@@ -628,10 +662,6 @@ function panel:displayNode(node)
         end, "ONE_MINUS_SRC_ALPHA")
         yIndex = yIndex + 1
     end
-    if isScale9Sprite or isEditBox then
-        createInputMiddle("CapInsets", "X", "Y", "capInsets.x", "capInsets.y", "number")
-        createInputMiddle("", "W", "H", "capInsets.width", "capInsets.height", "number")
-    end
     if isScale9Sprite then
         local types = { "SIMPLE", "SLICE" }
         createSelectBoxLong("RenderingType", types, "renderingType", "number", "SLICE")
@@ -640,9 +670,7 @@ function panel:displayNode(node)
     end
     if isSprite then
         createCheckBox("FlippedX", "flippedX")
-        if isScale9Sprite then
-            createCheckBox("FlippedY", "flippedY")
-        end
+        createCheckBox("FlippedY", "flippedY")
     end
 
     if isZoomButton or isSpriteButton then
@@ -653,13 +681,30 @@ function panel:displayNode(node)
         if isToggleButton then
             createCheckBox("AutoToggle", "autoToggle")
         end
-        createCheckBox("Enabled", "enabled")
-        createInputLong("ClickedSid", "clickedSid", "string", "")
     end
     if isCheckBox then
         createTitle("gk.CheckBox")
         createCheckBox("Selected", "selected")
     end
+
+    if isSprite or isButton then
+        local types = { "ShaderPositionTextureColor_noMVP", "ShaderUIGrayScale", }
+        for k, v in pairs(gk.shader.cachedGLPrograms) do
+            table.insert(types, k)
+        end
+        if isSprite then
+            createSelectBoxLong("GLProgram", types, "GLProgram", "string", "ShaderPositionTextureColor_noMVP")
+        else
+            createSelectBoxLong("SelectedGLPgm", types, "selectedGLProgram", "string", "ShaderPositionTextureColor_noMVP")
+            createSelectBoxLong("DisabledGLPgm", types, "disabledGLProgram", "string", "ShaderPositionTextureColor_noMVP")
+            createCheckBox("CascadeGLProgramEnabled", "cascadeGLProgramEnabled")
+        end
+    end
+    if isButton then
+        createCheckBox("Enabled", "enabled")
+        createInputLong("ClickSoundId", "clickedSid", "string", "")
+    end
+
     --------------------------- cc.Label   ---------------------------
     if isLabel then
         local items = gk.resource.lans
@@ -867,7 +912,7 @@ function panel:displayNode(node)
         createInputLong("Percentage", "percentage", "number", 0)
         createInputMiddle("Midpoint", "X", "Y", "midpoint.x", "midpoint.y", "number", 0.5, 0.5)
         if node.__info.barType == 1 then
-            createInputMiddle("ChangeRate", "X", "Y", "barChangeRate.x", "barChangeRate.y", "number")
+            createInputMiddle("BarChangeRate", "X", "Y", "barChangeRate.x", "barChangeRate.y", "number")
         end
     end
     if isClippingRectangleNode then
@@ -882,8 +927,17 @@ function panel:displayNode(node)
     end
     if isParticleSystemQuad then
         createTitle("cc.ParticleSystemQuad")
-        createInputLong("ParticleFile", "particle", "string")
+        createInputLong("PlistFile", "particle", "string")
         createInputLong("TotalParticles", "totalParticles", "string")
+        createInputLong("DisplayFrame", "displayFrame", "string", "")
+        createInputLong("Duration", "duration", "number", -1)
+        createCheckBox("AutoRemoveOnFinish(ReleaseMode)", "autoRemoveOnFinish")
+        createInputMiddle("Gravity", "X", "Y", "gravity.x", "gravity.y", "number", 0, 0)
+        createCheckBox("BlendAdditive", "blendAdditive")
+        local types = { "GRAVITY", "RADIUS" }
+        createSelectBoxLong("EmitterMode", types, "emitterMode", "number", "GRAVITY")
+        local types = { "FREE", "RELATIVE", "GROUPED" }
+        createSelectBoxLong("PositionType", types, "positionType", "number", "FREE")
     end
 
     -- custom ext node

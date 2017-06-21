@@ -16,6 +16,7 @@ function SelectBox:ctor(size, items, index)
     self:setContentSize(size)
     self.selectItems = items
     self.selectIndex = index or 1
+    self.selectIndex = cc.clampf(self.selectIndex, 1, #items)
     self.isEnabled = true
 end
 
@@ -42,10 +43,11 @@ function SelectBox:setDisplayLabel(label)
     self.label = label
     self.label:setString(self.selectItems[self.selectIndex])
     self:addChild(label)
-    label:setOverflow(2)
     local contentSize = self:getContentSize()
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
     label:setDimensions(contentSize.width, contentSize.height)
+    label:setOverflow(2)
+    label:enableWrap(false)
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
 end
@@ -93,7 +95,8 @@ function SelectBox:openPopup()
     if self.popupLabelCreator then
         for i = 1, #self.selectItems do
             local label = self.popupLabelCreator()
-            label:setOverflow(1)
+            label:setOverflow(2)
+            label:enableWrap(false)
             label:setString(self.selectItems[i])
             label:setDimensions(size.width, size.height)
             label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)

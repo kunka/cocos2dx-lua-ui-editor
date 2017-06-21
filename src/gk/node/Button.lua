@@ -18,19 +18,19 @@ function Button:ctor(contentNode)
     self:enableNodeEvents()
     self.enabled = true
     self.selected = false
-    -- TODO: set selected shader
-    self.disabledProgram = nil -- set shader of disabled state
-    self.cascadeProgramEnable = true -- set shader of all children(not Label child)
     self.contentNode = nil -- content node, must be set
     self:setCascadeColorEnabled(true)
     self:setCascadeOpacityEnabled(true)
     self:setAnchorPoint(0.5, 0.5)
-    self.cacheProgram = {}
     self.trackingTouch = false
     self.delaySelect = nil -- optimize for button in ScrollView
     self.swallowTouches = true
     self.autoSelected = true -- auto select and unselect when touch
     self.clickedSid = "" -- sound id, when clicked
+    self.cacheProgram = {}
+    self.cascadeGLProgramEnabled = true -- set shader of all children(only cc.Sprite)
+    self.selectedGLProgram = nil
+    self.disabledGLProgram = nil
 
     self.__addChild = self.addChild
     self.addChild = function(_self, ...)
@@ -187,6 +187,9 @@ end
 function Button:setSelected(selected)
     if self.enabled and self.selected ~= selected then
         self.selected = selected
+        if self.enabled and self.selectedGLProgram then
+            self:setCascadeProgram(self, selected and self.selectedGLProgram)
+        end
         if self.onSelectChangedCallback then
             self.onSelectChangedCallback(self, self.selected)
         end
@@ -200,6 +203,9 @@ end
 function Button:setEnabled(enabled)
     if self.enabled ~= enabled then
         self.enabled = enabled
+        if self.disabledGLProgram then
+            self:setCascadeProgram(self, (not enabled) and self.disabledGLProgram)
+        end
         if self.onEnableChangedCallback then
             self.onEnableChangedCallback(self, self.enabled)
         end
@@ -305,27 +311,6 @@ function Button:stopTracking()
     gk.util:stopActionByTagSafe(self, kLongPressedActionTag)
 end
 
-function Button:setEnabled(enabled)
-    if self.enabled ~= enabled then
-        --        gk.log("[%s]: setEnabled %s", self.__cname, enabled)
-        self.enabled = enabled
-        if self.disabledProgram then
-            if enabled then
-                self:restoreCascadeProgram(self)
-            else
-                self:setCascadeProgram(self)
-            end
-        end
-        if self.onEnableChangedCallback then
-            self.onEnableChangedCallback(self, enabled)
-        end
-    end
-end
-
-function Button:isEnabled()
-    return self.isEnabled
-end
-
 function Button:onExit()
     if self.trackingTouch then
         --        gk.log("Button:onExit when tracking")
@@ -335,30 +320,71 @@ function Button:onExit()
     end
 end
 
-function Button:setCascadeProgram(node)
-    if tolua.type(node) ~= "cc.Label" then
-        if node ~= self then
-            local pgm = node:getGLProgram()
-            if pgm then
-                self.cacheProgram[node] = pgm
-            end
-            node:setGLProgram(self.disabledProgram)
-        end
-        local children = node:getChildren()
-        for _, c in pairs(children) do
-            self:setCascadeProgram(c)
+function Button:isCascadeGLProgramEnabled()
+    return self.cascadeGLProgramEnabled
+end
+
+function Button:setCascadeGLProgramEnabled(var)
+    self.cascadeGLProgramEnabled = var
+end
+
+function Button:getSelectedGLProgram()
+    return self.selectedGLProgram
+end
+
+function Button:setSelectedGLProgram(var)
+    if self.selectedGLProgram ~= var then
+        self.selectedGLProgram = var
+        if self.enabled and self.selected then
+            self:setCascadeProgram(self, self.selectedGLProgram)
         end
     end
 end
 
-function Button:restoreCascadeProgram(node)
-    if tolua.type(node) ~= "cc.Label" then
-        if node ~= self then
-            local pgm = self.cacheProgram[node]
+function Button:getDisabledGLProgram()
+    return self.disabledGLProgram
+end
+
+function Button:setDisabledGLProgram(var)
+    if self.disabledGLProgram ~= var then
+        self.disabledGLProgram = var
+        if not self.enabled then
+            self:setCascadeProgram(self, self.disabledGLProgram)
+        end
+    end
+end
+
+function Button:setCascadeProgram(node, var)
+    if var then
+        if node ~= self and gk.util:instanceof(node, "cc.Sprite") then
+            local pgm = node:getGLProgram()
             if pgm then
-                node:setGLProgram(pgm)
+                self.cacheProgram[node] = pgm
+            end
+            local program = cc.GLProgramState:getOrCreateWithGLProgramName(var)
+            if program then
+                node:setGLProgramState(program)
             end
         end
+        if self.cascadeGLProgramEnabled or node == self then
+            local children = node:getChildren()
+            for _, c in pairs(children) do
+                self:setCascadeProgram(c, var)
+            end
+        end
+    else
+        self:restoreCascadeProgram(node)
+    end
+end
+
+function Button:restoreCascadeProgram(node)
+    if node ~= self and gk.util:instanceof(node, "cc.Sprite") then
+        local pgm = self.cacheProgram[node]
+        if pgm then
+            node:setGLProgram(pgm)
+        end
+    end
+    if self.cascadeGLProgramEnabled or node == self then
         local children = node:getChildren()
         for _, c in pairs(children) do
             self:restoreCascadeProgram(c)

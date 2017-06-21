@@ -368,6 +368,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("layerGradient", rootTable)
         return node
     end,
+    --    ["ccui.Layout"] = function(info, rootTable)
+    --        local node = ccui.Layout:create()
+    --        info.id = info.id or generator:genID("layout", rootTable)
+    --        return node
+    --    end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label(info)
         info.id = info.id or generator:genID("label", rootTable)
@@ -400,8 +405,9 @@ generator.nodeCreator = {
     ["cc.ProgressTimer"] = function(info, rootTable)
         if info.sprite then
             -- create content sprite first
-            local sprite = generator:createNode(clone(info.sprite), nil, rootTable)
+            local sprite = generator:createNode(info.sprite, nil, rootTable)
             -- create ProgressTimer
+            sprite.__info._lock = 0
             local node = cc.ProgressTimer:create(sprite)
             info.id = info.id or generator:genID("progressTimer", rootTable)
             sprite.__info.id = info.id .. "_sprite"
@@ -418,8 +424,12 @@ generator.nodeCreator = {
         return nil
     end,
     ["cc.ParticleSystemQuad"] = function(info, rootTable)
-        if info.particle then
+        if info.particle and info.particle ~= "" then
             local node = cc.ParticleSystemQuad:create(info.particle)
+            info.id = info.id or generator:genID("particleSystemQuad", rootTable)
+            return node
+        elseif info.totalParticles and info.totalParticles > 0 then
+            local node = cc.ParticleSystemQuad:createWithTotalParticles(info.totalParticles)
             info.id = info.id or generator:genID("particleSystemQuad", rootTable)
             return node
         end

@@ -106,6 +106,9 @@ config.defValues = {
     popOnTouchInsideBg = 1,
     -- cc.LayerGradient
     compressedInterpolation = 0,
+    GLProgram = "ShaderPositionTextureColor_noMVP",
+    selectedGLProgram = "ShaderPositionTextureColor_noMVP",
+    disabledGLProgram = "ShaderPositionTextureColor_noMVP",
 
     -- scrollView
     bounceable = 0,
@@ -188,18 +191,14 @@ config.editableProps = {
     },
     -- cc.Node
     x = {
-        getter = function(node)
-            return 0
-        end,
+        getter = function(node) return 0 end,
         setter = function(node, x)
             local x = gk.generator:parseX(node, x, node.__info.scaleXY.x)
             node:setPositionX(x)
         end
     },
     y = {
-        getter = function(node)
-            return 0
-        end,
+        getter = function(node) return 0 end,
         setter = function(node, y)
             local y = gk.generator:parseY(node, y, node.__info.scaleXY.y)
             node:setPositionY(y)
@@ -368,8 +367,18 @@ config.editableProps = {
         end
     },
     fontSize = {
-        getter = function(node) return 32 end,
+        getter = function(node)
+            if gk.util:instanceof(node, "ccui.EditBox") then
+                return node:getFontSize()
+            else
+                return 32
+            end
+        end,
         setter = function(node, var)
+            if gk.util:instanceof(node, "ccui.EditBox") then
+                node:setFontSize(var)
+                return
+            end
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
             if gk.isTTF(fontFile) then
@@ -607,6 +616,37 @@ config.editableProps = {
             node:setContentOffset(offset)
         end
     },
+    -- cc.ParticleSystemQuad
+    displayFrame = {
+        getter = function(_) return "" end,
+        setter = function(node, var)
+            if var and var ~= "" then
+                node:setDisplayFrame(gk.create_sprite_frame(var))
+            end
+        end
+    },
+    autoRemoveOnFinish = {
+        getter = function(node) return node:isAutoRemoveOnFinish() end,
+        setter = function(node, var)
+            if gk.mode ~= gk.MODE_EDIT then
+                node:setAutoRemoveOnFinish(var == 0)
+            end
+        end
+    },
+    -- GLProgram(shader)
+    GLProgram = {
+        getter = function(node) return "ShaderPositionTextureColor_noMVP" end,
+        setter = function(node, var)
+            if var and var ~= "" then
+                local program = cc.GLProgramState:getOrCreateWithGLProgramName(var)
+                if program then
+                    node:setGLProgramState(program)
+                else
+                    gk.log("error, getOrCreateWithGLProgramName --> %s, return nil", var)
+                end
+            end
+        end
+    },
 }
 
 function config:registerProp(key, alias)
@@ -629,8 +669,6 @@ function config:registerStringProp(key, alias)
             node["set" .. alias](node, v)
         end
     }
-
-
 end
 
 function config:registerFloatProp(key, alias)
@@ -719,6 +757,7 @@ config:registerBoolProp("visible")
 
 -- cc.Sprite
 config:registerProp("blendFunc")
+--config:registerProp("centerRect") -- for slice
 -- cc.Sprite, ccui.Scale9Sprite
 config:registerBoolProp("flippedX")
 -- ccui.Scale9Sprite
@@ -733,6 +772,10 @@ config:registerFuncProp("onEnableChanged")
 config:registerFuncProp("onLongPressed")
 config:registerBoolProp("enabled")
 config:registerProp("clickedSid")
+config:registerProp("selectedGLProgram")
+config:registerProp("disabledGLProgram")
+config:registerBoolProp("cascadeGLProgramEnabled")
+
 -- ZoomButton
 config:registerProp("zoomScale")
 config:registerBoolProp("zoomEnabled")
@@ -757,6 +800,8 @@ config:registerProp("startOpacity")
 config:registerProp("endOpacity")
 config:registerProp("vector")
 config:registerBoolProp("compressedInterpolation")
+-- ccui.Layout
+--config:registerProp("layoutType")
 
 -- cc.Label
 config:registerProp("hAlign", "HorizontalAlignment")
@@ -793,7 +838,14 @@ config:registerProp("barChangeRate")
 config:registerBoolProp("selected")
 
 -- ccui.EditBox
+config:registerProp("text")
 config:registerProp("placeHolder")
+config:registerFloatProp("placeholderFontSize")
+config:registerFloatProp("maxLength")
+config:registerProp("textHAlign", "TextHorizontalAlignment")
+config:registerProp("inputMode")
+config:registerProp("inputFlag")
+config:registerProp("returnType")
 
 -- cc.TMXTiledMap
 config:registerPlaneProp("tmx")
@@ -801,6 +853,11 @@ config:registerPlaneProp("tmx")
 -- cc.ParticleSystemQuad
 config:registerPlaneProp("particle")
 config:registerStringProp("totalParticles")
+config:registerProp("gravity")
+config:registerBoolProp("blendAdditive")
+config:registerFloatProp("duration")
+config:registerProp("emitterMode")
+config:registerProp("positionType")
 
 function config:getDefaultValue(node, key)
     local prop = config.editableProps[key]
