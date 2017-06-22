@@ -9,10 +9,28 @@
 local resource = {}
 
 ----------------------------- texture relative path -----------------------------------
-resource.textureRelativePath = ""
-function resource:setTextureRelativePath(path)
-    gk.log("resource:setTextureRelativePath \"%s\"", path)
-    self.textureRelativePath = path
+resource.textureDir = ""
+function resource:setTextureDir(dir)
+    gk.log("resource:setTextureDir \"%s\"", dir)
+    self.textureDir = dir
+end
+
+resource.fontDir = ""
+function resource:setFontDir(dir)
+    gk.log("resource:setFontDir \"%s\"", dir)
+    self.fontDir = dir
+end
+
+resource.shaderDir = ""
+function resource:setShaderDir(dir)
+    gk.log("resource:setShaderDir \"%s\"", dir)
+    self.shaderDir = dir
+end
+
+resource.genDir = ""
+function resource:setGenDir(dir)
+    gk.log("resource:setGenDir \"%s\"", dir)
+    self.genDir = dir
 end
 
 function resource:scanFontFiles(path)
@@ -20,6 +38,10 @@ function resource:scanFontFiles(path)
         self.fontFiles = {}
         self:scanFontDir(path)
     end
+end
+
+function resource:getFontFile(key)
+    return self.fontDir and (self.fontDir .. key) or key
 end
 
 function resource:scanFontDir(dir)
@@ -36,8 +58,8 @@ function resource:scanFontDir(dir)
         end
         for _, name in ipairs(lines) do
             if name:ends(".fnt") or name:ends(".ttf") then
-                table.insert(self.fontFiles, "font/" .. name)
-                gk.log("resource:scanFontfile:%s", "font/" .. name)
+                table.insert(self.fontFiles, "" .. name)
+                gk.log("resource:scanFontfile:%s", "" .. name)
             elseif not name:find("%.") then
                 self:scanFontDir(dir .. name .. "/")
             end
@@ -176,6 +198,9 @@ function resource:flush(path)
     local info = {
         fontFiles = self.fontFiles,
         genNodes = self.genNodes,
+        fontDir = self.fontDir,
+        shaderDir = self.shaderDir,
+        genDir = self.genDir,
     }
     -- root container node
     local table2lua = require("gk.tools.table2lua")
@@ -192,7 +217,10 @@ function resource:load(path)
     local status, info = pcall(require, path)
     if status then
         self.fontFiles = info.fontFiles
+        self.fontDir = info.fontDir
         self.genNodes = info.genNodes
+        self.shaderDir = info.shaderDir
+        self.genDir = info.genDir
     else
         gk.log("resource:load --> %s failed", path)
     end

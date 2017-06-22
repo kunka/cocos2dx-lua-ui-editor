@@ -352,14 +352,14 @@ config.editableProps = {
             -- recreate node
             local lan = gk.resource:getCurrentLan()
             local fontFile = var[lan]
-            gk.log("set fontFile_%s %s", lan, fontFile)
+            --            gk.log("set fontFile_%s %s", lan, fontFile)
             if gk.isTTF(fontFile) then
                 local config = node:getTTFConfig()
-                config.fontFilePath = fontFile
+                config.fontFilePath = gk.resource:getFontFile(fontFile)
                 config.fontSize = node.__info.fontSize
                 node:setTTFConfig(config)
             elseif gk.isBMFont(fontFile) then
-                node:setBMFontFilePath(fontFile, cc.p(0, 0), node.__info.fontSize)
+                node:setBMFontFilePath(gk.resource:getFontFile(fontFile), cc.p(0, 0), node.__info.fontSize)
             else
                 node:setSystemFontName(fontFile)
                 node:setSystemFontSize(node.__info.fontSize)
@@ -408,7 +408,8 @@ config.editableProps = {
     },
     additionalKerning = {
         getter = function(node)
-            return not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) and node:getAdditionalKerning()
+            --            return not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) and node:getAdditionalKerning()
+            return 0
         end,
         setter = function(node, var)
             local lan = gk.resource:getCurrentLan()

@@ -35,7 +35,7 @@ local function create_sprite(name)
     if spriteFrame then
         return cc.Sprite:createWithSpriteFrame(spriteFrame), true
     end
-    local texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. name)
+    local texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureDir .. name)
     if texture then
         return cc.Sprite:createWithTexture(texture), true
     end
@@ -45,7 +45,7 @@ local function create_sprite(name)
         return cc.Sprite:createWithTexture(texture), true
     end
     gk.log("gk.create_sprite(%s) file not found, use default sprite!", name)
-    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureRelativePath .. gk.resource.defaultSpritePath)
+    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureDir .. gk.resource.defaultSpritePath)
     if texture then
         return cc.Sprite:createWithTexture(texture)
     end
@@ -99,19 +99,16 @@ local function create_label(info)
         fontFile = info.fontFile["en"]
         info.fontFile[lan] = fontFile
     end
+    local file = gk.resource:getFontFile(fontFile)
     local label
     -- TODO: createWithCharMap
     if isTTF(fontFile) then
-        label = cc.Label:createWithTTF(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        label = cc.Label:createWithTTF(info.string, file, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     elseif isBMFont(fontFile) then
-        label = cc.Label:createWithBMFont(fontFile, info.string, cc.TEXT_ALIGNMENT_LEFT)
+        label = cc.Label:createWithBMFont(file, info.string, cc.TEXT_ALIGNMENT_LEFT)
         label:setBMFontSize(info.fontSize)
-        --    else
-        --        label = cc.Label:createWithSystemFont(info.string, fontFile, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
-        --        info.fontFile[lan] = label:getSystemFontName()
-    end
-    if not label then
-        label = cc.Label:createWithSystemFont(info.string, fontFile ~= nil and fontFile or info.defaultSysFont, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+    else
+        label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         info.fontFile[lan] = label:getSystemFontName()
         gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
     end

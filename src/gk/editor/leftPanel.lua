@@ -490,7 +490,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         widgetParent = node
     end
 
-    if node ~= self.lastDisplayingNode and gk.util:isAncestorOf(node, self.lastDisplayingNode) then
+    if node.__info and node ~= self.lastDisplayingNode and gk.util:isAncestorOf(node, self.lastDisplayingNode) then
         -- force unfold
         node.__info._fold = false
     end
