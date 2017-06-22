@@ -15,7 +15,7 @@ config.supportNodes = {
         type = "ccui.Scale9Sprite",
         capInsets = cc.rect(0, 0, 0, 0),
     },
-    { type = "cc.Label", string = "label", fontFile = { en = "Arial" }, fontSize = 32, },
+    { type = "cc.Label", string = "label", fontFile = { en = "Arial" }, fontSize = 24, },
     { type = "ZoomButton", },
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
     { type = "ToggleButton", },
@@ -371,7 +371,7 @@ config.editableProps = {
             if gk.util:instanceof(node, "ccui.EditBox") then
                 return node:getFontSize()
             else
-                return 32
+                return 24
             end
         end,
         setter = function(node, var)

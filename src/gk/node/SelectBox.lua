@@ -60,12 +60,6 @@ function SelectBox:didCreatePopupLabel(callback)
     self.popupLabelDidCreated = callback
 end
 
-function SelectBox:getSelectItem()
-end
-
-function SelectBox:setSelectItem(item)
-end
-
 function SelectBox:openPopup()
     gk.log("openPopup")
     self:closePopup()
@@ -136,8 +130,25 @@ function SelectBox:openPopup()
             return false
         end
     end, cc.Handler.EVENT_TOUCH_BEGAN)
-    local eventDispatcher = self:getEventDispatcher()
-    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self.popup)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.popup)
+
+    local listener = cc.EventListenerMouse:create()
+    listener:registerScriptHandler(function(touch, event)
+        local location = touch:getLocationInView()
+        if gk.util:touchInNode(self.popup, location) then
+            for i, child in ipairs(self.popup:getChildren()) do
+                if gk.util:instanceof(child, "Button") then
+                    local label = child:getContentNode():getChildren()[1]
+                    if gk.util:touchInNode(child, location) then
+                        label:setTextColor(cc.c3b(45, 35, 255))
+                    else
+                        label:setTextColor(self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                    end
+                end
+            end
+        end
+    end, cc.Handler.EVENT_MOUSE_MOVE)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.popup)
 end
 
 function SelectBox:closePopup()
@@ -151,10 +162,6 @@ function SelectBox:closePopup()
             self.popup = nil
         end
     end
-end
-
-function SelectBox:onExit()
-    self:closePopup()
 end
 
 return SelectBox

@@ -198,7 +198,7 @@ end
 function EditBox:changeCursorPos(newPos)
     local input = self.label:getString()
     if newPos >= 0 and newPos <= input:len() then
-        --        gk.log("[EDITBOX]: change cursorPos %d --> %d", self.cursorPos, newPos)
+        gk.log("[EDITBOX]: change cursorPos %d --> %d, len = %d", self.cursorPos, newPos, input:len())
         self.cursorPos = newPos
 
         if not self.cursorNode then
@@ -212,7 +212,22 @@ function EditBox:changeCursorPos(newPos)
         if input:len() > 0 and self.cursorPos >= 1 and self.cursorPos <= input:len() then
             local letter = self.label:getLetter(self.cursorPos - 1)
             if letter then
-                pos.x = pos.x + letter:getPositionX()
+                if letter:getContentSize().width == 0 or letter:getPositionX() == 0 then
+                    -- letter like " ", contentSize and posX has bug! maybe zero
+                    local offset = 0
+                    for i = self.cursorPos - 1, 0, -1 do
+                        local pre = self.label:getLetter(i)
+                        if pre and pre:getContentSize().width > 0 and letter:getPositionX() > 0 then
+                            pos.x = pos.x + pre:getPositionX()
+                            break
+                        end
+                        offset = offset + 1
+                    end
+                    pos.x = pos.x + (self.lastLetterWidth or 15) * offset
+                else
+                    self.lastLetterWidth = self.lastLetterWidth or letter:getContentSize().width
+                    pos.x = pos.x + letter:getPositionX()
+                end
             end
         elseif input:len() == 0 then
             -- empty input
