@@ -11,37 +11,71 @@ require "gk.init"
 
 local init = {}
 
---- code dir, launch entry key, launch entry, textureRelativePath, design size
-function init:getConfig()
-    return "test/", "gk_lastLaunchEntry_1", "test/MainLayer", "test/res/texture/", cc.size(1280, 768)
-    --    return "demoapp/", "gk_lastLaunchEntry_2", "demoapp/SplashLayer", "demoapp/res/texture/", cc.size(768, 1280)
+local function getConfig(entry)
+    entry = 1
+    return entry == 0 and {
+        -- run demo app
+        entry = entry,
+        codeDir = "demoapp/",
+        fontDir = "src/demoapp/res/font/",
+        shaderDir = "res/shader/",
+        genDir = "demoapp/gen/",
+        textureDir = "demoapp/res/texture/",
+        launchEntry = "demoapp/SplashLayer",
+        launchEntryKey = "gk_launchEntry_1",
+        designSize = cc.size(720, 1280),
+    } or {
+        -- run test mode
+        entry = entry,
+        codeDir = "gk/test/",
+        fontDir = "src/gk/test/res/font/",
+        shaderDir = "",
+        genDir = "gk/test/gen/",
+        textureDir = "gk/test/res/texture/",
+        launchEntry = "gk/test/MainLayer",
+        launchEntryKey = "gk_launchEntry_2",
+        designSize = cc.size(1280, 768),
+    }
 end
 
+local config = getConfig()
+
+-- mode 0 --> Press F1 to restart app with debug mode at current designing scene.
+-- mode 1 --> Press F2 to restart app with release mode at current designing scene.
+-- mode 2 --> Press F3 to restart app with release mode at default launch entry.
 function init:startGame(mode)
     mode = mode or 0
     gk.log("init:startGame with mode %d", mode)
     init:initGameKit(mode)
 
-    local _, lastLaunchEntryKey, launchEntry = self:getConfig()
-    gk.lastLaunchEntryKey = lastLaunchEntryKey
-    --    if gk.mode == gk.MODE_EDIT then
-    --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
-    local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, launchEntry)
-    gk.SceneManager:replace(path)
-    --    else
-    --        gk.SceneManager:replace(launchEntry)
-    --    end
+    gk.lastLaunchEntryKey = config.launchEntryKey
+    local platform = cc.Application:getInstance():getTargetPlatform()
+    if platform == 2 and mode ~= 2 then
+        --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
+        local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
+        local _, ret = gk.SceneManager:replace(path)
+        if not ret then
+            -- use default
+            cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
+        end
+    else
+        gk.SceneManager:replace(config.launchEntry)
+    end
 end
 
 function init:initGameKit(mode)
     gk.mode = mode
-    local dir, _, _, textureRelativePath, designSize = self:getConfig()
-    gk.display:initWithDesignSize(designSize)
+    gk.display:initWithDesignSize(config.designSize)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
-    gk.resource:setTextureRelativePath(textureRelativePath)
+    gk.resource:setTextureDir(config.textureDir)
+    gk.resource:setFontDir(config.fontDir)
+    gk.resource:setGenSrcPath(config.codeDir)
+    gk.resource:setShaderDir(config.shaderDir)
+    gk.resource:setGenDir(config.genDir)
+    gk.resource:setGenOutputPath(config.genDir .. "layout/")
     local strings = {
-        en = require(dir .. "gen.value.strings"),
-        cn = require(dir .. "gen.value.strings_cn"),
+        en = require(config.genDir .. "value/strings"),
+        cn = require(config.genDir .. "value/strings_cn"),
     }
     gk.resource:setSupportLans(table.keys(strings), "en")
     gk.resource:setStringGetFunc(function(key, lan)
@@ -57,15 +91,21 @@ function init:initGameKit(mode)
         end)
     end
 
-    gk.resource:setGenSrcPath(dir)
-    gk.resource:setGenOutputPath(dir .. "gen/layout/")
     if platform == 2 and gk.mode == gk.MODE_EDIT then
         --        cc.FileUtils:getInstance():createDirectory(gk.resource.genNodePath)
         local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
         path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
-        local path = path .. "src/"
-        gk.resource:scanGenNodes(path)
+        gk.resource:scanGenNodes(path .. "src/")
+        --    end
+        gk.resource:scanFontFiles(path .. config.fontDir)
+        gk.resource:flush(path .. "src/" .. config.genDir .. "config.lua")
+    else
+        gk.resource:load(config.genDir .. "config.lua")
     end
+
+    -- shader
+    gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/Freeze.fsh")
+    gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/HighLight.fsh")
 end
 
 return init

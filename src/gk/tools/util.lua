@@ -81,8 +81,8 @@ string.toHex = function(s)
 end
 
 ----------------------------------------- restart game  -------------------------------------------------
+util.onRestartGameCallbacks = util.onRestartGameCallbacks or {}
 function util:registerOnRestartGameCallback(callback)
-    self.onRestartGameCallbacks = self.onRestartGameCallbacks or {}
     table.insert(self.onRestartGameCallbacks, callback)
 end
 
