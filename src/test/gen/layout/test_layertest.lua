@@ -1,19 +1,20 @@
 return {
+	_fold = false,
 	enableKeyPad = 1,
 	height = "$fill",
 	id = "LayerTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
-	swallowTouchEvent = 0,
 	type = "LayerTest",
 	width = "$fill",
-	x = 240,
+	x = 250,
 	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,
 	   r = 255},
 	children = {	   {
+	      _fold = false,
 	      height = "$win.h",
 	      id = "layer1",
 	      ignoreAnchor = 0,
@@ -67,7 +68,7 @@ return {
 	               y = "$scaleY"}},
 	         {
 	            enableWrap = true,
-	            fontSize = 32,
+	            fontSize = 18,
 	            height = 0,
 	            id = "label1",
 	            ignoreAnchor = 1,
@@ -91,7 +92,7 @@ return {
 	               y = "$scaleY"}},
 	         {
 	            enableWrap = true,
-	            fontSize = 32,
+	            fontSize = 18,
 	            height = 0,
 	            id = "label2",
 	            ignoreAnchor = 1,
@@ -139,7 +140,7 @@ return {
 	               y = "$scaleY"}},
 	         {
 	            enableWrap = true,
-	            fontSize = 32,
+	            fontSize = 18,
 	            height = 0,
 	            id = "label3",
 	            ignoreAnchor = 1,
@@ -166,7 +167,6 @@ return {
 	            height = 360,
 	            id = "layer5",
 	            ignoreAnchor = 0,
-	            isCompressedInterpolation = 0,
 	            parentId = "layer1",
 	            startOpacity = 255,
 	            type = "cc.LayerGradient",
@@ -194,7 +194,7 @@ return {
 	               y = 1}},
 	         {
 	            enableWrap = true,
-	            fontSize = 32,
+	            fontSize = 18,
 	            height = 0,
 	            id = "label5",
 	            ignoreAnchor = 1,

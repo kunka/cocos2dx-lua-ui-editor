@@ -10,8 +10,11 @@ local ProgressTimerTest = class("ProgressTimerTest", gk.Layer)
 
 function ProgressTimerTest:ctor()
     ProgressTimerTest.super.ctor(self)
-    dump(self.progressTime1)
-    dump(self.progressTime1_sprite)
+
+    self.progressTimer1:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.ProgressTo:create(2, 100), cc.ProgressTo:create(2, 0))))
+    self.progressTimer2:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.ProgressTo:create(2, 100), cc.ProgressTo:create(2, 0))))
+    self.progressTimer3:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.ProgressTo:create(2, 100), cc.ProgressTo:create(2, 0))))
+    self.progressTimer4:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.ProgressTo:create(2, 100), cc.ProgressTo:create(2, 0))))
 end
 
 return ProgressTimerTest

@@ -1,9 +1,10 @@
 return {
+	_fold = false,
 	height = 100,
 	id = "TableCell1",
 	ignoreAnchor = 1,
 	type = "TableCell1",
-	width = "$fill",
+	width = 1280,
 	x = 240,
 	y = 100,
 	anchor = {
@@ -15,7 +16,7 @@ return {
 	   r = 255},
 	scaleSize = {
 	   h = "$minScale",
-	   w = "1"},
+	   w = "$xScale"},
 	children = {	   {
 	      height = 100,
 	      id = "Member",
@@ -40,14 +41,12 @@ return {
 	      children = {	         {
 	            file = "avatar.png",
 	            flippedX = 1,
-	            height = 80,
 	            id = "avatar_left",
 	            ignoreAnchor = 1,
 	            parentId = "Member",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "cc.Sprite",
-	            width = 80,
 	            x = 20,
 	            y = 60,
 	            anchor = {
@@ -108,7 +107,7 @@ return {
 	            type = "cc.Label",
 	            width = 800,
 	            x = 136,
-	            y = 56,
+	            y = 50,
 	            anchor = {
 	               x = 0,
 	               y = 1},
@@ -129,7 +128,7 @@ return {
 	      opacity = 0,
 	      parentId = "TableCell1",
 	      type = "cc.LayerColor",
-	      width = 1280,
+	      width = "$fill",
 	      x = 0,
 	      y = 0,
 	      color = {
@@ -250,14 +249,12 @@ return {
 	         {
 	            file = "avatar.png",
 	            flippedX = 1,
-	            height = 80,
 	            id = "avatar_right",
 	            ignoreAnchor = 1,
 	            parentId = "Me",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "cc.Sprite",
-	            width = 80,
 	            x = 1260,
 	            y = 60,
 	            anchor = {
@@ -286,7 +283,7 @@ return {
 	            type = "cc.Label",
 	            width = 0,
 	            x = 954,
-	            y = 60,
+	            y = 50,
 	            anchor = {
 	               x = 0,
 	               y = 1},

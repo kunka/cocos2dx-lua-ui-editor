@@ -1,29 +1,28 @@
 return {
+	_fold = false,
 	enableKeyPad = 1,
 	height = "$fill",
 	id = "ScreenAdaptTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
-	swallowTouchEvent = 0,
 	type = "ScreenAdaptTest",
 	width = "$fill",
-	x = 240,
+	x = 250,
 	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,
 	   r = 255},
 	children = {	   {
+	      _lock = 0,
 	      file = "bg.jpg",
 	      flippedX = 1,
-	      height = 720,
 	      id = "bg",
 	      ignoreAnchor = 1,
 	      parentId = "ScreenAdaptTest",
 	      scaleX = "$maxScale",
 	      scaleY = "$maxScale",
 	      type = "cc.Sprite",
-	      width = 1280,
 	      x = 640,
 	      y = 384,
 	      blendFunc = {
@@ -39,7 +38,6 @@ return {
 	   {
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "top_left",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -47,7 +45,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 275,
 	      y = 768,
 	      anchor = {
@@ -82,9 +79,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "top_right",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -92,7 +89,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 1007,
 	      y = 768,
 	      anchor = {
@@ -112,7 +108,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_1",
+	            id = "label2",
 	            ignoreAnchor = 1,
 	            parentId = "top_right",
 	            string = "2",
@@ -127,9 +123,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "bottom_left",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -137,7 +133,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 275,
 	      y = 0,
 	      anchor = {
@@ -157,7 +152,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_1_1",
+	            id = "label3",
 	            ignoreAnchor = 1,
 	            parentId = "bottom_left",
 	            string = "3",
@@ -172,9 +167,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "bottom_right",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -182,7 +177,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 1007,
 	      y = 0,
 	      anchor = {
@@ -202,7 +196,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_1_1_1",
+	            id = "label4",
 	            ignoreAnchor = 1,
 	            parentId = "bottom_right",
 	            string = "4",
@@ -217,9 +211,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "left_top",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -227,7 +221,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 0,
 	      y = 540,
 	      anchor = {
@@ -247,7 +240,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_2",
+	            id = "label5",
 	            ignoreAnchor = 1,
 	            parentId = "left_top",
 	            string = "5",
@@ -262,9 +255,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "left_bottom",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -272,7 +265,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 0,
 	      y = 180,
 	      anchor = {
@@ -292,7 +284,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_2_1",
+	            id = "label6",
 	            ignoreAnchor = 1,
 	            parentId = "left_bottom",
 	            string = "6",
@@ -307,9 +299,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "right_top",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -317,7 +309,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 1280,
 	      y = 540,
 	      anchor = {
@@ -337,7 +328,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_2_1_1",
+	            id = "label7",
 	            ignoreAnchor = 1,
 	            parentId = "right_top",
 	            string = "7",
@@ -352,9 +343,9 @@ return {
 	            fontFile = {
 	               en = "Helvetica"}}}},
 	   {
+	      _fold = false,
 	      file = "rect.png",
 	      flippedX = 1,
-	      height = 120,
 	      id = "right_bottom",
 	      ignoreAnchor = 1,
 	      opacity = 156,
@@ -362,7 +353,6 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "cc.Sprite",
-	      width = 183,
 	      x = 1280,
 	      y = 180,
 	      anchor = {
@@ -382,7 +372,7 @@ return {
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
-	            id = "label1_2_1_1_1",
+	            id = "label8",
 	            ignoreAnchor = 1,
 	            parentId = "right_bottom",
 	            string = "8",
