@@ -427,19 +427,6 @@ function panel:drawNodeCoordinate(node)
         end
         local size = parent:getContentSize()
 
-        --        local scaleX = generator:parseValue("x", node, node.__info.scaleXY.x, 1)
-        --        local scaleY = generator:parseValue("y", node, node.__info.scaleXY.y, 1)
-        --        local x = generator:parseXRvs(node, p.x, node.__info.scaleXY.x)
-        --        local scaleX = generator:parseXRvs(node, 1, node.__info.scaleXY.x)
-        --        local scaleY = generator:parseXRvs(node, 1, node.__info.scaleXY.y)
-        --        -- left
-        --        createArrow(x, x / scaleX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
-        --        -- down
-        --        createArrow(y, y / scaleY, sy, cc.p(x + 5, 3), 90, cc.p(0, 0))
-        --        -- right
-        --        createArrow((size.width - x), (size.width - x) / scaleX, sx, cc.p(size.width - 3, y + 2), 0, cc.p(1, 0))
-        --        -- top
-        --        createArrow((size.height - y), (size.height - y) / scaleY, sy, cc.p(x + 5, size.height - 3), -90, cc.p(0, 1))
         local disX = generator:parseXRvs(node, x, node.__info.scaleXY.x)
         local disY = generator:parseXRvs(node, y, node.__info.scaleXY.y)
         local disX2 = generator:parseXRvs(node, (size.width - x), node.__info.scaleXY.x)

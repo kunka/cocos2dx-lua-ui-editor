@@ -17,6 +17,7 @@ return {
 	   g = 255,
 	   r = 255},
 	children = {	   {
+	      _fold = false,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
 	      enabled = 0,
@@ -40,6 +41,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      children = {	         {
+	            _fold = false,
 	            _lock = 0,
 	            file = "normal.png",
 	            flippedX = 1,
@@ -73,13 +75,14 @@ return {
 	                     r = 255},
 	                  fontFile = {
 	                     cn = "Helvetica",
-	                     en = "Helvetica"}}}}}},
+	                     en = "Arial"}}}}}},
 	   {
 	      _fold = false,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
 	      disabledSprite = "disabled.png",
 	      enabled = 0,
+	      height = 78,
 	      id = "spriteButton",
 	      ignoreAnchor = 1,
 	      normalSprite = "normal.png",
@@ -91,8 +94,14 @@ return {
 	      scaleY = "$minScale",
 	      selectedSprite = "selected.png",
 	      type = "SpriteButton",
+	      width = 350,
 	      x = 640,
 	      y = 501,
+	      capInsets = {
+	         height = 26,
+	         width = 116.667,
+	         x = 116.667,
+	         y = 26},
 	      color = {
 	         b = 255,
 	         g = 255,
@@ -117,7 +126,7 @@ return {
 	               r = 255},
 	            fontFile = {
 	               cn = "Helvetica",
-	               en = "Helvetica"}}}},
+	               en = "Arial"}}}},
 	   {
 	      _fold = false,
 	      cascadeColorEnabled = 0,
@@ -211,4 +220,4 @@ return {
 	               r = 255},
 	            fontFile = {
 	               cn = "Helvetica",
-	               en = "Helvetica"}}}}}}
+	               en = "Arial"}}}}}}

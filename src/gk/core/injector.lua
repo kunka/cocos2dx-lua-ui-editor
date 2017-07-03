@@ -92,10 +92,11 @@ function injector:init()
     end)
 end
 
-function injector:inflateNode(path)
+function injector:inflateNode(path, ...)
     local clazz = gk.resource:require(path)
     if clazz then
-        local node = clazz:create()
+        local node = clazz:create(...)
+        node.__ingore = true
         return node
     else
         return nil

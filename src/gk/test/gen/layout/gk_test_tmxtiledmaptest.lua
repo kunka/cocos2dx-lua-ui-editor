@@ -7,12 +7,14 @@ return {
 	x = 250,
 	y = 100,
 	children = {	   {
+	      height = 192,
 	      id = "tmxTiledMap1",
 	      parentId = "tMXTiledMapTest1",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      tmx = "gk/res/data/default.tmx",
 	      type = "cc.TMXTiledMap",
+	      width = 256,
 	      x = 0,
 	      y = 0,
 	      scaleXY = {

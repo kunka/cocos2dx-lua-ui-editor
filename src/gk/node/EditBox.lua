@@ -198,7 +198,7 @@ end
 function EditBox:changeCursorPos(newPos)
     local input = self.label:getString()
     if newPos >= 0 and newPos <= input:len() then
-        gk.log("[EDITBOX]: change cursorPos %d --> %d, len = %d", self.cursorPos, newPos, input:len())
+        --        gk.log("[EDITBOX]: change cursorPos %d --> %d, len = %d", self.cursorPos, newPos, input:len())
         self.cursorPos = newPos
 
         if not self.cursorNode then
@@ -269,6 +269,15 @@ function EditBox:handleKeyboardEvent()
                 return
             end
             if self.commandPressed then
+                if key == "KEY_BACKSPACE" then
+                    --                        gk.log("[EDITBOX]: clear all chars")
+                    self.label:setString("")
+                    self:changeCursorPos(0)
+                    if self.onInputChangedCallback then
+                        self.onInputChangedCallback(self, self:getInput())
+                    end
+                    return
+                end
                 if key == "KEY_V" then
                     local v = io.popen("pbpaste"):read("*all")
                     if v and v ~= "" then
@@ -360,16 +369,6 @@ function EditBox:handleKeyboardEvent()
                 end
             elseif keyCode == delete then
                 if self.cursorNode then
-                    if self.shiftPressed then
-                        -- clear
-                        --                        gk.log("[EDITBOX]: clear all chars")
-                        self.label:setString("")
-                        self:changeCursorPos(0)
-                        if self.onInputChangedCallback then
-                            self.onInputChangedCallback(self, self:getInput())
-                        end
-                        return
-                    end
                     local deleteChar = function()
                         local str = self:getInput()
                         if self.cursorPos >= 1 and #str >= 1 then

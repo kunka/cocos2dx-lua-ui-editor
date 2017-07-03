@@ -56,6 +56,7 @@ return {
 	   {
 	      _fold = false,
 	      disabledGLProgram = "ShaderUIGrayScale",
+	      height = 50,
 	      id = "button1",
 	      normalSprite = "gk/res/texture/btn_bg.png",
 	      parentId = "shaderTest1",
@@ -63,8 +64,14 @@ return {
 	      scaleY = "$minScale",
 	      selectedGLProgram = "HighLight",
 	      type = "SpriteButton",
+	      width = 150,
 	      x = 151,
 	      y = 434,
+	      capInsets = {
+	         height = 16.667,
+	         width = 50,
+	         x = 50,
+	         y = 16.667},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -79,11 +86,12 @@ return {
 	            x = 75,
 	            y = 25,
 	            fontFile = {
-	               en = ""}}}},
+	               en = "Arial"}}}},
 	   {
 	      _fold = false,
 	      disabledGLProgram = "ShaderUIGrayScale",
 	      enabled = 1,
+	      height = 50,
 	      id = "button2",
 	      normalSprite = "gk/res/texture/btn_bg.png",
 	      parentId = "shaderTest1",
@@ -91,8 +99,14 @@ return {
 	      scaleY = "$minScale",
 	      selectedGLProgram = "HighLight",
 	      type = "SpriteButton",
+	      width = 150,
 	      x = 327,
 	      y = 434,
+	      capInsets = {
+	         height = 16.667,
+	         width = 50,
+	         x = 50,
+	         y = 16.667},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -107,12 +121,13 @@ return {
 	            x = 75,
 	            y = 25,
 	            fontFile = {
-	               en = ""}}}},
+	               en = "Arial"}}}},
 	   {
 	      _fold = true,
 	      cascadeGLProgramEnabled = 1,
 	      disabledGLProgram = "ShaderUIGrayScale",
 	      enabled = 1,
+	      height = 50,
 	      id = "button3",
 	      normalSprite = "gk/res/texture/btn_bg.png",
 	      parentId = "shaderTest1",
@@ -120,12 +135,19 @@ return {
 	      scaleY = "$minScale",
 	      selectedGLProgram = "HighLight",
 	      type = "SpriteButton",
+	      width = 150,
 	      x = 151,
 	      y = 301,
+	      capInsets = {
+	         height = 16.667,
+	         width = 50,
+	         x = 50,
+	         y = 16.667},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      children = {	         {
+	            height = 58,
 	            id = "checkBox1",
 	            normalSprite = "gk/res/texture/check_box_normal.png",
 	            parentId = "button3",
@@ -133,8 +155,14 @@ return {
 	            scaleY = 0.5,
 	            selectedSprite = "gk/res/texture/check_box_selected.png",
 	            type = "CheckBox",
+	            width = 58,
 	            x = 37,
-	            y = 25},
+	            y = 25,
+	            capInsets = {
+	               height = 19.333,
+	               width = 19.333,
+	               x = 19.333,
+	               y = 19.333}},
 	         {
 	            file = "gk/res/texture/check_box_selected.png",
 	            id = "sprite5",
@@ -149,6 +177,7 @@ return {
 	      cascadeGLProgramEnabled = 0,
 	      disabledGLProgram = "ShaderUIGrayScale",
 	      enabled = 0,
+	      height = 50,
 	      id = "button4",
 	      normalSprite = "gk/res/texture/btn_bg.png",
 	      parentId = "shaderTest1",
@@ -156,12 +185,19 @@ return {
 	      scaleY = "$minScale",
 	      selectedGLProgram = "HighLight",
 	      type = "SpriteButton",
+	      width = 150,
 	      x = 327,
 	      y = 301,
+	      capInsets = {
+	         height = 16.667,
+	         width = 50,
+	         x = 50,
+	         y = 16.667},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      children = {	         {
+	            height = 58,
 	            id = "checkBox2",
 	            normalSprite = "gk/res/texture/check_box_normal.png",
 	            parentId = "button4",
@@ -169,8 +205,14 @@ return {
 	            scaleY = 0.5,
 	            selectedSprite = "gk/res/texture/check_box_selected.png",
 	            type = "CheckBox",
+	            width = 58,
 	            x = 37,
-	            y = 25},
+	            y = 25,
+	            capInsets = {
+	               height = 19.333,
+	               width = 19.333,
+	               x = 19.333,
+	               y = 19.333}},
 	         {
 	            file = "gk/res/texture/check_box_selected.png",
 	            id = "sprite4",
@@ -185,6 +227,7 @@ return {
 	      cascadeGLProgramEnabled = 0,
 	      disabledGLProgram = "ShaderUIGrayScale",
 	      enabled = 1,
+	      height = 50,
 	      id = "button5",
 	      normalSprite = "gk/res/texture/btn_bg.png",
 	      parentId = "shaderTest1",
@@ -192,12 +235,19 @@ return {
 	      scaleY = "$minScale",
 	      selectedGLProgram = "HighLight",
 	      type = "SpriteButton",
+	      width = 150,
 	      x = 518,
 	      y = 301,
+	      capInsets = {
+	         height = 16.667,
+	         width = 50,
+	         x = 50,
+	         y = 16.667},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      children = {	         {
+	            height = 58,
 	            id = "checkBox3",
 	            normalSprite = "gk/res/texture/check_box_normal.png",
 	            parentId = "button5",
@@ -205,8 +255,14 @@ return {
 	            scaleY = 0.5,
 	            selectedSprite = "gk/res/texture/check_box_selected.png",
 	            type = "CheckBox",
+	            width = 58,
 	            x = 37,
-	            y = 25},
+	            y = 25,
+	            capInsets = {
+	               height = 19.333,
+	               width = 19.333,
+	               x = 19.333,
+	               y = 19.333}},
 	         {
 	            file = "gk/res/texture/check_box_selected.png",
 	            id = "sprite6",
@@ -229,7 +285,7 @@ return {
 	      x = 130,
 	      y = 720,
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -246,7 +302,7 @@ return {
 	      x = 306,
 	      y = 720,
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -263,7 +319,7 @@ return {
 	      x = 480,
 	      y = 720,
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -280,7 +336,7 @@ return {
 	      x = 660,
 	      y = 720,
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -300,7 +356,7 @@ return {
 	         x = 0,
 	         y = 0.5},
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -320,7 +376,7 @@ return {
 	         x = 0,
 	         y = 0.5},
 	      fontFile = {
-	         en = ""},
+	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}}}}

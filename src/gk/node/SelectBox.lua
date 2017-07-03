@@ -15,13 +15,27 @@ function SelectBox:ctor(size, items, index)
     self:enableNodeEvents()
     self:setContentSize(size)
     self.selectItems = items
-    self.selectIndex = index or 1
-    self.selectIndex = cc.clampf(self.selectIndex, 1, #items)
+    self.selectIndex = index or 0
+    self.selectIndex = cc.clampf(self.selectIndex, 0, #items)
     self.isEnabled = true
 end
 
 function SelectBox:onSelectChanged(callback)
     self.onSelectChangedCallback = callback
+end
+
+function SelectBox:setItems(items)
+    self.selectItems = clone(items)
+    self.selectIndex = cc.clampf(self.selectIndex, 0, #items)
+end
+
+function SelectBox:setSelectIndex(index)
+    if index ~= self.selectIndex and index > 0 and index <= #self.selectItems then
+        self.label:setString(self.selectItems[index])
+        if self.onSelectChangedCallback then
+            self.onSelectChangedCallback(index)
+        end
+    end
 end
 
 function SelectBox:setScale9SpriteBg(scale9Sprite)
@@ -36,12 +50,15 @@ function SelectBox:setScale9SpriteBg(scale9Sprite)
             self:openPopup()
         end
     end)
+    self.bgButton = button
 end
 
 function SelectBox:setDisplayLabel(label)
     assert(label:getParent() == nil, "SelectBox's display label cannot be added again!")
     self.label = label
-    self.label:setString(self.selectItems[self.selectIndex])
+    if self.selectIndex > 0 then
+        self.label:setString(self.selectItems[self.selectIndex])
+    end
     self:addChild(label)
     local contentSize = self:getContentSize()
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
@@ -61,7 +78,7 @@ function SelectBox:didCreatePopupLabel(callback)
 end
 
 function SelectBox:openPopup()
-    gk.log("openPopup")
+    --    gk.log("openPopup")
     self:closePopup()
     local bg = gk.create_scale9_sprite("gk/res/texture/selectbox_bg.png", cc.rect(20, 20, 20, 20))
     local size = self:getContentSize()
@@ -95,7 +112,7 @@ function SelectBox:openPopup()
             label:setDimensions(size.width, size.height)
             label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-            label:setTextColor(i == self.selectIndex and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+            label:setTextColor(i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
             if self.popupLabelDidCreated then
                 self.popupLabelDidCreated(label)
             end
@@ -109,10 +126,10 @@ function SelectBox:openPopup()
             button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
             button:onClicked(function()
                 self:closePopup()
-                if self.selectIndex ~= i then
+                if self.selectIndex ~= i and i > 0 and i <= #self.selectItems then
                     self.selectIndex = i
                     self.label:setString(self.selectItems[i])
-                    label:setTextColor(i == self.selectIndex and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                    label:setTextColor(i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
                     if self.onSelectChangedCallback then
                         self.onSelectChangedCallback(i)
                     end
@@ -140,9 +157,11 @@ function SelectBox:openPopup()
                 if gk.util:instanceof(child, "Button") then
                     local label = child:getContentNode():getChildren()[1]
                     if gk.util:touchInNode(child, location) then
-                        label:setTextColor(cc.c3b(45, 35, 255))
+                        --                        label:setTextColor(cc.c3b(45, 35, 255))
+                        child:getContentNode():setOpacity(255)
                     else
-                        label:setTextColor(self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                        --                        label:setTextColor(self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                        child:getContentNode():setOpacity(0)
                     end
                 end
             end
@@ -157,7 +176,7 @@ function SelectBox:closePopup()
         if not root then
             self.popup = nil
         else
-            gk.log("closePopup")
+            --            gk.log("closePopup")
             self.popup:removeFromParent()
             self.popup = nil
         end

@@ -10,9 +10,16 @@ local Scene = class("Scene", function()
     return cc.Scene:create()
 end)
 
-function Scene:ctor(layerName)
-    gk.log("Scene(%s:ctor)", layerName)
-    self.sceneType = layerName
+function Scene:ctor()
+    if gk.displayRuntimeVersion then
+        local version = gk:getRuntimeVersion()
+        local label = cc.Label:createWithSystemFont(version, "Arial", 12)
+        label:setTextColor(cc.c3b(230, 230, 230))
+        self:addChild(label, 999999999, gk.util.tags.versionTag)
+        label:setAnchorPoint(cc.p(1, 0))
+        label:setScale(gk.display:minScale())
+        label:setPosition((gk.display.leftWidth or 0) + gk.display:scaleX(gk.display:designSize().width - 1), gk.display.bottomHeight or 0)
+    end
 end
 
 function Scene:showDialog(dialogName, ...)

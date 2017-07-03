@@ -52,6 +52,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      height = 58,
 	      id = "checkBox1",
 	      normalSprite = "gk/res/texture/check_box_normal.png",
 	      parentId = "NodeTest",
@@ -59,8 +60,14 @@ return {
 	      scaleY = "$minScale",
 	      selectedSprite = "gk/res/texture/check_box_selected.png",
 	      type = "CheckBox",
+	      width = 58,
 	      x = 380,
 	      y = 603,
+	      capInsets = {
+	         height = 19.333,
+	         width = 19.333,
+	         x = 19.333,
+	         y = 19.333},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},

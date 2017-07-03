@@ -113,4 +113,4 @@ return {
 	fontFiles = {	   "Cambria.fnt",
 	   "Klee.fnt",
 	   "Verdana.ttf",
-	   "msyh.ttf"}}
+	   "Wingdings.ttf"}}

@@ -5,6 +5,61 @@
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
 
+if cc.Application:getInstance():getTargetPlatform() ~= 2 then
+    local v = import(".runtimeversion")
+    gk.runtimeVersion = v.version
+end
+
+-- xx.xx.xx.xx
+gk.getRuntimeVersion = function()
+    if gk.runtimeVersion then
+        return gk.runtimeVersion
+    end
+    local version
+    if cc.Application:getInstance():getTargetPlatform() == 2 then
+        local path = cc.FileUtils:getInstance():fullPathForFilename("gk/core/runtimeversion.lua")
+        if path and path ~= "" then
+            package.loaded[path] = nil
+            local status, result = pcall(require, path)
+            if status then
+                gk.runtimeVersion = result.version
+                return result.version
+            else
+                local table2lua = require("gk.tools.table2lua")
+                if not gk.exception then
+                    io.writefile(path, table2lua.encode_pretty({ version }))
+                end
+            end
+        else
+            local path = cc.FileUtils:getInstance():fullPathForFilename("gk/core/init.lua")
+            local pos = string.find(path, "/init.lua")
+            if pos then
+                path = path:sub(1, pos - 1) .. "/runtimeversion.lua"
+                local table2lua = require("gk.tools.table2lua")
+                if not gk.exception then
+                    io.writefile(path, table2lua.encode_pretty({ version = "0.0.0.0" }))
+                end
+            end
+        end
+    end
+    return "0.0.0.0"
+end
+
+gk.increaseRuntimeVersion = function()
+    if cc.Application:getInstance():getTargetPlatform() == 2 then
+        local version = gk:getRuntimeVersion()
+        local vs = string.split(version, ".")
+        vs[#vs] = tostring(tonumber(vs[#vs]) + 1)
+        version = table.concat(vs, ".")
+        gk.runtimeVersion = version
+        local table2lua = require("gk.tools.table2lua")
+        if not gk.exception then
+            local path = cc.FileUtils:getInstance():fullPathForFilename("gk/core/runtimeversion.lua")
+            io.writefile(path, table2lua.encode_pretty({ version = version }))
+        end
+    end
+end
+
 import(".List")
 import(".log")
 gk.event = import(".event")

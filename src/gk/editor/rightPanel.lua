@@ -189,11 +189,12 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
     label:setTextColor(cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
-    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setDimensions(contentSize.height, contentSize.height)
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    label:setScale(0.8, 1)
     local button = gk.ZoomButton.new(label)
-    button:setScale(1, 0.8)
-    button:setPosition(contentSize.width - 15, contentSize.height / 2)
+    button:setPosition(contentSize.width, contentSize.height / 2)
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
@@ -246,11 +247,12 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
     label:setTextColor(cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
-    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setDimensions(contentSize.height, contentSize.height)
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    label:setScale(0.8, 1)
     local button = gk.ZoomButton.new(label)
-    button:setScale(1, 0.8)
-    button:setPosition(contentSize.width - 15, contentSize.height / 2)
+    button:setPosition(contentSize.width, contentSize.height / 2)
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
@@ -259,6 +261,18 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
         end
     end)
     return node
+end
+
+function panel:createHintSelectBox(items, index, x, y, width, callback, defValue)
+    local hint_width = 16
+    local box = self:createSelectBox(items, index, x, y, width, callback, defValue)
+    box.bg:hide()
+    box.label:hide()
+    box.bg:setContentSize(cc.size(hint_width / scale, box.bg:getContentSize().height))
+    box.bgButton:setContentNode(box.bg)
+    box.bgButton:setPositionX(box:getContentSize().width)
+    box.bgButton:setAnchorPoint(1, 0.5)
+    return box
 end
 
 function panel:createLine(y)
@@ -334,31 +348,44 @@ function panel:displayNode(node)
         return label
     end
 
-    local function createInputLong(title, key, type, default)
+    local function createInputLong(title, key, tp, default)
+        if not title then
+            title = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
+        end
+        local var = node.__info[key]
+        if type(tp) == "number" then
+            var = math.shrink(var, 3)
+        end
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, key, input, type))
+        self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            editBox:setInput(generator:modify(node, key, input, tp))
         end, default)
         yIndex = yIndex + 1
     end
 
-    local function createInputMiddle(title, l, r, lkey, rkey, type, ldefault, rdefault)
+    local function createInputMiddle(title, l, r, lkey, rkey, tp, ldefault, rdefault)
         self:createLabel(title, leftX, topY - stepY * yIndex)
         local linput, rinput
         if lkey then
             local lkeys = string.split(lkey, ".")
             local lvar = #lkeys == 1 and node.__info[lkey] or node.__info[lkeys[1]][lkeys[2]]
+            if type(lvar) == "number" then
+                lvar = math.shrink(lvar, 3)
+            end
             self:createLabel(l, leftX_input_1_left, topY - stepY * yIndex)
             linput = self:createInput(tostring(lvar), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-                editBox:setInput(generator:modify(node, lkey, input, type))
+                editBox:setInput(generator:modify(node, lkey, input, tp))
             end, ldefault)
         end
         if rkey then
             local rkeys = string.split(rkey, ".")
             local rvar = #rkeys == 1 and node.__info[rkey] or node.__info[rkeys[1]][rkeys[2]]
+            if type(rvar) == "number" then
+                rvar = math.shrink(rvar, 3)
+            end
             self:createLabel(r, leftX_input_2_left, topY - stepY * yIndex)
             rinput = self:createInput(tostring(rvar), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-                editBox:setInput(generator:modify(node, rkey, input, type))
+                editBox:setInput(generator:modify(node, rkey, input, tp))
             end, rdefault)
         end
         yIndex = yIndex + 1
@@ -434,23 +461,99 @@ function panel:displayNode(node)
     -- position
     if not isRootNode then
         createInputMiddle("Position", "X", "Y", "x", "y", "number", 0, 0)
-        local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
-        local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
-        createSelectBox("ScalePos", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
-            generator.config.defValues["scaleXY"].x, generator.config.defValues["scaleXY"].y)
+        local vars = {}
+        local index = 0
+        local pos = cc.p(node.__info.x, node.__info.y)
+        local ps = {}
+        for i, p in ipairs(gk.generator.config.hintPositions) do
+            table.insert(ps, { p = clone(p), desc = p.x .. ", " .. p.y })
+        end
+
+        local sx, sy = gk.util:getGlobalScale(node:getParent())
+        local size
+        if sx ~= 1 or sy ~= 1 then
+            size = node:getParent():getContentSize()
+        else
+            size = gk.display:designSize()
+        end
+        local p = cc.p(size.width / 2, size.height / 2)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (CENTER)" })
+        local p = cc.p(0, size.height)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (TOP_LEFT)" })
+        local p = cc.p(size.width, size.height)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (TOP_RIGHT)" })
+        local p = cc.p(0, 0)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (BOTOOM_LEFT)" })
+        local p = cc.p(size.width, 0)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (BOTOOM_RIGHT)" })
+        local p = cc.p(size.width / 2, pos.y)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (HORIZONTAL_CENTER)" })
+        local p = cc.p(pos.x, size.height / 2)
+        table.insert(ps, { p = p, desc = p.x .. ", " .. p.y .. " (VERTICAL_CENTER)" })
+
+        for i, p in ipairs(ps) do
+            vars[i] = p.desc
+            if index == 0 and gk.util:table_eq(pos, p.p) then
+                index = i
+            end
+        end
+        self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
+            node.__info.x, node.__info.y = ps[index].p.x, ps[index].p.y
+            gk.event:post("displayNode", node)
+        end)
     end
+
+    local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
+    local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
+    createSelectBox("ScalePos", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
+        generator.config.defValues["scaleXY"].x, generator.config.defValues["scaleXY"].y)
+
     createInputMiddle("AnchorPoint", "X", "Y", "anchor.x", "anchor.y", "number")
+    local vars = {
+        cc.p(0, 0), cc.p(0, 1), cc.p(1, 0), cc.p(1, 1), cc.p(0.5, 0.5),
+        cc.p(0.5, 0), cc.p(0.5, 1), cc.p(0, 0.5), cc.p(1, 0.5)
+    }
+    local anchor = node.__info.anchor
+    local index = 0
+    local vs = {}
+    for i, a in ipairs(vars) do
+        vs[i] = a.x .. ", " .. a.y
+        if index == 0 and gk.util:table_eq(a, anchor) then
+            index = i
+        end
+    end
+    self:createHintSelectBox(vs, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
+        node.__info.anchor = vars[index]
+        gk.event:post("displayNode", node)
+    end)
+
     createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
     -- size
     if not isLabel and not isTableView then
         local w, h = createInputMiddle("ContentSize", "W", "H", "width", "height", "number")
-        if (isSprite and not isScale9Sprite) or isButton then
+
+        local vars = {}
+        local index = 0
+        local size = cc.size(node.__info.width, node.__info.height)
+        for i, s in ipairs(gk.generator.config.hintContentSizes) do
+            vars[i] = s.width .. ", " .. s.height
+            if index == 0 and gk.util:table_eq(size, s) then
+                index = i
+            end
+        end
+        local box = self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
+            local size = gk.generator.config.hintContentSizes[index]
+            node.__info.width, node.__info.height = size.width, size.height
+            gk.event:post("displayNode", node)
+        end)
+        if (isSprite and not isScale9Sprite) or (isButton and not isSpriteButton) then
             w:setOpacity(150)
             w:setCascadeOpacityEnabled(true)
             w.isEnabled = false
             h:setOpacity(150)
             h:setCascadeOpacityEnabled(true)
             h.isEnabled = false
+            box:hide()
         end
         if not isSprite then
             local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
@@ -499,7 +602,19 @@ function panel:displayNode(node)
             editBox:setInput(generator:modify(node, "color.b", input, "number"))
         end, 255)
         yIndex = yIndex + 1
-        -- TODO LayerColor at once
+        local vars = {}
+        local index = 0
+        local color = node.__info.color
+        for i, c3b in ipairs(gk.generator.config.hintColor3Bs) do
+            vars[i] = c3b.r .. "," .. c3b.g .. "," .. c3b.b .. (string.format("(#%02x%02x%02x)", c3b.r, c3b.g, c3b.b))
+            if index == 0 and gk.util:table_eq(c3b, color) then
+                index = i
+            end
+        end
+        self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
+            node.__info.color = gk.generator.config.hintColor3Bs[index]
+            gk.event:post("displayNode", node)
+        end)
     end
 
     if not isScrollView then
@@ -620,15 +735,34 @@ function panel:displayNode(node)
         createInputLong("SelectedSprite", "selectedSprite", "string", "")
         createInputLong("DisabledSprite", "disabledSprite", "string", "")
     end
-    if isScale9Sprite or isEditBox then
+    if isScale9Sprite or isEditBox or isSpriteButton then
         createInputMiddle("CapInsets", "X", "Y", "capInsets.x", "capInsets.y", "number")
         createInputMiddle("", "W", "H", "capInsets.width", "capInsets.height", "number")
     end
+    local createHintFontSize = function(key)
+        local vars = {}
+        local index = 0
+        local size = node.__info[key]
+        for i, s in ipairs(gk.generator.config.hintFontSizes) do
+            vars[i] = "" .. s
+            if size == s then
+                index = i
+            end
+        end
+        self:createHintSelectBox(vars, index, leftX_input_2, topY - stepY * (yIndex - 1), inputMiddle, function(index)
+            local size = gk.generator.config.hintFontSizes[index]
+            node.__info[key] = size
+            gk.event:post("displayNode", node)
+        end)
+    end
+
     if isEditBox then
         createInputLong("Text", "text", "string", "")
         createInputLong("Placeholder", "placeHolder", "string", "")
         createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
+        createHintFontSize("fontSize")
         createInputMiddle("PlaceholderFontSize", "", "", nil, "placeholderFontSize", "number")
+        createHintFontSize("placeholderFontSize")
         createInputMiddle("MaxLength", "", "", nil, "maxLength", "number", -1)
         local hAligns = { "LEFT", "CENTER", "RIGHT" }
         createSelectBoxLong("HAlignment", hAligns, "textHAlign", "number", "LEFT")
@@ -801,6 +935,7 @@ function panel:displayNode(node)
             createInputMiddle("LineHeight", "", "", nil, "lineHeight", "number", 0, -1)
         end
         createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
+        createHintFontSize("fontSize")
         if not isSystemFont and node.__info.lineHeight then
             createInputMiddle("AdditionalKerning", "", "", nil, "additionalKerning", "number", 0, 0)
         end
@@ -927,8 +1062,8 @@ function panel:displayNode(node)
     end
     if isParticleSystemQuad then
         createTitle("cc.ParticleSystemQuad")
-        createInputLong("PlistFile", "particle", "string")
-        createInputLong("TotalParticles", "totalParticles", "string")
+        createInputLong("PlistFile", "particle", "string", "")
+        createInputLong("TotalParticles", "totalParticles", "number")
         createInputLong("DisplayFrame", "displayFrame", "string", "")
         createInputLong("Duration", "duration", "number", -1)
         createCheckBox("AutoRemoveOnFinish(ReleaseMode)", "autoRemoveOnFinish")
@@ -938,6 +1073,45 @@ function panel:displayNode(node)
         createSelectBoxLong("EmitterMode", types, "emitterMode", "number", "GRAVITY")
         local types = { "FREE", "RELATIVE", "GROUPED" }
         createSelectBoxLong("PositionType", types, "positionType", "number", "FREE")
+        createInputLong(nil, "speed", "number", 0)
+        createInputLong(nil, "speedVar", "number", 0)
+        createInputLong(nil, "tangentialAccel", "number", 0)
+        createInputLong(nil, "tangentialAccelVar", "number", 0)
+        createInputLong(nil, "radialAccel", "number", 0)
+        createInputLong(nil, "radialAccelVar", "number", 0)
+        --        createInputLong(nil, "rotationIsDir", "number", 0)
+        --        createCheckBox("RotationIsDir", "rotationIsDir")
+        if node.__info.emitterMode == cc.PARTICLE_MODE_RADIUS then
+            createInputLong(nil, "startRadius", "number", 0)
+            createInputLong(nil, "startRadiusVar", "number", 0)
+            createInputLong(nil, "endRadius", "number", 0)
+            createInputLong(nil, "endRadiusVar", "number", 0)
+            createInputLong(nil, "rotatePerSecond", "number", 0)
+            createInputLong(nil, "rotatePerSecondVar", "number", 0)
+        end
+        createInputMiddle("SourcePosition", "X", "Y", "sourcePosition.x", "sourcePosition.y", "number", 0, 0)
+        createInputMiddle("PosVar", "X", "Y", "posVar.x", "posVar.y", "number", 0, 0)
+        createInputLong(nil, "life", "number", 0)
+        createInputLong(nil, "lifeVar", "number", 0)
+        createInputLong(nil, "angle", "number", 0)
+        createInputLong(nil, "angleVar", "number", 0)
+        createInputLong(nil, "startSize", "number", 0)
+        createInputLong(nil, "startSizeVar", "number", 0)
+        createInputLong(nil, "endSize", "number", 0)
+        createInputLong(nil, "endSizeVar", "number", 0)
+        createInputMiddle("StartColor4F", "R", "G", "startColor.r", "startColor.g", "number", 0, 0)
+        createInputMiddle("", "B", "A", "startColor.b", "startColor.a", "number", 0, 0)
+        createInputMiddle("StartColorVar4F", "R", "G", "startColorVar.r", "startColorVar.g", "number", 0, 0)
+        createInputMiddle("", "B", "A", "startColorVar.b", "startColorVar.a", "number", 0, 0)
+        createInputMiddle("EndColor4F", "R", "G", "endColor.r", "endColor.g", "number", 0, 0)
+        createInputMiddle("", "B", "A", "endColor.b", "endColor.a", "number", 0, 0)
+        createInputMiddle("EndColorVar4F", "R", "G", "endColorVar.r", "endColorVar.g", "number", 0, 0)
+        createInputMiddle("", "B", "A", "endColorVar.b", "endColorVar.a", "number", 0, 0)
+        createInputLong(nil, "startSpin", "number", 0)
+        createInputLong(nil, "startSpinVar", "number", 0)
+        createInputLong(nil, "endSpin", "number", 0)
+        createInputLong(nil, "endSpinVar", "number", 0)
+        createInputLong(nil, "emissionRate", "number", 0)
     end
 
     -- custom ext node

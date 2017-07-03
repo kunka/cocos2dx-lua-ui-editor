@@ -148,7 +148,11 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
                 if dt > 0.5 then
                     dt = 0.5
                 end
-                self.displayInfoNode:runAction(cc.EaseInOut:create(cc.MoveTo:create(dt, cc.p(0, y)), 2))
+                if self.lastDisplayingPos.y ~= 0 then
+                    self.displayInfoNode:runAction(cc.EaseInOut:create(cc.MoveTo:create(dt, cc.p(0, y)), 2))
+                else
+                    self.displayInfoNode:setPositionY(y)
+                end
                 self.lastDisplayingPos = cc.p(0, y)
             end
         elseif (not forceUnfold) or (self.displayingDomDepth ~= -1 and self.foldDomDepth and self.foldDomDepth > self.displayingDomDepth) then
@@ -162,7 +166,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) or node:getTag() > 9999 then
         return
     end
-    local fixChild = node.__info == nil
+    local fixChild = node.__info == nil or node.__ingore
     local realNode = node
     local size = self:getContentSize()
     local topY = size.height - marginTop
@@ -384,8 +388,8 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                             node:release()
                             gk.log("dom:move node to %.2f, %.2f", node.__info.x, node.__info.y)
                             gk.event:post("displayDomTree")
-                            self._containerNode = nil
-                            return
+                            gk.event:post("postSync")
+                            self.mode = 0
                         end
                     elseif self.mode == 1 then
                         -- reorder mode
@@ -481,7 +485,11 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         return label
     end
 
-    createButton(fixChild and tolua.type(node) or node.__info.id, leftX + stepX * layer, topY - stepY * self.domDepth, displayName)
+    local title = fixChild and tolua.type(node) or node.__info.id
+    if node.__ingore then
+        title = node.__info.type
+    end
+    createButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, displayName)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
     local preWidgetParent = widgetParent
@@ -494,8 +502,9 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         -- force unfold
         node.__info._fold = false
     end
+
     if fixChild or not node.__info._fold then
-        if tolua.type(node) == "cc.TMXLayer" then
+        if tolua.type(node) == "cc.TMXLayer" or node.__ingore then
             return
         end
         node:sortAllChildren()

@@ -12,6 +12,7 @@ gk.mode = gk.MODE_RELEASE
 gk.defaultSpritePathDebug = "gk/res/texture/default.png"
 gk.defaultSpritePathRelease = "gk/res/texture/release.png"
 gk.exception = false
+gk.displayRuntimeVersion = true
 
 -- export global variable
 local __g = _G
@@ -30,3 +31,4 @@ require "gk.node.init"
 require "gk.controller.init"
 require "gk.editor.init"
 gk.util = require "gk.tools.util"
+gk.scheduler = require "gk.tools.scheduler"

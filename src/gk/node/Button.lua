@@ -118,7 +118,7 @@ end
 
 function Button:setSwallowTouches(swallowTouches)
     if self.swallowTouches ~= swallowTouches then
-        gk.log("[%s]: setSwallowTouches %s", self.__cname, swallowTouches)
+        --        gk.log("[%s]: setSwallowTouches %s", self.__cname, swallowTouches)
         self.swallowTouches = swallowTouches
         if self.touchListener then
             self.touchListener:setSwallowTouches(swallowTouches)
@@ -135,7 +135,7 @@ function Button:updateDelaySelect()
             if gk.util:instanceof(c, "cc.ScrollView") then
                 self.delaySelect = true
                 self:setSwallowTouches(false)
-                gk.log("[%s]: In ScrollView, auto set delaySelect = true, swallowTouches = false", self.__cname)
+                --                gk.log("[%s]: In ScrollView, auto set delaySelect = true, swallowTouches = false", self.__cname)
                 break
             end
             c = c:getParent()
@@ -230,7 +230,7 @@ function Button:onTouchBegan(touch, event)
         self:updateDelaySelect()
         if self.autoSelected then
             if self.delaySelect then
-                local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.064), cc.CallFunc:create(function()
+                local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.048), cc.CallFunc:create(function()
                     if self.trackingTouch and not self.selected then
                         self:setSelected(true)
                     end

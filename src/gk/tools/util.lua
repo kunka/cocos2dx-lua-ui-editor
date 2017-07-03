@@ -88,7 +88,8 @@ end
 
 function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
-    if not util.restartLayer then
+    local platform = cc.Application:getInstance():getTargetPlatform()
+    if platform == cc.PLATFORM_OS_MAC and not util.restartLayer then
         gk.log("init:registerRestartGameCallback")
         util.restartLayer = cc.Layer:create()
         util.restartLayer:retain()
@@ -133,6 +134,10 @@ function util:restartGame(mode)
         callback()
     end
     self.onRestartGameCallbacks = {}
+    if gk.mode == gk.MODE_EDIT then
+        gk:increaseRuntimeVersion()
+    end
+    gk.scheduler:unscheduleAll()
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
@@ -165,15 +170,17 @@ util.tags = util.tags and util.tags or {
     drawParentTag = 0xFFF1,
     labelTag = 0xFFF2,
     boundsTag = 0xFFF3,
+    versionTag = 0xFFF4,
 }
 
 function util:isDebugNode(node)
     local tag = node and node:getTag() or -1
-    return table.indexof(table.values(util.tags), tag)
+    return tag >= 0xFFF0 --table.indexof(table.values(util.tags), tag)
 end
 
 function util:isDebugTag(tag)
-    return table.indexof(table.values(util.tags), tag)
+    return tag and tag >= 0xFFF0
+    --    return table.indexof(table.values(util.tags), tag)
 end
 
 function util:clearDrawNode(node, tag)
@@ -264,17 +271,12 @@ function util:drawNode(node, c4f, tag)
         -- capInsets
         local rect = node:getCapInsets()
         local sprite = node:getSprite()
-        local originSize = sprite:getContentSize()
+        local originSize = sprite:getSpriteFrame():getOriginalSize()
         local size = node:getContentSize()
-        rect.x = rect.x * size.width / originSize.width
-        -- reverse y
-        rect.y = (originSize.height - rect.y - rect.height) * size.height / originSize.height
-        rect.width = rect.width * size.width / originSize.width
-        rect.height = rect.height * size.height / originSize.height
-        draw:drawRect(cc.p(rect.x, rect.y),
-            cc.p(rect.x + rect.width, rect.y),
-            cc.p(rect.x + rect.width, rect.y + rect.height),
-            cc.p(rect.x, rect.y + rect.height), c4f and c4f or cc.c4f(155 / 255, 0, 0, 0.2))
+        rect.y = originSize.height - rect.y - rect.height
+        rect.width = size.width - (originSize.width - rect.width)
+        rect.height = size.height - (originSize.height - rect.height)
+        self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(0, 0, 1, 0.2), tg)
     end
 
     -- refresh draw, only in test mode
@@ -357,6 +359,13 @@ function util:drawLineOnNode(node, p1, p2, c4f, tg)
     c4f = c4f or cc.c4f(1, 0, 1, 1)
     draw:drawLine(p1, p2, c4f)
     return draw
+end
+
+function util:drawSegmentRectOnNode(node, rect, radius, c4f, tg)
+    self:drawSegmentOnNode(node, cc.p(rect.x, rect.y), cc.p(rect.x + rect.width, rect.y), radius, c4f, tg)
+    self:drawSegmentOnNode(node, cc.p(rect.x + rect.width, rect.y), cc.p(rect.x + rect.width, rect.y + rect.height), radius, c4f, tg)
+    self:drawSegmentOnNode(node, cc.p(rect.x + rect.width, rect.y + rect.height), cc.p(rect.x, rect.y + rect.height), radius, c4f, tg)
+    self:drawSegmentOnNode(node, cc.p(rect.x, rect.y + rect.height), cc.p(rect.x, rect.y), radius, c4f, tg)
 end
 
 function util:drawSegmentOnNode(node, p1, p2, radius, c4f, tg)

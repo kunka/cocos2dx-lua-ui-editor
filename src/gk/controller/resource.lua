@@ -105,6 +105,10 @@ function resource:setSupportLans(lans, defaultLan)
     gk.log("resource.setSupportLans: {%s}, defaultLan = \"%s\", curLan = \"%s\"", table.concat(lans, ","), defaultLan, self:getCurrentLan())
 end
 
+function resource:getSupportLans()
+    return self.lans or {}
+end
+
 ----------------------------- gen node search path -----------------------------------
 function resource:setGenSrcPath(path)
     gk.log("resource:setGenSrcPath \"%s\"", path)
@@ -202,7 +206,6 @@ function resource:flush(path)
         shaderDir = self.shaderDir,
         genDir = self.genDir,
     }
-    -- root container node
     local table2lua = require("gk.tools.table2lua")
     if gk.exception then
         gk.log(table2lua.encode_pretty(info))

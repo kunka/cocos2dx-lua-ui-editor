@@ -11,6 +11,32 @@ local audio = {}
 local engine = cc.SimpleAudioEngine:getInstance()
 function audio:init()
     self.audios = {}
+    self.seOn = cc.UserDefault:getInstance():getBoolForKey("gk_seOn", true)
+    self.bgmOn = cc.UserDefault:getInstance():getBoolForKey("gk_bgmOn", true)
+end
+
+function audio:isSeOn()
+    return self.seOn
+end
+
+function audio:isBgmOn()
+    return self.bgmOn
+end
+
+function audio:setSeOn(var)
+    if self.seOn ~= var then
+        self.seOn = var
+        cc.UserDefault:getInstance():setBoolForKey("gk_seOn", var)
+        cc.UserDefault:getInstance():flush()
+    end
+end
+
+function audio:setBgmOn(var)
+    if self.bgmOn ~= var then
+        self.bgmOn = var
+        cc.UserDefault:getInstance():setBoolForKey("gk_bgmOn", var)
+        cc.UserDefault:getInstance():flush()
+    end
 end
 
 function audio:registerEvent(sid, path, tag)
@@ -51,16 +77,20 @@ function audio:preloadMusic(sid)
 end
 
 function audio:playEffect(sid, isLoop)
-    local s = self.audios[sid]
-    if s then
-        engine:playEffect(s.path, isLoop)
+    if self.seOn then
+        local s = self.audios[sid]
+        if s then
+            engine:playEffect(s.path, isLoop)
+        end
     end
 end
 
 function audio:playMusic(sid, isLoop)
-    local s = self.audios[sid]
-    if s then
-        engine:playMusic(s.path, isLoop)
+    if self.bgmOn then
+        local s = self.audios[sid]
+        if s then
+            engine:playMusic(s.path, isLoop)
+        end
     end
 end
 

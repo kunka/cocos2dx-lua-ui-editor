@@ -16,7 +16,7 @@ SceneManager:init()
 -- Use as scene
 function SceneManager:createScene(layerName, ...)
     -- init scene at first, need create edit panel
-    local scene = cc.Scene:create()
+    local scene = gk.Scene:create()
     local clazz = gk.resource:require(layerName)
     if clazz then
         local layer
@@ -117,7 +117,7 @@ function SceneManager:showDialog(dialogType, ...)
     if clazz then
         local dialog = clazz:create(...)
         return self:showDialogNode(dialog)
-        
+
     else
         gk.log("SceneManager:showDialog error, create dialog class --> %s failed", dialogType)
     end

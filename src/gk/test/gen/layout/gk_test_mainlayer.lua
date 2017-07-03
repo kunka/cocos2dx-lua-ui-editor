@@ -48,8 +48,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "msyh.ttf",
-	               en = "msyh.ttf"},
+	               cn = "Verdana.ttf",
+	               en = "Verdana.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -74,8 +74,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "msyh.ttf",
-	               en = "msyh.ttf"},
+	               cn = "Verdana.ttf",
+	               en = "Verdana.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -120,8 +120,8 @@ return {
 	               g = 255,
 	               r = 255},
 	            fontFile = {
-	               cn = "msyh.ttf",
-	               en = "msyh.ttf"},
+	               cn = "Verdana.ttf",
+	               en = "Verdana.ttf"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},

@@ -88,7 +88,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -115,8 +115,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -144,8 +144,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -173,8 +173,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -202,8 +202,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -229,7 +229,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -258,7 +258,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -287,7 +287,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -316,7 +316,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -343,7 +343,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -371,7 +371,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -397,8 +397,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -476,8 +476,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -569,7 +569,7 @@ return {
 	      parentId = "LabelTest",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
-	      string = "TTFLabel: msyh.ttf",
+	      string = "TTFLabel: Verdana.ttf",
 	      type = "cc.Label",
 	      width = 0,
 	      x = 30,
@@ -585,8 +585,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -639,8 +639,8 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -675,7 +675,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -711,7 +711,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -753,8 +753,8 @@ return {
 	         g = 0,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -795,8 +795,8 @@ return {
 	         g = 0,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
-	         en = "msyh.ttf"},
+	         cn = "Verdana.ttf",
+	         en = "Verdana.ttf"},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -882,7 +882,7 @@ return {
 	         g = 50,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -917,7 +917,7 @@ return {
 	         g = 50,
 	         r = 255},
 	      fontFile = {
-	         cn = "msyh.ttf",
+	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
 	      scaleXY = {
 	         x = "$scaleX",

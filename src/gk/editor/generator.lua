@@ -24,11 +24,18 @@ function generator:deflate(node)
                     info[k] = clone(ret)
                 end
             else
+                -- patch
+                if ret and k == "capInsets" then
+                    ret.x = math.shrink(ret.x, 3)
+                    ret.y = math.shrink(ret.y, 3)
+                    ret.width = math.shrink(ret.width, 3)
+                    ret.height = math.shrink(ret.height, 3)
+                end
                 info[k] = clone(ret)
             end
         end
     end
-    if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
+    if (gk.util:instanceof(node, "Button") and not gk.util:instanceof(node, "SpriteButton")) or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
         info["width"] = nil
         info["height"] = nil
         info["scaleSize"] = nil
@@ -46,7 +53,7 @@ function generator:deflate(node)
         for i = 1, #children do
             local child = children[i]
             if child and child.__info and child.__info.id then
-                if _isWidget and child.__rootTable == node then
+                if child.__ingore or (_isWidget and child.__rootTable == node) then
                     -- ignore widget child
                 else
                     info.children = info.children or {}
@@ -331,7 +338,7 @@ generator.nodeCreator = {
         return node
     end,
     ["SpriteButton"] = function(info, rootTable)
-        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite)
+        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
         info.id = info.id or generator:genID("button", rootTable)
         return node
     end,
@@ -438,6 +445,7 @@ generator.nodeCreator = {
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
         local node = gk.injector:inflateNode(info.type)
+        node.__ingore = false
         -- copy info
         local keys = table.keys(node.__info.__self)
         for _, key in ipairs(keys) do

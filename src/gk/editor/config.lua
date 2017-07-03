@@ -221,7 +221,8 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
+            if (gk.util:instanceof(node, "Button") and not gk.util:instanceof(node, "SpriteButton")) or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite"))
+                    or gk.util:instanceof(node, "TableView") then
                 return
             end
             local width = gk.generator:parseValue("width", node, var)
@@ -247,7 +248,7 @@ config.editableProps = {
             end
         end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "Button") or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
+            if (gk.util:instanceof(node, "Button") and not gk.util:instanceof(node, "SpriteButton")) or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) or gk.util:instanceof(node, "TableView") then
                 return
             end
             if gk.util:instanceof(node, "cc.Label") and node.__info.overflow == 3 then
@@ -315,11 +316,12 @@ config.editableProps = {
                 local sf = gk.create_sprite_frame(var)
                 if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
                     local rect = sf:getRect()
-                    node.__info.capInsets = cc.rect(rect.width / 3, rect.height / 3, rect.width / 3, rect.height / 3)
+                    node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
                 end
                 node:setSpriteFrame(sf, node.__info.capInsets)
                 -- need refresh ...
                 node.__info.width, node.__info.height = node.__info.width, node.__info.height
+                gk.event:post("displayNode", node)
             else
                 node:setSpriteFrame(gk.create_sprite_frame(var))
             end
@@ -557,11 +559,11 @@ config.editableProps = {
             end
         end
     },
-    -- ccui.Scale9Sprite, ccui.EditBox
+    -- ccui.Scale9Sprite, ccui.EditBox, SpriteButton
     capInsets = {
         getter = function(_) return cc.rect(0, 0, 0, 0) end,
         setter = function(node, var)
-            if gk.util:instanceof(node, "ccui.Scale9Sprite") then
+            if gk.util:instanceof(node, "ccui.Scale9Sprite") or gk.util:instanceof(node, "SpriteButton") then
                 node:setCapInsets(var)
             end
         end
@@ -572,6 +574,12 @@ config.editableProps = {
         setter = function(node, var)
             if gk.util:instanceof(node, "SpriteButton") then
                 node:setNormalSprite(var)
+                if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
+                    local rect = node:getContentNode():getSpriteFrame():getRect()
+                    node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
+                end
+                -- need refresh ...
+                node.__info.width, node.__info.height = node.__info.width, node.__info.height
                 gk.event:post("displayNode", node)
             end
         end
@@ -733,6 +741,27 @@ function config:registerDefaultGetterProp(key, defaultValue)
     }
 end
 
+function config:getDefaultValue(node, key)
+    local prop = config.editableProps[key]
+    if prop then
+        -- must clone value
+        return clone(prop.getter(node))
+    end
+    gk.log("[Error] config:getDefaultValue, not registered prop, type = %s, prop = %s", node and node.__info.type or "?", key)
+    return nil
+end
+
+function config:setValue(node, key, value)
+    local prop = config.editableProps[key]
+    if prop and prop.setter then
+        -- must clone value
+        prop.setter(node, value)
+    else
+        -- some props do not have setter
+    end
+end
+
+-- properties for Editor
 config:registerPlaneProp("_isWidget", false)
 config:registerPlaneProp("_voidContent", false)
 config:registerPlaneProp("_lock", 1)
@@ -758,7 +787,6 @@ config:registerBoolProp("visible")
 
 -- cc.Sprite
 config:registerProp("blendFunc")
---config:registerProp("centerRect") -- for slice
 -- cc.Sprite, ccui.Scale9Sprite
 config:registerBoolProp("flippedX")
 -- ccui.Scale9Sprite
@@ -859,25 +887,63 @@ config:registerBoolProp("blendAdditive")
 config:registerFloatProp("duration")
 config:registerProp("emitterMode")
 config:registerProp("positionType")
+config:registerFloatProp("speed")
+config:registerFloatProp("speedVar")
+config:registerFloatProp("tangentialAccel")
+config:registerFloatProp("tangentialAccelVar")
+config:registerFloatProp("radialAccel")
+config:registerFloatProp("radialAccelVar")
+--config:registerBoolProp("rotationIsDir")
+config:registerFloatProp("startRadius")
+config:registerFloatProp("startRadiusVar")
+config:registerFloatProp("endRadius")
+config:registerFloatProp("endRadiusVar")
+config:registerFloatProp("rotatePerSecond")
+config:registerFloatProp("rotatePerSecondVar")
+config:registerProp("sourcePosition")
+config:registerProp("posVar")
+config:registerFloatProp("life")
+config:registerFloatProp("lifeVar")
+config:registerFloatProp("angle")
+config:registerFloatProp("angleVar")
+config:registerFloatProp("startSize")
+config:registerFloatProp("startSizeVar")
+config:registerFloatProp("endSize")
+config:registerFloatProp("endSizeVar")
+config:registerProp("startColor")
+config:registerProp("startColorVar")
+config:registerProp("endColor")
+config:registerProp("endColorVar")
+config:registerFloatProp("startSpin")
+config:registerFloatProp("startSpinVar")
+config:registerFloatProp("endSpin")
+config:registerFloatProp("endSpinVar")
+config:registerFloatProp("emissionRate")
 
-function config:getDefaultValue(node, key)
-    local prop = config.editableProps[key]
-    if prop then
-        -- must clone value
-        return clone(prop.getter(node))
-    end
-    gk.log("[Error] config:getDefaultValue, not registered prop, type = %s, prop = %s", node and node.__info.type or "?", key)
-    return nil
+
+config.hintColor3Bs = {}
+function config:registerHintColor3B(c3b)
+    table.insert(self.hintColor3Bs, c3b)
 end
 
-function config:setValue(node, key, value)
-    local prop = config.editableProps[key]
-    if prop and prop.setter then
-        -- must clone value
-        prop.setter(node, value)
-    else
-        -- some props do not have setter
-    end
+config.hintPositions = {}
+function config:registerHintPosition(pos)
+    table.insert(self.hintPositions, pos)
 end
+
+config.hintContentSizes = {}
+function config:registerHintContentSize(size)
+    table.insert(self.hintContentSizes, size)
+end
+
+config.hintFontSizes = {}
+function config:registerHintFontSize(size)
+    table.insert(self.hintFontSizes, size)
+end
+
+config:registerHintColor3B(cc.c3b(255, 255, 255))
+config:registerHintColor3B(cc.c3b(0, 0, 0))
+config:registerHintContentSize({ width = "$fill", height = "$fill" })
+config:registerHintFontSize(24)
 
 return config
