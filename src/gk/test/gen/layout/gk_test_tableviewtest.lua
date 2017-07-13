@@ -28,7 +28,7 @@ return {
 	         g = 100,
 	         r = 100}},
 	   {
-	      _fold = true,
+	      _fold = false,
 	      cellAtIndex = "&cellAtIndex",
 	      cellNums = "&cellNumForTable",
 	      cellSizeForIndex = "&cellSizeForTable",

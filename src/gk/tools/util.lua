@@ -99,7 +99,7 @@ function util:registerRestartGameCallback(callback)
                 return
             end
             local key = cc.KeyCodeKey[keyCode + 1]
-            gk.log("RestartLayer: onKeypad %s", key)
+            --            gk.log("RestartLayer: onKeypad %s", key)
             if key == "KEY_F1" then
                 -- debug mode, restart with current editing node
                 util:restartGame(1)
@@ -142,13 +142,13 @@ function util:restartGame(mode)
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
     scene:runAction(cc.CallFunc:create(function()
-        --        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
-        gk.log("removeResBeforeRestartGame")
-        cc.Director:getInstance():purgeCachedData()
-        gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-        collectgarbage("collect")
-        gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-        --        end
+        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
+            gk.log("removeResBeforeRestartGame")
+            cc.Director:getInstance():purgeCachedData()
+            gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+            collectgarbage("collect")
+            gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+        end
         if util.restartGameCallback then
             util.restartGameCallback(mode)
         end
@@ -677,7 +677,6 @@ function util:instanceof(obj, classname)
     return false
 end
 
-
 local function dump_value_(v)
     if type(v) == "string" then
         v = "\"" .. v .. "\""
@@ -736,7 +735,7 @@ function util:dump(value, description, nesting)
         end
     end
 
-    dump_(value, description, "- ", 1)
+    dump_(value, description, "  ", 1)
 
     for i, line in ipairs(result) do
         gk.log(line)
@@ -750,6 +749,15 @@ end
 
 function util:pointEql(p1, p2)
     return self:floatEql(p1.x, p2.x) and self:floatEql(p1.y, p2.y)
+end
+
+function util:getBoundingBoxToScreen(node)
+    local p = node:convertToWorldSpace(cc.p(0, 0))
+    local bb = node:getContentSize()
+    local sx, sy = util:getGlobalScale(node)
+    bb.width = bb.width * sx
+    bb.height = bb.height * sy
+    return cc.rect(p.x, p.y, bb.width, bb.height)
 end
 
 return util

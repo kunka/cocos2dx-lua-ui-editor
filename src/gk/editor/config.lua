@@ -85,6 +85,8 @@ config.defValues = {
     _voidContent = false,
     _lock = 1,
     _fold = false,
+    x = 0,
+    y = 0,
     scaleX = "1",
     scaleY = "1",
     skewX = 0,
@@ -867,9 +869,12 @@ config:registerProp("barChangeRate")
 config:registerBoolProp("selected")
 
 -- ccui.EditBox
+config:registerProp("fontName")
 config:registerProp("text")
 config:registerProp("placeHolder")
 config:registerFloatProp("placeholderFontSize")
+config:registerProp("fontColor")
+config:registerProp("placeholderFontColor")
 config:registerFloatProp("maxLength")
 config:registerProp("textHAlign", "TextHorizontalAlignment")
 config:registerProp("inputMode")

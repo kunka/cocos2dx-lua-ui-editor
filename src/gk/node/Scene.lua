@@ -10,7 +10,8 @@ local Scene = class("Scene", function()
     return cc.Scene:create()
 end)
 
-function Scene:ctor()
+function Scene:ctor(sceneType)
+    self.__sceneType = sceneType
     if gk.displayRuntimeVersion then
         local version = gk:getRuntimeVersion()
         local label = cc.Label:createWithSystemFont(version, "Arial", 12)

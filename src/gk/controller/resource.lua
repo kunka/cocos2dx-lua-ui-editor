@@ -131,7 +131,7 @@ function resource:scanDir(dir, genSrcPath)
     if not dir or dir == "" then
         return
     end
-    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
+    --    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
     -- scan all gen-able files
     local f = io.popen('ls ' .. dir, "r")
     if f then
@@ -164,7 +164,7 @@ function resource:loadEditableNodes(path, genSrcPath)
                 genSrcPath = genSrcPath,
                 path = genSrcPath .. clazz.__cname
             }
-            gk.log("resource:scanGenNodes file:%s, output --> %s", genSrcPath .. clazz.__cname, genPath)
+            --            gk.log("resource:scanGenNodes file:%s, output --> %s", genSrcPath .. clazz.__cname, genPath)
         end
     end
 end

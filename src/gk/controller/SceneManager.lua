@@ -6,22 +6,19 @@
 -- To change this template use File | Settings | File Templates.
 
 local SceneManager = {}
-
-function SceneManager:init()
-    self.sceneStack = gk.List.new()
-end
-
-SceneManager:init()
+SceneManager.sceneStack = gk.List.new()
 
 -- Use as scene
 function SceneManager:createScene(layerName, ...)
-    -- init scene at first, need create edit panel
-    local scene = gk.Scene:create()
+    -- init scene at first, need create edit panel on edit mode
+    local scene = gk.Scene:create(layerName)
     local clazz = gk.resource:require(layerName)
     if clazz then
         local layer
         local status, _ = xpcall(function(...)
+            gk.profile:start("SceneManager:createScene")
             layer = clazz:create(...)
+            gk.profile:stop("SceneManager:createScene", layerName)
         end, function(msg)
             local msg = debug.traceback(msg, 3)
             gk.util:reportError(msg)
@@ -75,13 +72,12 @@ end
 function SceneManager:pop()
     gk.log("SceneManager:pop")
     local director = cc.Director:getInstance()
-    --    local stack = director:getScenesStack()
-    --    if #stack == 1 then
-    --        if SceneManager.endCallback then
-    --            SceneManager.endCallback()
-    --            return
-    --        end
-    --    end
+    if #self.sceneStack == 1 then
+        if self.endCallback then
+            self.endCallback()
+            return
+        end
+    end
     director:popScene()
     self.sceneStack:popRight()
     self:printSceneStack()
@@ -99,27 +95,13 @@ function SceneManager:popToRootScene()
     end
 end
 
-function SceneManager:printSceneStack()
-    if false then --DEBUG > 0 then
-    gk.log("\n*********************** SceneStack ***********************")
-    local director = cc.Director:getInstance()
-    local stack = director:getScenesStack()
-    for i = #stack, 1, -1 do
-        local s = stack[i]
-        gk.log(s.sceneType)
-    end
-    gk.log("*********************** SceneStack ***********************\n")
-    end
-end
-
 function SceneManager:showDialog(dialogType, ...)
-    local clazz = gk.resource:require(dialogType, ...)
-    if clazz then
-        local dialog = clazz:create(...)
-        return self:showDialogNode(dialog)
-
+    local scene = SceneManager:getRunningScene()
+    if scene and scene.layer and scene.layer.showDialogNode then
+        return scene.layer:showDialog(dialogType)
     else
-        gk.log("SceneManager:showDialog error, create dialog class --> %s failed", dialogType)
+        gk.log("SceneManager:showDialogNode error, cannot find root layer")
+        return nil
     end
 end
 
@@ -131,6 +113,30 @@ function SceneManager:showDialogNode(dialogNode)
         gk.log("SceneManager:showDialogNode error, cannot find root layer")
         return nil
     end
+end
+
+local function printDialogStack(layer, indent)
+    if layer.dialogsStack then
+        for i = 1, #layer.dialogsStack do
+            local d = layer.dialogsStack[i]
+            if d.__dialogType then
+                gk.log(indent .. "[" .. d.__dialogType .. "]")
+                printDialogStack(d, indent .. indent)
+            end
+        end
+    end
+end
+
+function SceneManager:printSceneStack()
+    gk.log("\n*********************** SceneStack ***********************")
+    for i = self.sceneStack.first, self.sceneStack.last do
+        local s = self.sceneStack[i]
+        gk.log(s.__sceneType or "unknown SceneType")
+        if s.layer then
+            printDialogStack(s.layer, "  ")
+        end
+    end
+    gk.log("*********************** SceneStack ***********************\n")
 end
 
 return SceneManager

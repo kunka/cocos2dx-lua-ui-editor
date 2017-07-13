@@ -59,11 +59,7 @@ function panel:subscribeEvent()
         if _voidContent then
             self:displayNode(node)
         else
-            --            local type = tolua.type(node)
-            --            if type == "cc.TableViewCell" then
-            --                return
-            --                end
-            --            -- do not display tablecell in tableView
+            -- do not display tablecell in tableView
             local type = tolua.type(node)
             if type ~= "cc.TableView" then
                 if gk.util:isAncestorsType(node, "cc.TableView") then
@@ -103,7 +99,7 @@ function panel:subscribeEvent()
     end)
     gk.event:subscribe(self, "postSync", function(node)
         gk.util:stopActionByTagSafe(self, -234)
-        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
+        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
             local injector = require("gk.core.injector")
             injector:sync(node or self.scene.layer)
         end)))
@@ -459,18 +455,18 @@ function panel:displayNode(node)
     self.rightPanel:displayNode(node)
 
     -- print info
-    if node.__rootTable and node.__rootTable.__info then
-        gk.log("%s.rootTableId = %s", node.__info.id, node.__rootTable.__info.id)
-    end
-    if node.__info then
-        gk.log("%s.parentId = %s", node.__info.id, node.__info.parentId)
-    end
-    if node.__info._isWidget then
-        gk.log("%s:_isWidget = true", node.__info.id)
-    end
-    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
-        gk.log("%s:_isWidget's Child = true", node.__info.id)
-    end
+--    if node.__rootTable and node.__rootTable.__info then
+--        gk.log("%s.rootTableId = %s", node.__info.id, node.__rootTable.__info.id)
+--    end
+--    if node.__info then
+--        gk.log("%s.parentId = %s", node.__info.id, node.__info.parentId)
+--    end
+--    if node.__info._isWidget then
+--        gk.log("%s:_isWidget = true", node.__info.id)
+--    end
+--    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
+--        gk.log("%s:_isWidget's Child = true", node.__info.id)
+--    end
 end
 
 function panel:handleEvent()

@@ -24,11 +24,15 @@ end
 
 function Layer:showDialog(dialogType, ...)
     gk.log("[%s]: showDialog --> [%s]", self.__cname, dialogType)
+    gk.profile:start("Layer:showDialog")
     local Dialog, _ = gk.resource:require(dialogType)
     local dialog = Dialog:create(...)
+    dialog.__dialogType = dialogType
     self:addChild(dialog, 999999)
+    gk.profile:stop("Layer:showDialog", dialogType)
     dialog.parent = self
     table.insert(self.dialogsStack, dialog)
+    gk.SceneManager:printSceneStack()
     return dialog
 end
 
@@ -37,9 +41,9 @@ function Layer:showDialogNode(dialogNode)
     self:addChild(dialogNode, 999999)
     dialogNode.parent = self
     table.insert(self.dialogsStack, dialogNode)
+    gk.SceneManager:printSceneStack()
     return dialogNode
 end
-
 
 function Layer:isTouchEnabled()
     return self.touchEnabled

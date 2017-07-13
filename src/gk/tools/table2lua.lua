@@ -187,25 +187,29 @@ function LuaTable.encode_table(tbl, pretty, funcBehave)
     for _, k in ipairs(keys) do
         local v = tbl[k]
         --        for k,v in pairs(table) do
+        local key = tostring(k)
+        if key:find("/") or key:find("%.") then
+            key = "[\"" .. key .. "\"]"
+        end
         if pretty then
             local vx = "nil" if LuaTable["encode_" .. type(v)] then vx = LuaTable["encode_" .. type(v)](v, pretty .. "   ", funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
             if type(k) == "number" then
                 nums[k] = v
             elseif first then
-                s = s .. "\n" .. pretty .. tostring(k) .. " = " .. vx
+                s = s .. "\n" .. pretty .. key .. " = " .. vx
                 first = false
             else
-                s = s .. ",\n" .. pretty .. tostring(k) .. " = " .. vx
+                s = s .. ",\n" .. pretty .. key .. " = " .. vx
             end
         else
             local vx = "nil" if LuaTable["encode_" .. type(v)] then vx = LuaTable["encode_" .. type(v)](v, nil, funcBehave) else print("[LuaTable] Warning, LuaTable doesn't support " .. type(var)) end
             if type(k) == "number" then
                 nums[k] = v
             elseif first then
-                s = s .. tostring(k) .. "=" .. vx
+                s = s .. key .. "=" .. vx
                 first = false
             else
-                s = s .. "," .. tostring(k) .. "=" .. vx
+                s = s .. "," .. key .. "=" .. vx
             end
         end
     end

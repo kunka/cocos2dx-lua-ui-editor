@@ -110,7 +110,7 @@ local function create_label(info)
     else
         label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         info.fontFile[lan] = label:getSystemFontName()
-        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
+        --        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
     end
     return label
 end

@@ -48,7 +48,7 @@ if os.path.exists(filePath):
         v=line[pos+1:]
         files[k]=v
 
-whiteList = ["png", "plist", "tmx", "tsx", "ttf", "fnt", "fsh", "vsh", "json"]
+whiteList = ["png", "jpg", "jpeg", "plist", "tmx", "tsx", "ttf", "fnt", "fsh", "vsh", "json", "mp3"]
 append = ""
 for k in whiteList:
     append = append + "|" + k

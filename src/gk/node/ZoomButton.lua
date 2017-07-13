@@ -12,9 +12,9 @@ local ZoomButton = class("ZoomButton", Button)
 local kZoomActionTag = -0xFFFFF1
 
 function ZoomButton:ctor(...)
-    ZoomButton.super.ctor(self, ...)
     self.zoomScale = 1
     self.zoomEnabled = true
+    ZoomButton.super.ctor(self, ...)
 end
 
 function ZoomButton:setContentNode(node)

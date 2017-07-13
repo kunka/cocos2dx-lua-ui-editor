@@ -17,7 +17,7 @@ return {
 	   g = 255,
 	   r = 255},
 	children = {	   {
-	      _fold = false,
+	      _fold = true,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
 	      enabled = 0,
@@ -77,9 +77,10 @@ return {
 	                     cn = "Helvetica",
 	                     en = "Arial"}}}}}},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
+	      clickedSid = "",
 	      disabledSprite = "disabled.png",
 	      enabled = 0,
 	      height = 78,
@@ -128,7 +129,7 @@ return {
 	               cn = "Helvetica",
 	               en = "Arial"}}}},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
 	      enabled = 0,
@@ -141,7 +142,7 @@ return {
 	      selectedTag = 1,
 	      type = "ToggleButton",
 	      x = 640,
-	      y = 354,
+	      y = 353,
 	      zoomEnabled = 0,
 	      zoomScale = 1,
 	      color = {

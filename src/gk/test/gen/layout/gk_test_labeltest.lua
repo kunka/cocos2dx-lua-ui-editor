@@ -35,7 +35,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "",
+	         cn = "Arial",
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
@@ -84,9 +84,9 @@ return {
 	         x = 0,
 	         y = 0.5},
 	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
+	         b = 0,
+	         g = 0,
+	         r = 0},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -530,7 +530,7 @@ return {
 	         g = 255,
 	         r = 255},
 	      fontFile = {
-	         cn = "",
+	         cn = "Arial",
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",

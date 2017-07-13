@@ -14,7 +14,7 @@ function event:init()
 end
 
 function event:subscribe(target, eventName, callback)
-    self:checkValidEventName(eventName)
+--    self:checkValidEventName(eventName)
     local listeners = self._listeners[eventName]
     if not listeners then
         listeners = { { tg = target, en = eventName, cb = callback, valid = true } }
@@ -54,7 +54,7 @@ function event:unsubscribeAll(target)
 end
 
 function event:post(eventName, ...)
-    self:checkValidEventName(eventName)
+--    self:checkValidEventName(eventName)
     --    gk.log("event:post --> %s", eventName)
     local listeners = self._listeners[eventName]
     if listeners and #listeners > 0 then

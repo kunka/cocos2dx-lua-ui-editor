@@ -757,13 +757,18 @@ function panel:displayNode(node)
     end
 
     if isEditBox then
+        createInputLong("FontName", "fontName", "string")
         createInputLong("Text", "text", "string", "")
         createInputLong("Placeholder", "placeHolder", "string", "")
+        createInputMiddle("FontColor", "R", "G", "fontColor.r", "fontColor.g", "number", 255, 255)
+        createInputMiddle("", "B", "A", "fontColor.b", "fontColor.a", "number", 255, 255)
+        createInputMiddle("PHFontColor", "R", "G", "placeholderFontColor.r", "placeholderFontColor.g", "number", 166, 166)
+        createInputMiddle("", "B", "A", "placeholderFontColor.b", "placeholderFontColor.a", "number", 166, 255)
         createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
         createHintFontSize("fontSize")
         createInputMiddle("PlaceholderFontSize", "", "", nil, "placeholderFontSize", "number")
         createHintFontSize("placeholderFontSize")
-        createInputMiddle("MaxLength", "", "", nil, "maxLength", "number", -1)
+        createInputMiddle("MaxLength", "", "", nil, "maxLength", "number", -1, -1)
         local hAligns = { "LEFT", "CENTER", "RIGHT" }
         createSelectBoxLong("HAlignment", hAligns, "textHAlign", "number", "LEFT")
         local modes = { "ANY", "EMAIL_ADDRESS", "NUMERIC", "PHONE_NUMBER", "URL", "DECIMAL", "SINGLE_LINE" }

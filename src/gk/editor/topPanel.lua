@@ -159,7 +159,7 @@ function panel.create(parent)
     local rightX2 = size.width - inputWidth1 - leftX
     local yIndex = 0
     -- bg
-    createLabel("BackgroundColor", rightX, topY - yIndex * stepY)
+    createLabel("Theme", rightX, topY - yIndex * stepY)
     local items = gk.display.editorBgColorsDesc
     local colors = gk.display.editorBgColors
     local index = cc.UserDefault:getInstance():getIntegerForKey("gk_colorIndex", 1)
@@ -368,7 +368,10 @@ function panel:handleEvent()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
-        if gk.util:touchInNode(self, location) then
+        local s = self:getContentSize()
+        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width, height = s.height }
+        local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
+        if cc.rectContainsPoint(rect, touchP) then
             if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
                 local scrollX = touch:getScrollX()
                 -- mouse cannot scroll horizontal

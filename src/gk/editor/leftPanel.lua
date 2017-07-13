@@ -51,7 +51,7 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
             return
         end
         local forceUnfold = not notForceUnfold
-        gk.log("displayDomTree %s, %s", rootLayer.__info.id, forceUnfold)
+        --        gk.log("displayDomTree %s, %s", rootLayer.__info.id, forceUnfold)
         self.lastDisplayingNode = self.parent.displayingNode
         -- current layout
         self:undisplayNode()
@@ -134,7 +134,7 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
         self.displayInfoNode:setContentSize(cc.size(gk.display.leftWidth, stepY * self.domDepth + 20))
         -- scroll to displaying node
         if self.displayingDomDepth ~= -1 and forceUnfold then
-            gk.log("displayingDomDepth = %d", self.displayingDomDepth)
+            --            gk.log("displayingDomDepth = %d", self.displayingDomDepth)
             local size = self.displayInfoNode:getContentSize()
             if size.height > self:getContentSize().height then
                 local topY = size.height - marginTop
@@ -260,10 +260,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
                 self._containerNode = nil
                 local location = touch:getLocation()
                 self._touchBegainLocation = cc.p(location)
-                local s = node:getContentSize()
-                local rect = { x = 0, y = 0, width = s.width, height = s.height }
-                local p = node:convertToNodeSpace(location)
-                if not self.draggingNode and cc.rectContainsPoint(rect, p) then
+                if gk.util:hitTest(self, touch) and not self.draggingNode and gk.util:hitTest(node, touch) then
                     gk.log("dom:choose node %s", content)
                     local nd = widgetParent and widgetParent[content] or self.parent.scene.layer[content]
                     nd = nd or realNode

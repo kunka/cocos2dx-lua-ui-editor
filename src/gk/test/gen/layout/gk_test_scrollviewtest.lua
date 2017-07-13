@@ -60,8 +60,8 @@ The fissure, which threatens to spawn one of the biggest bergs ever seen, has dr
 The calving of the berg could now be very close, he told BBC News.",
 	            type = "cc.Label",
 	            width = 440,
-	            x = 20,
-	            y = 710,
+	            x = 58,
+	            y = 636,
 	            anchor = {
 	               x = 0,
 	               y = 1},

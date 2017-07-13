@@ -12,7 +12,7 @@ local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
     -- set dialog bg, use to animate out
-    self.enableKeyPad = false
+    self.enableKeyPad = true
     self.popOnBack = true -- popDialogc on back
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
@@ -41,17 +41,29 @@ function Dialog:addMaskLayer()
     self.maskLayer = layerColor
 end
 
-function Dialog:animateOut()
+function Dialog:animateOut(callback)
     if gk.mode ~= gk.MODE_EDIT then
         if self.dialogBg then
             local scale = self.dialogBg:getScale()
             self.dialogBg:setScale(0)
-            self.dialogBg:runAction(cc.EaseBackOut:create(cc.ScaleTo:create(0.15, scale)))
+            self.dialogBg:runAction(cc.Sequence:create(cc.EaseBackOut:create(cc.ScaleTo:create(0.2, scale)), cc.CallFunc:create(function()
+                if callback then
+                    callback()
+                end
+            end)))
         end
         if self.maskLayer then
             local opacity = self.maskLayer:getOpacity()
             self.maskLayer:setOpacity(0)
-            self.maskLayer:runAction(cc.FadeTo:create(0.15, opacity))
+            self.maskLayer:runAction(cc.Sequence:create(cc.FadeTo:create(0.15, opacity), cc.CallFunc:create(function()
+                if callback then
+                    callback()
+                end
+            end)))
+        end
+    else
+        if callback then
+            callback()
         end
     end
 end
@@ -95,6 +107,7 @@ function Dialog:pop()
         end
         self:release()
         self:removeFromParent()
+        gk.SceneManager:printSceneStack()
     else
         gk.log("[%s]: pop error, parent is nil", self.__cname)
     end

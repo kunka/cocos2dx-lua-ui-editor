@@ -158,7 +158,7 @@ function panel.create(parent)
             local handle = io.popen(adb .. " devices -l")
             local result = handle:read("*a")
             handle:close()
-            if result:find("model:") then
+            if result and result:find("model:") then
                 local id = result:sub(result:find("attached") + 9, result:find("attached") + 9 + 7)
                 local name = result:sub(result:find("model:") + 6, result:find("device:") - 2)
                 table.insert(devices, { id = id, name = name })
@@ -189,9 +189,53 @@ function panel.create(parent)
     selectBox:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(3), cc.CallFunc:create(function()
         scanDevices()
     end))))
-
     yIndex = yIndex + 1
-    createLabel("Clean & Deploy", leftX, topY - stepY * yIndex)
+
+    self.logOn = false
+    createLabel("LogCat", leftX4 + inputWidth1 - 60, topY - stepY * yIndex)
+    local icon = gk.create_sprite("gk/res/texture/ic.png")
+    local button = gk.ZoomButton.new(icon)
+    self:addChild(button)
+    button:setScale(scale * 0.8)
+    button:setPosition(leftX4 + inputWidth1, topY - yIndex * stepY)
+    button:setAnchorPoint(1, 0.5)
+    button:onClicked(function()
+        self.logOn = not self.logOn
+        local program = cc.GLProgramState:getOrCreateWithGLProgramName(self.logOn and "ShaderPositionTextureColor_noMVP" or "ShaderUIGrayScale")
+        if program then
+            icon:setGLProgramState(program)
+        end
+        if self.logOn then
+            print("turn logcat on")
+            gk.util:stopActionByTagSafe(self, -991)
+            local sdk = cc.UserDefault:getInstance():getStringForKey("gk_android_sdk_location")
+            if not onValueChanged(nil, sdk) then
+                gk.log("must set valid sdk location")
+                return
+            end
+            local action = self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
+                local adb = sdk .. "/platform-tools/adb"
+                local handle = io.popen(adb .. " logcat -d | grep cocos2d")
+                local result = handle:read("*a"):trim()
+                if result ~= "" then
+                    print(result)
+                end
+                handle:close()
+                local handle = io.popen(adb .. " logcat -c")
+                handle:close()
+            end))))
+            action:setTag(-991)
+        else
+            print("turn logcat off")
+            gk.util:stopActionByTagSafe(self, -991)
+        end
+    end)
+    local program = cc.GLProgramState:getOrCreateWithGLProgramName(self.logOn and "ShaderPositionTextureColor_noMVP" or "ShaderUIGrayScale")
+    if program then
+        icon:setGLProgramState(program)
+    end
+
+    createLabel("Clean", leftX, topY - stepY * yIndex)
     local label = cc.Label:createWithSystemFont("↻", fontName, fontSize + 20)
     label:setTextColor(cc.c3b(50, 255, 50))
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -230,29 +274,29 @@ function panel.create(parent)
             gk.log("----------------------------------")
             gk.log("Cleaning ......")
             local dir = MAC_ROOT .. "gen"
+            gk.log("remove dir %s", dir)
             cc.FileUtils:getInstance():removeDirectory(dir)
-            cc.FileUtils:getInstance():removeDirectory(ANDROID_ROOT)
---            local adb = sdk .. "/platform-tools/adb"
---            local handle = io.popen(adb .. " shell rm -rf " .. ANDROID_ROOT)
---            local result = handle:read("*a")
---            print(result)
---            handle:close()
+            local adb = sdk .. "/platform-tools/adb"
+            gk.log("remove dir %s", ANDROID_ROOT)
+            local handle = io.popen(adb .. " shell rm -rf " .. ANDROID_ROOT)
+            local result = handle:read("*a")
+            handle:close()
             gk.log("Clean finished!")
-            gk.log("Deploying to Android device ......")
-            self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
-                -- deploy
-                local dir = ANDROID_ROOT or "/"
-                local adb = sdk .. "/platform-tools/adb"
-                local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
-                local result = handle:read("*a")
-                print(result)
-                handle:close()
-                gk.log("Finished!")
-            end)))
+            --            gk.log("Deploying to Android device ......")
+            --            self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
+            --                -- deploy
+            --                local dir = ANDROID_ROOT or "/"
+            --                local adb = sdk .. "/platform-tools/adb"
+            --                local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
+            --                local result = handle:read("*a")
+            --                print(result)
+            --                handle:close()
+            --                gk.log("Finished!")
+            --            end)))
         end)))
     end)
 
-    createLabel("Fast Deploy", leftX3, topY - stepY * yIndex)
+    createLabel("Deploy", leftX3, topY - stepY * yIndex)
     local label = cc.Label:createWithSystemFont("▶", fontName, fontSize + 10)
     label:setTextColor(cc.c3b(50, 255, 50))
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -308,8 +352,8 @@ function panel.create(parent)
             gk.log("----------------------------------")
         end)))
     end)
-    yIndex = yIndex + 1
 
+    yIndex = yIndex + 1
     return self
 end
 

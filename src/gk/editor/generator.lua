@@ -94,14 +94,11 @@ function generator:inflate(info, rootNode, rootTable)
     local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
     if node and children then
-        for i = 1, #children do
-            local child = children[i]
-            if child then
-                local c = self:inflate(child, nil, rootTable)
-                if c then
-                    node:addChild(c)
-                    -- update width/height($fill)
-                end
+        for _, child in ipairs(children) do
+            local c = self:inflate(child, nil, rootTable)
+            if c then
+                node:addChild(c)
+                -- update width/height($fill)
             end
         end
     end
@@ -449,7 +446,7 @@ generator.nodeCreator = {
         -- copy info
         local keys = table.keys(node.__info.__self)
         for _, key in ipairs(keys) do
-            if not info.__self[key] then
+            if info.__self[key] == nil then
                 info.__self[key] = node.__info.__self[key]
             end
         end
@@ -478,14 +475,14 @@ end
 
 function generator:updateSize(node, property)
     local children = node:getChildren()
-    for i = 1, #children do
-        local child = children[i]
+    for _, child in ipairs(children) do
         if child and child.__info then
-            -- update width/height($fill)
-            --            child.__info[property] = self.nodeGetFuncs[property](child)
-            --            self:updateSize(child, property)
-            child.__info[property] = child.__info[property]
-            self:updateSize(child, property)
+            local p = child.__info[property]
+            if type(p) == "string" and p == "$fill" then
+                -- update width/height($fill)
+                child.__info[property] = p
+                self:updateSize(child, property)
+            end
         end
     end
 end
