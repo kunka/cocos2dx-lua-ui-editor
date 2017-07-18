@@ -203,9 +203,9 @@ function EditBox:changeCursorPos(newPos)
 
         if not self.cursorNode then
             -- TODO: fix pos and fontSize
-            local fontName = "gk/res/font/Consolas.ttf"
-            self.cursorNode = cc.Label:createWithTTF(self.cursorChar, fontName, 32)
-            self.cursorNode:setTextColor(cc.c3b(0, 0, 0))
+            local fontName = gk.theme.font_fnt
+            self.cursorNode = gk.create_label(self.cursorChar, fontName, 32)
+            self.cursorNode:setColor(cc.c3b(0, 0, 0))
             self.label:addChild(self.cursorNode)
         end
         local pos = cc.p(10, self.label:getContentSize().height / 2)

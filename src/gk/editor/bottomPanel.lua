@@ -10,7 +10,7 @@ local panel = {}
 
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), winSize.width - gk.display.leftWidth - gk.display.rightWidth, gk.display.bottomHeight)
+    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), winSize.width - gk.display.leftWidth - gk.display.rightWidth, gk.display.bottomHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(gk.display.leftWidth, 0)
@@ -30,24 +30,24 @@ function panel.create(parent)
     --    local leftX6 = leftX5 + 120
 
     -- size label
-    local fontName = "gk/res/font/Consolas.ttf"
+    local fontName = gk.theme.font_fnt
     local content = string.format("designSize(%.0fx%.0f) winSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f) minScale(%.2f)",
         gk.display.width(), gk.display.height(), gk.display:winSize().width, gk.display:winSize().height, gk.display:xScale(), gk.display:yScale(), gk.display:minScale())
-    local label = cc.Label:createWithTTF(content, fontName, fontSize)
+    local label = gk.create_label(content, fontName, fontSize)
     label:setScale(scale)
     local height = 20
     label:setDimensions(self:getContentSize().width / 0.2, height / 0.2)
     label:setOverflow(2)
-    label:setTextColor(cc.c3b(200, 200, 200))
+    gk.set_label_color(label, cc.c3b(200, 200, 200))
     self:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setPosition(0, gk.display.bottomHeight - height / 2)
 
     local createLabel = function(content, x, y)
-        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        local label = gk.create_label(content, fontName, fontSize)
         label:setScale(scale)
-        label:setTextColor(cc.c3b(189, 189, 189))
+        gk.set_label_color(label, cc.c3b(189, 189, 189))
         self:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
@@ -57,8 +57,8 @@ function panel.create(parent)
         lines = lines or 1
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-        local label = cc.Label:createWithTTF(content, fontName, fontSize)
-        label:setTextColor(cc.c3b(0, 0, 0))
+        local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
+        gk.set_label_color(label, cc.c3b(0, 0, 0))
         node:setInputLabel(label)
         local contentSize = node:getContentSize()
         label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2 - 5))
@@ -76,12 +76,12 @@ function panel.create(parent)
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-        local label = cc.Label:createWithTTF("", fontName, fontSize)
-        label:setTextColor(cc.c3b(0, 0, 0))
+        local label = gk.create_label("", fontName, fontSize)
+        gk.set_label_color(label, cc.c3b(0, 0, 0))
         node:setDisplayLabel(label)
         node:onCreatePopupLabel(function()
-            local label = cc.Label:createWithTTF("", fontName, fontSize)
-            label:setTextColor(cc.c3b(0, 0, 0))
+            local label = gk.create_label("", fontName, fontSize)
+            gk.set_label_color(label, cc.c3b(0, 0, 0))
             return label
         end)
         local contentSize = node:getContentSize()
@@ -106,7 +106,7 @@ function panel.create(parent)
         --        local correct = os.execute(adb .. " version") == 0
         local correct = ret and #ret > 0
         if editBox then
-            editBox.label:setTextColor(correct and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
+            gk.set_label_color(editBox.label, correct and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
         end
         return correct
     end
@@ -206,7 +206,7 @@ function panel.create(parent)
             icon:setGLProgramState(program)
         end
         if self.logOn then
-            print("turn logcat on")
+            print("turn logcat on, tag = cocos2d")
             gk.util:stopActionByTagSafe(self, -991)
             local sdk = cc.UserDefault:getInstance():getStringForKey("gk_android_sdk_location")
             if not onValueChanged(nil, sdk) then
@@ -236,8 +236,8 @@ function panel.create(parent)
     end
 
     createLabel("Clean", leftX, topY - stepY * yIndex)
-    local label = cc.Label:createWithSystemFont("↻", fontName, fontSize + 20)
-    label:setTextColor(cc.c3b(50, 255, 50))
+    local label = gk.create_label("↻", fontName, fontSize + 20)
+    gk.set_label_color(label, cc.c3b(50, 255, 50))
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setDimensions(60 / scale, 20 / scale)
@@ -253,9 +253,9 @@ function panel.create(parent)
     gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
-        label:setTextColor(cc.c3b(166, 166, 166))
+        gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
-            label:setTextColor(cc.c3b(50, 255, 50))
+            gk.set_label_color(label, cc.c3b(50, 255, 50))
             local packageName = ANDROID_PACKAGE_NAME or ""
             local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
             if packageName == "" then
@@ -297,8 +297,8 @@ function panel.create(parent)
     end)
 
     createLabel("Deploy", leftX3, topY - stepY * yIndex)
-    local label = cc.Label:createWithSystemFont("▶", fontName, fontSize + 10)
-    label:setTextColor(cc.c3b(50, 255, 50))
+    local label = gk.create_label("▶", fontName, fontSize + 10)
+    gk.set_label_color(label, cc.c3b(50, 255, 50))
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setDimensions(60 / scale, 20 / scale)
@@ -339,9 +339,9 @@ function panel.create(parent)
                 label:setString(gk:getRuntimeVersion())
             end
         end
-        label:setTextColor(cc.c3b(166, 166, 166))
+        gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
-            label:setTextColor(cc.c3b(50, 255, 50))
+            gk.set_label_color(label, cc.c3b(50, 255, 50))
             local dir = ANDROID_ROOT or "/"
             local adb = sdk .. "/platform-tools/adb"
             local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)

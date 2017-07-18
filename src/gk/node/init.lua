@@ -90,7 +90,7 @@ gk.isTTF = isTTF
 gk.isBMFont = isBMFont
 gk.isSystemFont = isSystemFont
 
-local function create_label(info)
+local function create_label_local(info)
     local lan = info.lan or gk.resource:getCurrentLan()
     local fontFile = info.fontFile[lan]
     if fontFile == nil then
@@ -115,7 +115,48 @@ local function create_label(info)
     return label
 end
 
+gk.create_label_local = create_label_local
+
+local function create_label(string, fontFile, fontSize, c3b)
+    local label
+    -- TODO: createWithCharMap
+    if isTTF(fontFile) then
+        label = cc.Label:createWithTTF(string, fontFile, fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        if c3b then
+            label:setTextColor(c3b)
+        end
+    elseif isBMFont(fontFile) then
+        label = cc.Label:createWithBMFont(fontFile, string, cc.TEXT_ALIGNMENT_LEFT)
+        label:setBMFontSize(fontSize)
+        if c3b then
+            label:setColor(c3b)
+        end
+    else
+        label = cc.Label:createWithSystemFont(string, "Arial", fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        if c3b then
+            label:setColor(c3b)
+        end
+    end
+    return label
+end
+
 gk.create_label = create_label
+
+local function set_label_color(label, c3b)
+    local config = label:getTTFConfig()
+    -- TTF
+    if config.fontFilePath ~= "" then
+        label:setTextColor(c3b)
+        -- BMFont
+    elseif label:getBMFontFilePath() ~= "" then
+        label:setColor(c3b)
+        -- Sys
+    else
+        label:setColor(c3b)
+    end
+end
+
+gk.set_label_color = set_label_color
 
 local function nextFocusNode(current)
     local all = {}

@@ -11,7 +11,7 @@ local panel = {}
 
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), winSize.width, gk.display.topHeight)
+    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), winSize.width, gk.display.topHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(0, winSize.height - gk.display.topHeight)
@@ -25,7 +25,7 @@ function panel.create(parent)
     local size = self:getContentSize()
     -- winSize
     local fontSize = 10 * 4
-    local fontName = "gk/res/font/Consolas.ttf"
+    local fontName = gk.theme.font_fnt
     local scale = 0.25
     local topY = size.height - 25
     local leftX = 15
@@ -35,9 +35,9 @@ function panel.create(parent)
     local stepY = 25
     local leftX_widget = 15 --10
     local createLabel = function(content, x, y)
-        local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+        local label = gk.create_label(content, fontName, fontSize)
         label:setScale(scale)
-        label:setTextColor(cc.c3b(189, 189, 189))
+        gk.set_label_color(label, cc.c3b(189, 189, 189))
         self:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
@@ -46,8 +46,8 @@ function panel.create(parent)
     local createInput = function(content, x, y, width, callback)
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-        local label = cc.Label:createWithTTF(content, fontName, fontSize)
-        label:setTextColor(cc.c3b(0, 0, 0))
+        local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
+        gk.set_label_color(label, cc.c3b(0, 0, 0))
         node:setInputLabel(label)
         local contentSize = node:getContentSize()
         label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
@@ -81,12 +81,12 @@ function panel.create(parent)
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-        local label = cc.Label:createWithTTF("", fontName, fontSize)
-        label:setTextColor(cc.c3b(0, 0, 0))
+        local label = gk.create_label("", fontName, fontSize)
+        gk.set_label_color(label, cc.c3b(0, 0, 0))
         node:setDisplayLabel(label)
         node:onCreatePopupLabel(function()
-            local label = cc.Label:createWithTTF("", fontName, fontSize)
-            label:setTextColor(cc.c3b(0, 0, 0))
+            local label = gk.create_label("", fontName, fontSize)
+            gk.set_label_color(label, cc.c3b(0, 0, 0))
             return label
         end)
         local contentSize = node:getContentSize()
@@ -160,24 +160,13 @@ function panel.create(parent)
     local yIndex = 0
     -- bg
     createLabel("Theme", rightX, topY - yIndex * stepY)
-    local items = gk.display.editorBgColorsDesc
-    local colors = gk.display.editorBgColors
-    local index = cc.UserDefault:getInstance():getIntegerForKey("gk_colorIndex", 1)
-    local node = createSelectBox(items, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
-        local color = colors[index]
-        local root = gk.util:getRootNode(self)
-        gk.util:drawNodeBg(root, color, -89)
-        cc.UserDefault:getInstance():setIntegerForKey("gk_colorIndex", index)
-        cc.UserDefault:getInstance():flush()
+    local themes = table.keys(gk.theme.configs)
+    local index = table.indexof(themes, gk.theme.themeName)
+    local node = createSelectBox(themes, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local themeName = themes[index]
+        gk.theme:setTheme(themeName)
     end)
     yIndex = yIndex + 1
-    local color = colors[index]
-    self:runAction(cc.CallFunc:create(function()
-        local root = gk.util:getRootNode(self)
-        if root then
-            gk.util:drawNodeBg(root, color, -89)
-        end
-    end))
 
     -- widgets
     self.widgets = clone(generator.config.supportNodes)
@@ -218,15 +207,15 @@ function panel.create(parent)
         self.displayInfoNode:addChild(node)
 
         local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
-        --        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and names[1] or names[#names], fontName, 7 * 4)
-        local label = cc.Label:createWithSystemFont(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, fontSize)
+        --        local label = gk.create_label(self.widgets[i]._isWidget and names[1] or names[#names], fontName, 7 * 4)
+        local label = gk.create_label(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, fontSize)
         label:setScale(scale)
         label:setDimensions(node:getContentSize().width + stepX * 2, 60)
         label:setOverflow(2)
         --        gk.util:drawNodeBounds(label)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-        label:setTextColor(cc.c3b(189, 189, 189))
+        gk.set_label_color(label, cc.c3b(189, 189, 189))
         self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0.5, 0.5)
         label:setPosition(originPos.x, originPos.y - 40)
@@ -264,7 +253,8 @@ function panel.create(parent)
                 node:setScale(gk.display:minScale())
                 self:addChild(node)
                 self.draggingNode = node
-                node:setPositionZ(0.00000001)
+                cc.Director:getInstance():setDepthTest(true)
+                node:setPositionZ(1)
             end
             self.draggingNode:setPosition(cc.pAdd(pos, cc.pSub(p, self:convertToNodeSpace(self._touchBegainLocation))))
 
@@ -331,7 +321,11 @@ function panel.create(parent)
                             node.__info.x, node.__info.y = x, y
                         end
                         self._containerNode:addChild(node)
-                        gk.log("put node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
+                        gk.log("add new node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
+                        gk.event:post("executeCmd", "ADD", {
+                            id = node.__info.id,
+                            panel = self.parent,
+                        })
                         gk.event:post("postSync")
                         gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
@@ -347,6 +341,7 @@ function panel.create(parent)
             if self.draggingNode then
                 self.draggingNode:removeFromParent()
                 self.draggingNode = nil
+                cc.Director:getInstance():setDepthTest(false)
             end
             self.parent.sortedChildren = nil
         end, cc.Handler.EVENT_TOUCH_ENDED)
@@ -354,6 +349,7 @@ function panel.create(parent)
             if self.draggingNode then
                 self.draggingNode:removeFromParent()
                 self.draggingNode = nil
+                cc.Director:getInstance():setDepthTest(false)
             end
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)

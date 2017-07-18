@@ -7,4 +7,5 @@
 --
 
 gk.generator = import(".generator")
+gk.theme = import(".theme")
 gk.editorPanel = import(".panel")

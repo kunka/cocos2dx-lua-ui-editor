@@ -334,14 +334,14 @@ function util:drawLabelOnNode(node, content, fontSize, pos, c3b, tag)
         label = node:getContainer():getChildByTag(tg)
     end
     if not label then
-        label = cc.Label:createWithSystemFont(content, "Arial", fontSize and fontSize or 12)
+        label = gk.create_label(content, gk.theme.font_font, fontSize and fontSize or 12)
         local size = node:getContentSize()
         label:setPosition(pos and pos or cc.p(size.width, size.height))
         node:add(label, 999, tg)
     else
         label:setString(content)
     end
-    label:setTextColor(c3b and c3b or cc.c3b(0, 255, 0))
+    gk.set_label_color(label, c3b and c3b or cc.c3b(0, 255, 0))
     local sx, sy = util:getGlobalScale(node)
     label:setScale(1 / sx)
 end
@@ -758,6 +758,10 @@ function util:getBoundingBoxToScreen(node)
     bb.width = bb.width * sx
     bb.height = bb.height * sy
     return cc.rect(p.x, p.y, bb.width, bb.height)
+end
+
+function util:c4b2c4f(c4b)
+    return cc.c4f(c4b.r / 255, c4b.g / 255, c4b.b / 255, c4b.a / 255)
 end
 
 return util

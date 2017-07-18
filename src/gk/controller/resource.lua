@@ -128,7 +128,7 @@ function resource:scanGenNodes(path)
 end
 
 function resource:scanDir(dir, genSrcPath)
-    if not dir or dir == "" then
+    if not dir or dir == "" or genSrcPath:find(self.genDir) then
         return
     end
     --    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)

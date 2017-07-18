@@ -112,7 +112,7 @@ function SelectBox:openPopup()
             label:setDimensions(size.width, size.height)
             label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-            label:setTextColor(i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
+            gk.set_label_color(label,i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
             if self.popupLabelDidCreated then
                 self.popupLabelDidCreated(label)
             end
@@ -129,7 +129,7 @@ function SelectBox:openPopup()
                 if self.selectIndex ~= i and i > 0 and i <= #self.selectItems then
                     self.selectIndex = i
                     self.label:setString(self.selectItems[i])
-                    label:setTextColor(i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
+                    gk.set_label_color(label,i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
                     if self.onSelectChangedCallback then
                         self.onSelectChangedCallback(i)
                     end
@@ -157,10 +157,10 @@ function SelectBox:openPopup()
                 if gk.util:instanceof(child, "Button") then
                     local label = child:getContentNode():getChildren()[1]
                     if gk.util:touchInNode(child, location) then
-                        --                        label:setTextColor(cc.c3b(45, 35, 255))
+                        --                        gk.set_label_color(label,cc.c3b(45, 35, 255))
                         child:getContentNode():setOpacity(255)
                     else
-                        --                        label:setTextColor(self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                        --                        gk.set_label_color(label,self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
                         child:getContentNode():setOpacity(0)
                     end
                 end

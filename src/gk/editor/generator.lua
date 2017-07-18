@@ -41,6 +41,10 @@ function generator:deflate(node)
         info["scaleSize"] = nil
     end
 
+    -- patch
+    info["parentId"] = nil
+
+
     if not gk.util:instanceof(node, "cc.TableView") then
         -- and not node.__info._isWidget then
         -- rescan children
@@ -58,7 +62,7 @@ function generator:deflate(node)
                 else
                     info.children = info.children or {}
                     local c = self:deflate(child)
-                    c.parentId = info.id
+                    --                    c.parentId = info.id
                     table.insert(info.children, c)
                 end
             end
@@ -190,10 +194,13 @@ function generator:wrap(info, rootTable)
                             gk.event:post("displayDomTree", true)
                             gk.event:post("displayNode", node)
                         else
+                            -- new id
                             proxy[key] = value
                             gk.event:post("postSync")
                             gk.event:post("displayDomTree", true)
                         end
+                    else
+                        gk.log("error set duplicate id %s", value)
                     end
                 else
                     gk.log("error set invalid id %s", value)
@@ -202,11 +209,14 @@ function generator:wrap(info, rootTable)
             end
             local node = rootTable and rootTable[proxy["id"]] or nil
             if node then
+                local pre = proxy[key]
                 proxy[key] = value
                 self.config:setValue(node, key, value)
-                gk.event:post("postSync")
-                if key == "_lock" then
-                    gk.event:post("displayDomTree", true)
+                if pre ~= value then
+                    gk.event:post("postSync")
+                    if key == "_lock" then
+                        gk.event:post("displayDomTree", true)
+                    end
                 end
             end
         end,
@@ -273,6 +283,7 @@ function generator:parseCustomMacroFunc(node, input)
     return nil, nil
 end
 
+-- for editor use
 function generator:modify(node, property, input, valueType)
     local props = string.split(property, ".")
     local prop1, prop2
@@ -286,7 +297,7 @@ function generator:modify(node, property, input, valueType)
     if type(input) == "number" and valueType == "number" then
         value = tonumber(input)
     elseif type(input) == "string" then
-        local v = generator:parseMacroFunc(node, input)
+        local v = self:parseMacroFunc(node, input)
         if v then
             value = input
         elseif valueType == "string" then
@@ -295,21 +306,55 @@ function generator:modify(node, property, input, valueType)
             value = tonumber(input)
         end
     end
+    local cur_value
     if value then
         if prop2 then
             local p = node.__info[prop1]
             if p then
-                p[prop2] = value
-                node.__info[prop1] = p
+                cur_value = clone(p)
+                cur_value[prop2] = value
             end
         else
-            node.__info[prop1] = value
+            cur_value = value
         end
     end
+    self:modifyValue(node, prop1, cur_value)
     if prop2 then
         return tostring(node.__info[prop1][prop2])
     else
         return tostring(node.__info[prop1])
+    end
+end
+
+-- for editor use
+function generator:modifyValue(node, property, value)
+    if property == "id" then
+        local ori_value = node.__info[property]
+        node.__info[property] = value
+        local cur_value = node.__info[property]
+        if ori_value ~= cur_value then
+            gk.event:post("executeCmd", "MODIFY_ID", {
+                oldId = ori_value,
+                curId = cur_value,
+            })
+        end
+    else
+        local ori_value = clone(node.__info[property])
+        local cur_value = value
+        if ori_value ~= cur_value and not (type(ori_value) == "table" and gk.util:table_eq(ori_value, cur_value)) then
+            gk.event:post("executeCmd", "CHANGE_PROP", {
+                id = node.__info.id,
+                key = property,
+                from = ori_value,
+                parentId = node.__info.parentId,
+            })
+            gk.event:post("displayNode", node)
+            gk.event:post("postSync")
+            if property == "visible" or property == "localZOrder" then
+                gk.event:post("displayDomTree", true)
+            end
+        end
+        node.__info[property] = cur_value
     end
 end
 
@@ -378,7 +423,7 @@ generator.nodeCreator = {
     --        return node
     --    end,
     ["cc.Label"] = function(info, rootTable)
-        local node = gk.create_label(info)
+        local node = gk.create_label_local(info)
         info.id = info.id or generator:genID("label", rootTable)
         return node
     end,

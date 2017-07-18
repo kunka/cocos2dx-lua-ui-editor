@@ -14,8 +14,9 @@ function Scene:ctor(sceneType)
     self.__sceneType = sceneType
     if gk.displayRuntimeVersion then
         local version = gk:getRuntimeVersion()
-        local label = cc.Label:createWithSystemFont(version, "Arial", 12)
-        label:setTextColor(cc.c3b(230, 230, 230))
+        local fontName = gk.theme.font_fnt
+        local label = gk.create_label(version, fontName, 12)
+        gk.set_label_color(label,cc.c3b(230, 230, 230))
         self:addChild(label, 999999999, gk.util.tags.versionTag)
         label:setAnchorPoint(cc.p(1, 0))
         label:setScale(gk.display:minScale())

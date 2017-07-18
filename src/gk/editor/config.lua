@@ -191,6 +191,18 @@ config.editableProps = {
     type = {
         getter = function(node) return node.__cname or tolua.type(node) end,
     },
+    parentId = {
+        getter = function(node)
+            local parent = node:getParent()
+            while parent do
+                if parent.__info then
+                    return parent.__info.id
+                end
+                parent = parent:getParent()
+            end
+            return ""
+        end,
+    },
     -- cc.Node
     x = {
         getter = function(node) return 0 end,
@@ -768,7 +780,6 @@ config:registerPlaneProp("_isWidget", false)
 config:registerPlaneProp("_voidContent", false)
 config:registerPlaneProp("_lock", 1)
 config:registerPlaneProp("_fold", false)
-config:registerPlaneProp("parentId", "")
 config:registerPlaneProp("id", "")
 
 -- cc.Node

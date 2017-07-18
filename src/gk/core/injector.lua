@@ -110,7 +110,7 @@ function injector:onNodeCreate(node)
         if not path then
             return
         end
-        gkc.TimeProfile:reset("injector:createNode")
+        gk.profile:start("injector:createNode")
         local status, info = pcall(require, path)
         if status then
             -- must clone values
@@ -135,8 +135,7 @@ function injector:onNodeCreate(node)
                 self:sync(node)
             end
         end
-        local dt = gkc.TimeProfile:deltaInMS("injector:createNode")
-        gk.log("injector:createNode --> %s, time cost = %.0fms", node.__cname, dt)
+        gk.profile:stop("injector:createNode", node.__cname)
         if gk.mode == gk.MODE_EDIT then
             --            if node.class and not node.class._isWidget then
             --                gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1))

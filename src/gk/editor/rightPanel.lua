@@ -11,7 +11,7 @@ local panel = {}
 
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(cc.c4b(71, 71, 71, 255), gk.display.rightWidth, winSize.height - gk.display.topHeight)
+    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), gk.display.rightWidth, winSize.height - gk.display.topHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(winSize.width - gk.display.rightWidth, 0)
@@ -74,7 +74,7 @@ local onLabelInputChanged = function(node, label, input)
 
         isMacro = false
     until true
-    label:setTextColor(isMacro and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
+    gk.set_label_color(label, isMacro and cc.c3b(45, 35, 255) or cc.c3b(0, 0, 0))
     if isMacro then
         label:enableBold()
         label:enableItalics()
@@ -93,13 +93,13 @@ local onValueChanged = function(bg, defaultValue, value)
 end
 
 local fontSize = 10 * 4
-local fontName = "gk/res/font/Consolas.ttf"
+local fontName = gk.theme.font_fnt
 local scale = 0.25
 
 function panel:createLabel(content, x, y, isTitle)
-    local label = cc.Label:createWithSystemFont(content, fontName, fontSize)
+    local label = gk.create_label(content, fontName, fontSize)
     label:setScale(scale)
-    label:setTextColor(isTitle and cc.c3b(152, 206, 0) or cc.c3b(189, 189, 189))
+    gk.set_label_color(label, isTitle and cc.c3b(152, 206, 0) or cc.c3b(189, 189, 189))
     self.displayInfoNode:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setPosition(x, y)
@@ -126,8 +126,8 @@ function panel:createInput(content, x, y, width, callback, defValue, lines)
     lines = lines or 1
     local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-    local label = cc.Label:createWithTTF(content, fontName, fontSize)
-    label:setTextColor(cc.c3b(0, 0, 0))
+    local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
+    gk.set_label_color(label, cc.c3b(0, 0, 0))
     node:setInputLabel(label)
     local contentSize = node:getContentSize()
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2 - 5))
@@ -153,8 +153,8 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     index = index or 1
     local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-    local label = cc.Label:createWithTTF(content, fontName, fontSize)
-    label:setTextColor(cc.c3b(0, 0, 0))
+    local label = gk.create_label(content, "gk/res/font/Consolas.ttf", fontSize)
+    gk.set_label_color(label, cc.c3b(0, 0, 0))
     node:setInputLabel(label)
     local contentSize = node:getContentSize()
     local btnWidth = 12 / scale
@@ -177,17 +177,17 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     local input = node
 
     local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
-    local label = cc.Label:createWithTTF("", fontName, fontSize)
+    local label = gk.create_label("", fontName, fontSize)
     label:setOpacity(0)
     node:setDisplayLabel(label)
     node:onCreatePopupLabel(function()
-        local label = cc.Label:createWithTTF("", fontName, fontSize)
+        local label = gk.create_label("", fontName, fontSize)
         return label
     end)
 
     local contentSize = node:getContentSize()
-    local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
-    label:setTextColor(cc.c3b(0x33, 0x33, 166))
+    local label = gk.create_label("▶", fontName, fontSize)
+    gk.set_label_color(label, cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
     label:setDimensions(contentSize.height, contentSize.height)
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -217,12 +217,11 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     index = index or 1
     local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
-    local label = cc.Label:createWithTTF("", fontName, fontSize)
-    label:setTextColor(cc.c3b(0, 0, 0))
+    local label = gk.create_label("", fontName, fontSize)
+    gk.set_label_color(label, cc.c3b(0, 0, 0))
     node:setDisplayLabel(label)
     node:onCreatePopupLabel(function()
-        local label = cc.Label:createWithTTF("", fontName, fontSize)
-        --            label:setTextColor(cc.c3b(0, 0, 0))
+        local label = gk.create_label("", fontName, fontSize)
         return label
     end)
     local contentSize = node:getContentSize()
@@ -236,16 +235,14 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
         callback(index)
         onLabelInputChanged(self.displayingNode, label, items[index])
         onValueChanged(node.bg, defValue, items[index])
-        --            label:setTextColor(getMacroColor(items[index]))
     end)
     onLabelInputChanged(self.displayingNode, label, items[index])
     onValueChanged(node.bg, defValue, items[index])
-    --        label:setTextColor(getMacroColor(items[index]))
     node.isEnabled = not self.disabled
 
     local contentSize = node:getContentSize()
-    local label = cc.Label:createWithSystemFont("▶", fontName, fontSize)
-    label:setTextColor(cc.c3b(0x33, 0x33, 166))
+    local label = gk.create_label("▶", fontName, fontSize)
+    gk.set_label_color(label, cc.c3b(0x33, 0x33, 166))
     label:setRotation(90)
     label:setDimensions(contentSize.height, contentSize.height)
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -498,8 +495,8 @@ function panel:displayNode(node)
             end
         end
         self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-            node.__info.x, node.__info.y = ps[index].p.x, ps[index].p.y
-            gk.event:post("displayNode", node)
+            generator:modifyValue(node, "x", ps[index].p.x)
+            generator:modifyValue(node, "y", ps[index].p.y)
         end)
     end
 
@@ -523,8 +520,7 @@ function panel:displayNode(node)
         end
     end
     self:createHintSelectBox(vs, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-        node.__info.anchor = vars[index]
-        gk.event:post("displayNode", node)
+        generator:modifyValue(node, "anchor", vars[index])
     end)
 
     createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
@@ -543,8 +539,8 @@ function panel:displayNode(node)
         end
         local box = self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
             local size = gk.generator.config.hintContentSizes[index]
-            node.__info.width, node.__info.height = size.width, size.height
-            gk.event:post("displayNode", node)
+            generator:modifyValue(node, "width", size.width)
+            generator:modifyValue(node, "height", size.height)
         end)
         if (isSprite and not isScale9Sprite) or (isButton and not isSpriteButton) then
             w:setOpacity(150)
@@ -612,8 +608,7 @@ function panel:displayNode(node)
             end
         end
         self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-            node.__info.color = gk.generator.config.hintColor3Bs[index]
-            gk.event:post("displayNode", node)
+            generator:modifyValue(node, "color", gk.generator.config.hintColor3Bs[index])
         end)
     end
 
@@ -720,12 +715,12 @@ function panel:displayNode(node)
                 generator:modify(node, "selectedTag", tags[index], "number")
             end, 1)
             yIndex = yIndex + 1
-            createFunc("onSelectTagChanged", "onSelectTagChanged", "on")
+            createFunc("onSelectTagChanged", "onSelectedTagChanged", "on")
         end
 
         -- TODO: super class's click function
         createFunc("onClicked", "onClicked", "on")
-        createFunc("onSelectChanged", "onSelectChanged", "on")
+        createFunc("onSelectedTagChanged", "onSelectChanged", "on")
         createFunc("onEnableChanged", "onEnableChanged", "on")
         createFunc("onLongPressed", "onLongPressed", "on")
     end
@@ -750,9 +745,7 @@ function panel:displayNode(node)
             end
         end
         self:createHintSelectBox(vars, index, leftX_input_2, topY - stepY * (yIndex - 1), inputMiddle, function(index)
-            local size = gk.generator.config.hintFontSizes[index]
-            node.__info[key] = size
-            gk.event:post("displayNode", node)
+            generator:modifyValue(node, key, gk.generator.config.hintFontSizes[index])
         end)
     end
 
