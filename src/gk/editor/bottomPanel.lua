@@ -97,6 +97,9 @@ function panel.create(parent)
     createLabel("Android SDK Path", leftX, topY - stepY * yIndex)
     local sdk = cc.UserDefault:getInstance():getStringForKey("gk_android_sdk_location")
     local onValueChanged = function(editBox, input)
+        if input == "" then
+            return false
+        end
         local adb = input .. "/platform-tools/adb"
         local handle = io.popen(adb .. " version")
         local ret = handle:read("*a")
@@ -121,9 +124,9 @@ function panel.create(parent)
     onValueChanged(editBox, sdk)
 
     --    createLabel("Package Name", leftX5, topY - stepY * yIndex)
-    --    local var = ANDROID_PACKAGE_NAME or "" -- cc.UserDefault:getInstance():getStringForKey("gk_android_package_name", "ANDROID_PACKAGE_NAME")
+    --    local var = gk.ANDROID_PACKAGE_NAME or "" -- cc.UserDefault:getInstance():getStringForKey("gk_gk.ANDROID_PACKAGE_NAME", "gk.ANDROID_PACKAGE_NAME")
     --    local input = createInput(var, leftX6, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-    --        --        cc.UserDefault:getInstance():setStringForKey("gk_android_package_name", input)
+    --        --        cc.UserDefault:getInstance():setStringForKey("gk_gk.ANDROID_PACKAGE_NAME", input)
     --        --        cc.UserDefault:getInstance():flush()
     --    end)
     --    input:setOpacity(150)
@@ -266,14 +269,14 @@ function panel.create(parent)
         gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             gk.set_label_color(label, cc.c3b(50, 255, 50))
-            local packageName = ANDROID_PACKAGE_NAME or ""
+            local packageName = gk.ANDROID_PACKAGE_NAME or ""
             local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
             if packageName == "" then
                 gk.log("must set packageName")
                 return
             end
-            if not ANDROID_ROOT or ANDROID_ROOT == "/" then
-                gk.log("must set ANDROID_ROOT")
+            if not gk.ANDROID_ROOT or gk.ANDROID_ROOT == "/" then
+                gk.log("must set gk.ANDROID_ROOT")
                 return
             end
             local sdk = cc.UserDefault:getInstance():getStringForKey("gk_android_sdk_location")
@@ -283,19 +286,19 @@ function panel.create(parent)
             end
             gk.log("----------------------------------")
             gk.log("Cleaning ......")
-            local dir = MAC_ROOT .. "gen"
+            local dir = gk.MAC_ROOT .. "gen"
             gk.log("remove dir %s", dir)
             cc.FileUtils:getInstance():removeDirectory(dir)
             local adb = sdk .. "/platform-tools/adb"
-            gk.log("remove dir %s", ANDROID_ROOT)
-            local handle = io.popen(adb .. " shell rm -rf " .. ANDROID_ROOT)
+            gk.log("remove dir %s", gk.ANDROID_ROOT)
+            local handle = io.popen(adb .. " shell rm -rf " .. gk.ANDROID_ROOT)
             local result = handle:read("*a")
             handle:close()
             gk.log("Clean finished!")
             --            gk.log("Deploying to Android device ......")
             --            self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             --                -- deploy
-            --                local dir = ANDROID_ROOT or "/"
+            --                local dir = gk.ANDROID_ROOT or "/"
             --                local adb = sdk .. "/platform-tools/adb"
             --                local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
             --                local result = handle:read("*a")
@@ -323,7 +326,7 @@ function panel.create(parent)
     gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 1), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
-        local packageName = ANDROID_PACKAGE_NAME or ""
+        local packageName = gk.ANDROID_PACKAGE_NAME or ""
         local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
         if packageName == "" then
             gk.log("must set packageName")
@@ -352,9 +355,9 @@ function panel.create(parent)
         gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             gk.set_label_color(label, cc.c3b(50, 255, 50))
-            local dir = ANDROID_ROOT or "/"
+            local dir = gk.ANDROID_ROOT or "/"
             local adb = sdk .. "/platform-tools/adb"
-            local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
+            local handle = io.popen(gk.MAC_ROOT .. "src/gk/script/push.py " .. gk.MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
             local result = handle:read("*a")
             print(result)
             handle:close()

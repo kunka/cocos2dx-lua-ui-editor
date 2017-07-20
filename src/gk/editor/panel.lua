@@ -73,25 +73,20 @@ function panel:subscribeEvent()
         self:undisplayNode()
     end)
     gk.event:subscribe(self, "displayNode", function(node, var)
-        local _voidContent = node.__info and node.__info._voidContent
-        if _voidContent then
-            self:displayNode(node, var)
-        else
-            -- do not display tablecell in tableView
-            local type = tolua.type(node)
-            if type ~= "cc.TableView" then
-                if gk.util:isAncestorsType(node, "cc.TableView") then
-                    return
-                end
+        -- do not display tablecell in tableView
+        local type = tolua.type(node)
+        if type ~= "cc.TableView" then
+            if gk.util:isAncestorsType(node, "cc.TableView") then
+                return
             end
-            local layer = self.scene.layer
-            if layer then
-                gk.util:stopActionByTagSafe(layer, -2342)
-                local action = layer:runAction(cc.CallFunc:create(function()
-                    self:displayNode(node, var)
-                end))
-                action:setTag(-2342)
-            end
+        end
+        local layer = self.scene.layer
+        if layer then
+            gk.util:stopActionByTagSafe(layer, -2342)
+            local action = layer:runAction(cc.CallFunc:create(function()
+                self:displayNode(node, var)
+            end))
+            action:setTag(-2342)
         end
     end)
     gk.event:subscribe(self, "displayDomTree", function(...)

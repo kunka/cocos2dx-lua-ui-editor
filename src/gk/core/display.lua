@@ -9,28 +9,25 @@ local display = {}
 
 local displayScale = 0.68
 display.deviceSizes = {
-    cc.size(1280 * displayScale, 640 * displayScale),
-    cc.size(1280 * displayScale, 720 * displayScale),
-    cc.size(1280 * displayScale, 768 * displayScale),
-    cc.size(1280 * displayScale, 960 * displayScale),
-    cc.size(1280 * displayScale, 1280 * displayScale),
-    cc.size(720 * displayScale, 1280 * displayScale),
+    { size = cc.size(1280 * displayScale, 720 * displayScale), desc = "1280x720(16:9)" },
+    { size = cc.size(1280 * displayScale, 960 * displayScale), desc = "1280x960(4:3)" },
+    { size = cc.size(720 * displayScale, 1280 * displayScale), desc = "720x1280(9:16)" },
 }
 
-display.deviceSizesDesc = {
-    "1280x640(2:1)",
-    "1280x720(16:9)",
-    "1280x768(1.67:1)",
-    "1280x960(4:3)",
-    "1280x1280(1:1)",
-    "720x1280(9:16)",
-}
+-- register custom device size
+function display:registerCustomDeviceSize(size, desc)
+    table.insert(display.deviceSizes, { size = cc.size(size.width * displayScale, size.height * displayScale), desc = desc })
+end
 
 -- new resolution policy
 cc.ResolutionPolicy.UNIVERSAL = 5
 display.supportResolutionPolicyDesc = { "UNIVERSAL", "FIXED_HEIGHT", "FIXED_WIDTH" }
 display.supportResolutionPolicy = { cc.ResolutionPolicy.UNIVERSAL, cc.ResolutionPolicy.FIXED_HEIGHT, cc.ResolutionPolicy.FIXED_WIDTH }
 function display:initWithDesignSize(size, resolutionPolicy)
+    table.sort(gk.display.deviceSizes, function(s1, s2)
+        return s1.size.width / s1.size.height < s2.size.width / s2.size.height
+    end)
+
     display.resolutionPolicy = resolutionPolicy or display.supportResolutionPolicy[cc.UserDefault:getInstance():getIntegerForKey("gk_resolutionPolicy", 1)]
     display.resolutionPolicyDesc = display.supportResolutionPolicyDesc[table.indexof(display.supportResolutionPolicy, display.resolutionPolicy)]
     if gk.mode == gk.MODE_EDIT then
@@ -47,7 +44,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     -- set editor win size
     local platform = cc.Application:getInstance():getTargetPlatform()
     if platform == 2 then
-        local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex", 1)]
+        local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex", 1)].size
         local winSize = {}
         winSize.width = s.width + display.leftWidth + display.rightWidth
         winSize.height = s.height + display.topHeight + display.bottomHeight

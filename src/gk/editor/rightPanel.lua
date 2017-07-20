@@ -337,7 +337,6 @@ function panel:displayNode(node)
     local isgkDialog = gk.util:instanceof(node, "Dialog")
 
     local isRootNode = false --self.parent.scene.layer == node
-    local _voidContent = node.__info and node.__info._voidContent
 
     local yIndex = 0
     local function createTitle(title)

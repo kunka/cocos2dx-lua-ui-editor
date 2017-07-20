@@ -4,29 +4,14 @@ print("main(notice:only main.lua cannot be reloaded when running!)")
 cc.FileUtils:getInstance():addSearchPath("src/")
 cc.FileUtils:getInstance():addSearchPath("res/")
 cc.FileUtils:getInstance():setPopupNotify(false)
-
--- use local search path for restart instantly
-local function nativeHotUpdateInit(platform)
-    if platform == 2 then
-        print("nativeHotUpdateInit on macos")
-        local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
-        path = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
-        print("mac project root = \"" .. path .. "\"")
-        cc.FileUtils:getInstance():setSearchPaths({})
-        cc.FileUtils:getInstance():addSearchPath(path .. "src/")
-        cc.FileUtils:getInstance():addSearchPath(path .. "res/")
-        local searchPath = cc.FileUtils:getInstance():getSearchPaths()
-        print("mac app search paths:")
-        for _, v in ipairs(searchPath) do
-            print("searchPath:\"" .. v .. "\"")
-        end
-    end
-end
+local orignPackage = package.path
 
 local function clearModules()
     print("clearModules")
     local __g = _G
     setmetatable(__g, {})
+
+    package.path = orignPackage
 
     local whitelist = {
         ["string"] = true,
@@ -54,21 +39,33 @@ local function clearModules()
     end
 end
 
-local function getAppEntry()
-    return require("init")
+-- if don't need instance run on Android, set it to nil
+local android_package_name = "com.gk.demo"
+local instanceRun = require("gk.instanceRun")
+local platform = cc.Application:getInstance():getTargetPlatform()
+local MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME = instanceRun:init(platform, android_package_name)
+
+function startGame(mode)
+    return require("init"):startGame(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 end
 
 function restartGame(mode)
     print("restartGame")
     clearModules()
-    getAppEntry():startGame(mode)
+    local platform = cc.Application:getInstance():getTargetPlatform()
+    if platform == 2 then
+        startGame(mode)
+    else
+        startGame(0)
+    end
 end
 
+-- 0: release mode
+-- 1: edit mode
 local platform = cc.Application:getInstance():getTargetPlatform()
 if platform == 2 then
-    nativeHotUpdateInit(platform)
-    getAppEntry():startGame(1)
+    --mac
+    startGame(1)
 else
-    getAppEntry():startGame(0)
+    startGame(0)
 end
-

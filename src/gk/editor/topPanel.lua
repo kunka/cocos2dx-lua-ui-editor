@@ -95,11 +95,17 @@ function panel.create(parent)
     local yIndex = 0
     -- device size
     createLabel("ScreenSize", leftX, topY - yIndex * stepY)
-    local items = gk.display.deviceSizesDesc
-    local sizeItems = gk.display.deviceSizes
+    local items = {}
+    local descs = {}
+    for _, s in ipairs(gk.display.deviceSizes) do
+        table.insert(items, s.size)
+        table.insert(descs, s.desc)
+    end
+    --    local items = gk.display.deviceSizesDesc
+    --    local sizeItems = gk.display.deviceSizes
     local index = cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex")
-    local node = createSelectBox(items, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
-        local size = sizeItems[index]
+    local node = createSelectBox(descs, index, leftX2, topY - yIndex * stepY, inputWidth1, function(index)
+        local size = items[index]
         cc.UserDefault:getInstance():setIntegerForKey("gk_deviceSizeIndex", index)
         cc.UserDefault:getInstance():flush()
         -- set editor win size

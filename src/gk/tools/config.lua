@@ -48,12 +48,15 @@ end
 
 function config:dump()
     gk.log("# gk.config #")
-    for _, key in ipairs(self.boolKeys) do
-        gk.log("# %s = %s", key.key, self[key.key])
+    if self.boolKeys then
+        for _, key in ipairs(self.boolKeys) do
+            gk.log("# %s = %s", key.key, self[key.key])
+        end
     end
-
-    for _, key in ipairs(self.selectVarKeys) do
-        gk.log("# %s = %s", key.key, self[key.key])
+    if self.selectVarKeys then
+        for _, key in ipairs(self.selectVarKeys) do
+            gk.log("# %s = %s", key.key, self[key.key])
+        end
     end
     gk.log("#")
 end

@@ -80,14 +80,3 @@ for key, value in changedFiles.iteritems() :
 print("changed files count = " + str(len(changedFiles)))
 os.system(adb + " shell am force-stop " + packageName)
 os.system(adb + " shell am start -n " + packageName + "/" + defaultActivity)
-
-
-#$adb shell rm -rf $dir/src
-#$adb shell rm -rf $dir/res
-#find res -type d -exec $adb shell mkdir -p $dir/{} \;
-#find src -type d -exec $adb shell mkdir -p $dir/{} \;
-#$adb push src/. $dir/src
-#$adb push res/. $dir/res
-#
-#$adb shell am force-stop $packageName
-#$adb shell am start -n $packageName/$defaultActivity
