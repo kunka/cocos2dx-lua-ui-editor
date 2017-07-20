@@ -7,8 +7,6 @@ return {
 	popOnBack = 1,
 	type = "ScrollViewTest",
 	width = "$fill",
-	x = 250,
-	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,
@@ -19,7 +17,6 @@ return {
 	      height = 720,
 	      id = "scrollView1",
 	      ignoreAnchor = 0,
-	      parentId = "ScrollViewTest",
 	      type = "cc.ScrollView",
 	      width = 480,
 	      x = 20,
@@ -51,7 +48,6 @@ return {
 	      children = {	         {
 	            fontSize = 32,
 	            id = "label1",
-	            parentId = "scrollView1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            string = "There has been an important development in the big crack cutting across the Larsen C Ice Shelf in Antarctica.\\\

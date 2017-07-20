@@ -10,3 +10,6 @@ DEBUG = 2
 
 -- use framework, will disable all deprecated API, false - use legacy API
 CC_USE_FRAMEWORK = true
+
+-- scan editable nodes on mac
+CFG_SCAN_NODES = true

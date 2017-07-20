@@ -134,8 +134,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     end)
 
     -- mac scan files
-    local scan_files = true
-    if scan_files and cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT and MAC_ROOT then
+    if CFG_SCAN_NODES and cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT and MAC_ROOT then
         local root = MAC_ROOT
         gk.resource:scanGenNodes(root .. "src/")
         gk.resource:scanFontFiles(root .. config.fontDir)

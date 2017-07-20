@@ -7,8 +7,6 @@ return {
 	popOnBack = 1,
 	type = "TableViewTest",
 	width = "$fill",
-	x = 250,
-	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,
@@ -17,11 +15,8 @@ return {
 	      height = "$fill",
 	      id = "bg",
 	      ignoreAnchor = 0,
-	      parentId = "TableViewTest",
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      x = 0,
-	      y = 0,
 	      color = {
 	         a = 255,
 	         b = 100,
@@ -36,12 +31,9 @@ return {
 	      height = 0,
 	      id = "tableView1",
 	      ignoreAnchor = 0,
-	      parentId = "TableViewTest",
 	      type = "cc.TableView",
 	      verticalFillOrder = 0,
 	      width = 0,
-	      x = 0,
-	      y = 0,
 	      color = {
 	         b = 255,
 	         g = 255,

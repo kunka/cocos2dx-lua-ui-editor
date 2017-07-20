@@ -7,8 +7,6 @@ return {
 	popOnBack = 0,
 	type = "DialogTest",
 	width = "$fill",
-	x = 250,
-	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,

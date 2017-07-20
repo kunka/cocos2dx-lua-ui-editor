@@ -4,8 +4,6 @@ return {
 	ignoreAnchor = 1,
 	type = "ChatCell",
 	width = "$fill",
-	x = 240,
-	y = 100,
 	anchor = {
 	   x = 0,
 	   y = 0},
@@ -20,11 +18,8 @@ return {
 	      height = "$fill",
 	      id = "layerColor1",
 	      ignoreAnchor = 0,
-	      parentId = "ChatCell",
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      x = 0,
-	      y = 0,
 	      color = {
 	         a = 255,
 	         b = 255,
@@ -34,11 +29,8 @@ return {
 	            height = 1,
 	            id = "line",
 	            ignoreAnchor = 0,
-	            parentId = "layerColor1",
 	            type = "cc.LayerColor",
 	            width = "$fill",
-	            x = 0,
-	            y = 0,
 	            color = {
 	               a = 255,
 	               b = 240,
@@ -50,14 +42,11 @@ return {
 	         {
 	            file = "main/avatar.png",
 	            flippedX = 1,
-	            height = 80,
 	            id = "icon",
 	            ignoreAnchor = 1,
-	            parentId = "layerColor1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "cc.Sprite",
-	            width = 80,
 	            x = 61,
 	            y = 60,
 	            blendFunc = {
@@ -76,7 +65,6 @@ return {
 	            height = 0,
 	            id = "title",
 	            ignoreAnchor = 1,
-	            parentId = "layerColor1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            string = "Title",
@@ -93,7 +81,7 @@ return {
 	               g = 0,
 	               r = 0},
 	            fontFile = {
-	               en = "Helvetica"},
+	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -104,7 +92,6 @@ return {
 	            id = "desc",
 	            ignoreAnchor = 1,
 	            overflow = 2,
-	            parentId = "layerColor1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            string = "[Pay]",
@@ -121,7 +108,7 @@ return {
 	               g = 166,
 	               r = 166},
 	            fontFile = {
-	               en = "Helvetica"},
+	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
@@ -131,7 +118,6 @@ return {
 	            height = 0,
 	            id = "tile",
 	            ignoreAnchor = 1,
-	            parentId = "layerColor1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            string = "13:57",
@@ -148,21 +134,18 @@ return {
 	               g = 166,
 	               r = 166},
 	            fontFile = {
-	               en = "nil"},
+	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
 	            file = "main/dot.png",
 	            flippedX = 1,
-	            height = 14,
 	            id = "dot",
 	            ignoreAnchor = 1,
-	            parentId = "layerColor1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "cc.Sprite",
-	            width = 14,
 	            x = 95,
 	            y = 93,
 	            blendFunc = {

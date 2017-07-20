@@ -7,8 +7,6 @@ return {
 	popOnBack = 1,
 	type = "WidgetTest",
 	width = "$fill",
-	x = 250,
-	y = 100,
 	color = {
 	   b = 255,
 	   g = 255,
@@ -20,7 +18,6 @@ return {
 	      height = "$fill",
 	      id = "financeHud1",
 	      ignoreAnchor = 0,
-	      parentId = "WidgetTest",
 	      popOnBack = 1,
 	      swallowTouches = 1,
 	      touchEnabled = 1,
@@ -41,7 +38,6 @@ return {
 	      children = {	         {
 	            id = "button1",
 	            onClicked = "&onAddDiamond",
-	            parentId = "financeHud1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "ZoomButton",
@@ -55,7 +51,6 @@ return {
 	                  fontSize = 32,
 	                  height = 0,
 	                  id = "label1",
-	                  parentId = "button1",
 	                  string = "Clicked to add diamond!",
 	                  type = "cc.Label",
 	                  width = 0,
@@ -66,7 +61,6 @@ return {
 	         {
 	            id = "button1_1",
 	            onClicked = "&onSubDiamond",
-	            parentId = "financeHud1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            type = "ZoomButton",
@@ -80,7 +74,6 @@ return {
 	                  fontSize = 32,
 	                  height = 0,
 	                  id = "label1_1",
-	                  parentId = "button1_1",
 	                  string = "Clicked to sub diamond!",
 	                  type = "cc.Label",
 	                  width = 0,
