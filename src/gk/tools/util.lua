@@ -105,10 +105,10 @@ function util:registerRestartGameCallback(callback)
                 util:restartGame(1)
             elseif key == "KEY_F2" then
                 -- release mode, restart with cureent entry
-                util:restartGame(0)
+                util:restartGame(2)
             elseif key == "KEY_F3" then
                 -- release mode, restart with default entry
-                util:restartGame(2)
+                util:restartGame(0)
             end
         end
 
@@ -134,7 +134,7 @@ function util:restartGame(mode)
         callback()
     end
     self.onRestartGameCallbacks = {}
-    if gk.mode == gk.MODE_EDIT then
+    if gk.mode ~= gk.MODE_RELEASE then
         gk:increaseRuntimeVersion()
     end
     gk.scheduler:unscheduleAll()
@@ -170,7 +170,8 @@ util.tags = util.tags and util.tags or {
     drawParentTag = 0xFFF1,
     labelTag = 0xFFF2,
     boundsTag = 0xFFF3,
-    versionTag = 0xFFF4,
+    coordinateTag = 0xFFF5,
+    versionTag = 0xFFF6,
 }
 
 function util:isDebugNode(node)
@@ -242,7 +243,7 @@ function util:drawNode(node, c4f, tag)
     draw:drawRect(cc.p(0.5, 0.5),
         cc.p(0.5, size.height - 0.5),
         cc.p(size.width - 0.5, size.height - 0.5),
-        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(255 / 255, 0, 0, 0.5))
+        cc.p(size.width - 0.5, 0.5), c4f and c4f or cc.c4f(1, 0.5, 1, 0.5))
 
     -- anchor point
     local p = node:getAnchorPoint()
@@ -762,6 +763,25 @@ end
 
 function util:c4b2c4f(c4b)
     return cc.c4f(c4b.r / 255, c4b.g / 255, c4b.b / 255, c4b.a / 255)
+end
+
+function util:addMouseMoveEffect(node, c4f)
+    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT then
+        local listener = cc.EventListenerMouse:create()
+        listener:registerScriptHandler(function(touch, event)
+            if not node.noneMouseMoveEffect then
+                local location = touch:getLocationInView()
+                if gk.util:touchInNode(node, location) then
+                    if not node.isFocus then
+                        gk.util:drawNodeBounds(node, c4f or cc.c4f(1, 0.5, 0.5, 0.7), self.tags.boundsTag)
+                    end
+                else
+                    gk.util:clearDrawNode(node, self.tags.boundsTag)
+                end
+            end
+        end, cc.Handler.EVENT_MOUSE_MOVE)
+        node:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
+    end
 end
 
 return util

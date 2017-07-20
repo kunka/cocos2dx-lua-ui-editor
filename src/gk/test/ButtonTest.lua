@@ -14,7 +14,7 @@ end
 
 function ButtonTest:onZoomBtnClicked(button)
     gk.log("onZoomBtnClicked %s", button)
-    self.spriteButton:setEnabled(not self.spriteButton.isEnabled)
+    self.spriteButton:setEnabled(not self.spriteButton.enabled)
 end
 
 function ButtonTest:onZoomBtnLongPressed(button)

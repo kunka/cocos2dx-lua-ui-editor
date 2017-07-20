@@ -22,9 +22,9 @@ config.supportNodes = {
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
     {
         type = "ccui.EditBox",
-        normalSprite = "gk/res/texture/edbox_bg.png",
-        selectedSprite = "gk/res/texture/edbox_bg.png",
-        disabledSprite = "gk/res/texture/edbox_bg.png",
+        normalSprite = "gk/res/texture/edit_box_bg.png",
+        selectedSprite = "gk/res/texture/edit_box_bg.png",
+        disabledSprite = "gk/res/texture/edit_box_bg.png",
         capInsets = cc.rect(20, 20, 20, 20),
         width = 200,
         height = 45,
@@ -179,9 +179,12 @@ config.macroFuncs = {
     ["win.h"] = function() return gk.display:winSize().height end,
     -- contentSize, ViewSize
     fill = function(key, node)
-        local parent = node:getParent()
-        if not parent and node.__info and node.__info.parentId and node.__rootTable then
+        local parent
+        if node.__info and node.__rootTable then
             parent = node.__rootTable[node.__info.parentId]
+        end
+        if not parent then
+            parent = node:getParent()
         end
         return parent and parent:getContentSize()[key] or gk.display:winSize()[key]
     end,
@@ -250,7 +253,7 @@ config.editableProps = {
                 size.width = width
                 node:setContentSize(size)
             end
-            gk.generator:updateSize(node, "width")
+            gk.generator:updateChildSize(node, "width")
         end
     },
     height = {
@@ -279,7 +282,7 @@ config.editableProps = {
                 size.height = height
                 node:setContentSize(size)
             end
-            gk.generator:updateSize(node, "height")
+            gk.generator:updateChildSize(node, "height")
         end
     },
     scaleSize = {
@@ -301,25 +304,8 @@ config.editableProps = {
             else
                 node:setContentSize(size)
             end
-            gk.generator:updateSize(node, "width")
-            gk.generator:updateSize(node, "height")
-        end
-    },
-    scaleViewSize = {
-        getter = function(_) return { w = "1", h = "1" } end,
-        setter = function(node, var)
-            local vs = node.__info.viewSize
-            local w = gk.generator:parseValue("width", node, vs.width)
-            local h = gk.generator:parseValue("height", node, vs.height)
-            if not w or not h then
-                return
-            end
-            local scaleW = gk.generator:parseValue("w", node, var.w)
-            local scaleH = gk.generator:parseValue("h", node, var.h)
-            node:setViewSize(cc.size(w * scaleW, h * scaleH))
-            if gk.util:instanceof(node, "cc.TableView") then
-                node:reloadData()
-            end
+            gk.generator:updateChildSize(node, "width")
+            gk.generator:updateChildSize(node, "height")
         end
     },
     -- cc.Sprite
@@ -564,7 +550,7 @@ config.editableProps = {
         setter = function(node, var)
             local w = gk.generator:parseValue("width", node, var.width)
             local h = gk.generator:parseValue("height", node, var.height)
-            local ss = node.__info.scaleSize
+            local ss = node.__info.scaleViewSize
             local scaleW = gk.generator:parseValue("w", node, ss.w)
             local scaleH = gk.generator:parseValue("h", node, ss.h)
             node:setViewSize(cc.size(w * scaleW, h * scaleH))
@@ -573,7 +559,23 @@ config.editableProps = {
             end
         end
     },
-    -- ccui.Scale9Sprite, ccui.EditBox, SpriteButton
+    scaleViewSize = {
+        getter = function(_) return { w = "1", h = "1" } end,
+        setter = function(node, var)
+            local vs = node.__info.viewSize
+            local w = gk.generator:parseValue("width", node, vs.width)
+            local h = gk.generator:parseValue("height", node, vs.height)
+            if not w or not h then
+                return
+            end
+            local scaleW = gk.generator:parseValue("w", node, var.w)
+            local scaleH = gk.generator:parseValue("h", node, var.h)
+            node:setViewSize(cc.size(w * scaleW, h * scaleH))
+            if gk.util:instanceof(node, "cc.TableView") then
+                node:reloadData()
+            end
+        end
+    }, -- ccui.Scale9Sprite, ccui.EditBox, SpriteButton
     capInsets = {
         getter = function(_) return cc.rect(0, 0, 0, 0) end,
         setter = function(node, var)
@@ -700,7 +702,7 @@ function config:registerFloatProp(key, alias)
         getter = function(node) return math.shrink(node["get" .. alias](node), 3) end,
         setter = function(node, var)
             local v = gk.generator:parseValue(key, node, var)
-            node["set" .. alias](node, v)
+            node["set" .. alias](node, tonumber(v))
         end
     }
 end

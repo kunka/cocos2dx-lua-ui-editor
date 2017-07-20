@@ -10,7 +10,7 @@ local generator = import(".generator")
 local panel = {}
 
 local marginTop = 15
-local leftX = 20
+local leftX = 10
 local stepY = 20
 local stepX = 11
 local fontSize = 11 * 4
@@ -19,7 +19,7 @@ local fontName = gk.theme.font_fnt
 local scale = 0.25
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), gk.display.leftWidth, winSize.height - gk.display.topHeight)
+    local self = cc.LayerColor:create(gk.theme.config.backgroundColor, gk.display.leftWidth, winSize.height - gk.display.topHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(0, 0)
@@ -186,21 +186,21 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
         end
     end
     if group then
-        x = x - 11 + 3
-        local label = gk.create_label("▶", fontName, fontSize, cc.c3b(200, 200, 200))
-        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        local label = gk.create_label("▶", fontName, fontSize, gk.theme.config.fontColorNormal)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         if fixChild or not node.__info._fold then
             label:setRotation(90)
         end
-        label:setDimensions(12 / scale, 20 / scale)
+        label:setDimensions(16 / scale, 16 / scale)
+        label:setContentSize(16 / scale, 16 / scale)
         local button = gk.ZoomButton.new(label)
         if fixChild or not node.__info._fold then
             button:setScale(scale, scale * 0.8)
-            button:setPosition(x - 4, y)
+            button:setPosition(x - 5, y)
         else
             button:setScale(scale * 0.8, scale)
-            button:setPosition(x, y)
+            button:setPosition(x - 2, y)
         end
         self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
@@ -223,7 +223,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     gk.set_label_color(label, cc.c3b(0x99, 0xcc, 0x00))
     if fixChild or widgetParent or (node.__info and node.__info._lock == 0) or not gk.util:isAncestorsVisible(node) then
-        gk.set_label_color(label, cc.c3b(200, 200, 200))
+        gk.set_label_color(label, gk.theme.config.fontColorNormal)
         label:setOpacity(100)
     end
     if (node.__info and node.__info._isWidget) then
@@ -238,6 +238,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
     self.displayInfoNode:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setPosition(x, y)
+    gk.util:addMouseMoveEffect(label)
     -- select
     if self.parent.displayingNode == node then
         self.displayingDomDepth = self.domDepth
@@ -291,7 +292,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                 label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
                 label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
                 label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-                gk.set_label_color(label, cc.c3b(200, 200, 200))
+                gk.set_label_color(label, gk.theme.config.fontColorNormal)
                 label:setAnchorPoint(0, 0.5)
                 label:setScale(scale)
                 self.displayInfoNode:addChild(label)
@@ -344,7 +345,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                         if self.lastContainerNode ~= self._containerNode then
                             local nd = self.parent.scene.layer[self._containerNode.content]
                             if nd then
-                                gk.event:post("displayNode", nd)
+                                gk.event:post("displayNode", nd, true)
                             end
                             self.lastContainerNode = self._containerNode
                         end
@@ -551,9 +552,7 @@ function panel:createButtonOthers(content, x, y, displayName)
     if self.cachedOthers[content] then
         local button1 = self.cachedOthers[content].button1
         local button2 = self.cachedOthers[content].button2
-        x = x - 11
-        button1:setPosition(x + 1, y - 1)
-        x = x + 11 + 3
+        button1:setPosition(x, y - 1)
         button2:setPosition(x, y)
         button1:onClicked(function()
             gk.event:post("unfoldRootLayout", content)
@@ -565,8 +564,7 @@ function panel:createButtonOthers(content, x, y, displayName)
         button1:show()
         button2:show()
     else
-        x = x - 11
-        local label = gk.create_label("◉", fontName, fontSize - 5, cc.c3b(200, 200, 200))
+        local label = gk.create_label("◉", fontName, fontSize - 5, gk.theme.config.fontColorNormal)
         label:setDimensions(12 / scale, 20 / scale)
         label:setContentSize(12 / scale, 20 / scale)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
@@ -575,20 +573,20 @@ function panel:createButtonOthers(content, x, y, displayName)
         button:setScale(scale, scale)
         self.displayInfoNode:addChild(button)
         button:setAnchorPoint(0, 0.5)
-        button:setPosition(x + 1, y - 1)
+        button:setPosition(x, y - 1)
         button:onClicked(function()
             gk.event:post("unfoldRootLayout", content)
         end)
-        x = x + 11 + 3
+        button.noneMouseMoveEffect = true
         local button1 = button
 
-        local label = gk.create_label(displayName and displayName or content, fontName, fontSize)
+        local label = gk.create_label("  " .. (displayName and displayName or content), fontName, fontSize)
         local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
         label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
-        label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
+        label:setDimensions(contentSize.width - x / scale, contentSize.height)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-        gk.set_label_color(label, cc.c3b(200, 200, 200))
+        gk.set_label_color(label, gk.theme.config.fontColorNormal)
         local button = gk.ZoomButton.new(label)
         button:setScale(scale)
         self.displayInfoNode:addChild(button)
@@ -614,7 +612,6 @@ function panel:displayOthers(key, layer, displayName)
 end
 
 function panel:createButtonGroup(content, x, y, displayName, domItem)
-    x = x - 11
     local label = gk.create_label("❑", fontName, fontSize + 5, cc.c3b(180, 120, 75))
     label:setDimensions(12 / scale, 20 / scale)
     label:setContentSize(12 / scale, 20 / scale)
@@ -624,7 +621,7 @@ function panel:createButtonGroup(content, x, y, displayName, domItem)
     button:setScale(scale, scale)
     self.displayInfoNode:addChild(button)
     button:setAnchorPoint(0, 0.5)
-    button:setPosition(x + 1, y - 1)
+    button:setPosition(x, y - 1)
     button:onClicked(function()
         domItem._fold = not domItem._fold
         self.foldDomDepth = self.domDepth
@@ -632,12 +629,12 @@ function panel:createButtonGroup(content, x, y, displayName, domItem)
         cc.UserDefault:getInstance():setBoolForKey("gkdom_" .. content, domItem._fold)
         cc.UserDefault:getInstance():flush()
     end)
-    x = x + 11 + 3
+    button.noneMouseMoveEffect = true
 
-    local label = gk.create_label(displayName and displayName or content, fontName, fontSize)
+    local label = gk.create_label("  " .. (displayName and displayName or content), fontName, fontSize)
     local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
     label:setPosition(cc.p(contentSize.width / 2, contentSize.height / 2))
-    label:setDimensions(contentSize.width - 2 * leftX / scale, contentSize.height)
+    label:setDimensions(contentSize.width - x / scale, contentSize.height)
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     gk.set_label_color(label, cc.c3b(180, 120, 75))

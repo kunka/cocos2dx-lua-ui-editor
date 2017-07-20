@@ -203,7 +203,7 @@ function display:addEditorPanel(scene)
     gk.log("display:addEditorPanel")
     local panel = require("gk.editor.panel")
     scene:addChild(panel.create(scene), 9999999)
-    local c4b = gk.theme:getBackgroundColor()
+    local c4b = gk.theme.config.backgroundColor
     gk.util:drawNodeBg(scene, gk.util:c4b2c4f(c4b), -89)
 end
 

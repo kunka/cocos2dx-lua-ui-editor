@@ -10,7 +10,7 @@ local panel = {}
 
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), winSize.width - gk.display.leftWidth - gk.display.rightWidth, gk.display.bottomHeight)
+    local self = cc.LayerColor:create(gk.theme.config.backgroundColor, winSize.width - gk.display.leftWidth - gk.display.rightWidth, gk.display.bottomHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(gk.display.leftWidth, 0)
@@ -18,7 +18,7 @@ function panel.create(parent)
     local scale = 0.25
     local fontSize = 40
     local scale = 0.25
-    local topY = gk.display.bottomHeight - 32
+    local topY = gk.display.bottomHeight - 35
     local leftX = 0
     local inputWidth1 = 140
     local inputWidth2 = 400
@@ -26,8 +26,6 @@ function panel.create(parent)
     local leftX2 = 100 + leftX
     local leftX3 = leftX2 + inputWidth1 + 20
     local leftX4 = leftX3 + 100
-    --    local leftX5 = leftX2 + inputWidth2 + 20
-    --    local leftX6 = leftX5 + 120
 
     -- size label
     local fontName = gk.theme.font_fnt
@@ -38,7 +36,7 @@ function panel.create(parent)
     local height = 20
     label:setDimensions(self:getContentSize().width / 0.2, height / 0.2)
     label:setOverflow(2)
-    gk.set_label_color(label, cc.c3b(200, 200, 200))
+    gk.set_label_color(label, gk.theme.config.fontColorNormal)
     self:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
@@ -47,7 +45,7 @@ function panel.create(parent)
     local createLabel = function(content, x, y)
         local label = gk.create_label(content, fontName, fontSize)
         label:setScale(scale)
-        gk.set_label_color(label, cc.c3b(189, 189, 189))
+        gk.set_label_color(label, gk.theme.config.fontColorNormal)
         self:addChild(label)
         label:setAnchorPoint(0, 0.5)
         label:setPosition(x, y)
@@ -56,7 +54,7 @@ function panel.create(parent)
     local createInput = function(content, x, y, width, callback, defValue, lines)
         lines = lines or 1
         local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
         local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
         gk.set_label_color(label, cc.c3b(0, 0, 0))
         node:setInputLabel(label)
@@ -70,23 +68,23 @@ function panel.create(parent)
         end)
         node:setAnchorPoint(0, 1)
         node:setPosition(x, y + 16 / 2)
-        node.isEnabled = not self.disabled
+        node.enabled = not self.disabled
         return node
     end
     local createSelectBox = function(items, index, x, y, width, callback)
         local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
-        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
+        node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
         local label = gk.create_label("", fontName, fontSize)
         gk.set_label_color(label, cc.c3b(0, 0, 0))
+        node:setMarginLeft(5)
+        node:setMarginRight(22)
+        node:setMarginTop(4)
         node:setDisplayLabel(label)
         node:onCreatePopupLabel(function()
             local label = gk.create_label("", fontName, fontSize)
             gk.set_label_color(label, cc.c3b(0, 0, 0))
             return label
         end)
-        local contentSize = node:getContentSize()
-        label:setPosition(cc.p(contentSize.width / 2 - 5, contentSize.height / 2 - 5))
-        label:setDimensions(contentSize.width - 25, contentSize.height)
         self:addChild(node)
         node:setScale(scale)
         node:setAnchorPoint(0, 0.5)
@@ -168,6 +166,7 @@ function panel.create(parent)
         end
         return {}
     end
+    self.hasDevices = false
     local scanDevices = function()
         if not selectBox.popup then
             local devices = checkDevices()
@@ -183,17 +182,24 @@ function panel.create(parent)
             end
             selectBox.enabled = #items == 1
             selectBox:setOpacity(#items == 1 and 150 or 255)
+            local hasDevices = #items > 1
+            if self.hasDevices and not hasDevices then
+                print("no phone connected")
+            elseif not self.hasDevices and hasDevices then
+                print("new phone connected -> " .. items[2])
+            end
+            self.hasDevices = hasDevices
         end
     end
     scanDevices()
-    selectBox:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(3), cc.CallFunc:create(function()
+    selectBox:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
         scanDevices()
     end))))
     yIndex = yIndex + 1
 
     self.logOn = false
     createLabel("LogCat", leftX4 + inputWidth1 - 60, topY - stepY * yIndex)
-    local icon = gk.create_sprite("gk/res/texture/ic.png")
+    local icon = gk.create_sprite("gk/res/texture/icon_android.png")
     local button = gk.ZoomButton.new(icon)
     self:addChild(button)
     button:setScale(scale * 0.8)
@@ -214,6 +220,10 @@ function panel.create(parent)
                 return
             end
             local action = self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.5), cc.CallFunc:create(function()
+                local devices = checkDevices()
+                if #devices == 0 then
+                    return
+                end
                 local adb = sdk .. "/platform-tools/adb"
                 local handle = io.popen(adb .. " logcat -d | grep cocos2d")
                 local result = handle:read("*a"):trim()
@@ -250,7 +260,7 @@ function panel.create(parent)
     button:setScale(scale * 0.8, scale)
     button:setPosition(leftX2, topY - yIndex * stepY)
     self:addChild(button)
-    gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+    gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 1), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
         gk.set_label_color(label, cc.c3b(166, 166, 166))
@@ -310,7 +320,7 @@ function panel.create(parent)
     button:setScale(scale * 0.8, scale)
     button:setPosition(leftX4, topY - yIndex * stepY)
     self:addChild(button)
-    gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+    gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 1), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
         local packageName = ANDROID_PACKAGE_NAME or ""

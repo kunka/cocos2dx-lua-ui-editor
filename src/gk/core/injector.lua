@@ -110,6 +110,10 @@ function injector:onNodeCreate(node)
         if not path then
             return
         end
+        if gk.mode == gk.MODE_EDIT then
+            -- reload package
+            package.loaded[path] = nil
+        end
         gk.profile:start("injector:createNode")
         local status, info = pcall(require, path)
         if status then
@@ -117,9 +121,8 @@ function injector:onNodeCreate(node)
             info = clone(info)
             gk.log("inflate node with file %s", path)
             gk.generator:inflate(info, node, node)
-            node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
-            node.__info.scaleXY = { x = "1", y = "1" }
-            if not (node.class and node.class._isWidget) and not gk.util:instanceof(node, "TableViewCell") then
+            local isWidget = node.class and node.class._isWidget
+            if not isWidget and not gk.util:instanceof(node, "TableViewCell") then
                 node.__info.width, node.__info.height = "$fill", "$fill"
             end
         else

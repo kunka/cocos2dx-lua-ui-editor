@@ -17,8 +17,9 @@ function generator:deflate(node)
         if k ~= "children" and generator.config.editableProps[k] ~= nil then
             local def = config.defValues[k]
             if def then
-                -- filter def value, except widget
-                if (not (node.class and node.class._isWidget)) and ((type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret)) then
+                -- filter def value, except widget which save all values
+                local isWidget = node.class and node.class._isWidget
+                if (not isWidget) and ((type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret)) then
                     info[k] = nil
                 else
                     info[k] = clone(ret)
@@ -43,7 +44,6 @@ function generator:deflate(node)
 
     -- patch
     info["parentId"] = nil
-
 
     if not gk.util:instanceof(node, "cc.TableView") then
         -- and not node.__info._isWidget then
@@ -103,6 +103,8 @@ function generator:inflate(info, rootNode, rootTable)
             if c then
                 node:addChild(c)
                 -- update width/height($fill)
+                self:updateNodeSize(c, "width")
+                self:updateNodeSize(c, "height")
             end
         end
     end
@@ -200,7 +202,7 @@ function generator:wrap(info, rootTable)
                             gk.event:post("displayDomTree", true)
                         end
                     else
-                        gk.log("error set duplicate id %s", value)
+                        -- gk.log("error set duplicate id %s", value)
                     end
                 else
                     gk.log("error set invalid id %s", value)
@@ -304,6 +306,14 @@ function generator:modify(node, property, input, valueType)
             value = input
         elseif valueType == "number" then
             value = tonumber(input)
+            if value == nil then
+                gk.log("modify \"%s\" need number value, error input = \"%s\"", property, input)
+                if prop2 then
+                    return node.__info[prop1][prop2]
+                else
+                    return node.__info[prop1]
+                end
+            end
         end
     end
     local cur_value
@@ -518,7 +528,18 @@ function generator:genID(type, rootTable)
     return string.format("%s%d", tp, index)
 end
 
-function generator:updateSize(node, property)
+function generator:updateNodeSize(node, property)
+    if node and node.__info then
+        local p = node.__info[property]
+        if type(p) == "string" and p == "$fill" then
+            node.__info[property] = p
+            self:updateChildSize(node, property)
+        end
+        self:updateNodeViewSize(node)
+    end
+end
+
+function generator:updateChildSize(node, property)
     local children = node:getChildren()
     for _, child in ipairs(children) do
         if child and child.__info then
@@ -526,9 +547,16 @@ function generator:updateSize(node, property)
             if type(p) == "string" and p == "$fill" then
                 -- update width/height($fill)
                 child.__info[property] = p
-                self:updateSize(child, property)
+                self:updateChildSize(child, property)
             end
+            self:updateNodeViewSize(child)
         end
+    end
+end
+
+function generator:updateNodeViewSize(node)
+    if node and node.__info and gk.util:instanceof(node, "cc.ScrollView") then
+        node.__info.viewSize = node.__info.viewSize
     end
 end
 

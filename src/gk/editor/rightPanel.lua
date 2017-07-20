@@ -11,7 +11,7 @@ local panel = {}
 
 function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
-    local self = cc.LayerColor:create(gk.theme:getBackgroundColor(), gk.display.rightWidth, winSize.height - gk.display.topHeight)
+    local self = cc.LayerColor:create(gk.theme.config.backgroundColor, gk.display.rightWidth, winSize.height - gk.display.topHeight)
     setmetatableindex(self, panel)
     self.parent = parent
     self:setPosition(winSize.width - gk.display.rightWidth, 0)
@@ -99,7 +99,7 @@ local scale = 0.25
 function panel:createLabel(content, x, y, isTitle)
     local label = gk.create_label(content, fontName, fontSize)
     label:setScale(scale)
-    gk.set_label_color(label, isTitle and cc.c3b(152, 206, 0) or cc.c3b(189, 189, 189))
+    gk.set_label_color(label, isTitle and cc.c3b(152, 206, 0) or gk.theme.config.fontColorNormal)
     self.displayInfoNode:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setPosition(x, y)
@@ -108,24 +108,24 @@ function panel:createLabel(content, x, y, isTitle)
 end
 
 function panel:createCheckBox(selected, x, y, callback)
-    local node = ccui.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
+    local node = gk.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
     node:setPosition(x, y)
-    node:setScale(scale)
+    node:setScale(scale * 1.2)
     node:setSelected(selected)
     self.displayInfoNode:addChild(node)
     node:setAnchorPoint(0, 0.5)
-    node:addEventListener(function(sender, eventType)
-        callback(eventType)
+    node:onSelectChanged(function(_, selected)
+        callback(selected)
     end)
     node:setAnchorPoint(cc.p(1, 0.5))
-    node:setTouchEnabled(not self.disabled)
+    node.enabled = not self.disabled
     return node
 end
 
 function panel:createInput(content, x, y, width, callback, defValue, lines)
     lines = lines or 1
     local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
-    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
+    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
     local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
     gk.set_label_color(label, cc.c3b(0, 0, 0))
     node:setInputLabel(label)
@@ -145,14 +145,14 @@ function panel:createInput(content, x, y, width, callback, defValue, lines)
     onValueChanged(node.bg, defValue, content)
     node:setAnchorPoint(0, 1)
     node:setPosition(x, y + 16 / 2)
-    node.isEnabled = not self.disabled
+    node.enabled = not self.disabled
     return node
 end
 
 function panel:createSelectAndInput(content, items, index, x, y, width, callback, defValue)
     index = index or 1
     local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
-    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
+    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
     local label = gk.create_label(content, "gk/res/font/Consolas.ttf", fontSize)
     gk.set_label_color(label, cc.c3b(0, 0, 0))
     node:setInputLabel(label)
@@ -173,7 +173,7 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     onLabelInputChanged(self.displayingNode, label, content)
     onValueChanged(node.bg, defValue, content)
     node:setPosition(x, y)
-    node.isEnabled = not self.disabled
+    node.enabled = not self.disabled
     local input = node
 
     local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
@@ -184,6 +184,7 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
         local label = gk.create_label("", fontName, fontSize)
         return label
     end)
+    node.enabled = not self.disabled
 
     local contentSize = node:getContentSize()
     local label = gk.create_label("▶", fontName, fontSize)
@@ -198,10 +199,11 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
-        if node.isEnabled then
+        if node.enabled then
             node:openPopup()
         end
     end)
+    button.enabled = not self.disabled
     self.displayInfoNode:addChild(node)
     node:setScale(scale)
     node:setAnchorPoint(0, 0.5)
@@ -209,24 +211,23 @@ function panel:createSelectAndInput(content, items, index, x, y, width, callback
     node:onSelectChanged(function(index)
         callback(input, items[index])
     end)
-    node.isEnabled = not self.disabled
+    node.enabled = not self.disabled
     return input
 end
 
 function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     index = index or 1
     local node = gk.SelectBox:create(cc.size(width / scale, 16 / scale), items, index)
-    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edbox_bg.png", cc.rect(20, 20, 20, 20)))
+    node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
     local label = gk.create_label("", fontName, fontSize)
     gk.set_label_color(label, cc.c3b(0, 0, 0))
+    node:setMarginLeft(5)
+    node:setMarginRight(22)
+    node:setMarginTop(4)
     node:setDisplayLabel(label)
     node:onCreatePopupLabel(function()
-        local label = gk.create_label("", fontName, fontSize)
-        return label
+        return gk.create_label("", fontName, fontSize)
     end)
-    local contentSize = node:getContentSize()
-    label:setPosition(cc.p(contentSize.width / 2 - 12, contentSize.height / 2 - 5))
-    label:setDimensions(contentSize.width - 45, contentSize.height)
     self.displayInfoNode:addChild(node)
     node:setScale(scale)
     node:setAnchorPoint(0, 0.5)
@@ -238,7 +239,7 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     end)
     onLabelInputChanged(self.displayingNode, label, items[index])
     onValueChanged(node.bg, defValue, items[index])
-    node.isEnabled = not self.disabled
+    node.enabled = not self.disabled
 
     local contentSize = node:getContentSize()
     local label = gk.create_label("▶", fontName, fontSize)
@@ -253,10 +254,11 @@ function panel:createSelectBox(items, index, x, y, width, callback, defValue)
     node:addChild(button, 999)
     button:setAnchorPoint(1, 0.5)
     button:onClicked(function()
-        if node.isEnabled then
+        if node.enabled then
             node:openPopup()
         end
     end)
+    button.enabled = not self.disabled
     return node
 end
 
@@ -269,6 +271,7 @@ function panel:createHintSelectBox(items, index, x, y, width, callback, defValue
     box.bgButton:setContentNode(box.bg)
     box.bgButton:setPositionX(box:getContentSize().width)
     box.bgButton:setAnchorPoint(1, 0.5)
+    box.noneMouseMoveEffect = true
     return box
 end
 
@@ -333,7 +336,7 @@ function panel:displayNode(node)
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
 
-    local isRootNode = self.parent.scene.layer == node
+    local isRootNode = false --self.parent.scene.layer == node
     local _voidContent = node.__info and node.__info._voidContent
 
     local yIndex = 0
@@ -422,7 +425,7 @@ function panel:displayNode(node)
     local function createCheckBox(title, key, callback)
         self:createLabel(title, leftX, topY - stepY * yIndex)
         self:createCheckBox(node.__info[key] == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            generator:modify(node, key, selected, "number")
+            generator:modify(node, key, selected and 0 or 1, "number")
             if callback then
                 callback()
             end
@@ -545,10 +548,10 @@ function panel:displayNode(node)
         if (isSprite and not isScale9Sprite) or (isButton and not isSpriteButton) then
             w:setOpacity(150)
             w:setCascadeOpacityEnabled(true)
-            w.isEnabled = false
+            w.enabled = false
             h:setOpacity(150)
             h:setCascadeOpacityEnabled(true)
-            h.isEnabled = false
+            h.enabled = false
             box:hide()
         end
         if not isSprite then
@@ -981,7 +984,7 @@ function panel:displayNode(node)
         createInputMiddle("ViewSize", "W", "H", "viewSize.width", "viewSize.height", "number")
         local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
         local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
-        createSelectBox("ScaleViewSize", "W", "H", "scaleViewSize.x", "scaleViewSize.y", scaleWs, scaleHs, "string", "1", "1")
+        createSelectBox("ScaleViewSize", "W", "H", "scaleViewSize.w", "scaleViewSize.h", scaleWs, scaleHs, "string", "1", "1")
         local directions = { "HORIZONTAL", "VERTICAL", "BOTH" }
         createSelectBoxLong("Direction", directions, "direction", "number", "BOTH")
         if isTableView then

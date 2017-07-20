@@ -162,7 +162,7 @@ local function nextFocusNode(current)
     local all = {}
     local function focusNodes(node)
         if node then
-            if node ~= current and node.focusable and node.isEnabled then
+            if node ~= current and node.focusable and node.enabled then
                 table.insert(all, node)
             end
             -- test draw

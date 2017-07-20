@@ -23,7 +23,7 @@ function EditBox:ctor(size)
     self:handleKeyboardEvent()
     self.cursorChar = "|"
     self.cursorPos = 0
-    self.isEnabled = true
+    self.enabled = true
     self.focusable = true
 end
 
@@ -77,6 +77,22 @@ function EditBox:onEnter()
     listener:registerScriptHandler(handler(self, self.onTouchCancelled), cc.Handler.EVENT_TOUCH_CANCELLED)
     local eventDispatcher = self:getEventDispatcher()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+
+    gk.util:addMouseMoveEffect(self)
+    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC then
+        local listener = cc.EventListenerMouse:create()
+        listener:registerScriptHandler(function(touch, event)
+            local location = touch:getLocationInView()
+            if gk.util:touchInNode(self, location) then
+                if not self.isFocus then
+                    gk.util:drawNodeBounds(self, cc.c4f(1, 0.5, 0.5, 0.7), -3)
+                end
+            else
+                gk.util:clearDrawNode(self, -3)
+            end
+        end, cc.Handler.EVENT_MOUSE_MOVE)
+        self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+    end
 end
 
 function EditBox:onExit()
@@ -89,7 +105,7 @@ end
 
 function EditBox:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.isEnabled or not self:isVisible() or not camera then
+    if not self.enabled or not self:isVisible() or not camera then
         self:unfocus()
         return false
     end

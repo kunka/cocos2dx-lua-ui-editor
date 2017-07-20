@@ -24,7 +24,14 @@ function SceneManager:createScene(layerName, ...)
             gk.util:reportError(msg)
         end)
         if status then
-            scene:addChild(layer)
+            if gk.mode == gk.MODE_EDIT then
+                local node = cc.Node:create()
+                node:addChild(layer)
+                node:setPosition(cc.p(gk.display.leftWidth, gk.display.bottomHeight))
+                scene:addChild(node)
+            else
+                scene:addChild(layer)
+            end
             scene.layer = layer
             return scene, true
         else

@@ -67,7 +67,7 @@ function ToggleButton:onSelectedTagChanged(callback)
 end
 
 function ToggleButton:activate()
-    if self.isEnabled then
+    if self.enabled then
         if self.autoToggle then
             local tag = self:getSelectedTag()
             if tag > 0 then

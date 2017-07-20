@@ -15,13 +15,16 @@ theme.font_fnt = "gk/res/font/Consolas.fnt" -- for display
 --- colors
 theme.configs = {
     DRAK_GRAY = {
-        backgroundColor = cc.c4b(71, 71, 71, 255),
+        backgroundColor = cc.c4b(60, 63, 65, 255),
+        fontColorNormal = cc.c3b(189, 189, 189),
     },
     LIGHT_WHITE = {
         backgroundColor = cc.c4b(242, 242, 242, 255),
+        fontColorNormal = cc.c3b(189, 189, 189),
     },
 }
 theme.themeName = cc.UserDefault:getInstance():getStringForKey("gk_themeName", "DRAK_GRAY")
+theme.config = theme.configs[theme.themeName] or theme.configs["DRAK_GRAY"]
 
 function theme:setTheme(themeName)
     if self.themeName ~= themeName and self.configs[themeName] then
@@ -30,14 +33,6 @@ function theme:setTheme(themeName)
         cc.UserDefault:getInstance():flush()
         gk.util:restartGame(gk.mode)
     end
-end
-
-function theme:getBackgroundColor()
-    local config = self.configs[self.themeName]
-    if not config then
-        config = self.configs["DRAK_GRAY"]
-    end
-    return config.backgroundColor
 end
 
 return theme

@@ -6,10 +6,15 @@
 -- To change this template use File | Settings | File Templates.
 
 gk = {}
-gk.MODE_RELEASE = 0
+-- KEY_F1: debug mode, restart with current editing node
 gk.MODE_EDIT = 1
+-- KEY_F1: release mode, restart with current entry
+gk.MODE_RELEASE_CURRENT = 2
+-- KEY_F3: release mode, restart with default entry
+gk.MODE_RELEASE = 0
+
 gk.mode = gk.MODE_RELEASE
-gk.defaultSpritePathDebug = "gk/res/texture/default.png"
+gk.defaultSpritePathDebug = "gk/res/texture/default_debug.png"
 gk.defaultSpritePathRelease = "gk/res/texture/release.png"
 gk.exception = false
 gk.displayRuntimeVersion = true
@@ -27,9 +32,11 @@ setmetatable(gk.exports, {
 })
 
 require "gk.core.init"
+require "gk.action.init"
 require "gk.node.init"
 require "gk.controller.init"
 require "gk.editor.init"
 gk.util = require "gk.tools.util"
 gk.profile = require "gk.tools.profile"
+gk.config = require "gk.tools.config"
 gk.scheduler = require "gk.tools.scheduler"

@@ -11,12 +11,12 @@ local Layer = import(".Layer")
 local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
+    Dialog.super.ctor(self)
     -- set dialog bg, use to animate out
     self.enableKeyPad = true
     self.popOnBack = true -- popDialogc on back
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
-    Dialog.super.ctor(self)
 end
 
 function Dialog:setPopOnTouchInsideBg(var)
@@ -35,8 +35,9 @@ function Dialog:isPopOnTouchOutsideBg()
     return self.popOnTouchOutsideBg
 end
 
-function Dialog:addMaskLayer()
-    local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, Dialog.MASK_OPACITY and Dialog.MASK_OPACITY or 200))
+function Dialog:addMaskLayer(opacity)
+    local opa = opacity or (Dialog.MASK_OPACITY and Dialog.MASK_OPACITY or 200)
+    local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, opa))
     self:addChild(layerColor, -1)
     self.maskLayer = layerColor
 end

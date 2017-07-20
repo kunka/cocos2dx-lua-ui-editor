@@ -101,6 +101,7 @@ function Button:getContentSize()
 end
 
 function Button:onEnter()
+    gk.util:addMouseMoveEffect(self)
     if gk.mode == gk.MODE_EDIT and self.__info then
         return
     end

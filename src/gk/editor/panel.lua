@@ -45,12 +45,21 @@ function panel.create(scene)
 
     self:handleEvent()
     self:subscribeEvent()
+
+    bg:setOpacity(0)
+    local breathAction = gk.BreathAction:create(cc.FadeTo:create(6, 255))
+    breathAction:start(bg)
+    bg:enableNodeEvents()
+    bg.onExitCallback_ = function()
+        breathAction:stop()
+    end
+
     return self
 end
 
 function panel:subscribeEvent()
     -- cmds
-    self.cmd = cmd:create(50)
+    self.cmd = cmd:create(200)
     gk.event:subscribe(self, "executeCmd", function(name, params)
         self.cmd:execute(name, self.scene.layer, params)
     end)
@@ -63,10 +72,10 @@ function panel:subscribeEvent()
     gk.event:subscribe(self, "undisplayNode", function(node)
         self:undisplayNode()
     end)
-    gk.event:subscribe(self, "displayNode", function(node)
+    gk.event:subscribe(self, "displayNode", function(node, var)
         local _voidContent = node.__info and node.__info._voidContent
         if _voidContent then
-            self:displayNode(node)
+            self:displayNode(node, var)
         else
             -- do not display tablecell in tableView
             local type = tolua.type(node)
@@ -79,7 +88,7 @@ function panel:subscribeEvent()
             if layer then
                 gk.util:stopActionByTagSafe(layer, -2342)
                 local action = layer:runAction(cc.CallFunc:create(function()
-                    self:displayNode(node)
+                    self:displayNode(node, var)
                 end))
                 action:setTag(-2342)
             end
@@ -275,7 +284,7 @@ function panel:onNodeCreate(node)
                         if self._containerNode ~= nd then
                             self._containerNode = nd
                             gk.log("find container node %s, id = %s", type, nd.__info.id)
-                            gk.event:post("displayNode", nd)
+                            gk.event:post("displayNode", nd, true)
                             gk.event:post("displayDomTree")
                         end
                         break
@@ -413,8 +422,9 @@ function panel:drawNodeCoordinate(node)
         end
         local x, y = node:getPositionX(), node:getPositionY()
         self.coordinateNode = cc.Node:create()
-        self.coordinateNode:setTag(gk.util.tags.boundsTag)
+        self.coordinateNode:setTag(gk.util.tags.coordinateTag)
         parent:addChild(self.coordinateNode, 99999)
+        self.coordinateNode:setPositionZ(1)
         self.coordinateNode:setCascadeOpacityEnabled(true)
 
         local sx, sy = gk.util:getGlobalScale(parent)
@@ -463,10 +473,11 @@ function panel:drawNodeCoordinate(node)
     end
 end
 
-function panel:displayNode(node)
+function panel:displayNode(node, noneCoordinate)
     if not node or not node.__info then
         return
     end
+    local displayCoordinate = not noneCoordinate
     gk.log("displayNode --------------------- %s", node.__info.id)
     --    gk.profile:start("displayNode")
     self:undisplayNode()
@@ -476,8 +487,9 @@ function panel:displayNode(node)
     elseif node == self.scene.layer and gk.util:instanceof(node, "TableViewCell") then
         gk.util:drawNode(node)
     end
-    self:drawNodeCoordinate(node)
-
+    if displayCoordinate then
+        self:drawNodeCoordinate(node)
+    end
     self.rightPanel:displayNode(node)
     --    gk.profile:stop("displayNode")
 
