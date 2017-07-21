@@ -62,7 +62,7 @@ return {
 	      type = "ccui.Scale9Sprite",
 	      width = 200,
 	      x = 60,
-	      y = 584,
+	      y = 576,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
@@ -134,7 +134,7 @@ return {
 	      type = "ccui.Scale9Sprite",
 	      width = 300,
 	      x = 1220,
-	      y = 584,
+	      y = 576,
 	      anchor = {
 	         x = 1,
 	         y = 0.5},

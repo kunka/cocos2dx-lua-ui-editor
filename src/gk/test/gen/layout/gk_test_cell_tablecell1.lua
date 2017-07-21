@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	height = 100,
 	id = "TableCell1",
 	ignoreAnchor = 1,

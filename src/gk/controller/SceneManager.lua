@@ -27,7 +27,7 @@ function SceneManager:createScene(layerName, ...)
             if gk.mode == gk.MODE_EDIT then
                 local node = cc.Node:create()
                 node:addChild(layer)
-                node:setPosition(cc.p(gk.display.leftWidth, gk.display.bottomHeight))
+                node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2, gk.display.bottomHeight))
                 scene:addChild(node)
             else
                 scene:addChild(layer)

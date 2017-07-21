@@ -106,7 +106,7 @@ return {
 	               g = 255,
 	               r = 255}}}},
 	   {
-	      _fold = true,
+	      _fold = false,
 	      file = "hud/bs1.png",
 	      flippedX = 1,
 	      id = "energy_bg",
@@ -214,13 +214,4 @@ return {
 	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"}},
-	   {
-	      fontSize = 24,
-	      id = "label1",
-	      string = "label",
-	      type = "cc.Label",
-	      x = 172,
-	      y = 342,
-	      fontFile = {
-	         en = "Arial"}}}}
+	         y = "$scaleY"}}}}

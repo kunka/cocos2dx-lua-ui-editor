@@ -295,17 +295,6 @@ function panel.create(parent)
             local result = handle:read("*a")
             handle:close()
             gk.log("Clean finished!")
-            --            gk.log("Deploying to Android device ......")
-            --            self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
-            --                -- deploy
-            --                local dir = gk.ANDROID_ROOT or "/"
-            --                local adb = sdk .. "/platform-tools/adb"
-            --                local handle = io.popen(MAC_ROOT .. "src/gk/script/push.py " .. MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
-            --                local result = handle:read("*a")
-            --                print(result)
-            --                handle:close()
-            --                gk.log("Finished!")
-            --            end)))
         end)))
     end)
 

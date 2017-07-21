@@ -7,16 +7,15 @@
 
 local display = {}
 
-local displayScale = 0.68
 display.deviceSizes = {
-    { size = cc.size(1280 * displayScale, 720 * displayScale), desc = "1280x720(16:9)" },
-    { size = cc.size(1280 * displayScale, 960 * displayScale), desc = "1280x960(4:3)" },
-    { size = cc.size(720 * displayScale, 1280 * displayScale), desc = "720x1280(9:16)" },
+    { size = cc.size(1280, 720), desc = "1280x720(16:9)" },
+    { size = cc.size(1280, 960), desc = "1280x960(4:3)" },
+    { size = cc.size(720, 1280), desc = "720x1280(9:16)" },
 }
 
 -- register custom device size
 function display:registerCustomDeviceSize(size, desc)
-    table.insert(display.deviceSizes, { size = cc.size(size.width * displayScale, size.height * displayScale), desc = desc })
+    table.insert(display.deviceSizes, { size = cc.size(size.width, size.height), desc = desc })
 end
 
 -- new resolution policy
@@ -30,23 +29,43 @@ function display:initWithDesignSize(size, resolutionPolicy)
 
     display.resolutionPolicy = resolutionPolicy or display.supportResolutionPolicy[cc.UserDefault:getInstance():getIntegerForKey("gk_resolutionPolicy", 1)]
     display.resolutionPolicyDesc = display.supportResolutionPolicyDesc[table.indexof(display.supportResolutionPolicy, display.resolutionPolicy)]
+    local leftMargin = 250
+    local topMargin = 100
+    local rightMargin = 260
+    local bottomMargin = 100
     if gk.mode == gk.MODE_EDIT then
-        display.topHeight = 100
-        display.leftWidth = 250
-        display.rightWidth = 260
-        display.bottomHeight = 100
+        display.leftWidth = leftMargin
+        display.topHeight = topMargin
+        display.rightWidth = rightMargin
+        display.bottomHeight = bottomMargin
     else
         display.topHeight = 0
         display.leftWidth = 0
         display.rightWidth = 0
         display.bottomHeight = 0
     end
+    display.extWidth = 0
+
     -- set editor win size
     local platform = cc.Application:getInstance():getTargetPlatform()
     if platform == 2 then
+        -- fix deviceSizes, avoid out of screen
+        local maxGLViewSize = cc.size(1400, 840)
+        local minDesignWinWidth = 500
+        for _, s in ipairs(display.deviceSizes) do
+            local rateX = (maxGLViewSize.width - leftMargin - rightMargin) / s.size.width
+            local rateY = (maxGLViewSize.height - topMargin - bottomMargin) / s.size.height
+            local rate = math.min(rateX, rateY)
+            s.size.width = s.size.width * rate
+            s.size.height = s.size.height * rate
+        end
         local s = display.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex", 1)].size
+        if s.width < minDesignWinWidth and gk.mode == gk.MODE_EDIT then
+            display.extWidth = minDesignWinWidth - s.width
+        end
+
         local winSize = {}
-        winSize.width = s.width + display.leftWidth + display.rightWidth
+        winSize.width = s.width + display.leftWidth + display.rightWidth + display.extWidth
         winSize.height = s.height + display.topHeight + display.bottomHeight
         local director = cc.Director:getInstance()
         local view = director:getOpenGLView()
@@ -55,9 +74,12 @@ function display:initWithDesignSize(size, resolutionPolicy)
         gk.log("set OpenGLView size(%.1f,%.1f)", winSize.width, winSize.height)
         view:setViewName("!!!") -- not implemented :(
     end
+
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f), resolutionPolicy = %s", winSize.width, winSize.height, display.resolutionPolicyDesc)
-    display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth, winSize.height - display.topHeight - display.bottomHeight) end
+    display.winSize = function() return cc.size(winSize.width - display.leftWidth - display.rightWidth - display.extWidth, winSize.height - display.topHeight
+            - display.bottomHeight)
+    end
     display.width = function() return size.width end
     display.height = function() return size.height end
     local xScale, yScale = display:winSize().width / display.width(), display:winSize().height / display.height()

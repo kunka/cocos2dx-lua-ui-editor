@@ -90,7 +90,7 @@ function panel.create(parent)
     end
 
     createLine(gk.display.leftWidth)
-    createLine(gk.display.leftWidth + gk.display:winSize().width)
+    createLine(gk.display.leftWidth + gk.display:winSize().width + gk.display.extWidth)
 
     local yIndex = 0
     -- device size
@@ -150,7 +150,7 @@ function panel.create(parent)
     yIndex = yIndex + 1
 
     -- right
-    local rightX = gk.display.leftWidth + gk.display:winSize().width + leftX
+    local rightX = gk.display.leftWidth + gk.display:winSize().width + leftX + gk.display.extWidth
     local rightX2 = size.width - inputWidth1 - leftX
     local yIndex = 0
     -- bg
@@ -182,7 +182,7 @@ function panel.create(parent)
     self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
     --    gk.util:drawNodeBounds(self.displayInfoNode)
     -- clipping
-    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width, self:getContentSize().height)
+    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width + gk.display.extWidth, self:getContentSize().height)
     self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
     self:addChild(self.clippingNode)
     self.clippingNode:addChild(self.displayInfoNode)
@@ -360,7 +360,7 @@ function panel:handleEvent()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
         local s = self:getContentSize()
-        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width, height = s.height }
+        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width + gk.display.extWidth, height = s.height }
         local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
         if cc.rectContainsPoint(rect, touchP) then
             if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then

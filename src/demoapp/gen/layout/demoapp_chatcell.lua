@@ -13,7 +13,7 @@ return {
 	   r = 255},
 	scaleSize = {
 	   h = "$minScale",
-	   w = 1},
+	   w = "1"},
 	children = {	   {
 	      height = "$fill",
 	      id = "layerColor1",

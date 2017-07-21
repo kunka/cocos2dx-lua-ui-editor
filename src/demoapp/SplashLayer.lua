@@ -18,7 +18,7 @@ function SplashLayer:ctor()
 
     if gk.mode ~= gk.MODE_EDIT then
         self:runAction(cc.Sequence:create(cc.DelayTime:create(1.5), cc.CallFunc:create(function()
-            gk.SceneManager:replace("demoapp/MainLayer")
+            gk.SceneManager:replace("demoapp.MainLayer")
         end)))
     end
 end

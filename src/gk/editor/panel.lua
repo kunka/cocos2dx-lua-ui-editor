@@ -31,7 +31,7 @@ function panel.create(scene)
     -- win frame
     local bg = gk.create_scale9_sprite("gk/res/texture/frame.png", cc.rect(30, 30, 290, 130))
     local p = cc.p(15, 17)
-    bg:setContentSize(cc.size(gk.display:winSize().width + p.x * 2, gk.display:winSize().height + p.y * 2))
+    bg:setContentSize(cc.size(gk.display:winSize().width + p.x * 2 + gk.display.extWidth, gk.display:winSize().height + p.y * 2))
     bg:setAnchorPoint(cc.p(0, 0))
     bg:setPosition(cc.p(gk.display.leftWidth - p.x, gk.display.bottomHeight - p.y))
     self:addChild(bg)
@@ -42,6 +42,14 @@ function panel.create(scene)
     layer:setIgnoreAnchorPointForPosition(false)
     layer:setPosition(bg:getContentSize().width / 2, bg:getContentSize().height / 2)
     gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
+    if gk.display.extWidth > 0 then
+        local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display:winSize().width + gk.display.extWidth, gk.display:winSize().height)
+        bg:addChild(layer)
+        layer:setAnchorPoint(cc.p(0.5, 0.5))
+        layer:setIgnoreAnchorPointForPosition(false)
+        layer:setPosition(bg:getContentSize().width / 2, bg:getContentSize().height / 2)
+        gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
+    end
 
     self:handleEvent()
     self:subscribeEvent()

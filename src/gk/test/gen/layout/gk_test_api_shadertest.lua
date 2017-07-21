@@ -1,11 +1,12 @@
 return {
-	_fold = true,
+	_fold = false,
 	height = "$fill",
 	id = "shaderTest1",
 	type = "ShaderTest",
 	width = "$fill",
 	children = {	   {
 	      GLProgram = "ShaderUIGrayScale",
+	      file = "gk/res/texture/icon_cocos.png",
 	      id = "sprite2",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -17,6 +18,7 @@ return {
 	         y = "$scaleY"}},
 	   {
 	      GLProgram = "HighLight",
+	      file = "gk/res/texture/icon_cocos.png",
 	      id = "sprite3",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -28,6 +30,7 @@ return {
 	         y = "$scaleY"}},
 	   {
 	      GLProgram = "Freeze",
+	      file = "gk/res/texture/icon_cocos.png",
 	      id = "sprite1",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -38,6 +41,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      file = "gk/res/texture/icon_cocos.png",
 	      id = "sprite7",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -254,7 +258,7 @@ return {
 	            x = 119,
 	            y = 25}}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label1",
 	      scaleX = "$minScale",
@@ -270,7 +274,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label2",
 	      scaleX = "$minScale",
@@ -286,7 +290,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label3",
 	      scaleX = "$minScale",
@@ -302,7 +306,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label4",
 	      scaleX = "$minScale",
@@ -318,7 +322,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label5",
 	      scaleX = "$minScale",
@@ -337,7 +341,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      fontSize = 24,
+	      fontSize = 20,
 	      height = 0,
 	      id = "label8",
 	      scaleX = "$minScale",

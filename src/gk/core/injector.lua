@@ -132,9 +132,7 @@ function injector:onNodeCreate(node)
                 node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
                 node.__info.id = gk.generator:genID(node.__cname, node)
                 node[node.__info.id] = node
-                node.__info.x, node.__info.y = gk.display.leftWidth, gk.display.bottomHeight
                 node.__info.width, node.__info.height = "$fill", "$fill"
-                node.__info.scaleXY = { x = "1", y = "1" }
                 self:sync(node)
             end
         end

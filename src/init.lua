@@ -102,6 +102,8 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- init lua gamekit
     gk.mode = mode
+    -- custom desigin size
+    gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
     gk.display:initWithDesignSize(config.designSize)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
     gk.resource:setTextureDir(config.textureDir)
@@ -160,6 +162,8 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.generator.config:registerHintContentSize(cc.size(200, 100))
 
     -- hint fontSizes
+    gk.generator.config:registerHintFontSize(16)
+    gk.generator.config:registerHintFontSize(18)
     gk.generator.config:registerHintFontSize(20)
     gk.generator.config:registerHintFontSize(24)
 end

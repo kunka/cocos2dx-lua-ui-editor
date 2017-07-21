@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	enableKeyPad = 1,
 	height = "$fill",
 	id = "LabelTest",
