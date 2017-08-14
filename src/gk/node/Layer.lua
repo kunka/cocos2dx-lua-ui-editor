@@ -16,8 +16,8 @@ function Layer:ctor()
     gk.log("[%s]: ctor", self.__cname)
     self.swallowTouches = true
     self.touchEnabled = true
-    self.enableKeyPad = false
-    self.popOnBack = false -- popScene on back
+    self.enableKeyPad = true
+    self.popOnBack = true -- popScene on back
     self:enableNodeEvents()
     self.dialogsStack = {}
 end
@@ -29,6 +29,7 @@ function Layer:showDialog(dialogType, ...)
     local dialog = Dialog:create(...)
     dialog.__dialogType = dialogType
     self:addChild(dialog, 999999)
+    dialog:setTag(gk.util.tags.dialogTag)
     gk.profile:stop("Layer:showDialog", dialogType)
     dialog.parent = self
     table.insert(self.dialogsStack, dialog)
@@ -40,6 +41,7 @@ function Layer:showDialogNode(dialogNode)
     gk.log("[%s]: showDialogNode", self.__cname)
     self:addChild(dialogNode, 999999)
     dialogNode.parent = self
+    dialogNode:setTag(gk.util.tags.dialogTag)
     table.insert(self.dialogsStack, dialogNode)
     gk.SceneManager:printSceneStack()
     return dialogNode
@@ -118,8 +120,9 @@ function Layer:onEnter()
             end
             local key = cc.KeyCodeKey[keyCode + 1]
             if key == "KEY_ESCAPE" then
-                gk.log("[%s]: onKeypad %s", self.__cname, key)
+                --                gk.log("[%s]: onKeypad %s", self.__cname, key)
                 self:handleKeyBack(self)
+                event:stopPropagation()
             end
         end
 
@@ -135,7 +138,7 @@ function Layer:onExit()
 end
 
 function Layer:handleKeyBack(node)
-    gk.log("[%s]: handleKeyBack", node.__cname)
+    --    gk.log("[%s]: handleKeyBack", node.__cname)
     if #node.dialogsStack > 0 then
         for i = #node.dialogsStack, 1, -1 do
             local d = node.dialogsStack[i]

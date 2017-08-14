@@ -18,6 +18,7 @@ return {
 	      _fold = false,
 	      cascadeColorEnabled = 0,
 	      cascadeOpacityEnabled = 0,
+	      clickedSid = "",
 	      enabled = 0,
 	      id = "zoomButton",
 	      ignoreAnchor = 1,
@@ -87,6 +88,7 @@ return {
 	      onSelectChanged = "&onSpriteBtnSelectChanged",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
+	      selectMode = 0,
 	      selectedSprite = "selected.png",
 	      type = "SpriteButton",
 	      width = 175,
@@ -209,4 +211,16 @@ return {
 	               r = 255},
 	            fontFile = {
 	               cn = "Helvetica",
-	               en = "Arial"}}}}}}
+	               en = "Arial"}}}},
+	   {
+	      id = "checkBox1",
+	      normalSprite = "gk/res/texture/check_box_normal.png",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      selectedSprite = "gk/res/texture/check_box_selected.png",
+	      type = "CheckBox",
+	      x = 640,
+	      y = 409,
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

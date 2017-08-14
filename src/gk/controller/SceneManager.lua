@@ -38,6 +38,10 @@ function SceneManager:createScene(layerName, ...)
                 scene:addChild(layer)
             end
             scene.layer = layer
+            if gk.mode == gk.MODE_EDIT then
+                gk.event:post("displayNode", layer)
+                gk.event:post("displayDomTree")
+            end
             return scene, true
         else
             gk.log("SceneManager:createScene error, create layer --> %s failed", layerName)
@@ -84,9 +88,9 @@ end
 function SceneManager:pop()
     gk.log("SceneManager:pop")
     local director = cc.Director:getInstance()
-    if #self.sceneStack == 1 then
-        if self.endCallback then
-            self.endCallback()
+    if self.sceneStack:size() == 1 then
+        if self.popToEndCallback and self.popToEndCallback() then
+            gk.log("SceneManager popToEnd! ignore")
             return
         end
     end

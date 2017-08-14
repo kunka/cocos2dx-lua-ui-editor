@@ -191,7 +191,7 @@ function Button:setSelected(selected)
         if self.enabled and self.selectedGLProgram then
             self:setCascadeProgram(self, selected and self.selectedGLProgram)
         end
-        if self.onSelectChangedCallback then
+        if self.onSelectChangedCallback and self:isRunning() then
             self.onSelectChangedCallback(self, self.selected)
         end
     end
@@ -207,7 +207,7 @@ function Button:setEnabled(enabled)
         if self.disabledGLProgram then
             self:setCascadeProgram(self, (not enabled) and self.disabledGLProgram)
         end
-        if self.onEnableChangedCallback then
+        if self.onEnableChangedCallback and self:isRunning() then
             self.onEnableChangedCallback(self, self.enabled)
         end
     end

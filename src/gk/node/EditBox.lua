@@ -39,6 +39,10 @@ function EditBox:onEditEnded(callback)
     self.onEditEndedCallback = callback
 end
 
+function EditBox:setAutoCompleteFunc(func)
+    self.autoCompleteFunc = func
+end
+
 function EditBox:setScale9SpriteBg(scale9Sprite)
     local contentSize = self:getContentSize()
     self:addChild(scale9Sprite, -1)
@@ -170,6 +174,9 @@ function EditBox:focus()
         if self.onEditBeganCallback then
             self.onEditBeganCallback(self, self:getInput())
         end
+        if self.autoCompleteFunc then
+            self:openPopup(self.autoCompleteFunc(self:getInput()))
+        end
         -- test draw
         --        local next = gk.nextFocusNode(self)
         --        if next then
@@ -189,6 +196,7 @@ function EditBox:unfocus()
         if self.onEditEndedCallback then
             self.onEditEndedCallback(self, self:getInput())
         end
+        self:closePopup()
         gk.log("[EDITBOX] unfocus %s", self:getInput())
     end
 end
@@ -272,7 +280,7 @@ function EditBox:handleKeyboardEvent()
     local function onKeyPressed(keyCode, event)
         if gk.focusNode == self then
             local key = cc.KeyCodeKey[keyCode + 1]
-            --            gk.log("[EDITBOX]: onKeyPressed %s", key)
+            gk.log("[EDITBOX]: onKeyPressed %s", key)
             gk.util:stopActionByTagSafe(self.cursorNode, kDeleteCharAction)
             gk.util:stopActionByTagSafe(self.cursorNode, kCursorMoveAction)
             gk.util:stopActionByTagSafe(self.cursorNode, kInsertCharAction)
@@ -289,9 +297,7 @@ function EditBox:handleKeyboardEvent()
                     --                        gk.log("[EDITBOX]: clear all chars")
                     self.label:setString("")
                     self:changeCursorPos(0)
-                    if self.onInputChangedCallback then
-                        self.onInputChangedCallback(self, self:getInput())
-                    end
+                    self:_onInputChanged()
                     return
                 end
                 if key == "KEY_V" then
@@ -303,9 +309,7 @@ function EditBox:handleKeyboardEvent()
                         --                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", v, self.cursorPos, str)
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + v:len())
-                        if self.onInputChangedCallback then
-                            self.onInputChangedCallback(self, self:getInput())
-                        end
+                        self:_onInputChanged()
                     end
                 elseif key == "KEY_C" or key == "KEY_X" then
                     local str = self:getInput()
@@ -315,9 +319,7 @@ function EditBox:handleKeyboardEvent()
                     if key == "KEY_X" then
                         self.label:setString("")
                         self:changeCursorPos(0)
-                        if self.onInputChangedCallback then
-                            self.onInputChangedCallback(self, self:getInput())
-                        end
+                        self:_onInputChanged()
                     end
                 end
                 return
@@ -349,16 +351,41 @@ function EditBox:handleKeyboardEvent()
                     action:setTag(kCursorMoveAction)
                 end
                 return
-            elseif key == "KEY_TAB" then
-                local next = gk.nextFocusNode(self)
-                if next then
-                    -- delay
-                    self:runAction(cc.CallFunc:create(function()
-                        self:unfocus()
-                        next:focus()
-                    end))
-                    return
+            elseif key == "KEY_UP_ARROW" then
+                if self.popup then
+                    self:setSelectIndex(self.selectIndex - 1)
                 end
+                return
+            elseif key == "KEY_DOWN_ARROW" then
+                if self.popup then
+                    self:setSelectIndex(self.selectIndex + 1)
+                end
+                return
+            elseif key == "KEY_TAB" then
+                --                local root = gk.util:getRootNode(self)
+                --                local next = gk.nextFocusNode(self, root)
+                --                if next then
+                --                    -- delay
+                --                    self:runAction(cc.CallFunc:create(function()
+                --                        self:unfocus()
+                --                        next:focus()
+                --                    end))
+                --                    return
+                --                end
+                local x, y = self:getPosition()
+                local root = gk.util:getRootNode(self)
+                local next = gk.nextFocusNode(x, y, root)
+                if next then
+                    self:unfocus()
+                end
+                -- delay
+                root:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(function()
+                    local next = gk.nextFocusNode(x, y, root)
+                    if next then
+                        next:focus()
+                    end
+                end)))
+                return
             end
             local inputTable = self:getInputTable(self.shiftPressed)
             --            dump(inputTable)
@@ -373,9 +400,7 @@ function EditBox:handleKeyboardEvent()
                         --                        gk.log("[EDITBOX]: insert char '%s' at %d, str = %s", inputTable[key], self.cursorPos, str)
                         self.label:setString(str)
                         self:changeCursorPos(self.cursorPos + 1)
-                        if self.onInputChangedCallback then
-                            self.onInputChangedCallback(self, self:getInput())
-                        end
+                        self:_onInputChanged()
                     end
                     insertChar()
                     local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatInsertActionDur), cc.CallFunc:create(function()
@@ -392,9 +417,7 @@ function EditBox:handleKeyboardEvent()
                             --                            gk.log("[EDITBOX]: delete char at %d, str = %s", self.cursorPos, str)
                             self.label:setString(str)
                             self:changeCursorPos(self.cursorPos - 1)
-                            if self.onInputChangedCallback then
-                                self.onInputChangedCallback(self, self:getInput())
-                            end
+                            self:_onInputChanged()
                         end
                     end
                     deleteChar()
@@ -403,7 +426,16 @@ function EditBox:handleKeyboardEvent()
                     end))))
                     action:setTag(kDeleteCharAction)
                 end
-            elseif keyCode == enter or keyCode == esc then
+            elseif keyCode == enter then
+                if self.popup then
+                    local str = self.prefix .. self.items[self.selectIndex]
+                    self.label:setString(str)
+                    self:changeCursorPos(str:len())
+                    self:_onInputChanged(self.prefix ~= "")
+                else
+                    self:unfocus()
+                end
+            elseif keyCode == esc then
                 self:unfocus()
             end
         end
@@ -448,11 +480,17 @@ function EditBox:getInputTable(shiftPressed)
             for i = 97, 97 + 25 do
                 inputTable[string.format("KEY_%s", string.char(i - 32))] = string.char(i - 32)
             end
+            inputTable["KEY_GRAVE"] = "~"
             inputTable["KEY_MINUS"] = "_"
-            inputTable["KEY_SLASH"] = "?"
-            inputTable["KEY_SEMICOLON"] = ":"
+            inputTable["KEY_EQUAL"] = "+"
             inputTable["KEY_LEFT_BRACKET"] = "{"
             inputTable["KEY_RIGHT_BRACKET"] = "}"
+            inputTable["KEY_BACK_SLASH"] = "|"
+            inputTable["KEY_SEMICOLON"] = ":"
+            inputTable["KEY_APOSTROPHE"] = "\""
+            inputTable["KEY_COMMA"] = "<"
+            inputTable["KEY_PERIOD"] = ">"
+            inputTable["KEY_SLASH"] = "?"
         else
             for i = 0, 9 do
                 inputTable[string.format("KEY_%d", i)] = string.format("%d", i)
@@ -460,16 +498,19 @@ function EditBox:getInputTable(shiftPressed)
             for i = 97, 97 + 25 do
                 inputTable[string.format("KEY_%s", string.char(i - 32))] = string.char(i)
             end
+            inputTable["KEY_GRAVE"] = "`"
             inputTable["KEY_MINUS"] = "-"
-            inputTable["KEY_SLASH"] = "/"
-            inputTable["KEY_SEMICOLON"] = ";"
+            inputTable["KEY_EQUAL"] = "="
             inputTable["KEY_LEFT_BRACKET"] = "["
             inputTable["KEY_RIGHT_BRACKET"] = "]"
+            inputTable["KEY_BACK_SLASH"] = "\\"
+            inputTable["KEY_SEMICOLON"] = ";"
+            inputTable["KEY_APOSTROPHE"] = "'"
+            inputTable["KEY_COMMA"] = ","
+            inputTable["KEY_PERIOD"] = "."
+            inputTable["KEY_SLASH"] = "/"
         end
-        inputTable["KEY_PERIOD"] = "."
         inputTable["KEY_SPACE"] = " "
-        inputTable["KEY_COMMA"] = ","
-        inputTable["KEY_APOSTROPHE"] = "'"
 
         if shiftPressed then
             self.inputTableShift = inputTable
@@ -478,6 +519,186 @@ function EditBox:getInputTable(shiftPressed)
         end
     end
     return inputTable
+end
+
+function EditBox:_onInputChanged(done)
+    if self.onInputChangedCallback then
+        self.onInputChangedCallback(self, self:getInput())
+    end
+    if done then
+        self:unfocus()
+    elseif self.autoCompleteFunc then
+        self:openPopup(self.autoCompleteFunc(self:getInput()))
+    end
+end
+
+function EditBox:configLabel(label)
+    local contentSize = self:getContentSize()
+    label:setAnchorPoint(cc.p(0, 0.5))
+    label:setPosition(cc.p(2, contentSize.height / 2))
+    label:setDimensions(contentSize.width, contentSize.height)
+    --    label:setOverflow(2)
+    label:enableWrap(false)
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+end
+
+function EditBox:onCreatePopupLabel(creator)
+    self.popupLabelCreator = creator
+end
+
+function EditBox:openPopup(items, prefix, tips, key)
+    --    gk.log("openPopup")
+    self:closePopup()
+    if #items == 0 then
+        return
+    end
+    self.prefix = prefix or ""
+    local bg = gk.create_scale9_sprite("gk/res/texture/select_box_popup.png", cc.rect(20, 20, 20, 20))
+    local size = self:getContentSize()
+    local height = size.height * (#items)
+    bg:setContentSize(cc.size(size.width, height))
+    bg:setAnchorPoint(cc.p(0, 1))
+    self.popup = bg
+
+    -- add to the top layer
+    local root = gk.util:getRootNode(self)
+    root:addChild(bg, 9999999)
+    local p = self:convertToWorldSpace(cc.p(0, 0))
+    local p = root:convertToNodeSpace(p)
+    bg:setPosition(p)
+    bg:setScale(gk.util:getGlobalScale(self))
+
+    self.selectIndex = 1
+    if p.y - height * bg:getScaleY() < 0 then
+        -- pop upside
+        bg:setAnchorPoint(cc.p(0, 0))
+        local p = self:convertToWorldSpace(cc.p(0, size.height))
+        local p = root:convertToNodeSpace(p)
+        bg:setPosition(p)
+        local reversedTable = {}
+        local count = #items
+        for k, v in ipairs(items) do
+            reversedTable[count + 1 - k] = v
+        end
+        items = reversedTable
+        -- reverse
+        self.selectIndex = #items
+    else
+        if tips then
+            local reversedTable = {}
+            local count = #tips
+            for k, v in ipairs(tips) do
+                reversedTable[count + 1 - k] = v
+            end
+            tips = reversedTable
+        end
+    end
+    self.items = items
+
+    if self.popupLabelCreator then
+        for i = 1, #items do
+            local label = self.popupLabelCreator()
+            self:configLabel(label)
+            label:setString(items[i])
+            label:setDimensions(0, 0)
+            if key then
+                local p1, p2 = string.find(items[i], key)
+                local len = items[i]:len()
+                if p1 >= 1 and p1 <= len then
+                    local size = label:getContentSize()
+                    gk.util:drawSolidRectOnNode(label, cc.p((p1 - 1) * size.width / len, size.height), cc.p(p2 * size.width / len, 0), cc.c4f(1, 0, 1, 0.2), -2)
+                end
+            end
+            gk.set_label_color(label, cc.c3b(0, 0, 0))
+            local layer = cc.LayerColor:create(cc.c3b(0x99, 0xcc, 0x00), size.width, size.height)
+            layer:addChild(label)
+            if tips then
+                -- tips
+                label:setPosition(cc.p(2, size.height * 3 / 4))
+                --                label:setAnchorPoint(0, 0)
+                local label = self.popupLabelCreator()
+                self:configLabel(label)
+                label:setPosition(cc.p(2, size.height * 1 / 4))
+                label:setString(tips[i])
+                gk.set_label_color(label, cc.c3b(0, 150, 150))
+                layer:addChild(label)
+                label:setOverflow(1)
+                --                label:setAnchorPoint(0, 1)
+            end
+
+            layer:setIgnoreAnchorPointForPosition(false)
+            layer:setOpacity(i == self.selectIndex and 255 or 0)
+            local button = gk.Button.new(layer)
+            bg:addChild(button)
+            button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
+            button:onClicked(function()
+                local str = self.prefix .. items[i]
+                self.label:setString(str)
+                self:changeCursorPos(str:len())
+                self:_onInputChanged(self.prefix ~= "")
+            end)
+        end
+    end
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function(touch, event)
+        if self.popup and not gk.util:hitTest(self.popup, touch) then
+            self:closePopup()
+            return true
+        else
+            return false
+        end
+    end, cc.Handler.EVENT_TOUCH_BEGAN)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.popup)
+
+    local listener = cc.EventListenerMouse:create()
+    listener:registerScriptHandler(function(touch, event)
+        local location = touch:getLocationInView()
+        if self.popup and gk.util:touchInNode(self.popup, location) then
+            for i, child in ipairs(self.popup:getChildren()) do
+                if gk.util:instanceof(child, "Button") then
+                    local label = child:getContentNode():getChildren()[1]
+                    if gk.util:touchInNode(child, location) then
+                        --                        gk.set_label_color(label,cc.c3b(45, 35, 255))
+                        child:getContentNode():setOpacity(255)
+                        self.selectIndex = i
+                    else
+                        --                        gk.set_label_color(label,self.selectIndex == i and cc.c3b(255, 255, 255) or cc.c3b(0, 0, 0))
+                        child:getContentNode():setOpacity(0)
+                    end
+                end
+            end
+        end
+    end, cc.Handler.EVENT_MOUSE_MOVE)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.popup)
+end
+
+function EditBox:setSelectIndex(index)
+    self.selectIndex = cc.clampf(index, 1, #self.popup:getChildren())
+    for i, child in ipairs(self.popup:getChildren()) do
+        if gk.util:instanceof(child, "Button") then
+            local label = child:getContentNode():getChildren()[1]
+            if i == self.selectIndex then
+                child:getContentNode():setOpacity(255)
+            else
+                child:getContentNode():setOpacity(0)
+            end
+        end
+    end
+end
+
+function EditBox:closePopup()
+    if self.popup then
+        local root = gk.util:getRootNode(self)
+        if not root then
+            self.popup = nil
+        else
+            --            gk.log("closePopup")
+            self.popup:removeFromParent()
+            self.popup = nil
+        end
+    end
 end
 
 return EditBox

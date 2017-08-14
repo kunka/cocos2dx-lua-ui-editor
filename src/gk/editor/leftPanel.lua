@@ -150,9 +150,6 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
                 local offsetY = topY - (stepY * self.displayingDomDepth + gk.display.bottomHeight)
                 local y = size.height - offsetY - self:getContentSize().height / 2
                 y = cc.clampf(y, 0, size.height - self:getContentSize().height)
-                --                self.displayInfoNode:setPositionY(y)
-                --                dump(self.lastDisplayingPos)
-                self.displayInfoNode:setPosition(self.lastDisplayingPos)
                 local dt = 0.2 + 0.2 * math.abs(self.lastDisplayingPos.y - y) / 150
                 if dt > 0.5 then
                     dt = 0.5
@@ -185,12 +182,16 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
             end
         end
     end
+    local lock = node.__info and node.__info._lock == 0
     if group then
         local label = gk.create_label("▶", fontName, fontSize, gk.theme.config.fontColorNormal)
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         if fixChild or not node.__info._fold then
             label:setRotation(90)
+        end
+        if lock or widgetParent then
+            label:setOpacity(150)
         end
         label:setDimensions(16 / scale, 16 / scale)
         label:setContentSize(16 / scale, 16 / scale)
@@ -214,6 +215,20 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
         end)
         x = x + 11
     end
+    if lock then
+        local label = gk.create_label("🔒", "Consolas", fontSize, gk.theme.config.fontColorNormal)
+        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        label:setDimensions(16 / scale, 16 / scale)
+        label:setContentSize(16 / scale, 16 / scale)
+        gk.set_label_color(label, cc.c3b(0x99, 0x99, 0x99))
+        label:setScale(scale)
+        label:setAnchorPoint(0, 0.5)
+        label:setPosition(x - 4, y)
+        label:setOpacity(150)
+        self.displayInfoNode:addChild(label)
+        x = x + 11
+    end
 
     local string = string.format("%s(%d", displayName and displayName or (fixChild and "*" .. content or content), node:getLocalZOrder())
     local label = gk.create_label(string, fontName, fontSize)
@@ -222,13 +237,16 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     gk.set_label_color(label, cc.c3b(0x99, 0xcc, 0x00))
-    if fixChild or widgetParent or (node.__info and node.__info._lock == 0) or not gk.util:isAncestorsVisible(node) then
-        gk.set_label_color(label, gk.theme.config.fontColorNormal)
-        label:setOpacity(100)
+    local visible = gk.util:isAncestorsVisible(node)
+    local isWidget = (node.__info and node.__info._isWidget)
+    if isWidget then
+        gk.set_label_color(label, cc.c3b(0xFF, 0x88, 0xFF))
     end
-    if (node.__info and node.__info._isWidget) then
-        gk.set_label_color(label, cc.c3b(0x33, 0x99, 0xDD))
-        label:setOpacity(200)
+    if fixChild or widgetParent or not visible or lock then
+        if not isWidget then
+            gk.set_label_color(label, gk.theme.config.fontColorNormal)
+        end
+        label:setOpacity(150)
     end
     local cur = widgetParent and widgetParent[content] or self.parent.scene.layer[content]
     if cur and cur == self.parent.draggingNode then
@@ -498,12 +516,12 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) then
         return
     end
-    local fixChild = node.__info == nil or node.__ingore
+    local fixChild = node.__info == nil or node.__ignore
     local size = self:getContentSize()
     local topY = size.height - marginTop
 
     local title = fixChild and tolua.type(node) or node.__info.id
-    if node.__ingore then
+    if node.__ignore then
         title = node.__info.type
     end
     self:createButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, displayName, fixChild, node, widgetParent)
@@ -531,7 +549,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     end
 
     if fixChild or not node.__info._fold then
-        if tolua.type(node) == "cc.TMXLayer" or node.__ingore then
+        if tolua.type(node) == "cc.TMXLayer" or node.__ignore then
             return
         end
         node:sortAllChildren()

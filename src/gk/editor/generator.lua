@@ -12,6 +12,7 @@ generator.config = config
 
 function generator:deflate(node)
     local info = {}
+
     -- add edit properties
     for k, ret in pairs(node.__info.__self) do
         if k ~= "children" and generator.config.editableProps[k] ~= nil then
@@ -42,9 +43,6 @@ function generator:deflate(node)
         info["scaleSize"] = nil
     end
 
-    -- patch
-    info["parentId"] = nil
-
     if not gk.util:instanceof(node, "cc.TableView") then
         -- and not node.__info._isWidget then
         -- rescan children
@@ -56,8 +54,8 @@ function generator:deflate(node)
         local _isWidget = node.__info._isWidget
         for i = 1, #children do
             local child = children[i]
-            if child and child.__info and child.__info.id then
-                if child.__ingore or (_isWidget and child.__rootTable == node) then
+            if child and child.__info and child.__info.id and not gk.util:isDebugNode(child) then
+                if child.__ignore or (_isWidget and child.__rootTable == node) then
                     -- ignore widget child
                 else
                     info.children = info.children or {}
@@ -285,9 +283,6 @@ function generator:wrap(info, rootTable)
                 self.config:setValue(node, key, value)
                 if pre ~= value then
                     gk.event:post("postSync")
-                    if key == "_lock" then
-                        gk.event:post("displayDomTree", true)
-                    end
                 end
             end
         end,
@@ -394,45 +389,72 @@ function generator:modify(node, property, input, valueType)
     if #props == 2 then
         prop1 = props[1]
         prop2 = props[2]
+    elseif #props > 2 then
+        prop1 = props[1]
+        --        createInputMiddle("Control1", "X", "Y", "destination." .. i .. ".c1.x", "destination[" .. i .. "].c1.y", "number")
     else
         prop1 = property
     end
     local value
-    if type(input) == "number" and valueType == "number" then
-        value = tonumber(input)
-    elseif type(input) == "string" then
-        local v = self:parseMacroFunc(node, input)
-        if v then
-            value = input
-        elseif valueType == "string" then
-            value = input
-        elseif valueType == "number" then
+    if valueType == "boolean" then
+        value = input
+    else
+        if type(input) == "number" and valueType == "number" then
             value = tonumber(input)
-            if value == nil then
-                gk.log("modify \"%s\" need number value, error input = \"%s\"", property, input)
-                if prop2 then
-                    return node.__info[prop1][prop2]
-                else
-                    return node.__info[prop1]
+        elseif type(input) == "string" then
+            local v = self:parseMacroFunc(node, input)
+            if v then
+                value = input
+            elseif valueType == "string" then
+                value = input
+            elseif valueType == "number" then
+                value = tonumber(input)
+                if value == nil then
+                    gk.log("modify \"%s\" need number value, error input = \"%s\"", property, input)
+                    if #props == 2 then
+                        return node.__info[prop1][prop2]
+                    elseif #props > 2 then
+                        local var = node.__info[props[1]]
+                        for i = 2, #props do
+                            var = var[tonumber(props[i]) and tonumber(props[i]) or props[i]]
+                        end
+                        return var
+                    else
+                        return node.__info[prop1]
+                    end
                 end
             end
         end
     end
     local cur_value
-    if value then
-        if prop2 then
+    if value ~= nil then
+        if #props == 2 then
             local p = node.__info[prop1]
             if p then
                 cur_value = clone(p)
                 cur_value[prop2] = value
             end
+        elseif #props > 2 then
+            local var = node.__info[props[1]]
+            cur_value = clone(var)
+            var = cur_value
+            for i = 2, #props - 1 do
+                var = var[tonumber(props[i]) and tonumber(props[i]) or props[i]]
+            end
+            var[tonumber(props[#props]) and tonumber(props[#props]) or props[#props]] = value
         else
             cur_value = value
         end
     end
     self:modifyValue(node, prop1, cur_value)
-    if prop2 then
+    if #props == 2 then
         return tostring(node.__info[prop1][prop2])
+    elseif #props > 2 then
+        local var = node.__info[props[1]]
+        for i = 2, #props do
+            var = var[tonumber(props[i]) and tonumber(props[i]) or props[i]]
+        end
+        return var
     else
         return tostring(node.__info[prop1])
     end
@@ -508,6 +530,10 @@ generator.nodeCreator = {
         local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
         info.id = info.id or generator:genID("checkBox", rootTable)
         return node
+    end,
+    ["CubicBezierNode"] = function(info, rootTable)
+        local node = gk.CubicBezierNode:create()
+        info.id = info.id or generator:genID("cubicBezierNode", rootTable)
     end,
     ["PhysicsWorld"] = function(info, rootTable)
         local node = gk.PhysicsWorld:create()
@@ -607,7 +633,7 @@ generator.nodeCreator = {
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
         local node = gk.injector:inflateNode(info.type)
-        node.__ingore = false
+        node.__ignore = false
         -- copy info
         local keys = table.keys(node.__info.__self)
         for _, key in ipairs(keys) do

@@ -272,6 +272,7 @@ function panel:createHintSelectBox(items, index, x, y, width, callback, defValue
     box.bgButton:setPositionX(box:getContentSize().width)
     box.bgButton:setAnchorPoint(1, 0.5)
     box.noneMouseMoveEffect = true
+    box.focusable = false
     return box
 end
 
@@ -315,10 +316,10 @@ function panel:displayNode(node)
 
     local isLabel = gk.util:instanceof(node, "cc.Label")
     local isSprite = gk.util:instanceof(node, "cc.Sprite")
+    local isButton = gk.util:instanceof(node, "Button")
     local isZoomButton = gk.util:instanceof(node, "ZoomButton")
     local isSpriteButton = gk.util:instanceof(node, "SpriteButton")
     local isToggleButton = gk.util:instanceof(node, "ToggleButton")
-    local isButton = gk.util:instanceof(node, "Button")
     local isLayer = gk.util:instanceof(node, "cc.Layer")
     local isLayerColor = gk.util:instanceof(node, "cc.LayerColor")
     local isLayerGradient = gk.util:instanceof(node, "cc.LayerGradient")
@@ -326,6 +327,7 @@ function panel:displayNode(node)
     local isTableView = gk.util:instanceof(node, "cc.TableView")
     local isScale9Sprite = gk.util:instanceof(node, "ccui.Scale9Sprite")
     local isCheckBox = gk.util:instanceof(node, "CheckBox")
+    local isCubicBezierNode = gk.util:instanceof(node, "CubicBezierNode")
     local isPhysicsWorld = gk.util:instanceof(node, "PhysicsWorld")
     local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
     local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
@@ -336,6 +338,8 @@ function panel:displayNode(node)
     local isLayout = gk.util:instanceof(node, "ccui.Layout")
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
+    local isWidget = gk.util:instanceof(node, "Widget")
+    local isTableViewCell = gk.util:instanceof(node, "TableViewCell")
     local isPhysicsObj = node.__info._isPhysics
 
     local isRootNode = false --self.parent.scene.layer == node
@@ -349,7 +353,7 @@ function panel:displayNode(node)
         return label
     end
 
-    local function createInputLong(title, key, tp, default)
+    local function createInputLong(title, key, tp, default, height)
         if not title then
             title = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
         end
@@ -358,10 +362,11 @@ function panel:displayNode(node)
             var = math.shrink(var, 3)
         end
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+        local editBox = self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, key, input, tp))
-        end, default)
+        end, default, height)
         yIndex = yIndex + 1
+        return editBox
     end
 
     local function createInputMiddle(title, l, r, lkey, rkey, tp, ldefault, rdefault)
@@ -370,6 +375,13 @@ function panel:displayNode(node)
         if lkey then
             local lkeys = string.split(lkey, ".")
             local lvar = #lkeys == 1 and node.__info[lkey] or node.__info[lkeys[1]][lkeys[2]]
+            if #lkeys > 2 then
+                local var = node.__info[lkeys[1]]
+                for i = 2, #lkeys do
+                    var = var[tonumber(lkeys[i]) and tonumber(lkeys[i]) or lkeys[i]]
+                end
+                lvar = var
+            end
             if type(lvar) == "number" then
                 lvar = math.shrink(lvar, 3)
             end
@@ -381,6 +393,13 @@ function panel:displayNode(node)
         if rkey then
             local rkeys = string.split(rkey, ".")
             local rvar = #rkeys == 1 and node.__info[rkey] or node.__info[rkeys[1]][rkeys[2]]
+            if #rkeys > 2 then
+                local var = node.__info[rkeys[1]]
+                for i = 2, #rkeys do
+                    var = var[tonumber(rkeys[i]) and tonumber(rkeys[i]) or rkeys[i]]
+                end
+                rvar = var
+            end
             if type(rvar) == "number" then
                 rvar = math.shrink(rvar, 3)
             end
@@ -423,10 +442,20 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
-    local function createCheckBox(title, key, callback)
+    local function createCheckBox(title, key, callback, isbool)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createCheckBox(node.__info[key] == 0, checkbox_right, topY - stepY * yIndex, function(selected)
-            generator:modify(node, key, selected and 0 or 1, "number")
+        local select
+        if isbool then
+            select = node.__info[key]
+        else
+            select = node.__info[key] == 0
+        end
+        self:createCheckBox(select, checkbox_right, topY - stepY * yIndex, function(selected)
+            if isbool then
+                generator:modify(node, key, selected, "boolean")
+            else
+                generator:modify(node, key, selected and 0 or 1, "number")
+            end
             if callback then
                 callback()
             end
@@ -449,6 +478,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
     end
 
+
     if not isPhysicsObj then
         --------------------------- ID   ---------------------------
         createInputLong("ID", "id", "string")
@@ -459,7 +489,6 @@ function panel:displayNode(node)
         createCheckBox("Lock", "_lock")
         --------------------------- cc.Node   ---------------------------
         createTitle("cc.Node")
-
         -- position
         if not isRootNode then
             createInputMiddle("Position", "X", "Y", "x", "y", "number", 0, 0)
@@ -536,6 +565,12 @@ function panel:displayNode(node)
             local vars = {}
             local index = 0
             local size = cc.size(node.__info.width, node.__info.height)
+            table.sort(gk.generator.config.hintContentSizes, function(s1, s2)
+                if type(s1.width) == "string" then return true
+                elseif type(s2.width) == "string" then return false
+                else return s1.width < s2.width or (s1.width == s2.width and s1.height < s2.height)
+                end
+            end)
             for i, s in ipairs(gk.generator.config.hintContentSizes) do
                 vars[i] = s.width .. ", " .. s.height
                 if index == 0 and gk.util:table_eq(size, s) then
@@ -562,6 +597,7 @@ function panel:displayNode(node)
                 createSelectBox("ScaleSize", "W", "H", "scaleSize.w", "scaleSize.h", scaleWs, scaleHs, "string", 1, 1)
             end
         end
+
         if not isScrollView then
             -- scale
             self:createLabel("Scale", leftX, topY - stepY * yIndex)
@@ -606,6 +642,9 @@ function panel:displayNode(node)
             local vars = {}
             local index = 0
             local color = node.__info.color
+            table.sort(gk.generator.config.hintColor3Bs, function(s1, s2)
+                return s1.r < s2.r or (s1.r == s2.r and s1.g < s2.g) or (s1.r == s2.r and s1.g == s2.g and s1.b < s2.b)
+            end)
             for i, c3b in ipairs(gk.generator.config.hintColor3Bs) do
                 vars[i] = c3b.r .. "," .. c3b.g .. "," .. c3b.b .. (string.format("(#%02x%02x%02x)", c3b.r, c3b.g, c3b.b))
                 if index == 0 and gk.util:table_eq(c3b, color) then
@@ -643,27 +682,7 @@ function panel:displayNode(node)
         yIndex = yIndex + 1
         createCheckBox("CascadeOpacityEnabled", "cascadeOpacityEnabled")
         createCheckBox("CascadeColorEnabled", "cascadeColorEnabled")
-        createCheckBox("Visible", "visible")
-
-        --------------------------- cc.LayerColor   ---------------------------
-        if isLayerColor then
-            createTitle(isLayerGradient and "cc.LayerGradient" or "cc.LayerColor")
-
-            if not isLayerGradient then
-                -- use opacity instead of a!
-                createInputMiddle("Color4B", "R", "G", "color.r", "color.g", "number", 255, 255)
-                createInputMiddle("", "B", "A", "color.b", "color.a", "number", 255, 255)
-            end
-
-            if isLayerGradient then
-                createInputMiddle("StartColor", "R", "G", "startColor.r", "startColor.g", "number", 255, 255)
-                createInputMiddle("", "B", "A", "startColor.b", "startOpacity", "number", 255, 255)
-                createInputMiddle("EndColor", "R", "G", "endColor.r", "endColor.g", "number", 255, 255)
-                createInputMiddle("", "B", "A", "endColor.b", "endOpacity", "number", 255, 255)
-                createInputMiddle("Vector", "X", "Y", "vector.x", "vector.y", "number")
-                createCheckBox("CompressedInterpolation", "compressedInterpolation")
-            end
-        end
+        createCheckBox("Visible(KEY_V)", "visible")
 
         --------------------------- ccui.Layout   ---------------------------
         -- if isLayout then
@@ -689,47 +708,31 @@ function panel:displayNode(node)
             --            createInputMiddle("", "W", "H", "centerRect.width", "centerRect.height", "number", 0, 0)
             --        end
         end
-        if isZoomButton or isSpriteButton then
-            if isSpriteButton then
-                createTitle("gk.SpriteButton")
-            else
-                if isToggleButton then
-                    createTitle("gk.ToggleButton(Tag:1~n continuous)")
-                elseif isZoomButton then
-                    createTitle("gk.ZoomButton")
-                end
-            end
-
-            if isToggleButton then
-                -- event
-                self:createLabel("SelectedTag", leftX, topY - stepY * yIndex)
-                local tags = { 0 }
-                -- search tag
-                local children = node:getChildren()
-                for i = 1, #children do
-                    local child = children[i]
-                    if child and child.__info and child.__info.id then
-                        if child.__info.tag ~= -1 then
-                            if not table.indexof(tags, child.__info.tag) then
-                                table.insert(tags, child.__info.tag)
-                            end
-                        end
-                    end
-                end
-                self:createSelectBox(tags, table.indexof(tags, node.__info.selectedTag), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-                    generator:modify(node, "selectedTag", tags[index], "number")
-                end, 1)
-                yIndex = yIndex + 1
-                createFunc("onSelectTagChanged", "onSelectedTagChanged", "on")
-            end
-
+        local shaders = { "ShaderPositionTextureColor_noMVP", "ShaderUIGrayScale", }
+        for k, v in pairs(gk.shader.cachedGLPrograms) do
+            table.insert(shaders, k)
+        end
+        if isButton then
+            createTitle("gk.Button")
             -- TODO: super class's click function
             createFunc("onClicked", "onClicked", "on")
-            createFunc("onSelectedTagChanged", "onSelectChanged", "on")
+            createFunc("onSelectedChanged", "onSelectChanged", "on")
             createFunc("onEnableChanged", "onEnableChanged", "on")
             createFunc("onLongPressed", "onLongPressed", "on")
+            createCheckBox("Enabled", "enabled")
+            createInputLong("ClickSoundId", "clickedSid", "string", "")
+            createSelectBoxLong("SelectedGLPgm", shaders, "selectedGLProgram", "string", "ShaderPositionTextureColor_noMVP")
+            createSelectBoxLong("DisabledGLPgm", shaders, "disabledGLProgram", "string", "ShaderPositionTextureColor_noMVP")
+            createCheckBox("CascadeGLProgramEnabled", "cascadeGLProgramEnabled")
         end
-
+        if isZoomButton then
+            createTitle("gk.ZoomButton")
+            createInputLong("ZoomScale", "zoomScale", "number")
+            createCheckBox("ZoomEnabled", "zoomEnabled")
+        end
+        if isSpriteButton then
+            createTitle("gk.SpriteButton")
+        end
         if isSpriteButton or isEditBox then
             createInputLong("NormalSprite", "normalSprite", "string", "")
             createInputLong("SelectedSprite", "selectedSprite", "string", "")
@@ -738,7 +741,59 @@ function panel:displayNode(node)
         if isScale9Sprite or isEditBox or isSpriteButton then
             createInputMiddle("CapInsets", "X", "Y", "capInsets.x", "capInsets.y", "number")
             createInputMiddle("", "W", "H", "capInsets.width", "capInsets.height", "number")
+            if isSpriteButton then
+                local selectModes = { "REPLACE", "OVERLAY" }
+                createSelectBoxLong("SelectMode", selectModes, "selectMode", "number", "REPLACE")
+            end
         end
+        if isCheckBox then
+            createTitle("gk.CheckBox")
+            createCheckBox("Selected", "selected")
+        end
+
+        if isCubicBezierNode then
+            createTitle("gk.CubicBezierNode")
+            createInputMiddle("Segments", "", "", "segments", nil, "number")
+            createInputMiddle("LineWidth", "", "", "lineWidth", nil, "number")
+            createInputMiddle("Color4f", "R", "G", "c4f.r", "c4f.g", "number", 0, 0)
+            createInputMiddle("", "B", "A", "c4f.b", "c4f.a", "number", 0, 0)
+            createInputMiddle("CurvesNum", "", "", "curvesNum", nil, "number")
+            createInputMiddle("Origin", "X", "Y", "origin.x", "origin.y", "number")
+            for i = 1, node.__info.curvesNum do
+                createInputMiddle("C" .. (i * 2 - 1), "X", "Y", "destination." .. i .. ".c1.x", "destination." .. i .. ".c1.y", "number")
+                createInputMiddle("C" .. (i * 2), "X", "Y", "destination." .. i .. ".c2.x", "destination." .. i .. ".c2.y", "number")
+                createInputMiddle("P" .. i, "X", "Y", "destination." .. i .. ".dst.x", "destination." .. i .. ".dst.y", "number")
+            end
+            --        createInputMiddle("Control1", "X", "Y", "control1.x", "control1.y", "number")
+            --        createInputMiddle("Control2", "X", "Y", "control2.x", "control2.y", "number")
+            --        createInputMiddle("Destination", "X", "Y", "destination.x", "destination.y", "number")
+        end
+
+        if isToggleButton then
+            createTitle("gk.ToggleButton(Tag:1~n continuous)")
+            createCheckBox("AutoToggle", "autoToggle")
+            -- event
+            self:createLabel("SelectedTag", leftX, topY - stepY * yIndex)
+            local tags = { 0 }
+            -- search tag
+            local children = node:getChildren()
+            for i = 1, #children do
+                local child = children[i]
+                if child and child.__info and child.__info.id then
+                    if child.__info.tag ~= -1 then
+                        if not table.indexof(tags, child.__info.tag) then
+                            table.insert(tags, child.__info.tag)
+                        end
+                    end
+                end
+            end
+            self:createSelectBox(tags, table.indexof(tags, node.__info.selectedTag), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
+                generator:modify(node, "selectedTag", tags[index], "number")
+            end, 1)
+            yIndex = yIndex + 1
+            createFunc("onSelectTagChanged", "onSelectedTagChanged", "on")
+        end
+
         local createHintFontSize = function(key)
             local vars = {}
             local index = 0
@@ -756,8 +811,19 @@ function panel:displayNode(node)
 
         if isEditBox then
             createInputLong("FontName", "fontName", "string")
-            createInputLong("Text", "text", "string", "")
-            createInputLong("Placeholder", "placeHolder", "string", "")
+            local editBox = createInputLong("Text", "text", "string", "", 1.6)
+            editBox:setAutoCompleteFunc(gk.resource.autoCompleteFunc)
+            editBox:onCreatePopupLabel(function()
+                return gk.create_label("", gk.theme.font_sys, fontSize)
+            end)
+            yIndex = yIndex + 0.4
+            local editBox = createInputLong("Placeholder", "placeHolder", "string", "", 1.6)
+            editBox:setAutoCompleteFunc(gk.resource.autoCompleteFunc)
+            editBox:onCreatePopupLabel(function()
+                return gk.create_label("", gk.theme.font_sys, fontSize)
+            end)
+            yIndex = yIndex + 0.4
+
             createInputMiddle("FontColor", "R", "G", "fontColor.r", "fontColor.g", "number", 255, 255)
             createInputMiddle("", "B", "A", "fontColor.b", "fontColor.a", "number", 255, 255)
             createInputMiddle("PHFontColor", "R", "G", "placeholderFontColor.r", "placeholderFontColor.g", "number", 166, 166)
@@ -777,8 +843,8 @@ function panel:displayNode(node)
             createSelectBoxLong("ReturnType", modes, "returnType", "number", "DEFAULT")
         end
 
+        -- blendFunc
         if node.setBlendFunc and type(node.setBlendFunc) == "function" then
-            -- blendFunc
             self:createLabel("blendFunc", leftX, topY - stepY * yIndex)
             self:createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
             local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
@@ -808,72 +874,16 @@ function panel:displayNode(node)
         if isSprite then
             createCheckBox("FlippedX", "flippedX")
             createCheckBox("FlippedY", "flippedY")
-        end
-
-        if isZoomButton or isSpriteButton then
-            if isZoomButton then
-                createInputLong("ZoomScale", "zoomScale", "number")
-                createCheckBox("ZoomEnabled", "zoomEnabled")
-            end
-            if isToggleButton then
-                createCheckBox("AutoToggle", "autoToggle")
-            end
-        end
-        if isCheckBox then
-            createTitle("gk.CheckBox")
-            createCheckBox("Selected", "selected")
-        end
-
-        if isSprite or isButton then
-            local types = { "ShaderPositionTextureColor_noMVP", "ShaderUIGrayScale", }
-            for k, v in pairs(gk.shader.cachedGLPrograms) do
-                table.insert(types, k)
-            end
-            if isSprite then
-                createSelectBoxLong("GLProgram", types, "GLProgram", "string", "ShaderPositionTextureColor_noMVP")
-            else
-                createSelectBoxLong("SelectedGLPgm", types, "selectedGLProgram", "string", "ShaderPositionTextureColor_noMVP")
-                createSelectBoxLong("DisabledGLPgm", types, "disabledGLProgram", "string", "ShaderPositionTextureColor_noMVP")
-                createCheckBox("CascadeGLProgramEnabled", "cascadeGLProgramEnabled")
-            end
-        end
-        if isButton then
-            createCheckBox("Enabled", "enabled")
-            createInputLong("ClickSoundId", "clickedSid", "string", "")
+            createSelectBoxLong("GLProgram", shaders, "GLProgram", "string", "ShaderPositionTextureColor_noMVP")
         end
 
         --------------------------- cc.Label   ---------------------------
         if isLabel then
-            local items = gk.resource.lans
-            for _, lan in ipairs(items) do
-                if lan ~= gk.resource:getCurrentLan() then
-                    --            local lan = gk.resource:getCurrentLan()
-                    local fontFile = node.__info.fontFile[lan]
-                    local isTTF = gk.isTTF(fontFile)
-                    local isBMFont = gk.isBMFont(fontFile)
-                    local isSystemFont = not isTTF and not isBMFont
-                    --            createTitle(string.format("Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
-                    local label = createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
-                    label:setOpacity(150)
-                    -- font file
-                    local label = self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
-                    label:setOpacity(150)
-                    local fonts = clone(gk.resource.fontFiles)
-                    local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(node.__info.fontFile[lan])
-                    if not table.indexof(fonts, font) then
-                        table.insert(fonts, font)
-                    end
-                    self:createSelectAndInput(font, fonts, table.indexof(fonts, font),
-                        leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                            editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
-                            gk.event:post("displayNode", node)
-                        end)
-                    yIndex = yIndex + 1
-                end
-            end
-
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             local isTTF = gk.isTTF(fontFile)
             local isBMFont = gk.isBMFont(fontFile)
             local isSystemFont = not isTTF and not isBMFont
@@ -881,7 +891,7 @@ function panel:displayNode(node)
             -- font file
             self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
             local fonts = clone(gk.resource.fontFiles)
-            local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(node.__info.fontFile[lan])
+            local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(fontFile)
             if not table.indexof(fonts, font) then
                 table.insert(fonts, font)
             end
@@ -894,9 +904,14 @@ function panel:displayNode(node)
 
             -- string
             self:createLabel("String", leftX, topY - stepY * yIndex)
-            self:createInput(tostring(node.__info.string), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+            local editBox = self:createInput(tostring(node.__info.string), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
                 editBox:setInput(generator:modify(node, "string", input, "string"))
             end, "", 1.6)
+            editBox:setAutoCompleteFunc(gk.resource.autoCompleteFunc)
+            editBox:onCreatePopupLabel(function()
+                return gk.create_label("", gk.theme.font_sys, fontSize)
+            end)
+
             yIndex = yIndex + 1.4
             -- overflow
             -- System font only support Overflow::NONE and Overflow::RESIZE_HEIGHT.
@@ -978,6 +993,37 @@ function panel:displayNode(node)
             createCheckBox("EnableBold", "enableBold")
             createCheckBox("EnableUnderline", "enableUnderline")
             createCheckBox("EnableStrikethrough", "enableStrikethrough")
+
+            local items = gk.resource.lans
+            for _, lan in ipairs(items) do
+                if lan ~= gk.resource:getCurrentLan() then
+                    --            local lan = gk.resource:getCurrentLan()
+                    local fontFile = node.__info.fontFile[lan]
+                    if fontFile == nil then
+                        fontFile = gk.resource:getDefaultFont(lan)
+                    end
+                    local isTTF = gk.isTTF(fontFile)
+                    local isBMFont = gk.isBMFont(fontFile)
+                    local isSystemFont = not isTTF and not isBMFont
+                    --            createTitle(string.format("Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+                    local label = createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+                    label:setOpacity(150)
+                    -- font file
+                    local label = self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
+                    label:setOpacity(150)
+                    local fonts = clone(gk.resource.fontFiles)
+                    local font = isSystemFont and tostring(node:getSystemFontName()) or tostring(fontFile)
+                    if not table.indexof(fonts, font) then
+                        table.insert(fonts, font)
+                    end
+                    self:createSelectAndInput(font, fonts, table.indexof(fonts, font),
+                        leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
+                            editBox:setInput(generator:modify(node, "fontFile." .. lan, input, "string"))
+                            gk.event:post("displayNode", node)
+                        end)
+                    yIndex = yIndex + 1
+                end
+            end
         end
 
         --------------------------- cc.ScrollView, cc.TableView  ---------------------------
@@ -1012,28 +1058,53 @@ function panel:displayNode(node)
             createFunc("DidScroll", "didScroll", "on")
         end
 
-        --------------------------- cc.Layer   ---------------------------
-        if isLayer and not isLayerColor and not isScrollView then
-            if isgkDialog then
-                createTitle("gk.Dialog")
-            elseif isgkLayer then
-                createTitle("gk.Layer")
-            else
-                createTitle("cc.Layer")
-            end
+        if isWidget then
+            createTitle("gk.Widget")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+        if isTableViewCell then
+            createTitle("gk.TableViewCell")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
         end
 
-        if isgkLayer or isgkDialog then
+        --------------------------- cc.Layer   ---------------------------
+        if isLayer and not isScrollView then
+            createTitle("cc.Layer")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+
+        if isLayerColor and not isLayerGradient then
+            createTitle("cc.LayerColor")
+            -- use opacity instead of a!
+            createInputMiddle("Color4B", "R", "G", "color.r", "color.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "color.b", "color.a", "number", 255, 255)
+        end
+        if isLayerGradient then
+            createTitle("cc.LayerGradient")
+            createInputMiddle("StartColor", "R", "G", "startColor.r", "startColor.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "startColor.b", "startOpacity", "number", 255, 255)
+            createInputMiddle("EndColor", "R", "G", "endColor.r", "endColor.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "endColor.b", "endOpacity", "number", 255, 255)
+            createInputMiddle("Vector", "X", "Y", "vector.x", "vector.y", "number")
+            createCheckBox("CompressedInterpolation", "compressedInterpolation")
+        end
+        if isgkLayer then
+            createTitle("gk.Layer")
             createCheckBox("TouchEnabled", "touchEnabled")
             createCheckBox("SwallowTouches", "swallowTouches")
             createCheckBox("EnableKeyPad", "enableKeyPad")
             createCheckBox("PopOnBack", "popOnBack")
-            if isgkDialog then
-                createCheckBox("PopOnTouchInsideBg", "popOnTouchInsideBg")
-                createCheckBox("PopOnTouchOutsideBg", "popOnTouchOutsideBg")
-            end
+        end
+        if isgkDialog then
+            createTitle("gk.Dialog")
+            createCheckBox("PopOnTouchInsideBg", "popOnTouchInsideBg")
+            createCheckBox("PopOnTouchOutsideBg", "popOnTouchOutsideBg")
         end
 
+        --------------------------- other nodes   ---------------------------
         if isClippingNode then
             createTitle("cc.ClippingNode")
             createInputLong("AlphaThreshold", "alphaThreshold", "number")
@@ -1176,7 +1247,10 @@ function panel:displayNode(node)
     end
 
     if isPhysicsObj and tolua.type(node) == "cc.PhysicsShapePolygon" then
-        --- -        createInputLong("Mass", "physicsBody.mass", "number", 1)
+        createInputMiddle("PointsNum", "", "", "pointsNum", nil, "number")
+        for i = 1, node.__info.pointsNum do
+            createInputMiddle("P" .. i, "X", "Y", "points." .. i .. ".x", "points." .. i .. ".y", "number")
+        end
     end
 
     self.displayInfoNode:setContentSize(cc.size(gk.display.height(), stepY * yIndex + 20))

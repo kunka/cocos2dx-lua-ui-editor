@@ -11,6 +11,7 @@ local theme = {}
 --- fonts
 theme.font_ttf = "gk/res/font/Consolas.ttf" -- for editBox
 theme.font_fnt = "gk/res/font/Consolas.fnt" -- for display
+theme.font_sys = "Consolas" -- for auto complete
 
 --- colors
 theme.configs = {

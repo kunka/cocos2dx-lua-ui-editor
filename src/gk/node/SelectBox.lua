@@ -22,6 +22,8 @@ function SelectBox:ctor(size, items, index)
     self.marginRight = 0
     self.marginTop = 0
     self.marginBottom = 0
+    self.focusable = false
+    --    self:handleKeyboardEvent()
 end
 
 function SelectBox:onEnter()
@@ -57,6 +59,7 @@ function SelectBox:setScale9SpriteBg(scale9Sprite)
     button:onClicked(function()
         if self.enabled then
             self:openPopup()
+            --            self:focus()
         end
     end)
     self.bgButton = button
@@ -144,6 +147,7 @@ function SelectBox:openPopup()
             button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
             button:onClicked(function()
                 self:closePopup()
+                --                self:unfocus()
                 if self.selectIndex ~= i and i > 0 and i <= #self.selectItems then
                     self.selectIndex = i
                     self.label:setString(self.selectItems[i])
@@ -160,6 +164,7 @@ function SelectBox:openPopup()
     listener:registerScriptHandler(function(touch, event)
         if self.popup and not gk.util:hitTest(self.popup, touch) then
             self:closePopup()
+            --            self:unfocus()
             return true
         else
             return false
@@ -170,7 +175,7 @@ function SelectBox:openPopup()
     local listener = cc.EventListenerMouse:create()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
-        if gk.util:touchInNode(self.popup, location) then
+        if self.popup and gk.util:touchInNode(self.popup, location) then
             for i, child in ipairs(self.popup:getChildren()) do
                 if gk.util:instanceof(child, "Button") then
                     local label = child:getContentNode():getChildren()[1]
@@ -198,6 +203,74 @@ function SelectBox:closePopup()
             self.popup:removeFromParent()
             self.popup = nil
         end
+    end
+end
+
+function SelectBox:handleKeyboardEvent()
+    local function onKeyPressed(keyCode, event)
+        if gk.focusNode == self then
+            local key = cc.KeyCodeKey[keyCode + 1]
+            gk.log("[SelectBox]: onKeyPressed %s", key)
+            if key == "KEY_ESCAPE" then
+                self:unfocus()
+            elseif key == "KEY_ENTER" then
+                self:unfocus()
+                self.label:setString(self.selectItems[self.selectIndex])
+                if self.onSelectChangedCallback then
+                    self.onSelectChangedCallback(self.selectIndex)
+                end
+            elseif key == "KEY_TAB" then
+                local x, y = self:getPosition()
+                local root = gk.util:getRootNode(self)
+                local next = gk.nextFocusNode(x, y, root)
+                if next then
+                    self:unfocus()
+                end
+                -- delay
+                root:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(function()
+                    local next = gk.nextFocusNode(x, y, root)
+                    if next then
+                        next:focus()
+                    end
+                end)))
+            end
+        end
+    end
+
+    local listener = cc.EventListenerKeyboard:create()
+    listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+end
+
+function SelectBox:focus()
+    if gk.focusNode ~= self then
+        if gk.focusNode then
+            gk.focusNode:unfocus()
+        end
+        gk.focusNode = self
+        self.isFocus = true
+        gk.util:drawNodeBounds(self, cc.c4f(1, 0, 0, 1), -2)
+        gk.log("[SelectBox] focus")
+        self:openPopup()
+    end
+end
+
+function SelectBox:unfocus()
+    if gk.focusNode == self then
+        gk.focusNode = nil
+        self.isFocus = false
+        gk.util:clearDrawNode(self, -2)
+        self:closePopup()
+        gk.log("[SelectBox] unfocus")
+    end
+end
+
+
+function SelectBox:onExit()
+    if gk.focusNode == self then
+        gk.focusNode = nil
+        self.isFocus = false
+        gk.log("[SelectBox] unfocus")
     end
 end
 

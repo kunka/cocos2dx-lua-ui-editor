@@ -15,11 +15,12 @@ config.supportNodes = {
         type = "ccui.Scale9Sprite",
         capInsets = cc.rect(0, 0, 0, 0),
     },
-    { type = "cc.Label", string = "label", fontFile = { en = "Arial" }, fontSize = 24, },
+    { type = "cc.Label", string = "label", fontSize = 24, },
     { type = "ZoomButton", },
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
     { type = "ToggleButton", },
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
+    { type = "CubicBezierNode" },
     {
         type = "ccui.EditBox",
         normalSprite = "gk/res/texture/edit_box_bg.png",
@@ -52,7 +53,6 @@ config.supportNodes = {
         _fold = true,
         width = 200,
         height = 500,
-        _fold = true,
         viewSize = cc.size(200, 300),
     },
     {
@@ -60,7 +60,6 @@ config.supportNodes = {
         _fold = true,
         width = 200,
         height = 500,
-        _fold = true,
         viewSize = cc.size(200, 300),
     },
     { type = "cc.ClippingNode" },
@@ -94,6 +93,8 @@ config.supportNodes = {
     {
         type = "cc.PhysicsShapePolygon",
         points = { cc.p(-50, -50), cc.p(-50, 50), cc.p(50, 50), cc.p(50, -50) },
+        pointsNum = 4,
+        offset = cc.p(0, 0),
         density = 0,
         restitution = 0.5,
         friction = 0.5,
@@ -157,6 +158,12 @@ config.defValues = {
     physicsBody = {},
 
     --    centerRect = cc.rect(0, 0, 0, 0),
+    -- Layer
+    swallowTouches = 0,
+    touchEnabled = 0,
+    enableKeyPad = 0,
+    popOnBack = 0,
+
     -- Dialog
     popOnTouchOutsideBg = 1,
     popOnTouchInsideBg = 1,
@@ -170,7 +177,7 @@ config.defValues = {
     bounceable = 0,
     clipToBD = 0,
     direction = 2,
-    touchEnabled = 0,
+    --    touchEnabled = 0,
     -- label
     additionalKerning = 0,
     enableBold = 1,
@@ -217,8 +224,8 @@ config.defValues = {
 
 config.macroFuncs = {
     -- Scale
-    minScale = function() return gk.display:minScale() end,
-    maxScale = function() return gk.display:maxScale() end,
+    minScale = function(key, node, var) return (var or 1) * gk.display:minScale() end,
+    maxScale = function(key, node, var) return (var or 1) * gk.display:maxScale() end,
     xScale = function() return gk.display:xScale() end,
     yScale = function() return gk.display:yScale() end,
     scaleX = function(key, node, ...) return gk.display:scaleX(...) end,
@@ -375,7 +382,7 @@ config.editableProps = {
                 node:setSpriteFrame(sf, node.__info.capInsets)
                 -- need refresh ...
                 node.__info.width, node.__info.height = node.__info.width, node.__info.height
-                gk.event:post("displayNode", node)
+                --                gk.event:post("displayNode", node)
             else
                 node:setSpriteFrame(gk.create_sprite_frame(var))
             end
@@ -392,6 +399,27 @@ config.editableProps = {
             node:setString(value)
         end
     },
+    -- ccui.EditBox
+    text = {
+        getter = function(node) return node:getText() end,
+        setter = function(node, var)
+            local value = var
+            if value:len() > 0 and value:sub(1, 1) == "@" then
+                value = gk.resource:getString(value:sub(2, #value))
+            end
+            node:setText(value)
+        end
+    },
+    placeHolder = {
+        getter = function(node) return node:getPlaceHolder() end,
+        setter = function(node, var)
+            local value = var
+            if value:len() > 0 and value:sub(1, 1) == "@" then
+                value = gk.resource:getString(value:sub(2, #value))
+            end
+            node:setPlaceHolder(value)
+        end
+    },
     lineHeight = {
         getter = function(node) return -1 end,
         setter = function(node, var)
@@ -405,9 +433,11 @@ config.editableProps = {
     fontFile = {
         getter = function(node) return {} end,
         setter = function(node, var)
-            -- recreate node
             local lan = gk.resource:getCurrentLan()
             local fontFile = var[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             --            gk.log("set fontFile_%s %s", lan, fontFile)
             if gk.isTTF(fontFile) then
                 local config = node:getTTFConfig()
@@ -437,6 +467,9 @@ config.editableProps = {
             end
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             if gk.isTTF(fontFile) then
                 local config = node:getTTFConfig()
                 config.fontSize = var
@@ -644,13 +677,13 @@ config.editableProps = {
         setter = function(node, var)
             if gk.util:instanceof(node, "SpriteButton") then
                 node:setNormalSprite(var)
-                if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
-                    local rect = node:getContentNode():getSpriteFrame():getRect()
-                    node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
-                end
+                --                if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
+                --                    local rect = node:getContentNode():getSpriteFrame():getRect()
+                --                    node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
+                --                end
                 -- need refresh ...
-                node.__info.width, node.__info.height = node.__info.width, node.__info.height
-                gk.event:post("displayNode", node)
+                --                node.__info.width, node.__info.height = node.__info.width, node.__info.height
+                --                gk.event:post("displayNode", node)
             end
         end
     },
@@ -739,60 +772,62 @@ config.editableProps = {
             node:setGravityEnable(var == 0)
         end
     },
-    -- cc.PhysicsShape
-    offset = {
-        getter = function(node) return node:getOffset() end,
-    },
-    -- cc.PhysicsShapeCircle
-    radius = {
-        getter = function(node) return node:getRadius() end,
-    },
 }
 
-function config:registerProp(key, alias)
+function config:registerProp(key, alias, onlyGetter)
+    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
+    config.editableProps[key] = {
+        getter = function(node) print(alias) print(tolua.type(node)) return node["get" .. alias](node) end,
+        setter = function(node, var)
+            local v = gk.generator:parseValue(key, node, var)
+            if not onlyGetter then
+                node["set" .. alias](node, v)
+            end
+        end
+    }
+end
+
+function config:registerStringProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
         getter = function(node) return node["get" .. alias](node) end,
         setter = function(node, var)
             local v = gk.generator:parseValue(key, node, var)
-            node["set" .. alias](node, v)
+            if not onlyGetter then
+                node["set" .. alias](node, v)
+            end
         end
     }
 end
 
-function config:registerStringProp(key, alias)
-    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
-    config.editableProps[key] = {
-        getter = function(node) return node["get" .. alias](node) end,
-        setter = function(node, var)
-            local v = gk.generator:parseValue(key, node, var)
-            node["set" .. alias](node, v)
-        end
-    }
-end
-
-function config:registerFloatProp(key, alias)
+function config:registerFloatProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
         getter = function(node) return math.shrink(node["get" .. alias](node), 3) end,
         setter = function(node, var)
             local v = gk.generator:parseValue(key, node, var)
-            node["set" .. alias](node, tonumber(v))
+            if not onlyGetter then
+                node["set" .. alias](node, tonumber(v))
+            end
         end
     }
 end
 
-function config:registerBoolProp(key, alias)
+function config:registerBoolProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
         getter = function(node) return node["is" .. alias](node) and 0 or 1 end,
-        setter = function(node, var) node["set" .. alias](node, var == 0) end
+        setter = function(node, var) if not onlyGetter then
+            node["set" .. alias](node, var == 0)
+        end
+        end
     }
 end
 
 function config:registerFuncProp(key)
     config.editableProps[key] = {
-        getter = function(node) return "-" end,
+        getter = function(node) return "-"
+        end,
         setter = function(node, var)
             local func, macro = gk.generator:parseCustomMacroFunc(node, var)
             if func then
@@ -807,11 +842,15 @@ end
 
 function config:registerScriptHandler(key, handler)
     config.editableProps[key] = {
-        getter = function(node) return "-" end,
+        getter = function(node) return "-"
+        end,
         setter = function(node, var)
             local func, macro = gk.generator:parseCustomMacroFunc(node, var)
             if func then
                 node:registerScriptHandler(function(...)
+                    if gk.mode == gk.MODE_EDIT and key == "cellTouched" then
+                        return
+                    end
                     return func(node.__rootTable, ...)
                 end, handler)
             end
@@ -821,14 +860,17 @@ end
 
 function config:registerPlaneProp(key, default)
     config.editableProps[key] = {
-        getter = function(node) return default end,
-        setter = function(node, var) end
+        getter = function(node) return default
+        end,
+        setter = function(node, var)
+        end
     }
 end
 
 function config:registerDefaultGetterProp(key, defaultValue)
     config.editableProps[key] = {
-        getter = function(_) return defaultValue end,
+        getter = function(_) return defaultValue
+        end,
     }
 end
 
@@ -897,6 +939,8 @@ config:registerProp("selectedGLProgram")
 config:registerProp("disabledGLProgram")
 config:registerBoolProp("cascadeGLProgramEnabled")
 
+-- SpriteButton
+config:registerProp("selectMode")
 -- ZoomButton
 config:registerProp("zoomScale")
 config:registerBoolProp("zoomEnabled")
@@ -955,13 +999,21 @@ config:registerBoolProp("reverseDirection")
 config:registerProp("midpoint")
 config:registerProp("barChangeRate")
 
--- CheckBox
+-- gk.CheckBox
 config:registerBoolProp("selected")
+
+-- gk.CubicBezierNode
+config:registerProp("origin")
+--config:registerProp("control1")
+--config:registerProp("control2")
+config:registerProp("destination")
+config:registerProp("c4f")
+config:registerFloatProp("segments")
+config:registerFloatProp("lineWidth")
+config:registerFloatProp("curvesNum")
 
 -- ccui.EditBox
 config:registerProp("fontName")
-config:registerProp("text")
-config:registerProp("placeHolder")
 config:registerFloatProp("placeholderFontSize")
 config:registerProp("fontColor")
 config:registerProp("placeholderFontColor")
@@ -1014,7 +1066,6 @@ config:registerFloatProp("startSpinVar")
 config:registerFloatProp("endSpin")
 config:registerFloatProp("endSpinVar")
 config:registerFloatProp("emissionRate")
-
 
 config.hintColor3Bs = {}
 function config:registerHintColor3B(c3b)
@@ -1080,8 +1131,8 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- cc.PhysicsBody, cc.PhysicsShape
-config:registerFloatProp("mass")
-config:registerFloatProp("moment")
+--config:registerFloatProp("mass")
+--config:registerFloatProp("moment")
 config:registerFloatProp("tag")
 config:registerFloatProp("group")
 config:registerFloatProp("categoryBitmask")
@@ -1102,8 +1153,8 @@ table.insert(gk.exNodeDisplayer,
         type = "cc.PhysicsBody",
         stringProps = {},
         numProps = {
-            { key = "mass", default = 1 },
-            { key = "moment", default = 0 },
+            --            { key = "mass", default = 1 },
+            --            { key = "moment", default = 0 },
             { key = "group", default = 0 },
             { key = "categoryBitmask", default = -1 },
             { key = "contactTestBitmask", default = 0 },
@@ -1145,13 +1196,16 @@ config:registerFloatProp("density")
 config:registerFloatProp("restitution")
 config:registerFloatProp("friction")
 config:registerBoolProp("sensor")
-config:registerProp("offset")
+config:registerProp("offset", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShape",
         numProps = {
-            { key = "mass", default = 0 },
-            { key = "moment", default = 0 },
+            --            { key = "mass", default = 0 },
+            --            { key = "moment", default = 0 },
+            { key = "density", default = 0 },
+            { key = "restitution", default = 0 },
+            { key = "friction", default = 0 },
             { key = "group", default = 0 },
             { key = "categoryBitmask", default = -1 },
             { key = "contactTestBitmask", default = 0 },
@@ -1162,6 +1216,7 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- cc.PhysicsShapeCircle
+config:registerProp("radius", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapeCircle",
@@ -1184,6 +1239,16 @@ table.insert(gk.exNodeDisplayer,
 
 -- cc.PhysicsShapePolygon
 config:registerProp("points")
+config.editableProps["pointsNum"] = {
+    getter = function(node) return #node.__info.points
+    end,
+    setter = function(node, num)
+        while #node.__info.points < num do
+            table.insert(node.__info.points, cc.p(0, 0))
+        end
+    end
+}
+
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapePolygon",
@@ -1201,7 +1266,7 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- cc.PhysicsShapeBox
-config:registerProp("size")
+config:registerProp("size", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapeBox",
@@ -1232,13 +1297,8 @@ table.insert(gk.exNodeDisplayer,
 
 -- cc.PhysicsShapeEdgeSegment
 config:registerPlaneProp("border")
-config.editableProps["pointA"] = {
-    getter = function(node) return node:getPointA() end,
-}
-config.editableProps["pointB"] = {
-    getter = function(node) return node:getPointB() end,
-}
-
+config:registerFloatProp("pointA", nil, true)
+config:registerFloatProp("pointB", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapeEdgeSegment",

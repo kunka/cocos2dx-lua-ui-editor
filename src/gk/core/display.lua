@@ -31,7 +31,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     display.resolutionPolicyDesc = display.supportResolutionPolicyDesc[table.indexof(display.supportResolutionPolicy, display.resolutionPolicy)]
     local leftMargin = 250
     local topMargin = 100
-    local rightMargin = 260
+    local rightMargin = 280
     local bottomMargin = 100
     if gk.mode == gk.MODE_EDIT then
         display.leftWidth = leftMargin

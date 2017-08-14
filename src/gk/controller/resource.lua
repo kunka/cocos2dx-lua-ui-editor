@@ -77,6 +77,10 @@ function resource:setStringGetFunc(func)
     end
 end
 
+function resource:setAutoCompleteFunc(func)
+    self.autoCompleteFunc = func
+end
+
 function resource:getCurrentLan()
     local lan = cc.UserDefault:getInstance():getStringForKey("app_language")
     if lan == "" then
@@ -109,6 +113,19 @@ function resource:getSupportLans()
     return self.lans or {}
 end
 
+function resource:setDefaultFontForLans(defaultFontForLans)
+    self.defaultFontForLans = defaultFontForLans
+end
+
+function resource:getDefaultFont(lan)
+    if self.defaultFontForLans then
+        -- default use en font
+        return self.defaultFontForLans[lan] or self.defaultFontForLans["en"]
+    else
+        return "Arial"
+    end
+end
+
 ----------------------------- gen node search path -----------------------------------
 function resource:setGenSrcPath(path)
     gk.log("resource:setGenSrcPath \"%s\"", path)
@@ -120,6 +137,7 @@ function resource:setGenOutputPath(path)
     self.genOutputPath = path
 end
 
+resource.genFullPathPrefix = ""
 function resource:scanGenNodes(path)
     gk.log("resource:scanGenNodes fullpath = \"%s\"", path .. self.genSrcPath)
     self.genFullPathPrefix = path

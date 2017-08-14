@@ -18,7 +18,7 @@ function instanceRun:init(platform, androidPackageName)
 
     -- mac use local search path for restart instantly
     if platform == 2 then
-        print("initInstanceRun on macos???")
+        print("initInstanceRun on macos")
         local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
         MAC_ROOT = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
         print("mac root = \"" .. MAC_ROOT .. "\"")
@@ -32,11 +32,11 @@ function instanceRun:init(platform, androidPackageName)
             cc.FileUtils:getInstance():createDirectory(ANDROID_PACKAGE_NAME)
         end
         cc.FileUtils:getInstance():setSearchPaths({})
-        cc.FileUtils:getInstance():addSearchPath(ANDROID_PACKAGE_NAME .. "src/")
-        cc.FileUtils:getInstance():addSearchPath(ANDROID_PACKAGE_NAME .. "res/")
+        cc.FileUtils:getInstance():addSearchPath(ANDROID_ROOT .. "src/")
+        cc.FileUtils:getInstance():addSearchPath(ANDROID_ROOT .. "res/")
+        cc.FileUtils:getInstance():addSearchPath(ANDROID_ROOT)
         cc.FileUtils:getInstance():addSearchPath("src/")
         cc.FileUtils:getInstance():addSearchPath("res/")
-        cc.FileUtils:getInstance():addSearchPath(ANDROID_PACKAGE_NAME)
     end
 
     return MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME

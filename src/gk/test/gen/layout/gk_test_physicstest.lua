@@ -6,7 +6,7 @@ return {
 	width = "$fill",
 	gravity = {
 	   x = 0,
-	   y = 0},
+	   y = -98},
 	children = {	   {
 	      id = "sprite1",
 	      scaleX = "$minScale",
@@ -17,7 +17,6 @@ return {
 	      physicsBody = {
 	         _isPhysics = true,
 	         gravityEnabled = 0,
-	         mass = 2,
 	         rotationEnabled = 1,
 	         type = "cc.PhysicsBody",
 	         shapes = {	            {
@@ -87,19 +86,20 @@ return {
 	               restitution = 0.5,
 	               type = "cc.PhysicsShapeEdgeBox",
 	               offset = {
-	                  x = 0,
+	                  x = 640,
 	                  y = 0},
 	               size = {
 	                  height = 100,
-	                  width = 100}},
+	                  width = 1280}},
 	            {
 	               _isPhysics = true,
 	               density = 0,
 	               friction = 0.5,
+	               pointsNum = 5,
 	               restitution = 0.5,
 	               type = "cc.PhysicsShapePolygon",
 	               offset = {
-	                  x = 0,
+	                  x = 200,
 	                  y = 0},
 	               points = {	                  {
 	                     x = -50,
@@ -110,6 +110,9 @@ return {
 	                  {
 	                     x = 50,
 	                     y = 50},
+	                  {
+	                     x = 100,
+	                     y = 25},
 	                  {
 	                     x = 50,
 	                     y = -50}}}}},

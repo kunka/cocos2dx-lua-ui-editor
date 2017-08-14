@@ -130,13 +130,7 @@ function util:restartGame(mode)
 
     gk.event:post("syncNow")
     gk.event:init()
-    for _, callback in ipairs(self.onRestartGameCallbacks) do
-        callback()
-    end
-    self.onRestartGameCallbacks = {}
-    if gk.mode ~= gk.MODE_RELEASE then
-        gk:increaseRuntimeVersion()
-    end
+    gk:increaseRuntimeVersion()
     gk.scheduler:unscheduleAll()
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
@@ -149,8 +143,12 @@ function util:restartGame(mode)
             collectgarbage("collect")
             gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         end
-        if util.restartGameCallback then
-            util.restartGameCallback(mode)
+        for _, callback in ipairs(self.onRestartGameCallbacks) do
+            callback()
+        end
+        self.onRestartGameCallbacks = {}
+        if self.restartGameCallback then
+            self.restartGameCallback(mode)
         end
     end))
 end
@@ -172,6 +170,8 @@ util.tags = util.tags and util.tags or {
     boundsTag = 0xFFF3,
     coordinateTag = 0xFFF5,
     versionTag = 0xFFF6,
+    buttonOverlayTag = 0xFFF7,
+    dialogTag = 0xFFF8,
 }
 
 function util:isDebugNode(node)
@@ -484,6 +484,17 @@ function util:isAncestorsType(node, type)
     return false
 end
 
+function util:isAncestorsIgnore(node)
+    local c = node
+    while c ~= nil do
+        if c.__ignore then
+            return true
+        end
+        c = c:getParent()
+    end
+    return false
+end
+
 function util:getRootNode(node)
     local c = node:getParent()
     local root
@@ -686,7 +697,7 @@ local function dump_value_(v)
 end
 
 function util:dump(value, description, nesting)
-    if type(nesting) ~= "number" then nesting = 3 end
+    if type(nesting) ~= "number" then nesting = 4 end
 
     local lookupTable = {}
     local result = {}

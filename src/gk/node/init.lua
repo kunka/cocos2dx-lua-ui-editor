@@ -15,6 +15,7 @@ gk.ZoomButton = import(".ZoomButton")
 gk.ToggleButton = import(".ToggleButton")
 gk.SpriteButton = import(".SpriteButton")
 gk.CheckBox = import(".CheckBox")
+gk.CubicBezierNode = import(".CubicBezierNode")
 gk.TableViewCell = import(".TableViewCell")
 gk.Widget = import(".Widget")
 
@@ -94,13 +95,11 @@ gk.isBMFont = isBMFont
 gk.isSystemFont = isSystemFont
 
 local function create_label_local(info)
+    local fontFile = info.fontFile or {}
     local lan = info.lan or gk.resource:getCurrentLan()
-    local fontFile = info.fontFile[lan]
+    local fontFile = fontFile[lan]
     if fontFile == nil then
-        -- default use en font as the same
-        gk.log("create_label default use en font as default %s", info.fontFile["en"])
-        fontFile = info.fontFile["en"]
-        info.fontFile[lan] = fontFile
+        fontFile = gk.resource:getDefaultFont(lan)
     end
     local file = gk.resource:getFontFile(fontFile)
     local label
@@ -110,9 +109,10 @@ local function create_label_local(info)
     elseif isBMFont(fontFile) then
         label = cc.Label:createWithBMFont(file, info.string, cc.TEXT_ALIGNMENT_LEFT)
         label:setBMFontSize(info.fontSize)
-    else
+    end
+    if not label then
         label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
-        info.fontFile[lan] = label:getSystemFontName()
+        --        info.fontFile[lan] = label:getSystemFontName()
         --        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
     end
     return label
@@ -135,7 +135,7 @@ local function create_label(string, fontFile, fontSize, c3b)
             label:setColor(c3b)
         end
     else
-        label = cc.Label:createWithSystemFont(string, "Arial", fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
+        label = cc.Label:createWithSystemFont(string, fontFile or gk.theme.font_sys, fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         if c3b then
             label:setColor(c3b)
         end
@@ -147,25 +147,27 @@ gk.create_label = create_label
 
 local function set_label_color(label, c3b)
     local config = label:getTTFConfig()
-    -- TTF
     if config.fontFilePath ~= "" then
+        -- TTF
         label:setTextColor(c3b)
-        -- BMFont
     elseif label:getBMFontFilePath() ~= "" then
+        -- BMFont
         label:setColor(c3b)
-        -- Sys
     else
+        -- Sys
         label:setColor(c3b)
     end
 end
 
 gk.set_label_color = set_label_color
 
-local function nextFocusNode(current)
+--local function nextFocusNode(x, y, root)
+local function nextFocusNode(x, y, root)
     local all = {}
     local function focusNodes(node)
         if node then
-            if node ~= current and node.focusable and node.enabled then
+            --            if node ~= current and node.focusable and node.enabled then
+            if (node:getPositionX() ~= x or node:getPositionY() ~= y) and node.focusable and node.enabled then
                 table.insert(all, node)
             end
             -- test draw
@@ -179,30 +181,30 @@ local function nextFocusNode(current)
         end
     end
 
-    local root = gk.util:getRootNode(current)
+    --    local root = gk.util:getRootNode(current)
     focusNodes(root)
     if #all > 0 then
         table.sort(all, function(a, b)
-            if b:getPositionY() == current:getPositionY() and b:getPositionX() < current:getPositionX() then
+            if b:getPositionY() == y and b:getPositionX() < x then
                 return true
             end
-            if a:getPositionY() == current:getPositionY() and a:getPositionX() < current:getPositionX() then
+            if a:getPositionY() == y and a:getPositionX() < x then
                 return false
             end
-            if b:getPositionY() == current:getPositionY() and a:getPositionY() == current:getPositionY() then
+            if b:getPositionY() == y and a:getPositionY() == y then
                 return a:getPositionX() < b:getPositionX()
             end
 
-            if b:getPositionY() > current:getPositionY() then
-                if a:getPositionY() <= current:getPositionY() then
+            if b:getPositionY() > y then
+                if a:getPositionY() <= y then
                     return true
                 end
-            elseif b:getPositionY() == current:getPositionY() then
-                if a:getPositionY() > current:getPositionY() then
+            elseif b:getPositionY() == y then
+                if a:getPositionY() > y then
                     return false
                 end
-            elseif b:getPositionY() < current:getPositionY() then
-                if a:getPositionY() > current:getPositionY() then
+            elseif b:getPositionY() < y then
+                if a:getPositionY() > y then
                     return false
                 end
             end

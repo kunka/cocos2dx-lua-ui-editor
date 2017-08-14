@@ -11,12 +11,9 @@ local Layer = import(".Layer")
 local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
-    Dialog.super.ctor(self)
-    -- set dialog bg, use to animate out
-    self.enableKeyPad = true
-    self.popOnBack = true -- popDialogc on back
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
+    Dialog.super.ctor(self)
 end
 
 function Dialog:setPopOnTouchInsideBg(var)
@@ -98,13 +95,13 @@ function Dialog:onTouchBegan(touch, event)
     return self.swallowTouches
 end
 
-function Dialog:pop()
+function Dialog:pop(...)
     if self.parent then
         gk.log("[%s]: popDialog --> %s", self.parent.__cname, self.__cname)
         table.removebyvalue(self.parent.dialogsStack, self)
         self:retain()
         if self.onPopCallback then
-            self.onPopCallback()
+            self.onPopCallback(...)
         end
         self:release()
         self:removeFromParent()
@@ -116,6 +113,7 @@ end
 
 function Dialog:onKeyBack()
     if self.popOnBack then
+        gk.log("[%s]: pop onKeyBack", self.__cname)
         self:pop()
     else
         gk.log("[%s]: pop onKeyBack is disable", self.__cname)

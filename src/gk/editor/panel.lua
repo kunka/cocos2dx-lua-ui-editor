@@ -225,7 +225,7 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
-            if self.commandPressed then
+            if self.commandPressed or gk.util:isAncestorsIgnore(node) then
                 return
             end
             if node.__info and node.__info._lock == 0 then
@@ -295,6 +295,9 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(function(touch, event)
+            if gk.util:isAncestorsIgnore(node) then
+                return
+            end
             if self.commandPressed then
                 self._containerNode = nil
                 return
@@ -362,11 +365,13 @@ function panel:onNodeCreate(node)
                 local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 --                node.__info.x, node.__info.y = x, y
                 --                gk.log("move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
-                gk.event:post("executeCmd", "MOVE", {
-                    id = node.__info.id,
-                    from = cc.p(node.__info.x, node.__info.y),
-                    to = cc.p(x, y)
-                })
+                if self._containerNode ~= nil then
+                    gk.event:post("executeCmd", "MOVE", {
+                        id = node.__info.id,
+                        from = cc.p(node.__info.x, node.__info.y),
+                        to = cc.p(x, y)
+                    })
+                end
             end
             self.sortedChildren = nil
             self._containerNode = nil
@@ -497,7 +502,7 @@ function panel:displayNode(node, noneCoordinate)
         if node ~= self.scene.layer or node.class._isWidget then
             gk.util:drawNode(node)
         elseif node == self.scene.layer and gk.util:instanceof(node, "TableViewCell") then
-            gk.util:drawNode(node)
+            gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 0.2), -10)
         end
         if displayCoordinate then
             self:drawNodeCoordinate(node)
@@ -549,7 +554,7 @@ function panel:handleEvent()
                 if node then
                     self.copyingNodeTimes = self.copyingNodeTimes or 0
                     self.copyingNodeTimes = self.copyingNodeTimes + 1
-                    node.__info.x, node.__info.y = node.__info.x + 20 * self.copyingNodeTimes, node.__info.y + 20 -- * self.copyingNodeTimes
+                    node.__info.x, node.__info.y = node.__info.x + 20 * self.copyingNodeTimes, node.__info.y --+ 20 * self.copyingNodeTimes
                     self.copyingNode:getParent():addChild(node)
                     gk.log("paste node %s", node.__info.id)
                     gk.event:post("executeCmd", "ADD", {
@@ -601,6 +606,11 @@ function panel:handleEvent()
                 return
             elseif key == "KEY_F" then
                 self.displayingNode.__info._fold = not self.displayingNode.__info._fold
+                gk.event:post("displayNode", self.displayingNode)
+                gk.event:post("displayDomTree", true, true)
+                return
+            elseif key == "KEY_V" then
+                self.displayingNode.__info.visible = self.displayingNode.__info.visible == 0 and 1 or 0
                 gk.event:post("displayNode", self.displayingNode)
                 gk.event:post("displayDomTree", true, true)
                 return

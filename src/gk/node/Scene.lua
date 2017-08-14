@@ -15,6 +15,10 @@ function Scene:ctor(sceneType)
     if gk.displayRuntimeVersion then
         local version = gk:getRuntimeVersion()
         local fontName = gk.theme.font_fnt
+        local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_curVersion")
+        if curVersion ~= "" then
+            version = curVersion .. "/" .. version
+        end
         local label = gk.create_label(version, fontName, 12)
         gk.set_label_color(label, cc.c3b(230, 230, 230))
         local button = gk.ZoomButton.new(label)

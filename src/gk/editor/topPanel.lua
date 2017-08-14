@@ -29,8 +29,10 @@ function panel.create(parent)
     local scale = 0.25
     local topY = size.height - 25
     local leftX = 15
-    local inputWidth1 = 90
+    local inputWidth1 = 120
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
+    local leftX_input_2 = 100
+    local inputWidth2 = gk.display.rightWidth - leftX - leftX_input_2
     local stepX = 64 --51
     local stepY = 25
     local leftX_widget = 15 --10
@@ -43,8 +45,9 @@ function panel.create(parent)
         label:setPosition(x, y)
         return label
     end
-    local createInput = function(content, x, y, width, callback)
-        local node = gk.EditBox:create(cc.size(width / scale, 16 / scale))
+    local createInput = function(content, x, y, width, callback, lines)
+        lines = lines or 1
+        local node = gk.EditBox:create(cc.size(width / scale, 16 / scale * lines))
         node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
         local label = gk.create_label(content, gk.theme.font_ttf, fontSize)
         gk.set_label_color(label, cc.c3b(0, 0, 0))
@@ -54,12 +57,11 @@ function panel.create(parent)
         label:setDimensions(contentSize.width - 25, contentSize.height)
         self:addChild(node)
         node:setScale(scale)
-        node:setAnchorPoint(0, 0.5)
+        node:setAnchorPoint(0, 1)
         node:onEditEnded(function(...)
             callback(...)
         end)
-        node:setPosition(x, y)
-        node.enabled = false
+        node:setPosition(x, y + 16 / 2)
         return node
     end
 
@@ -152,16 +154,26 @@ function panel.create(parent)
     -- right
     local rightX = gk.display.leftWidth + gk.display:winSize().width + leftX + gk.display.extWidth
     local rightX2 = size.width - inputWidth1 - leftX
+    local rightX3 = rightX + 100 - leftX
     local yIndex = 0
     -- bg
     createLabel("Theme", rightX, topY - yIndex * stepY)
     local themes = table.keys(gk.theme.configs)
     local index = table.indexof(themes, gk.theme.themeName)
-    local node = createSelectBox(themes, index, rightX2, topY - yIndex * stepY, inputWidth1, function(index)
+    local node = createSelectBox(themes, index, rightX3, topY - yIndex * stepY, inputWidth2, function(index)
         local themeName = themes[index]
         gk.theme:setTheme(themeName)
     end)
     yIndex = yIndex + 1
+    -- string
+    createLabel("Query String", rightX, topY - stepY * (yIndex + 0.2))
+    local editBox = createInput("", rightX3, topY - stepY * yIndex, inputWidth2, function(editBox, input)
+        editBox:setInput(input)
+    end, 1.6)
+    editBox:setAutoCompleteFunc(gk.resource.autoCompleteFunc)
+    editBox:onCreatePopupLabel(function()
+        return gk.create_label("", gk.theme.font_sys, fontSize)
+    end)
 
     -- widgets
     self.widgets = clone(generator.config.supportNodes)
@@ -190,8 +202,9 @@ function panel.create(parent)
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
         local node = gk.create_sprite(self.widgets[i].file or "gk/res/texture/icon_cocos.png")
+        gk.util:addMouseMoveEffect(node)
         if self.widgets[i]._isWidget then
-            node:setColor(cc.c3b(0xCC, 0xFF, 0x66))
+            node:setColor(cc.c3b(0xEE, 0x99, 0xEE))
         elseif self.widgets[i]._isPhysics then
             node:setColor(cc.c3b(0x33, 0xCC, 0x99))
         end
