@@ -170,12 +170,16 @@ function config:addKeys()
         yIndex = yIndex + 1
     end
 
-    for _, key in ipairs(self.boolKeys) do
-        createCheckBox(key.key, key.desc)
+    if self.boolKeys then
+        for _, key in ipairs(self.boolKeys) do
+            createCheckBox(key.key, key.desc)
+        end
     end
 
-    for _, key in ipairs(self.selectVarKeys) do
-        createSelectBoxLong(key.key, key.items, "string", key.defaultValue, key.desc)
+    if self.selectVarKeys then
+        for _, key in ipairs(self.selectVarKeys) do
+            createSelectBoxLong(key.key, key.items, "string", key.defaultValue, key.desc)
+        end
     end
 end
 

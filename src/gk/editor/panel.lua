@@ -3,7 +3,6 @@ local generator = import(".generator")
 local cmd = import(".cmd")
 
 local kMoveNodeAction = -1102
-panel.exNodeDisplayer = {}
 function panel.create(scene)
     local winSize = cc.Director:getInstance():getWinSize()
     local self = cc.Layer:create()
@@ -83,7 +82,7 @@ function panel:subscribeEvent()
     gk.event:subscribe(self, "displayNode", function(node, var)
         -- do not display tablecell in tableView
         local type = tolua.type(node)
-        if type ~= "cc.TableView" then
+        if type ~= "cc.TableView" and not (node.__info and node.__info._isPhysics) then
             if gk.util:isAncestorsType(node, "cc.TableView") then
                 return
             end
@@ -403,20 +402,6 @@ function panel:rescaleNode(node, parent)
     end
 end
 
-function panel:undisplayNode(expRightPanel)
-    if not expRightPanel then
-        self.rightPanel:undisplayNode()
-    end
-    if self.displayingNode then
-        gk.util:clearDrawNode(self.displayingNode)
-        self.displayingNode = nil
-    end
-    if self.coordinateNode then
-        self.coordinateNode:removeFromParent()
-        self.coordinateNode = nil
-    end
-end
-
 function panel:drawNodeCoordinate(node)
     if node.__info and node.__info.id then
         local parent = node:getParent()
@@ -476,24 +461,49 @@ function panel:drawNodeCoordinate(node)
     end
 end
 
+function panel:undisplayNode(expRightPanel)
+    if not expRightPanel then
+        self.rightPanel:undisplayNode()
+    end
+    if self.displayingNode then
+        local isPhysicsObj = self.displayingNode.__info._isPhysics
+        if not isPhysicsObj then
+            gk.util:clearDrawNode(self.displayingNode)
+        end
+        self.displayingNode = nil
+    end
+    if self.coordinateNode then
+        self.coordinateNode:removeFromParent()
+        self.coordinateNode = nil
+    end
+end
+
 function panel:displayNode(node, noneCoordinate)
     if not node or not node.__info then
         return
     end
     local displayCoordinate = not noneCoordinate
-    gk.log("displayNode --------------------- %s", node.__info.id)
-    --    gk.profile:start("displayNode")
-    self:undisplayNode()
-    self.displayingNode = node
-    if node ~= self.scene.layer or node.class._isWidget then
-        gk.util:drawNode(node)
-    elseif node == self.scene.layer and gk.util:instanceof(node, "TableViewCell") then
-        gk.util:drawNode(node)
+    local isPhysicsObj = node.__info._isPhysics
+    if isPhysicsObj then
+        gk.log("displayNode --------------------- %s", node.__info.type)
+        self:undisplayNode()
+        self.displayingNode = node
+        self.rightPanel:displayNode(node)
+    else
+        gk.log("displayNode --------------------- %s", node.__info.id)
+        --    gk.profile:start("displayNode")
+        self:undisplayNode()
+        self.displayingNode = node
+        if node ~= self.scene.layer or node.class._isWidget then
+            gk.util:drawNode(node)
+        elseif node == self.scene.layer and gk.util:instanceof(node, "TableViewCell") then
+            gk.util:drawNode(node)
+        end
+        if displayCoordinate then
+            self:drawNodeCoordinate(node)
+        end
+        self.rightPanel:displayNode(node)
     end
-    if displayCoordinate then
-        self:drawNodeCoordinate(node)
-    end
-    self.rightPanel:displayNode(node)
     --    gk.profile:stop("displayNode")
 
     -- print info
@@ -558,6 +568,27 @@ function panel:handleEvent()
 
         --        gk.log("%s:onKeyPressed %s", "EditorPanel", key)
         if self.displayingNode then
+            if key == "KEY_BACKSPACE" and self.shiftPressed then
+                -- delete body
+                if gk.util:instanceof(self.displayingNode, "cc.PhysicsBody") then
+                    local node = self.displayingNode:getNode()
+                    node:removeComponent(self.displayingNode)
+                    self.displayingNode = nil
+                    gk.event:post("postSync")
+                    gk.event:post("displayNode", node)
+                    gk.event:post("displayDomTree")
+                    return
+                elseif gk.util:instanceof(self.displayingNode, "cc.PhysicsShape") then
+                    local body = self.displayingNode:getBody()
+                    body:removeShape(self.displayingNode)
+                    self.displayingNode = nil
+                    gk.event:post("postSync")
+                    gk.event:post("displayNode", body)
+                    gk.event:post("displayDomTree")
+                    return
+                end
+            end
+
             if self.displayingNode.__rootTable ~= self.scene.layer then
                 gk.log("[Warning] cannot modify widget's children")
                 return
@@ -617,6 +648,7 @@ function panel:handleEvent()
                 gk.event:post("displayNode", self.displayingNode)
             end
         end
+
         self.copyingNode = nil
         self.copyingNodeTimes = 0
 

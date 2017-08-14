@@ -9,7 +9,7 @@
 local config = {}
 
 config.supportNodes = {
-    { type = "cc.Node", },
+    { type = "cc.Node", physicsBody = {} },
     { type = "cc.Sprite", },
     {
         type = "ccui.Scale9Sprite",
@@ -77,6 +77,58 @@ config.supportNodes = {
         type = "cc.ParticleSystemQuad",
         particle = "gk/res/particle/Galaxy.plist",
     },
+    { type = "PhysicsWorld", },
+    {
+        type = "cc.PhysicsBody",
+        _isPhysics = true,
+    },
+    {
+        type = "cc.PhysicsShapeCircle",
+        radius = 1,
+        offset = cc.p(0, 0),
+        density = 0,
+        restitution = 0.5,
+        friction = 0.5,
+        _isPhysics = true,
+    },
+    {
+        type = "cc.PhysicsShapePolygon",
+        points = { cc.p(-50, -50), cc.p(-50, 50), cc.p(50, 50), cc.p(50, -50) },
+        density = 0,
+        restitution = 0.5,
+        friction = 0.5,
+        _isPhysics = true,
+    },
+    {
+        type = "cc.PhysicsShapeBox",
+        radius = 0,
+        size = cc.size(100, 100),
+        offset = cc.p(0, 0),
+        density = 0,
+        restitution = 0.5,
+        friction = 0.5,
+        _isPhysics = true,
+    },
+    {
+        type = "cc.PhysicsShapeEdgeSegment",
+        border = 1,
+        pointA = cc.p(0, 0),
+        pointB = cc.p(100, 0),
+        density = 0,
+        restitution = 0.5,
+        friction = 0.5,
+        _isPhysics = true,
+    },
+    {
+        type = "cc.PhysicsShapeEdgeBox",
+        border = 1,
+        size = cc.size(100, 100),
+        density = 0,
+        restitution = 0.5,
+        friction = 0.5,
+        offset = cc.p(0, 0),
+        _isPhysics = true,
+    },
 }
 
 -- defValues, not modified properties, will not be saved, minimize gen file size
@@ -102,6 +154,8 @@ config.defValues = {
     visible = 0,
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
+    physicsBody = {},
+
     --    centerRect = cc.rect(0, 0, 0, 0),
     -- Dialog
     popOnTouchOutsideBg = 1,
@@ -672,6 +726,27 @@ config.editableProps = {
             end
         end
     },
+    -- cc.PhysicsBody
+    rotationEnabled = {
+        getter = function(node) return node:isRotationEnabled() end,
+        setter = function(node, var)
+            node:setRotationEnable(var == 0)
+        end
+    },
+    gravityEnabled = {
+        getter = function(node) return node:isGravityEnabled() end,
+        setter = function(node, var)
+            node:setGravityEnable(var == 0)
+        end
+    },
+    -- cc.PhysicsShape
+    offset = {
+        getter = function(node) return node:getOffset() end,
+    },
+    -- cc.PhysicsShapeCircle
+    radius = {
+        getter = function(node) return node:getRadius() end,
+    },
 }
 
 function config:registerProp(key, alias)
@@ -783,6 +858,7 @@ config:registerPlaneProp("_voidContent", false)
 config:registerPlaneProp("_lock", 1)
 config:registerPlaneProp("_fold", false)
 config:registerPlaneProp("id", "")
+config:registerPlaneProp("_isPhysics", false)
 
 -- cc.Node
 config:registerProp("anchor", "AnchorPoint")
@@ -808,6 +884,7 @@ config:registerBoolProp("flippedX")
 config:registerBoolProp("flippedY")
 config:registerProp("renderingType")
 config:registerProp("state")
+config:registerBoolProp("gravityEnabled")
 
 -- Button
 config:registerFuncProp("onClicked")
@@ -963,5 +1040,260 @@ config:registerHintColor3B(cc.c3b(255, 255, 255))
 config:registerHintColor3B(cc.c3b(0, 0, 0))
 config:registerHintContentSize({ width = "$fill", height = "$fill" })
 config:registerHintFontSize(24)
+
+------------------------------------ Physics ------------------------------------------------
+
+-- gk.PhysicsLayer(cc.PhysicsWolrd)
+config:registerProp("gravity")
+config:registerFloatProp("speed")
+config:registerFloatProp("substeps")
+config:registerFloatProp("updateRate")
+config:registerFloatProp("fixedUpdateRate")
+config:registerProp("debugDrawMask")
+config:registerBoolProp("autoStep")
+table.insert(gk.exNodeDisplayer,
+    {
+        title = "gk.PhysicsLayer",
+        type = "PhysicsLayer",
+        pairProps = {
+            {
+                key = "gravity",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "gravity.x",
+                key2 = "gravity.y",
+                default1 = 0,
+                default2 = -98,
+            },
+        },
+        numProps = {
+            { key = "speed", default = 1 },
+            { key = "substeps", default = 1 },
+            { key = "updateRate", default = 1 },
+            { key = "fixedUpdateRate", default = 0 },
+            --            { key = "debugDrawMask", default = 0 },
+        },
+        selectProps = {
+            { key = "debugDrawMask", selects = { "DEBUGDRAW_NONE", "DEBUGDRAW_SHAPE", "DEBUGDRAW_JOINT", "DEBUGDRAW_CONTACT", "DEBUGDRAW_ALL" }, type = "string", default = "DEBUGDRAW_NONE" },
+        },
+        boolProps = { { key = "autoStep" } },
+    })
+
+-- cc.PhysicsBody, cc.PhysicsShape
+config:registerFloatProp("mass")
+config:registerFloatProp("moment")
+config:registerFloatProp("tag")
+config:registerFloatProp("group")
+config:registerFloatProp("categoryBitmask")
+config:registerFloatProp("contactTestBitmask")
+config:registerFloatProp("collisionBitmask")
+
+-- cc.PhysicsBody
+config:registerFloatProp("rotationOffset")
+config:registerFloatProp("linearDamping")
+config:registerFloatProp("angularDamping")
+config:registerProp("positionOffset")
+config:registerProp("velocity")
+config:registerBoolProp("gravityEnabled")
+config:registerBoolProp("rotationEnabled")
+config:registerBoolProp("dynamic")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsBody",
+        stringProps = {},
+        numProps = {
+            { key = "mass", default = 1 },
+            { key = "moment", default = 0 },
+            { key = "group", default = 0 },
+            { key = "categoryBitmask", default = -1 },
+            { key = "contactTestBitmask", default = 0 },
+            { key = "collisionBitmask", default = -1 },
+            { key = "tag", default = 0 },
+            { key = "rotationOffset", default = 0 },
+            { key = "linearDamping", default = 0 },
+            { key = "angularDamping", default = 0 },
+        },
+        pairProps = {
+            {
+                key = "positionOffset",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "positionOffset.x",
+                key2 = "positionOffset.y",
+                default1 = 0,
+                default2 = 0,
+            },
+            {
+                key = "velocity",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "velocity.x",
+                key2 = "velocity.y",
+                default1 = 0,
+                default2 = 0,
+            },
+        },
+        boolProps = {
+            { key = "gravityEnabled" },
+            { key = "rotationEnabled" },
+            { key = "dynamic" },
+        },
+    })
+
+-- cc.PhysicsShape
+config:registerFloatProp("density")
+config:registerFloatProp("restitution")
+config:registerFloatProp("friction")
+config:registerBoolProp("sensor")
+config:registerProp("offset")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShape",
+        numProps = {
+            { key = "mass", default = 0 },
+            { key = "moment", default = 0 },
+            { key = "group", default = 0 },
+            { key = "categoryBitmask", default = -1 },
+            { key = "contactTestBitmask", default = 0 },
+            { key = "collisionBitmask", default = -1 },
+            { key = "tag", default = 0 },
+        },
+        boolProps = { { key = "sensor" } },
+    })
+
+-- cc.PhysicsShapeCircle
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShapeCircle",
+        stringProps = {},
+        numProps = {
+            { key = "radius", default = 1 },
+        },
+        pairProps = {
+            {
+                key = "offset",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "offset.x",
+                key2 = "offset.y",
+                default1 = 0,
+                default2 = 0,
+            }
+        },
+    })
+
+-- cc.PhysicsShapePolygon
+config:registerProp("points")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShapePolygon",
+        pairProps = {
+            {
+                key = "offset",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "offset.x",
+                key2 = "offset.y",
+                default1 = 0,
+                default2 = 0,
+            }
+        },
+    })
+
+-- cc.PhysicsShapeBox
+config:registerProp("size")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShapeBox",
+        stringProps = {},
+        numProps = {
+            { key = "radius", default = 0 },
+        },
+        pairProps = {
+            {
+                key = "size",
+                subTitle1 = "W",
+                subTitle2 = "H",
+                key1 = "size.width",
+                key2 = "size.height",
+                default1 = 100,
+                default2 = 100,
+            }, {
+                key = "offset",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "offset.x",
+                key2 = "offset.y",
+                default1 = 0,
+                default2 = 0,
+            }
+        },
+    })
+
+-- cc.PhysicsShapeEdgeSegment
+config:registerPlaneProp("border")
+config.editableProps["pointA"] = {
+    getter = function(node) return node:getPointA() end,
+}
+config.editableProps["pointB"] = {
+    getter = function(node) return node:getPointB() end,
+}
+
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShapeEdgeSegment",
+        numProps = {
+            { key = "border", default = 1 },
+        },
+        pairProps = {
+            {
+                key = "pointA",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "pointA.x",
+                key2 = "pointA.y",
+                default1 = 0,
+                default2 = 0,
+            }, {
+                key = "pointB",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "pointB.x",
+                key2 = "pointB.y",
+                default1 = 100,
+                default2 = 0,
+            }
+        },
+    })
+
+-- cc.PhysicsShapeEdgeBox
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "cc.PhysicsShapeEdgeBox",
+        stringProps = {},
+        numProps = {
+            { key = "border", default = 0 },
+        },
+        pairProps = {
+            {
+                key = "size",
+                subTitle1 = "W",
+                subTitle2 = "H",
+                key1 = "size.width",
+                key2 = "size.height",
+                default1 = 100,
+                default2 = 100,
+            }, {
+                key = "offset",
+                subTitle1 = "X",
+                subTitle2 = "Y",
+                key1 = "offset.x",
+                key2 = "offset.y",
+                default1 = 0,
+                default2 = 0,
+            }
+        },
+    })
+
 
 return config

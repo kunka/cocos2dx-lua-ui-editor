@@ -18,6 +18,9 @@ gk.CheckBox = import(".CheckBox")
 gk.TableViewCell = import(".TableViewCell")
 gk.Widget = import(".Widget")
 
+-- physics
+gk.PhysicsLayer = import(".PhysicsLayer")
+
 -- root containers
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")
 gk.injector:ctor_method_swizz(gk.Dialog, "ctor")

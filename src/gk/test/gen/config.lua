@@ -65,6 +65,11 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_particlesystemtest.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/ParticleSystemTest"},
+	   PhysicsTest = {
+	      cname = "PhysicsTest",
+	      genPath = "gk/test/gen/layout/gk_test_physicstest.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/PhysicsTest"},
 	   ProgressTimerTest = {
 	      cname = "ProgressTimerTest",
 	      genPath = "gk/test/gen/layout/gk_test_progresstimertest.lua",

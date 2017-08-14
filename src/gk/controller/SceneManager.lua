@@ -17,7 +17,12 @@ function SceneManager:createScene(layerName, ...)
         local layer
         local status, _ = xpcall(function(...)
             gk.profile:start("SceneManager:createScene")
-            layer = clazz:create(...)
+            if clazz._isPhysics then
+                scene:initWithPhysics()
+                layer = clazz:create(scene:getPhysicsWorld(), ...)
+            else
+                layer = clazz:create(...)
+            end
             gk.profile:stop("SceneManager:createScene", layerName)
         end, function(msg)
             local msg = debug.traceback(msg, 3)

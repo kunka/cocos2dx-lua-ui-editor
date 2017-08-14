@@ -79,6 +79,47 @@ function generator:deflate(node)
             info.sprite = self:deflate(sprite)
         end
     end
+    local obj = node:getPhysicsBody()
+    if obj then
+        info.physicsBody = self:deflatePhysicsObj(obj)
+    end
+
+    return info
+end
+
+function generator:deflatePhysicsObj(obj)
+    local info = {}
+    -- add edit properties
+    for k, ret in pairs(obj.__info.__self) do
+        if generator.config.editableProps[k] ~= nil then
+            local def = config.defValues[k]
+            if def then
+                -- filter def value, except widget which save all values
+                if ((type(def) == "table" and gk.util:table_eq(def, ret)) or tostring(def) == tostring(ret)) then
+                    info[k] = nil
+                else
+                    info[k] = clone(ret)
+                end
+            else
+                info[k] = clone(ret)
+            end
+        end
+    end
+
+    if tolua.type(obj) == "cc.PhysicsBody" then
+        local shapes = obj:getShapes()
+        for i = 1, #shapes do
+            local child = shapes[i]
+            if child and child.__info then
+                info.shapes = info.shapes or {}
+                local c = self:deflatePhysicsObj(child)
+                table.insert(info.shapes, c)
+            end
+        end
+        if #shapes == 0 then
+            info.shapes = nil
+        end
+    end
     return info
 end
 
@@ -97,6 +138,14 @@ end
 function generator:inflate(info, rootNode, rootTable)
     local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
+    if info.physicsBody then
+        self:createPhysicObject(info.physicsBody, node)
+        if info.physicsBody.shapes then
+            for _, s in ipairs(info.physicsBody.shapes) do
+                self:createPhysicObject(s, node)
+            end
+        end
+    end
     if node and children then
         for _, child in ipairs(children) do
             local c = self:inflate(child, nil, rootTable)
@@ -154,6 +203,26 @@ function generator:createNode(info, rootNode, rootTable)
         info[k] = v
     end
     return node
+end
+
+function generator:createPhysicObject(info, node)
+    local obj
+    local creator = self.physicsCreator[info.type]
+    if creator then
+        obj = creator(info, node)
+        if not obj then
+            local msg = gk.log("createPhysicObject error, return nil, type = %s", info.type)
+            gk.util:reportError(msg)
+            return nil
+        end
+    else
+        local msg = gk.log("createPhysicObject error, cannot find type to create obj, type = %s!", info.type)
+        gk.util:reportError(msg)
+        return nil
+    end
+    info = self:wrapPhysics(info, obj)
+    obj.__info = info
+    return obj
 end
 
 function generator:wrap(info, rootTable)
@@ -220,6 +289,39 @@ function generator:wrap(info, rootTable)
                         gk.event:post("displayDomTree", true)
                     end
                 end
+            end
+        end,
+    }
+    setmetatable(info, mt)
+    return info
+end
+
+function generator:wrapPhysics(info, node)
+    local proxy = info
+    info = {}
+    local mt = {
+        __index = function(_, key)
+            local var
+            if key == "__self" then
+                var = proxy
+            else
+                var = proxy[key]
+                if var == nil then
+                    return self.config:getDefaultValue(node, key) or nil
+                else
+                    return var
+                end
+            end
+            --                        gk.log("get %s,%s", key, var)
+            return var
+        end,
+        __newindex = function(_, key, value)
+            --            gk.log("set %s,%s", key, tostring(value))
+            local pre = proxy[key]
+            proxy[key] = value
+            self.config:setValue(node, key, value)
+            if pre ~= value then
+                gk.event:post("postSync")
             end
         end,
     }
@@ -352,12 +454,15 @@ function generator:modifyValue(node, property, value)
         local ori_value = clone(node.__info[property])
         local cur_value = value
         if ori_value ~= cur_value and not (type(ori_value) == "table" and gk.util:table_eq(ori_value, cur_value)) then
-            gk.event:post("executeCmd", "CHANGE_PROP", {
-                id = node.__info.id,
-                key = property,
-                from = ori_value,
-                parentId = node.__info.parentId,
-            })
+            if not (node.__info and node.__info._isPhysics) then
+
+                gk.event:post("executeCmd", "CHANGE_PROP", {
+                    id = node.__info.id,
+                    key = property,
+                    from = ori_value,
+                    parentId = node.__info.parentId,
+                })
+            end
             gk.event:post("displayNode", node)
             gk.event:post("postSync")
             if property == "visible" or property == "localZOrder" then
@@ -404,9 +509,14 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("checkBox", rootTable)
         return node
     end,
+    ["PhysicsWorld"] = function(info, rootTable)
+        local node = gk.PhysicsWorld:create()
+        info.id = info.id or generator:genID("physicsWorld", rootTable)
+        return node
+    end,
     ["ccui.EditBox"] = function(info, rootTable)
         local node = ccui.EditBox:create(cc.size(info.width, info.height),
-            gk.create_scale9_sprite(info.normalSprite, info.capInsets),
+            gk.create_scaleg9_sprite(info.normalSprite, info.capInsets),
             gk.create_scale9_sprite(info.selectedSprite, info.capInsets),
             gk.create_scale9_sprite(info.disabledSprite, info.capInsets))
         info.id = info.id or generator:genID("editBox", rootTable)
@@ -508,6 +618,68 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID(info.type, rootTable)
         info._lock = 0
         return node
+    end,
+}
+
+generator.physicsCreator = {
+    ["cc.PhysicsBody"] = function(info, node)
+        if node:getPhysicsBody() ~= nil then
+            gk.log("node(%s) already has a physicsBody", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsBody:create()
+        node:setPhysicsBody(obj)
+        return obj
+    end,
+    ["cc.PhysicsShapeCircle"] = function(info, node)
+        if node:getPhysicsBody() == nil then
+            gk.log("node(%s) must create a physicsBody first!", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsShapeCircle:create(info.radius, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
+        node:getPhysicsBody():addShape(obj)
+        return obj
+    end,
+    ["cc.PhysicsShapePolygon"] = function(info, node)
+        if node:getPhysicsBody() == nil then
+            gk.log("node(%s) must create a physicsBody first!", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsShapePolygon:create(info.points, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
+        node:getPhysicsBody():addShape(obj)
+        return obj
+    end,
+    ["cc.PhysicsShapeBox"] = function(info, node)
+        if node:getPhysicsBody() == nil then
+            gk.log("node(%s) must create a physicsBody first!", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsShapeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset,
+            info.radius)
+        node:getPhysicsBody():addShape(obj)
+        return obj
+    end,
+    ["cc.PhysicsShapeEdgeSegment"] = function(info, node)
+        if node:getPhysicsBody() == nil then
+            gk.log("node(%s) must create a physicsBody first!", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsShapeEdgeSegment:create(info.pointA, info.pointB, {
+            density = info.density,
+            restitution = info.restitution,
+            friction = info.friction
+        }, info.border)
+        node:getPhysicsBody():addShape(obj)
+        return obj
+    end,
+    ["cc.PhysicsShapeEdgeBox"] = function(info, node)
+        if node:getPhysicsBody() == nil then
+            gk.log("node(%s) must create a physicsBody first!", node.__info.id)
+            return nil
+        end
+        local obj = cc.PhysicsShapeEdgeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.border, info.offset)
+        node:getPhysicsBody():addShape(obj)
+        return obj
     end,
 }
 
