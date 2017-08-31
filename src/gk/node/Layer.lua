@@ -20,6 +20,39 @@ function Layer:ctor()
     self.popOnBack = true -- popScene on back
     self:enableNodeEvents()
     self.dialogsStack = {}
+    self.atlas = ""
+    self.autoRemoveAtlas = false
+end
+
+function Layer:isAutoRemoveAtlas()
+    return self.autoRemoveAtlas
+end
+
+function Layer:setAutoRemoveAtlas(autoRemoveAtlas)
+    self.autoRemoveAtlas = autoRemoveAtlas
+end
+
+function Layer:getAtlas()
+    return self.atlas
+end
+
+function Layer:setAtlas(atlas)
+    if self.atlas ~= atlas then
+        self.atlas = atlas
+        if atlas ~= "" then
+            gk.log("%s addSpriteFrames: %s", self.__cname, self.atlas)
+            cc.SpriteFrameCache:getInstance():addSpriteFrames(atlas)
+        end
+    end
+end
+
+function Layer:onCleanup()
+    if self.autoRemoveAtlas and self.atlas ~= "" then
+        gk.log("%s removeSpriteFrames: %s", self.__cname, self.atlas)
+        cc.SpriteFrameCache:getInstance():removeSpriteFramesFromFile(self.atlas)
+        local png = self.atlas:sub(1, self.atlas:find(".plist") - 1) .. '.png'
+        cc.Director:getInstance():getTextureCache():removeTextureForKey(png)
+    end
 end
 
 function Layer:showDialog(dialogType, ...)
@@ -123,6 +156,8 @@ function Layer:onEnter()
                 --                gk.log("[%s]: onKeypad %s", self.__cname, key)
                 self:handleKeyBack(self)
                 event:stopPropagation()
+            elseif key == "KEY_D" then
+                gk.log(cc.Director:getInstance():getTextureCache():getCachedTextureInfo())
             end
         end
 

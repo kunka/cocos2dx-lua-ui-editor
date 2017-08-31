@@ -40,14 +40,7 @@ function CubicBezierNode:ctor()
     genGetterAndSetter(self, "destination")
     genGetterAndSetter(self, "segments")
     genGetterAndSetter(self, "c4f")
-end
-
-function CubicBezierNode:getLineWidth()
-    return self.lineWidth
-end
-
-function CubicBezierNode:setLineWidth(lineWidth)
-    self.lineWidth = lineWidth
+    genGetterAndSetter(self, "lineWidth")
 end
 
 function CubicBezierNode:getCurvesNum()

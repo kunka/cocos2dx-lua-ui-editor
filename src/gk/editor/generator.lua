@@ -241,68 +241,76 @@ function generator:createPhysicObject(info, node, rootTable)
     return obj
 end
 
+function generator:setProp(proxy, key, value, info, rootTable)
+    --            gk.log("set %s,%s", key, tostring(value))
+    if key == "id" then
+        local b = string.len(value) > 0 and string.byte(value:sub(1, 1)) or -1
+        if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
+            value = string.trim(value)
+            if rootTable[value] == nil then
+                local node = rootTable and rootTable[proxy["id"]] or nil
+                if node then
+                    -- clear old
+                    rootTable[proxy["id"]] = nil
+                    -- change id
+                    rootTable[value] = node
+                    proxy[key] = value
+                    --                            gk.log("change id %s,%s", key, tostring(value))
+                    node.__rootTable = rootTable
+                    gk.event:post("postSync")
+                    gk.event:post("displayDomTree", true)
+                    gk.event:post("displayNode", node)
+                else
+                    -- new id
+                    proxy[key] = value
+                    gk.event:post("postSync")
+                    gk.event:post("displayDomTree", true)
+                end
+            else
+                -- gk.log("error set duplicate id %s", value)
+            end
+        else
+            gk.log("error set invalid id %s", value)
+        end
+    else
+        local node = rootTable and rootTable[proxy["id"]] or nil
+        if node then
+            local pre = proxy[key]
+            proxy[key] = value
+            self.config:setValue(node, key, value)
+            if pre ~= value then
+                gk.event:post("postSync")
+            end
+        end
+    end
+end
+
+function generator:getProp(proxy, key, info, rootTable)
+    local var
+    if key == "__self" then
+        var = proxy
+    else
+        var = proxy[key]
+        if var == nil then
+            local node = rootTable and rootTable[proxy["id"]] or nil
+            return node and self.config:getDefaultValue(node, key) or nil
+        else
+            return var
+        end
+    end
+    --                        gk.log("get %s,%s", key, var)
+    return var
+end
+
 function generator:wrap(info, rootTable)
     local proxy = info
     info = {}
     local mt = {
         __index = function(_, key)
-            local var
-            if key == "__self" then
-                var = proxy
-            else
-                var = proxy[key]
-                if var == nil then
-                    local node = rootTable and rootTable[proxy["id"]] or nil
-                    return node and self.config:getDefaultValue(node, key) or nil
-                else
-                    return var
-                end
-            end
-            --                        gk.log("get %s,%s", key, var)
-            return var
+            return self:getProp(proxy, key, info, rootTable)
         end,
         __newindex = function(_, key, value)
-            --            gk.log("set %s,%s", key, tostring(value))
-            if key == "id" then
-                local b = string.len(value) > 0 and string.byte(value:sub(1, 1)) or -1
-                if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
-                    value = string.trim(value)
-                    if rootTable[value] == nil then
-                        local node = rootTable and rootTable[proxy["id"]] or nil
-                        if node then
-                            -- clear old
-                            rootTable[proxy["id"]] = nil
-                            -- change id
-                            rootTable[value] = node
-                            proxy[key] = value
-                            --                            gk.log("change id %s,%s", key, tostring(value))
-                            node.__rootTable = rootTable
-                            gk.event:post("postSync")
-                            gk.event:post("displayDomTree", true)
-                            gk.event:post("displayNode", node)
-                        else
-                            -- new id
-                            proxy[key] = value
-                            gk.event:post("postSync")
-                            gk.event:post("displayDomTree", true)
-                        end
-                    else
-                        -- gk.log("error set duplicate id %s", value)
-                    end
-                else
-                    gk.log("error set invalid id %s", value)
-                end
-                return
-            end
-            local node = rootTable and rootTable[proxy["id"]] or nil
-            if node then
-                local pre = proxy[key]
-                proxy[key] = value
-                self.config:setValue(node, key, value)
-                if pre ~= value then
-                    gk.event:post("postSync")
-                end
-            end
+            self:setProp(proxy, key, value, info, rootTable)
         end,
     }
     setmetatable(info, mt)
@@ -587,11 +595,11 @@ generator.nodeCreator = {
         info.id = info.id or generator:genID("layerGradient", rootTable)
         return node
     end,
-    --    ["ccui.Layout"] = function(info, rootTable)
-    --        local node = ccui.Layout:create()
-    --        info.id = info.id or generator:genID("layout", rootTable)
-    --        return node
-    --    end,
+    --        ["ccui.Layout"] = function(info, rootTable)
+    --            local node = ccui.Layout:create()
+    --            info.id = info.id or generator:genID("layout", rootTable)
+    --            return node
+    --        end,
     ["cc.Label"] = function(info, rootTable)
         local node = gk.create_label_local(info)
         info.id = info.id or generator:genID("label", rootTable)

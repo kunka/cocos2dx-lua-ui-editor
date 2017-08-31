@@ -66,6 +66,7 @@ local onLabelInputChanged = function(node, label, input)
             end
         end
         if gk.audio:isValidEvent(input) then
+            gk.audio:playEffect(input)
             break
         end
         if gk.shader:getCachedGLProgram(input) then
@@ -364,6 +365,9 @@ function panel:displayNode(node)
         self:createLabel(title, leftX, topY - stepY * yIndex)
         local editBox = self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
             editBox:setInput(generator:modify(node, key, input, tp))
+            if key == "clickedSid" and gk.audio:isValidEvent(input) then
+                gk.audio:playEffect(input)
+            end
         end, default, height)
         yIndex = yIndex + 1
         return editBox
@@ -1192,6 +1196,137 @@ function panel:displayNode(node)
     --------------------------- physics nodes   ---------------------------
     if isPhysicsWorld then
         createTitle("gk.PhysicsWorld")
+        if isWidget then
+            createTitle("gk.Widget")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+        if isTableViewCell then
+            createTitle("gk.TableViewCell")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+
+        --------------------------- cc.Layer   ---------------------------
+        if isLayer and not isScrollView then
+            createTitle("cc.Layer")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+
+        if isLayerColor and not isLayerGradient then
+            createTitle("cc.LayerColor")
+            -- use opacity instead of a!
+            createInputMiddle("Color4B", "R", "G", "color.r", "color.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "color.b", "color.a", "number", 255, 255)
+        end
+        if isLayerGradient then
+            createTitle("cc.LayerGradient")
+            createInputMiddle("StartColor", "R", "G", "startColor.r", "startColor.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "startColor.b", "startOpacity", "number", 255, 255)
+            createInputMiddle("EndColor", "R", "G", "endColor.r", "endColor.g", "number", 255, 255)
+            createInputMiddle("", "B", "A", "endColor.b", "endOpacity", "number", 255, 255)
+            createInputMiddle("Vector", "X", "Y", "vector.x", "vector.y", "number")
+            createCheckBox("CompressedInterpolation", "compressedInterpolation")
+        end
+        if isgkLayer then
+            createTitle("gk.Layer")
+            createCheckBox("TouchEnabled", "touchEnabled")
+            createCheckBox("SwallowTouches", "swallowTouches")
+            createCheckBox("EnableKeyPad", "enableKeyPad")
+            createCheckBox("PopOnBack", "popOnBack")
+            createInputLong("Atlas", "atlas", "string")
+            createCheckBox("AutoRemoveAtlas", "autoRemoveAtlas")
+        end
+        if isgkDialog then
+            createTitle("gk.Dialog")
+            createCheckBox("PopOnTouchInsideBg", "popOnTouchInsideBg")
+            createCheckBox("PopOnTouchOutsideBg", "popOnTouchOutsideBg")
+        end
+
+        --------------------------- other nodes   ---------------------------
+        if isClippingNode then
+            createTitle("cc.ClippingNode")
+            createInputLong("AlphaThreshold", "alphaThreshold", "number")
+            createCheckBox("Inverted", "inverted")
+        end
+
+        if isProgressTimer then
+            createTitle("cc.ProgressTimer")
+            createCheckBox("RreverseDirection", "reverseDirection")
+            local types = { "RADIAL", "BAR" }
+            createSelectBoxLong("BarType", types, "barType", "number", "RADIAL", function()
+                gk.event:post("displayNode", node)
+            end)
+            createInputLong("Percentage", "percentage", "number", 0)
+            createInputMiddle("Midpoint", "X", "Y", "midpoint.x", "midpoint.y", "number", 0.5, 0.5)
+            if node.__info.barType == 1 then
+                createInputMiddle("BarChangeRate", "X", "Y", "barChangeRate.x", "barChangeRate.y", "number")
+            end
+        end
+        if isClippingRectangleNode then
+            createTitle("cc.ClippingRectangleNode")
+            createInputMiddle("ClipRegion", "X", "Y", "clippingRegion.x", "clippingRegion.y", "number")
+            createInputMiddle("", "W", "H", "clippingRegion.width", "clippingRegion.height", "number")
+            createCheckBox("ClippingEnabled", "clippingEnabled")
+        end
+        if isTmxTiledMap then
+            createTitle("cc.TMXTiledMap")
+            createInputLong("TMXFile", "tmx", "string")
+        end
+        if isParticleSystemQuad then
+            createTitle("cc.ParticleSystemQuad")
+            createInputLong("PlistFile", "particle", "string", "")
+            createInputLong("TotalParticles", "totalParticles", "number")
+            createInputLong("DisplayFrame", "displayFrame", "string", "")
+            createInputLong("Duration", "duration", "number", -1)
+            createCheckBox("AutoRemoveOnFinish(ReleaseMode)", "autoRemoveOnFinish")
+            createInputMiddle("Gravity", "X", "Y", "gravity.x", "gravity.y", "number", 0, 0)
+            createCheckBox("BlendAdditive", "blendAdditive")
+            local types = { "GRAVITY", "RADIUS" }
+            createSelectBoxLong("EmitterMode", types, "emitterMode", "number", "GRAVITY")
+            local types = { "FREE", "RELATIVE", "GROUPED" }
+            createSelectBoxLong("PositionType", types, "positionType", "number", "FREE")
+            createInputLong(nil, "speed", "number", 0)
+            createInputLong(nil, "speedVar", "number", 0)
+            createInputLong(nil, "tangentialAccel", "number", 0)
+            createInputLong(nil, "tangentialAccelVar", "number", 0)
+            createInputLong(nil, "radialAccel", "number", 0)
+            createInputLong(nil, "radialAccelVar", "number", 0)
+            --        createInputLong(nil, "rotationIsDir", "number", 0)
+            --        createCheckBox("RotationIsDir", "rotationIsDir")
+            if node.__info.emitterMode == cc.PARTICLE_MODE_RADIUS then
+                createInputLong(nil, "startRadius", "number", 0)
+                createInputLong(nil, "startRadiusVar", "number", 0)
+                createInputLong(nil, "endRadius", "number", 0)
+                createInputLong(nil, "endRadiusVar", "number", 0)
+                createInputLong(nil, "rotatePerSecond", "number", 0)
+                createInputLong(nil, "rotatePerSecondVar", "number", 0)
+            end
+            createInputMiddle("SourcePosition", "X", "Y", "sourcePosition.x", "sourcePosition.y", "number", 0, 0)
+            createInputMiddle("PosVar", "X", "Y", "posVar.x", "posVar.y", "number", 0, 0)
+            createInputLong(nil, "life", "number", 0)
+            createInputLong(nil, "lifeVar", "number", 0)
+            createInputLong(nil, "angle", "number", 0)
+            createInputLong(nil, "angleVar", "number", 0)
+            createInputLong(nil, "startSize", "number", 0)
+            createInputLong(nil, "startSizeVar", "number", 0)
+            createInputLong(nil, "endSize", "number", 0)
+            createInputLong(nil, "endSizeVar", "number", 0)
+            createInputMiddle("StartColor4F", "R", "G", "startColor.r", "startColor.g", "number", 0, 0)
+            createInputMiddle("", "B", "A", "startColor.b", "startColor.a", "number", 0, 0)
+            createInputMiddle("StartColorVar4F", "R", "G", "startColorVar.r", "startColorVar.g", "number", 0, 0)
+            createInputMiddle("", "B", "A", "startColorVar.b", "startColorVar.a", "number", 0, 0)
+            createInputMiddle("EndColor4F", "R", "G", "endColor.r", "endColor.g", "number", 0, 0)
+            createInputMiddle("", "B", "A", "endColor.b", "endColor.a", "number", 0, 0)
+            createInputMiddle("EndColorVar4F", "R", "G", "endColorVar.r", "endColorVar.g", "number", 0, 0)
+            createInputMiddle("", "B", "A", "endColorVar.b", "endColorVar.a", "number", 0, 0)
+            createInputLong(nil, "startSpin", "number", 0)
+            createInputLong(nil, "startSpinVar", "number", 0)
+            createInputLong(nil, "endSpin", "number", 0)
+            createInputLong(nil, "endSpinVar", "number", 0)
+            createInputLong(nil, "emissionRate", "number", 0)
+        end
     end
 
     --------------------------- custom ext nodes   ---------------------------
@@ -1227,7 +1362,6 @@ function panel:displayNode(node)
                     createInputMiddle(getTitle(prop), prop.subTitle1, prop.subTitle2, prop.key1, prop.key2, "number", prop.default1, prop.default2)
                 end
             end
-
             local selectProps = ext.selectProps
             if selectProps then
                 for i = 1, #selectProps do

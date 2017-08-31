@@ -136,13 +136,10 @@ function util:restartGame(mode)
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
     scene:runAction(cc.CallFunc:create(function()
-        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
-            gk.log("removeResBeforeRestartGame")
-            cc.Director:getInstance():purgeCachedData()
-            gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-            collectgarbage("collect")
-            gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-        end
+        gk.log("removeResBeforeRestartGame")
+        gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+        collectgarbage("collect")
+        gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         for _, callback in ipairs(self.onRestartGameCallbacks) do
             callback()
         end
@@ -277,7 +274,7 @@ function util:drawNode(node, c4f, tag)
         rect.y = originSize.height - rect.y - rect.height
         rect.width = size.width - (originSize.width - rect.width)
         rect.height = size.height - (originSize.height - rect.height)
-        self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(0, 0, 1, 0.2), tg)
+        self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(0, 1, 1, 0.2), tg)
     end
 
     -- refresh draw, only in test mode
@@ -403,6 +400,21 @@ function util:drawDotOnNode(node, p, c4f, tg)
     draw:drawDot(p, sx ~= 0 and 1.5 / sx or 1.5, c4f or cc.c4f(1, 0, 0, 1))
     return draw
 end
+
+function util:drawRectOnNode(node, p1, p2, p3, p4, c4f, tg)
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:drawRect(p1, p2, p3, p4, c4f or cc.c4f(1, 0, 0, 0.2))
+    return draw
+end
+
 
 function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
     local draw
@@ -793,6 +805,30 @@ function util:addMouseMoveEffect(node, c4f)
         end, cc.Handler.EVENT_MOUSE_MOVE)
         node:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end
+end
+
+-- show notification node with duration
+function util:showNotificationNode(node, duration)
+    cc.Director:getInstance():setNotificationNode(node)
+    node:runAction(cc.Sequence:create(cc.DelayTime:create(duration), cc.CallFunc:create(function()
+        cc.Director:getInstance():setNotificationNode(nil)
+    end)))
+end
+
+-- set 1 at pos, (pos = 1~32)
+function util:setBit1(int32, pos)
+    return bit.bor(int32, bit.lshift(1, pos - 1))
+end
+
+-- set 0 at pos
+function util:setBit0(int32, pos)
+    return bit.band(int32, 0xFFFFFFFF - bit.lshift(1, pos - 1))
+end
+
+-- is 0 at pos
+function util:isBit1(int32, pos)
+    local var = bit.lshift(1, pos - 1)
+    return bit.band(int32, var) == var
 end
 
 return util

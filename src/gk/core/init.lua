@@ -6,8 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 
 if cc.Application:getInstance():getTargetPlatform() ~= 2 then
-    local v = import(".runtimeversion")
-    gk.runtimeVersion = v.version
+    gk.runtimeVersion = "0"
 end
 
 -- xx.xx.xx.xx

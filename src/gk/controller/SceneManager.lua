@@ -15,13 +15,14 @@ function SceneManager:createScene(layerName, ...)
     local clazz = gk.resource:require(layerName)
     if clazz then
         local layer
-        local status, _ = xpcall(function(...)
+        local var = { ... }
+        local status, _ = xpcall(function()
             gk.profile:start("SceneManager:createScene")
             if clazz._isPhysics then
                 scene:initWithPhysics()
-                layer = clazz:create(scene:getPhysicsWorld(), ...)
+                layer = clazz:create(scene:getPhysicsWorld(), unpack(var))
             else
-                layer = clazz:create(...)
+                layer = clazz:create(unpack(var))
             end
             gk.profile:stop("SceneManager:createScene", layerName)
         end, function(msg)
@@ -114,7 +115,7 @@ end
 function SceneManager:showDialog(dialogType, ...)
     local scene = SceneManager:getRunningScene()
     if scene and scene.layer and scene.layer.showDialogNode then
-        return scene.layer:showDialog(dialogType)
+        return scene.layer:showDialog(dialogType, ...)
     else
         gk.log("SceneManager:showDialogNode error, cannot find root layer")
         return nil
@@ -138,6 +139,8 @@ local function printDialogStack(layer, indent)
             if d.__dialogType then
                 gk.log(indent .. "[" .. d.__dialogType .. "]")
                 printDialogStack(d, indent .. indent)
+            else
+                gk.log(indent .. "[???]")
             end
         end
     end

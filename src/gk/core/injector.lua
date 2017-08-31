@@ -137,17 +137,6 @@ function injector:onNodeCreate(node)
             end
         end
         gk.profile:stop("injector:createNode", node.__cname)
-        --        if gk.mode == gk.MODE_EDIT then
-        --            --            if node.class and not node.class._isWidget then
-        --            --                gk.util:drawNode(node, cc.c4f(120, 200 / 255, 0, 1))
-        --            --            end
-        --            node:runAction(cc.CallFunc:create(function()
-        --                if not gk.util:instanceof(node, "TableViewCell") then
-        --                    gk.event:post("displayNode", node)
-        --                end
-        --                gk.event:post("displayDomTree")
-        --            end))
-        --        end
     end
 end
 

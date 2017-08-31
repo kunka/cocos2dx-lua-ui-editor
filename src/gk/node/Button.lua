@@ -219,7 +219,7 @@ end
 
 function Button:onTouchBegan(touch, event)
     local camera = cc.Camera:getVisitingCamera()
-    if not self.enabled or not camera then
+    if not self.enabled or not camera or self:getOpacity() == 0 then
         return false
     end
     if not gk.util:isAncestorsVisible(self) then

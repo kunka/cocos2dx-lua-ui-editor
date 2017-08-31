@@ -486,13 +486,22 @@ config.editableProps = {
         getter = function(node)
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             return not gk.isBMFont(fontFile) and node:getTextColor()
         end,
         setter = function(node, var)
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             if not gk.isBMFont(fontFile) then
                 node:setTextColor(var)
+            else
+                -- bmfont not support textcolor
+                node:setColor(var)
             end
         end
     },
@@ -504,6 +513,9 @@ config.editableProps = {
         setter = function(node, var)
             local lan = gk.resource:getCurrentLan()
             local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
             if gk.isTTF(fontFile) then
                 node:setAdditionalKerning(var)
             elseif gk.isBMFont(fontFile) then
@@ -938,10 +950,12 @@ config:registerFuncProp("onSelectedTagChanged")
 config:registerProp("selectedTag")
 config:registerBoolProp("autoToggle")
 
--- cc.Layer, cc.Dialog
+-- gk.Layer, gk.Dialog
 config:registerBoolProp("swallowTouches")
 config:registerBoolProp("enableKeyPad")
 config:registerBoolProp("popOnBack")
+config:registerStringProp("atlas")
+config:registerBoolProp("autoRemoveAtlas")
 -- cc.Layer, cc.Dialog, cc.ScrollView
 config:registerBoolProp("touchEnabled")
 -- cc.Dialog

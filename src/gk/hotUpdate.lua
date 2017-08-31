@@ -8,6 +8,7 @@
 
 local hotUpdate = {}
 
+-- cannot be hot updated
 -- must init this in main.lua before require any other modules
 function hotUpdate:init(originVersion)
     local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()
@@ -15,69 +16,86 @@ function hotUpdate:init(originVersion)
     local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_curVersion")
     if curVersion == "" then
         curVersion = originVersion
-    else
-        local function split(input, delimiter)
-            input = tostring(input)
-            delimiter = tostring(delimiter)
-            if (delimiter == '') then return false end
-            local pos, arr = 0, {}
-            -- for each divider found
-            for st, sp in function() return string.find(input, delimiter, pos, true) end do
-                table.insert(arr, string.sub(input, pos, st - 1))
-                pos = sp + 1
-            end
-            table.insert(arr, string.sub(input, pos))
-            return arr
-        end
-
-        local origin = split(originVersion, ".")
-        local current = split(curVersion, ".")
-        if #origin ~= #current then
-            curVersion = originVersion
+    end
+    local ret = self:compairVersion(curVersion, originVersion)
+    if ret == 1 then
+        -- current is new, hot update exist
+        print(string.format("curVersion = %s is big than originVersion = %s, use hot update", curVersion, originVersion))
+        if not cc.FileUtils:getInstance():isDirectoryExist(DOC_ROOT .. curVersion .. "/") then
+            print(string.format("hot update dir not exist = %s, need redownload hotupdate", DOC_ROOT .. curVersion .. "/"))
+            cc.UserDefault:getInstance():setStringForKey("gk_curVersion", originVersion)
+            cc.UserDefault:getInstance():flush()
         else
-            for i = 1, #origin do
-                if tonumber(current[i]) > tonumber(origin[i]) then
-                    print(string.format("curVersion = %s is big than originVersion = %s, use new", curVersion, originVersion))
-                    break
-                elseif tonumber(current[i]) < tonumber(origin[i]) then
-                    -- big version, remove old files
-                    print(string.format("big version = %s, remove old version = %s", originVersion, curVersion))
-                    self:removeOldVersion(curVersion)
-                    curVersion = originVersion
-                    cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
-                    cc.UserDefault:getInstance():flush()
-                    break
-                end
-            end
+            -- hot update search path
+            cc.FileUtils:getInstance():setSearchPaths({})
+            cc.FileUtils:getInstance():addSearchPath(DOC_ROOT .. curVersion .. "/src/")
+            cc.FileUtils:getInstance():addSearchPath(DOC_ROOT .. curVersion .. "/res/")
+            cc.FileUtils:getInstance():addSearchPath("src/")
+            cc.FileUtils:getInstance():addSearchPath("res/")
         end
-    end
-    if not cc.FileUtils:getInstance():isDirectoryExist(DOC_ROOT .. curVersion) then
-        -- not exist
-        print(string.format("new version dir not exist = %s, need redownload hotupdate", DOC_ROOT .. curVersion))
-        cc.UserDefault:getInstance():setStringForKey("gk_curVersion", originVersion)
+    elseif ret == -1 then
+        -- big version, remove old files
+        print(string.format("big version = %s, remove old version = %s", originVersion, curVersion))
+        self:removeOldVersion(curVersion)
+        curVersion = originVersion
+        cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
         cc.UserDefault:getInstance():flush()
-        return
-    end
-    cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
-    cc.UserDefault:getInstance():flush()
-    if curVersion == originVersion then
-        -- equal
+    else
+        -- equal, do nothing
+        curVersion = originVersion
         print(string.format("same version = %s, no hotupdate", curVersion))
-        return
+        cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
+        cc.UserDefault:getInstance():flush()
     end
 
-    cc.FileUtils:getInstance():setSearchPaths({})
-    cc.FileUtils:getInstance():addSearchPath(DOC_ROOT .. curVersion .. "/src/")
-    cc.FileUtils:getInstance():addSearchPath(DOC_ROOT .. curVersion .. "/res/")
-    cc.FileUtils:getInstance():addSearchPath("src/")
-    cc.FileUtils:getInstance():addSearchPath("res/")
     return DOC_ROOT
 end
 
+-- return 1:version1 > version2
+-- return 0:version1 == version2
+-- return -1:version1 < version2
+function hotUpdate:compairVersion(version1, version2)
+    if version1 == version2 then
+        return 0
+    end
+    local function split(input, delimiter)
+        input = tostring(input)
+        delimiter = tostring(delimiter)
+        if (delimiter == '') then return false end
+        local pos, arr = 0, {}
+        -- for each divider found
+        for st, sp in function() return string.find(input, delimiter, pos, true) end do
+            table.insert(arr, string.sub(input, pos, st - 1))
+            pos = sp + 1
+        end
+        table.insert(arr, string.sub(input, pos))
+        return arr
+    end
+
+    local v1 = split(version1, ".")
+    local v2 = split(version2, ".")
+    local len = math.min(#v1, #v2)
+    for i = 1, len do
+        if tonumber(v1[i]) > tonumber(v2[i]) then
+            return 1
+        elseif tonumber(v1[i]) < tonumber(v2[i]) then
+            return -1
+        end
+    end
+    if #v1 == #v2 then
+        return 0
+    else
+        return #v1 > #v2 and 1 or -1
+    end
+end
+
 function hotUpdate:removeOldVersion(oldVersion)
-    local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()
-    print("removeOldVersion = " .. DOC_ROOT .. oldVersion)
-    cc.FileUtils:getInstance():removeDirectory(DOC_ROOT .. oldVersion)
+    if oldVersion ~= "" then
+        local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()
+        local dir = DOC_ROOT .. oldVersion .. "/"
+        print("removeOldVersion = " .. dir)
+        cc.FileUtils:getInstance():removeDirectory(dir)
+    end
 end
 
 function hotUpdate:updateToNewVersion(newVersion)

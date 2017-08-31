@@ -44,10 +44,11 @@ end
 function config:registerSelectVars(key, defaultValue, items, desc)
     self.selectVarKeys = self.selectVarKeys or {}
     table.insert(self.selectVarKeys, { key = key, defaultValue = defaultValue, items = items, desc = desc })
-    if type(items[1]) == "number" then
-        self[key] = tonumber(cc.UserDefault:getInstance():getStringForKey(key, defaultValue))
+    local index = cc.UserDefault:getInstance():getIntegerForKey(key, 0)
+    if index == 0 or index > #items then
+        self[key] = defaultValue
     else
-        self[key] = cc.UserDefault:getInstance():getStringForKey(key, defaultValue)
+        self[key] = items[index]
     end
 end
 
@@ -97,7 +98,7 @@ end
 function config:createCheckBox(selected, x, y, callback)
     local node = gk.CheckBox:create("gk/res/texture/check_box_normal.png", "gk/res/texture/check_box_selected.png")
     node:setPosition(x, y)
-    node:setScale(gk.display:minScale() * 0.5)
+    node:setScale(gk.display:minScale() * 0.6)
     node:setSelected(selected)
     self.dialog:addChild(node)
     node:setAnchorPoint(0, 0.5)
@@ -110,7 +111,7 @@ end
 
 function config:createSelectBox(items, index, x, y, width, callback, defValue)
     index = index or 1
-    local node = gk.SelectBox:create(cc.size(width, 28), items, index)
+    local node = gk.SelectBox:create(cc.size(width, 35), items, index)
     node:setScale9SpriteBg(gk.create_scale9_sprite("gk/res/texture/edit_box_bg.png", cc.rect(20, 20, 20, 20)))
     local fontSize = 16
     local label = gk.create_label("", fontName, fontSize)
@@ -157,7 +158,7 @@ function config:addKeys()
     local gapX = 20 * gk.display:minScale() -- "X" width
     local leftX = 20 * gk.display:minScale() -- margin left
     -- input width
-    local inputLong = 190
+    local inputLong = 200
     local keyWidth = 200 * gk.display:minScale()
     local checkBoxWidth = 24 * gk.display:minScale()
     local selectBox_left = leftX + keyWidth
@@ -182,7 +183,7 @@ function config:addKeys()
         self:createSelectBox(vars, table.indexof(vars, self[key]), selectBox_left, topY - stepY * yIndex, inputLong, function(index)
             self[key] = vars[index]
             gk.log("gk.config set %s = %s", key, tostring(self[key]))
-            cc.UserDefault:getInstance():setStringForKey(key, tostring(self[key]))
+            cc.UserDefault:getInstance():setIntegerForKey(key, index)
             cc.UserDefault:getInstance():flush()
         end, default)
         self:createLabel("// " .. desc, desc_left, topY - stepY * yIndex)
@@ -195,8 +196,8 @@ function config:addKeys()
         gk.set_label_color(label, cc.c3b(0x99, 0xcc, 0x00))
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-        label:setDimensions(inputLong, 28)
-        label:setContentSize(inputLong, 28)
+        label:setDimensions(inputLong, 35)
+        label:setContentSize(inputLong, 35)
         label:setPosition(label:getContentSize().width / 2, label:getContentSize().height / 2 - 4)
         local button = gk.ZoomButton.new(label)
         button:setScale(gk.display:minScale())
@@ -235,7 +236,7 @@ function config:addRestartButton()
     gk.set_label_color(label, cc.c3b(50, 255, 50))
     label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-    label:setDimensions(180, 40)
+    label:setDimensions(200, 50)
     label:enableBold()
     label:setPosition(label:getContentSize().width / 2, label:getContentSize().height / 2)
     local button = gk.ZoomButton.new(label)
