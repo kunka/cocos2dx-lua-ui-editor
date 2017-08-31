@@ -321,7 +321,7 @@ function panel.create(parent)
                     local info = clone(widget)
                     local type = widget.type
                     if widget._isPhysics then
-                        local obj = generator:createPhysicObject(info, self._containerNode)
+                        local obj = generator:createPhysicObject(info, self._containerNode, self.parent.scene.layer)
                         gk.event:post("postSync")
                         gk.event:post("displayNode", obj)
                         gk.event:post("displayDomTree")

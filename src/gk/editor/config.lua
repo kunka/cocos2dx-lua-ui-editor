@@ -21,6 +21,7 @@ config.supportNodes = {
     { type = "ToggleButton", },
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
     { type = "CubicBezierNode" },
+    { type = "DrawNodeCircle" },
     {
         type = "ccui.EditBox",
         normalSprite = "gk/res/texture/edit_box_bg.png",
@@ -759,25 +760,12 @@ config.editableProps = {
             end
         end
     },
-    -- cc.PhysicsBody
-    rotationEnabled = {
-        getter = function(node) return node:isRotationEnabled() end,
-        setter = function(node, var)
-            node:setRotationEnable(var == 0)
-        end
-    },
-    gravityEnabled = {
-        getter = function(node) return node:isGravityEnabled() end,
-        setter = function(node, var)
-            node:setGravityEnable(var == 0)
-        end
-    },
 }
 
 function config:registerProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
-        getter = function(node) print(alias) print(tolua.type(node)) return node["get" .. alias](node) end,
+        getter = function(node) return node["get" .. alias](node) end,
         setter = function(node, var)
             local v = gk.generator:parseValue(key, node, var)
             if not onlyGetter then
@@ -817,9 +805,10 @@ function config:registerBoolProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
     config.editableProps[key] = {
         getter = function(node) return node["is" .. alias](node) and 0 or 1 end,
-        setter = function(node, var) if not onlyGetter then
-            node["set" .. alias](node, var == 0)
-        end
+        setter = function(node, var)
+            if not onlyGetter then
+                node["set" .. alias](node, var == 0)
+            end
         end
     }
 end
@@ -1012,6 +1001,44 @@ config:registerFloatProp("segments")
 config:registerFloatProp("lineWidth")
 config:registerFloatProp("curvesNum")
 
+-- gk.DrawNodeCircle
+config:registerProp("radius1")
+config:registerProp("angle")
+config:registerBoolProp("solid")
+config:registerBoolProp("drawLineToCenter")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawNodeCircle",
+        numProps = {
+            { key = "radius1" },
+            { key = "lineWidth", default = 1 },
+            { key = "angle", default = 0 },
+        },
+        pairProps = {
+            {
+                key = "Color4f",
+                subTitle1 = "R",
+                subTitle2 = "G",
+                key1 = "c4f.r",
+                key2 = "c4f.g",
+                default1 = 100,
+                default2 = 100,
+            }, {
+                key = "",
+                subTitle1 = "B",
+                subTitle2 = "A",
+                key1 = "c4f.b",
+                key2 = "c4f.a",
+                default1 = 0,
+                default2 = 0,
+            }
+        },
+        boolProps = {
+            { key = "solid" },
+            { key = "drawLineToCenter" },
+        },
+    })
+
 -- ccui.EditBox
 config:registerProp("fontName")
 config:registerFloatProp("placeholderFontSize")
@@ -1145,8 +1172,19 @@ config:registerFloatProp("linearDamping")
 config:registerFloatProp("angularDamping")
 config:registerProp("positionOffset")
 config:registerProp("velocity")
-config:registerBoolProp("gravityEnabled")
-config:registerBoolProp("rotationEnabled")
+-- cc.PhysicsBody
+config.editableProps["rotationEnabled"] = {
+    getter = function(node) return node:isRotationEnabled() end,
+    setter = function(node, var)
+        node:setRotationEnable(var == 0)
+    end
+}
+config.editableProps["gravityEnabled"] = {
+    getter = function(node) return node:isGravityEnabled() end,
+    setter = function(node, var)
+        node:setGravityEnable(var == 0)
+    end
+}
 config:registerBoolProp("dynamic")
 table.insert(gk.exNodeDisplayer,
     {
@@ -1238,7 +1276,7 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- cc.PhysicsShapePolygon
-config:registerProp("points")
+config:registerProp("points", nil, true)
 config.editableProps["pointsNum"] = {
     getter = function(node) return #node.__info.points
     end,

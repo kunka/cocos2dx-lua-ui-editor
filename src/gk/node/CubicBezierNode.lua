@@ -78,7 +78,10 @@ function CubicBezierNode:draw()
     --    self.child:drawCubicBezier(self.origin, self.control1, self.control2, self.destination, self.segments, self.c4f)
     --    self.child:drawCubicBezier(self.destination, self.control3, self.control4, self.origin, self.segments, self.c4f)
     local origin = self.origin
-    for _, dst in ipairs(self.destination) do
+    for i, dst in ipairs(self.destination) do
+        if i > self.curvesNum then
+            return
+        end
         self.child:drawCubicBezier(origin, dst.c1, dst.c2, dst.dst, self.segments, self.c4f)
         origin = dst.dst
     end

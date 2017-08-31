@@ -137,10 +137,10 @@ function generator:inflate(info, rootNode, rootTable)
     local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
     if info.physicsBody then
-        self:createPhysicObject(info.physicsBody, node)
+        self:createPhysicObject(info.physicsBody, node, rootTable)
         if info.physicsBody.shapes then
             for _, s in ipairs(info.physicsBody.shapes) do
-                self:createPhysicObject(s, node)
+                self:createPhysicObject(s, node, rootTable)
             end
         end
     end
@@ -203,11 +203,11 @@ function generator:createNode(info, rootNode, rootTable)
     return node
 end
 
-function generator:createPhysicObject(info, node)
+function generator:createPhysicObject(info, node, rootTable)
     local obj
     local creator = self.physicsCreator[info.type]
     if creator then
-        obj = creator(info, node)
+        obj = creator(info, node, rootTable)
         if not obj then
             local msg = gk.log("createPhysicObject error, return nil, type = %s", info.type)
             gk.util:reportError(msg)
@@ -220,6 +220,24 @@ function generator:createPhysicObject(info, node)
     end
     info = self:wrapPhysics(info, obj)
     obj.__info = info
+    -- index node
+    if rootTable then
+        -- warning: duplicated id
+        if rootTable[info.id] then
+            local id = generator:genID(node.__info.type, rootTable)
+            local pre = info.id
+            local otherNode = rootTable[info.id]
+            info.id = id
+            -- restore
+            rootTable[pre] = otherNode
+        end
+        rootTable[info.id] = obj
+    end
+
+    -- force set value
+    for k, v in pairs(info.__self) do
+        info[k] = v
+    end
     return obj
 end
 
@@ -534,6 +552,12 @@ generator.nodeCreator = {
     ["CubicBezierNode"] = function(info, rootTable)
         local node = gk.CubicBezierNode:create()
         info.id = info.id or generator:genID("cubicBezierNode", rootTable)
+        return node
+    end,
+    ["DrawNodeCircle"] = function(info, rootTable)
+        local node = gk.DrawNodeCircle:create()
+        info.id = info.id or generator:genID("drawNodeCircle", rootTable)
+        return node
     end,
     ["PhysicsWorld"] = function(info, rootTable)
         local node = gk.PhysicsWorld:create()
@@ -648,34 +672,37 @@ generator.nodeCreator = {
 }
 
 generator.physicsCreator = {
-    ["cc.PhysicsBody"] = function(info, node)
+    ["cc.PhysicsBody"] = function(info, node, rootTable)
         if node:getPhysicsBody() ~= nil then
             gk.log("node(%s) already has a physicsBody", node.__info.id)
             return nil
         end
         local obj = cc.PhysicsBody:create()
         node:setPhysicsBody(obj)
+        info.id = info.id or generator:genID("body", rootTable)
         return obj
     end,
-    ["cc.PhysicsShapeCircle"] = function(info, node)
+    ["cc.PhysicsShapeCircle"] = function(info, node, rootTable)
         if node:getPhysicsBody() == nil then
             gk.log("node(%s) must create a physicsBody first!", node.__info.id)
             return nil
         end
         local obj = cc.PhysicsShapeCircle:create(info.radius, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
         node:getPhysicsBody():addShape(obj)
+        info.id = info.id or generator:genID("shapeCircle", rootTable)
         return obj
     end,
-    ["cc.PhysicsShapePolygon"] = function(info, node)
+    ["cc.PhysicsShapePolygon"] = function(info, node, rootTable)
         if node:getPhysicsBody() == nil then
             gk.log("node(%s) must create a physicsBody first!", node.__info.id)
             return nil
         end
         local obj = cc.PhysicsShapePolygon:create(info.points, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
         node:getPhysicsBody():addShape(obj)
+        info.id = info.id or generator:genID("shapePolygon", rootTable)
         return obj
     end,
-    ["cc.PhysicsShapeBox"] = function(info, node)
+    ["cc.PhysicsShapeBox"] = function(info, node, rootTable)
         if node:getPhysicsBody() == nil then
             gk.log("node(%s) must create a physicsBody first!", node.__info.id)
             return nil
@@ -683,9 +710,10 @@ generator.physicsCreator = {
         local obj = cc.PhysicsShapeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset,
             info.radius)
         node:getPhysicsBody():addShape(obj)
+        info.id = info.id or generator:genID("shapeBox", rootTable)
         return obj
     end,
-    ["cc.PhysicsShapeEdgeSegment"] = function(info, node)
+    ["cc.PhysicsShapeEdgeSegment"] = function(info, node, rootTable)
         if node:getPhysicsBody() == nil then
             gk.log("node(%s) must create a physicsBody first!", node.__info.id)
             return nil
@@ -696,20 +724,25 @@ generator.physicsCreator = {
             friction = info.friction
         }, info.border)
         node:getPhysicsBody():addShape(obj)
+        info.id = info.id or generator:genID("shapeEdgeSegment", rootTable)
         return obj
     end,
-    ["cc.PhysicsShapeEdgeBox"] = function(info, node)
+    ["cc.PhysicsShapeEdgeBox"] = function(info, node, rootTable)
         if node:getPhysicsBody() == nil then
             gk.log("node(%s) must create a physicsBody first!", node.__info.id)
             return nil
         end
         local obj = cc.PhysicsShapeEdgeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.border, info.offset)
         node:getPhysicsBody():addShape(obj)
+        info.id = info.id or generator:genID("shapeEdgeBox", rootTable)
         return obj
     end,
 }
 
 function generator:genID(type, rootTable)
+    if type:starts("cc.Physics") then
+        type = type:gsub("cc.Physics", "")
+    end
     local names = string.split(type, ".")
     local names = string.split(names[1], "/")
     type = names[#names]

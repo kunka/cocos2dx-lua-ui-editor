@@ -104,7 +104,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.mode = mode
     -- custom desigin size
     gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
-    gk.display:initWithDesignSize(config.designSize)
+    gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.FIXED_WIDTH)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
     gk.resource:setTextureDir(config.textureDir)
     gk.resource:setFontDir(config.fontDir)
@@ -121,7 +121,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.resource:setSupportLans(table.keys(strings), "en")
     gk.resource:setStringGetFunc(function(key, lan)
         lan = lan or gk.resource:getCurrentLan()
-        return strings[lan][key] or "undefined"
+        return strings[lan][key] or ("@" .. key)
     end)
 
     -- restart func

@@ -22,6 +22,9 @@ gk.Widget = import(".Widget")
 -- physics
 gk.PhysicsLayer = import(".PhysicsLayer")
 
+-- draw node
+gk.DrawNodeCircle = import(".DrawNodeCircle")
+
 -- root containers
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")
 gk.injector:ctor_method_swizz(gk.Dialog, "ctor")

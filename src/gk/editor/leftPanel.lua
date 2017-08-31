@@ -528,11 +528,13 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
     if node:getPhysicsBody() then
+        title = node:getPhysicsBody().__info.id
         self:createPhysicsButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, node:getPhysicsBody())
         self.domDepth = self.domDepth + 1
         layer = layer + 1
         local shapes = node:getPhysicsBody():getShapes()
         for i = 1, #shapes do
+            title = shapes[i].__info.id
             self:createPhysicsButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, shapes[i])
             self.domDepth = self.domDepth + 1
         end
@@ -690,7 +692,7 @@ function panel:displayGroup(key, layer, displayName, domItem)
 end
 
 function panel:createPhysicsButton(content, x, y, obj)
-    local string = string.format("*%s", tolua.type(obj))
+    local string = string.format("*%s", content)
     local label = gk.create_label(string, fontName, fontSize)
     local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
     label:setDimensions(contentSize.width - x / scale, contentSize.height)

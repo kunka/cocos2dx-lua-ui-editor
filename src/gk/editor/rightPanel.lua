@@ -479,9 +479,9 @@ function panel:displayNode(node)
     end
 
 
+    --------------------------- ID   ---------------------------
+    createInputLong("ID", "id", "string")
     if not isPhysicsObj then
-        --------------------------- ID   ---------------------------
-        createInputLong("ID", "id", "string")
         if self.parent._containerNode == node or self.parent.leftPanel._containerNode then
             -- only display id when dragging
             return
@@ -1240,7 +1240,7 @@ function panel:displayNode(node)
             if boolProps then
                 for i = 1, #boolProps do
                     local prop = boolProps[i]
-                    createCheckBox(getTitle(prop), prop.key, nil, true)
+                    createCheckBox(getTitle(prop), prop.key)
                 end
             end
         end

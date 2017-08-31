@@ -90,6 +90,11 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_api_shadertest.lua",
 	      genSrcPath = "gk/test/api/",
 	      path = "gk/test/api/ShaderTest"},
+	   SolarSystem = {
+	      cname = "SolarSystem",
+	      genPath = "gk/test/gen/layout/gk_test_solarsystem.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/SolarSystem"},
 	   SpriteTest = {
 	      cname = "SpriteTest",
 	      genPath = "gk/test/gen/layout/gk_test_spritetest.lua",
