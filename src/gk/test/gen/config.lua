@@ -34,6 +34,11 @@ return {
 	      genSrcPath = "gk/test/widget/",
 	      isWidget = true,
 	      path = "gk/test/widget/DiamondBar"},
+	   DrawNodeTest = {
+	      cname = "DrawNodeTest",
+	      genPath = "gk/test/gen/layout/gk_test_drawnodetest.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/DrawNodeTest"},
 	   FinanceHud = {
 	      cname = "FinanceHud",
 	      genPath = "gk/test/gen/layout/gk_test_widget_financehud.lua",
@@ -55,6 +60,11 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_mainlayer.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/MainLayer"},
+	   MapLayer = {
+	      cname = "MapLayer",
+	      genPath = "gk/test/gen/layout/gk_test_maplayer.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/MapLayer"},
 	   NodeTest = {
 	      cname = "NodeTest",
 	      genPath = "gk/test/gen/layout/gk_test_nodetest.lua",

@@ -130,7 +130,7 @@ function injector:onNodeCreate(node)
                 -- init first time
                 gk.log("inflate node first time %s ", path)
                 node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
-                node.__info.id = gk.generator:genID(node.__cname, node)
+                node.__info.id = gk.generator.config:genID(node.__cname, node)
                 node[node.__info.id] = node
                 node.__info.width, node.__info.height = "$fill", "$fill"
                 self:sync(node)

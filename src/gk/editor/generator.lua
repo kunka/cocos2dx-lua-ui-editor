@@ -164,7 +164,7 @@ function generator:createNode(info, rootNode, rootTable)
     if rootNode then
         node = rootNode
     else
-        local creator = self.nodeCreator[info._isWidget and "widget" or info.type]
+        local creator = config.nodeCreator[info._isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
             --            gk.log("createNode %s,%s", node, info.id)
@@ -293,7 +293,7 @@ function generator:getProp(proxy, key, info, rootTable)
         var = proxy[key]
         if var == nil then
             local node = rootTable and rootTable[proxy["id"]] or nil
-            return node and self.config:getDefaultValue(node, key) or nil
+            return node and self.config:getValue(node, key) or nil
         else
             return var
         end
@@ -328,7 +328,7 @@ function generator:wrapPhysics(info, node)
             else
                 var = proxy[key]
                 if var == nil then
-                    return self.config:getDefaultValue(node, key) or nil
+                    return self.config:getValue(node, key) or nil
                 else
                     return var
                 end
@@ -409,7 +409,7 @@ function generator:parseCustomMacroFunc(node, input)
 end
 
 -- for editor use
-function generator:modify(node, property, input, valueType)
+function generator:modify(node, property, input, valueType, notPostChanged)
     local props = string.split(property, ".")
     local prop1, prop2
     if #props == 2 then
@@ -472,7 +472,7 @@ function generator:modify(node, property, input, valueType)
             cur_value = value
         end
     end
-    self:modifyValue(node, prop1, cur_value)
+    self:modifyValue(node, prop1, cur_value, notPostChanged)
     if #props == 2 then
         return tostring(node.__info[prop1][prop2])
     elseif #props > 2 then
@@ -487,7 +487,7 @@ function generator:modify(node, property, input, valueType)
 end
 
 -- for editor use
-function generator:modifyValue(node, property, value)
+function generator:modifyValue(node, property, value, notPostChanged)
     if property == "id" then
         local ori_value = node.__info[property]
         node.__info[property] = value
@@ -511,8 +511,10 @@ function generator:modifyValue(node, property, value)
                     parentId = node.__info.parentId,
                 })
             end
-            gk.event:post("displayNode", node)
-            gk.event:post("postSync")
+            if not notPostChanged then
+                gk.event:post("displayNode", node)
+                gk.event:post("postSync")
+            end
             if property == "visible" or property == "localZOrder" then
                 gk.event:post("displayDomTree", true)
             end
@@ -520,164 +522,6 @@ function generator:modifyValue(node, property, value)
         node.__info[property] = cur_value
     end
 end
-
-generator.nodeCreator = {
-    ["cc.Node"] = function(info, rootTable)
-        local node = cc.Node:create()
-        info.id = info.id or generator:genID("node", rootTable)
-        return node
-    end,
-    ["cc.Sprite"] = function(info, rootTable)
-        local node = gk.create_sprite(info.file)
-        info.id = info.id or generator:genID("sprite", rootTable)
-        return node
-    end,
-    ["ccui.Scale9Sprite"] = function(info, rootTable)
-        local node = gk.create_scale9_sprite(info.file, info.capInsets)
-        info.id = info.id or generator:genID("scale9Sprite", rootTable)
-        return node
-    end,
-    ["ZoomButton"] = function(info, rootTable)
-        local node = gk.ZoomButton.new()
-        info.id = info.id or generator:genID("button", rootTable)
-        return node
-    end,
-    ["SpriteButton"] = function(info, rootTable)
-        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
-        info.id = info.id or generator:genID("button", rootTable)
-        return node
-    end,
-    ["ToggleButton"] = function(info, rootTable)
-        local node = gk.ToggleButton.new()
-        info.id = info.id or generator:genID("button", rootTable)
-        return node
-    end,
-    ["CheckBox"] = function(info, rootTable)
-        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
-        info.id = info.id or generator:genID("checkBox", rootTable)
-        return node
-    end,
-    ["CubicBezierNode"] = function(info, rootTable)
-        local node = gk.CubicBezierNode:create()
-        info.id = info.id or generator:genID("cubicBezierNode", rootTable)
-        return node
-    end,
-    ["DrawNodeCircle"] = function(info, rootTable)
-        local node = gk.DrawNodeCircle:create()
-        info.id = info.id or generator:genID("drawNodeCircle", rootTable)
-        return node
-    end,
-    ["PhysicsWorld"] = function(info, rootTable)
-        local node = gk.PhysicsWorld:create()
-        info.id = info.id or generator:genID("physicsWorld", rootTable)
-        return node
-    end,
-    ["ccui.EditBox"] = function(info, rootTable)
-        local node = ccui.EditBox:create(cc.size(info.width, info.height),
-            gk.create_scaleg9_sprite(info.normalSprite, info.capInsets),
-            gk.create_scale9_sprite(info.selectedSprite, info.capInsets),
-            gk.create_scale9_sprite(info.disabledSprite, info.capInsets))
-        info.id = info.id or generator:genID("editBox", rootTable)
-        return node
-    end,
-    ["cc.Layer"] = function(info, rootTable)
-        local node = cc.Layer:create()
-        info.id = info.id or generator:genID("layer", rootTable)
-        return node
-    end,
-    ["cc.LayerColor"] = function(info, rootTable)
-        local node = cc.LayerColor:create(info.color)
-        info.id = info.id or generator:genID("layerColor", rootTable)
-        return node
-    end,
-    ["cc.LayerGradient"] = function(info, rootTable)
-        local node = cc.LayerGradient:create(info.startColor, info.endColor)
-        info.id = info.id or generator:genID("layerGradient", rootTable)
-        return node
-    end,
-    --        ["ccui.Layout"] = function(info, rootTable)
-    --            local node = ccui.Layout:create()
-    --            info.id = info.id or generator:genID("layout", rootTable)
-    --            return node
-    --        end,
-    ["cc.Label"] = function(info, rootTable)
-        local node = gk.create_label_local(info)
-        info.id = info.id or generator:genID("label", rootTable)
-        return node
-    end,
-    ["cc.ScrollView"] = function(info, rootTable)
-        local node = cc.ScrollView:create(cc.size(info.width, info.height))
-        node:setDelegate()
-        info.id = info.id or generator:genID("scrollView", rootTable)
-        return node
-    end,
-    ["cc.TableView"] = function(info, rootTable)
-        local node = cc.TableView:create(cc.size(info.width, info.height))
-        node:setDelegate()
-        info.id = info.id or generator:genID("tableView", rootTable)
-        return node
-    end,
-    ["cc.ClippingNode"] = function(info, rootTable)
-        -- Add an useless node
-        local node = cc.ClippingNode:create(cc.Node:create())
-        info.id = info.id or generator:genID("clippingNode", rootTable)
-        return node
-    end,
-    ["cc.ClippingRectangleNode"] = function(info, rootTable)
-        -- Add an useless node
-        local node = cc.ClippingRectangleNode:create(info.clippingRegion)
-        info.id = info.id or generator:genID("clippingRectNode", rootTable)
-        return node
-    end,
-    ["cc.ProgressTimer"] = function(info, rootTable)
-        if info.sprite then
-            -- create content sprite first
-            local sprite = generator:createNode(info.sprite, nil, rootTable)
-            -- create ProgressTimer
-            sprite.__info._lock = 0
-            local node = cc.ProgressTimer:create(sprite)
-            info.id = info.id or generator:genID("progressTimer", rootTable)
-            sprite.__info.id = info.id .. "_sprite"
-            return node
-        end
-        return nil
-    end,
-    ["cc.TMXTiledMap"] = function(info, rootTable)
-        if info.tmx then
-            local node = cc.TMXTiledMap:create(info.tmx)
-            info.id = info.id or generator:genID("tmxTiledMap", rootTable)
-            return node
-        end
-        return nil
-    end,
-    ["cc.ParticleSystemQuad"] = function(info, rootTable)
-        if info.particle and info.particle ~= "" then
-            local node = cc.ParticleSystemQuad:create(info.particle)
-            info.id = info.id or generator:genID("particleSystemQuad", rootTable)
-            return node
-        elseif info.totalParticles and info.totalParticles > 0 then
-            local node = cc.ParticleSystemQuad:createWithTotalParticles(info.totalParticles)
-            info.id = info.id or generator:genID("particleSystemQuad", rootTable)
-            return node
-        end
-        return nil
-    end,
-    --------------------------- Custom widgets   ---------------------------
-    ["widget"] = function(info, rootTable)
-        local node = gk.injector:inflateNode(info.type)
-        node.__ignore = false
-        -- copy info
-        local keys = table.keys(node.__info.__self)
-        for _, key in ipairs(keys) do
-            if info.__self[key] == nil then
-                info.__self[key] = node.__info.__self[key]
-            end
-        end
-        info.id = info.id or generator:genID(info.type, rootTable)
-        info._lock = 0
-        return node
-    end,
-}
 
 generator.physicsCreator = {
     ["cc.PhysicsBody"] = function(info, node, rootTable)
@@ -687,7 +531,7 @@ generator.physicsCreator = {
         end
         local obj = cc.PhysicsBody:create()
         node:setPhysicsBody(obj)
-        info.id = info.id or generator:genID("body", rootTable)
+        info.id = info.id or config:genID("body", rootTable)
         return obj
     end,
     ["cc.PhysicsShapeCircle"] = function(info, node, rootTable)
@@ -697,7 +541,7 @@ generator.physicsCreator = {
         end
         local obj = cc.PhysicsShapeCircle:create(info.radius, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
         node:getPhysicsBody():addShape(obj)
-        info.id = info.id or generator:genID("shapeCircle", rootTable)
+        info.id = info.id or config:genID("shapeCircle", rootTable)
         return obj
     end,
     ["cc.PhysicsShapePolygon"] = function(info, node, rootTable)
@@ -707,7 +551,7 @@ generator.physicsCreator = {
         end
         local obj = cc.PhysicsShapePolygon:create(info.points, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset)
         node:getPhysicsBody():addShape(obj)
-        info.id = info.id or generator:genID("shapePolygon", rootTable)
+        info.id = info.id or config:genID("shapePolygon", rootTable)
         return obj
     end,
     ["cc.PhysicsShapeBox"] = function(info, node, rootTable)
@@ -718,7 +562,7 @@ generator.physicsCreator = {
         local obj = cc.PhysicsShapeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.offset,
             info.radius)
         node:getPhysicsBody():addShape(obj)
-        info.id = info.id or generator:genID("shapeBox", rootTable)
+        info.id = info.id or config:genID("shapeBox", rootTable)
         return obj
     end,
     ["cc.PhysicsShapeEdgeSegment"] = function(info, node, rootTable)
@@ -732,7 +576,7 @@ generator.physicsCreator = {
             friction = info.friction
         }, info.border)
         node:getPhysicsBody():addShape(obj)
-        info.id = info.id or generator:genID("shapeEdgeSegment", rootTable)
+        info.id = info.id or config:genID("shapeEdgeSegment", rootTable)
         return obj
     end,
     ["cc.PhysicsShapeEdgeBox"] = function(info, node, rootTable)
@@ -742,30 +586,11 @@ generator.physicsCreator = {
         end
         local obj = cc.PhysicsShapeEdgeBox:create(info.size, { density = info.density, restitution = info.restitution, friction = info.friction }, info.border, info.offset)
         node:getPhysicsBody():addShape(obj)
-        info.id = info.id or generator:genID("shapeEdgeBox", rootTable)
+        info.id = info.id or config:genID("shapeEdgeBox", rootTable)
         return obj
     end,
 }
 
-function generator:genID(type, rootTable)
-    if type:starts("cc.Physics") then
-        type = type:gsub("cc.Physics", "")
-    end
-    local names = string.split(type, ".")
-    local names = string.split(names[1], "/")
-    type = names[#names]
-    local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
-
-    local index = 1
-    while true do
-        if rootTable[string.format("%s%d", tp, index)] == nil then
-            break
-        else
-            index = index + 1
-        end
-    end
-    return string.format("%s%d", tp, index)
-end
 
 function generator:updateNodeSize(node, property)
     if node and node.__info then

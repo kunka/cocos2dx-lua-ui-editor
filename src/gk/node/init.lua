@@ -15,7 +15,6 @@ gk.ZoomButton = import(".ZoomButton")
 gk.ToggleButton = import(".ToggleButton")
 gk.SpriteButton = import(".SpriteButton")
 gk.CheckBox = import(".CheckBox")
-gk.CubicBezierNode = import(".CubicBezierNode")
 gk.TableViewCell = import(".TableViewCell")
 gk.Widget = import(".Widget")
 
@@ -24,6 +23,11 @@ gk.PhysicsLayer = import(".PhysicsLayer")
 
 -- draw node
 gk.DrawNodeCircle = import(".DrawNodeCircle")
+gk.CubicBezierNode = import(".CubicBezierNode")
+gk.DrawPolygon = import(".DrawPolygon")
+gk.DrawCardinalSpline = import(".DrawCardinalSpline")
+gk.DrawPoint = import(".DrawPoint")
+gk.DrawLine = import(".DrawLine")
 
 -- root containers
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")

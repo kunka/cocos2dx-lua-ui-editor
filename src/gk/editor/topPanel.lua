@@ -177,6 +177,11 @@ function panel.create(parent)
 
     -- widgets
     self.widgets = clone(generator.config.supportNodes)
+    table.sort(self.widgets, function(k1, k2)
+        local arr1 = string.split(k1.type, ".")
+        local arr2 = string.split(k2.type, ".")
+        return arr1[#arr1] < arr2[#arr2]
+    end)
     -- self pre defined widget
     local keys = table.keys(gk.resource.genNodes)
     table.sort(keys, function(k1, k2) return k1 < k2 end)

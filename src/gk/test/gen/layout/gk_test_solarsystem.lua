@@ -5,7 +5,7 @@ return {
 	width = "$fill",
 	children = {	   {
 	      id = "drawNodeCircle1",
-	      radius1 = 10,
+	      radius = 10,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "DrawNodeCircle",
@@ -47,7 +47,7 @@ return {
 	               r = 0.9}}}},
 	   {
 	      id = "circle_mercury",
-	      radius1 = 40,
+	      radius = 40,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -65,7 +65,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "mercury",
-	            radius1 = 1.149,
+	            radius = 1.149,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",
@@ -73,7 +73,7 @@ return {
 	            y = -60}}},
 	   {
 	      id = "circle_venus",
-	      radius1 = 70,
+	      radius = 70,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -91,7 +91,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "venus",
-	            radius1 = 2.85,
+	            radius = 2.85,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",
@@ -99,7 +99,7 @@ return {
 	            y = -30}}},
 	   {
 	      id = "circle_earth",
-	      radius1 = 100,
+	      radius = 100,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -117,7 +117,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "earth",
-	            radius1 = 3,
+	            radius = 3,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",
@@ -130,7 +130,7 @@ return {
 	            children = {	               {
 	                  id = "circle_moon",
 	                  lineWidth = 0.5,
-	                  radius1 = 6,
+	                  radius = 6,
 	                  rotation = -5,
 	                  skewX = 55.1,
 	                  type = "DrawNodeCircle",
@@ -143,7 +143,7 @@ return {
 	                     r = 1},
 	                  children = {	                     {
 	                        id = "moon",
-	                        radius1 = 1.5,
+	                        radius = 1.5,
 	                        skewX = -55.1,
 	                        solid = 0,
 	                        type = "DrawNodeCircle",
@@ -155,7 +155,7 @@ return {
 	                           r = 1}}}}}}}},
 	   {
 	      id = "circle_mars",
-	      radius1 = 150,
+	      radius = 150,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -173,7 +173,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "mars",
-	            radius1 = 1.596,
+	            radius = 1.596,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",
@@ -181,7 +181,7 @@ return {
 	            y = 50}}},
 	   {
 	      id = "circle_jupiter",
-	      radius1 = 520,
+	      radius = 520,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -199,7 +199,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "jupiter",
-	            radius1 = 32.91,
+	            radius = 32.91,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",
@@ -208,7 +208,7 @@ return {
 	   {
 	      drawLineToCenter = 1,
 	      id = "circle_saturn",
-	      radius1 = 950,
+	      radius = 950,
 	      rotation = 23,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
@@ -226,7 +226,7 @@ return {
 	         y = "$scaleY"},
 	      children = {	         {
 	            id = "saturn",
-	            radius1 = 27.42,
+	            radius = 27.42,
 	            skewX = -55.1,
 	            solid = 0,
 	            type = "DrawNodeCircle",

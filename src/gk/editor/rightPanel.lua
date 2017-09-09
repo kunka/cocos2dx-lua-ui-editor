@@ -328,7 +328,9 @@ function panel:displayNode(node)
     local isTableView = gk.util:instanceof(node, "cc.TableView")
     local isScale9Sprite = gk.util:instanceof(node, "ccui.Scale9Sprite")
     local isCheckBox = gk.util:instanceof(node, "CheckBox")
+    local isDrawNode = gk.util:instanceof(node, "DrawNode")
     local isCubicBezierNode = gk.util:instanceof(node, "CubicBezierNode")
+    local isDrawPolygon = gk.util:instanceof(node, "DrawPolygon")
     local isPhysicsWorld = gk.util:instanceof(node, "PhysicsWorld")
     local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
     local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
@@ -363,8 +365,8 @@ function panel:displayNode(node)
             var = math.shrink(var, 3)
         end
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        local editBox = self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(generator:modify(node, key, input, tp))
+        local editBox = self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input, isNumVar)
+            editBox:setInput(generator:modify(node, key, input, tp, isNumVar))
             if key == "clickedSid" and gk.audio:isValidEvent(input) then
                 gk.audio:playEffect(input)
             end
@@ -390,8 +392,8 @@ function panel:displayNode(node)
                 lvar = math.shrink(lvar, 3)
             end
             self:createLabel(l, leftX_input_1_left, topY - stepY * yIndex)
-            linput = self:createInput(tostring(lvar), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-                editBox:setInput(generator:modify(node, lkey, input, tp))
+            linput = self:createInput(tostring(lvar), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input, isNumVar)
+                editBox:setInput(generator:modify(node, lkey, input, tp, isNumVar))
             end, ldefault)
         end
         if rkey then
@@ -408,8 +410,8 @@ function panel:displayNode(node)
                 rvar = math.shrink(rvar, 3)
             end
             self:createLabel(r, leftX_input_2_left, topY - stepY * yIndex)
-            rinput = self:createInput(tostring(rvar), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-                editBox:setInput(generator:modify(node, rkey, input, tp))
+            rinput = self:createInput(tostring(rvar), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input, isNumVar)
+                editBox:setInput(generator:modify(node, rkey, input, tp, isNumVar))
             end, rdefault)
         end
         yIndex = yIndex + 1
@@ -755,24 +757,6 @@ function panel:displayNode(node)
             createCheckBox("Selected", "selected")
         end
 
-        if isCubicBezierNode then
-            createTitle("gk.CubicBezierNode")
-            createInputMiddle("Segments", "", "", "segments", nil, "number")
-            createInputMiddle("LineWidth", "", "", "lineWidth", nil, "number")
-            createInputMiddle("Color4f", "R", "G", "c4f.r", "c4f.g", "number", 0, 0)
-            createInputMiddle("", "B", "A", "c4f.b", "c4f.a", "number", 0, 0)
-            createInputMiddle("CurvesNum", "", "", "curvesNum", nil, "number")
-            createInputMiddle("Origin", "X", "Y", "origin.x", "origin.y", "number")
-            for i = 1, node.__info.curvesNum do
-                createInputMiddle("C" .. (i * 2 - 1), "X", "Y", "destination." .. i .. ".c1.x", "destination." .. i .. ".c1.y", "number")
-                createInputMiddle("C" .. (i * 2), "X", "Y", "destination." .. i .. ".c2.x", "destination." .. i .. ".c2.y", "number")
-                createInputMiddle("P" .. i, "X", "Y", "destination." .. i .. ".dst.x", "destination." .. i .. ".dst.y", "number")
-            end
-            --        createInputMiddle("Control1", "X", "Y", "control1.x", "control1.y", "number")
-            --        createInputMiddle("Control2", "X", "Y", "control2.x", "control2.y", "number")
-            --        createInputMiddle("Destination", "X", "Y", "destination.x", "destination.y", "number")
-        end
-
         if isToggleButton then
             createTitle("gk.ToggleButton(Tag:1~n continuous)")
             createCheckBox("AutoToggle", "autoToggle")
@@ -1062,17 +1046,6 @@ function panel:displayNode(node)
             createFunc("DidScroll", "didScroll", "on")
         end
 
-        if isWidget then
-            createTitle("gk.Widget")
-            self:createLabel("-", leftX, topY - stepY * yIndex)
-            yIndex = yIndex + 1
-        end
-        if isTableViewCell then
-            createTitle("gk.TableViewCell")
-            self:createLabel("-", leftX, topY - stepY * yIndex)
-            yIndex = yIndex + 1
-        end
-
         --------------------------- cc.Layer   ---------------------------
         if isLayer and not isScrollView then
             createTitle("cc.Layer")
@@ -1190,146 +1163,26 @@ function panel:displayNode(node)
             createInputLong(nil, "endSpin", "number", 0)
             createInputLong(nil, "endSpinVar", "number", 0)
             createInputLong(nil, "emissionRate", "number", 0)
+        end
+
+        if isWidget then
+            createTitle("gk.Widget")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
+        end
+        if isTableViewCell then
+            createTitle("gk.TableViewCell")
+            self:createLabel("-", leftX, topY - stepY * yIndex)
+            yIndex = yIndex + 1
         end
     end
 
     --------------------------- physics nodes   ---------------------------
     if isPhysicsWorld then
         createTitle("gk.PhysicsWorld")
-        if isWidget then
-            createTitle("gk.Widget")
-            self:createLabel("-", leftX, topY - stepY * yIndex)
-            yIndex = yIndex + 1
-        end
-        if isTableViewCell then
-            createTitle("gk.TableViewCell")
-            self:createLabel("-", leftX, topY - stepY * yIndex)
-            yIndex = yIndex + 1
-        end
-
-        --------------------------- cc.Layer   ---------------------------
-        if isLayer and not isScrollView then
-            createTitle("cc.Layer")
-            self:createLabel("-", leftX, topY - stepY * yIndex)
-            yIndex = yIndex + 1
-        end
-
-        if isLayerColor and not isLayerGradient then
-            createTitle("cc.LayerColor")
-            -- use opacity instead of a!
-            createInputMiddle("Color4B", "R", "G", "color.r", "color.g", "number", 255, 255)
-            createInputMiddle("", "B", "A", "color.b", "color.a", "number", 255, 255)
-        end
-        if isLayerGradient then
-            createTitle("cc.LayerGradient")
-            createInputMiddle("StartColor", "R", "G", "startColor.r", "startColor.g", "number", 255, 255)
-            createInputMiddle("", "B", "A", "startColor.b", "startOpacity", "number", 255, 255)
-            createInputMiddle("EndColor", "R", "G", "endColor.r", "endColor.g", "number", 255, 255)
-            createInputMiddle("", "B", "A", "endColor.b", "endOpacity", "number", 255, 255)
-            createInputMiddle("Vector", "X", "Y", "vector.x", "vector.y", "number")
-            createCheckBox("CompressedInterpolation", "compressedInterpolation")
-        end
-        if isgkLayer then
-            createTitle("gk.Layer")
-            createCheckBox("TouchEnabled", "touchEnabled")
-            createCheckBox("SwallowTouches", "swallowTouches")
-            createCheckBox("EnableKeyPad", "enableKeyPad")
-            createCheckBox("PopOnBack", "popOnBack")
-            createInputLong("Atlas", "atlas", "string")
-            createCheckBox("AutoRemoveAtlas", "autoRemoveAtlas")
-        end
-        if isgkDialog then
-            createTitle("gk.Dialog")
-            createCheckBox("PopOnTouchInsideBg", "popOnTouchInsideBg")
-            createCheckBox("PopOnTouchOutsideBg", "popOnTouchOutsideBg")
-        end
-
-        --------------------------- other nodes   ---------------------------
-        if isClippingNode then
-            createTitle("cc.ClippingNode")
-            createInputLong("AlphaThreshold", "alphaThreshold", "number")
-            createCheckBox("Inverted", "inverted")
-        end
-
-        if isProgressTimer then
-            createTitle("cc.ProgressTimer")
-            createCheckBox("RreverseDirection", "reverseDirection")
-            local types = { "RADIAL", "BAR" }
-            createSelectBoxLong("BarType", types, "barType", "number", "RADIAL", function()
-                gk.event:post("displayNode", node)
-            end)
-            createInputLong("Percentage", "percentage", "number", 0)
-            createInputMiddle("Midpoint", "X", "Y", "midpoint.x", "midpoint.y", "number", 0.5, 0.5)
-            if node.__info.barType == 1 then
-                createInputMiddle("BarChangeRate", "X", "Y", "barChangeRate.x", "barChangeRate.y", "number")
-            end
-        end
-        if isClippingRectangleNode then
-            createTitle("cc.ClippingRectangleNode")
-            createInputMiddle("ClipRegion", "X", "Y", "clippingRegion.x", "clippingRegion.y", "number")
-            createInputMiddle("", "W", "H", "clippingRegion.width", "clippingRegion.height", "number")
-            createCheckBox("ClippingEnabled", "clippingEnabled")
-        end
-        if isTmxTiledMap then
-            createTitle("cc.TMXTiledMap")
-            createInputLong("TMXFile", "tmx", "string")
-        end
-        if isParticleSystemQuad then
-            createTitle("cc.ParticleSystemQuad")
-            createInputLong("PlistFile", "particle", "string", "")
-            createInputLong("TotalParticles", "totalParticles", "number")
-            createInputLong("DisplayFrame", "displayFrame", "string", "")
-            createInputLong("Duration", "duration", "number", -1)
-            createCheckBox("AutoRemoveOnFinish(ReleaseMode)", "autoRemoveOnFinish")
-            createInputMiddle("Gravity", "X", "Y", "gravity.x", "gravity.y", "number", 0, 0)
-            createCheckBox("BlendAdditive", "blendAdditive")
-            local types = { "GRAVITY", "RADIUS" }
-            createSelectBoxLong("EmitterMode", types, "emitterMode", "number", "GRAVITY")
-            local types = { "FREE", "RELATIVE", "GROUPED" }
-            createSelectBoxLong("PositionType", types, "positionType", "number", "FREE")
-            createInputLong(nil, "speed", "number", 0)
-            createInputLong(nil, "speedVar", "number", 0)
-            createInputLong(nil, "tangentialAccel", "number", 0)
-            createInputLong(nil, "tangentialAccelVar", "number", 0)
-            createInputLong(nil, "radialAccel", "number", 0)
-            createInputLong(nil, "radialAccelVar", "number", 0)
-            --        createInputLong(nil, "rotationIsDir", "number", 0)
-            --        createCheckBox("RotationIsDir", "rotationIsDir")
-            if node.__info.emitterMode == cc.PARTICLE_MODE_RADIUS then
-                createInputLong(nil, "startRadius", "number", 0)
-                createInputLong(nil, "startRadiusVar", "number", 0)
-                createInputLong(nil, "endRadius", "number", 0)
-                createInputLong(nil, "endRadiusVar", "number", 0)
-                createInputLong(nil, "rotatePerSecond", "number", 0)
-                createInputLong(nil, "rotatePerSecondVar", "number", 0)
-            end
-            createInputMiddle("SourcePosition", "X", "Y", "sourcePosition.x", "sourcePosition.y", "number", 0, 0)
-            createInputMiddle("PosVar", "X", "Y", "posVar.x", "posVar.y", "number", 0, 0)
-            createInputLong(nil, "life", "number", 0)
-            createInputLong(nil, "lifeVar", "number", 0)
-            createInputLong(nil, "angle", "number", 0)
-            createInputLong(nil, "angleVar", "number", 0)
-            createInputLong(nil, "startSize", "number", 0)
-            createInputLong(nil, "startSizeVar", "number", 0)
-            createInputLong(nil, "endSize", "number", 0)
-            createInputLong(nil, "endSizeVar", "number", 0)
-            createInputMiddle("StartColor4F", "R", "G", "startColor.r", "startColor.g", "number", 0, 0)
-            createInputMiddle("", "B", "A", "startColor.b", "startColor.a", "number", 0, 0)
-            createInputMiddle("StartColorVar4F", "R", "G", "startColorVar.r", "startColorVar.g", "number", 0, 0)
-            createInputMiddle("", "B", "A", "startColorVar.b", "startColorVar.a", "number", 0, 0)
-            createInputMiddle("EndColor4F", "R", "G", "endColor.r", "endColor.g", "number", 0, 0)
-            createInputMiddle("", "B", "A", "endColor.b", "endColor.a", "number", 0, 0)
-            createInputMiddle("EndColorVar4F", "R", "G", "endColorVar.r", "endColorVar.g", "number", 0, 0)
-            createInputMiddle("", "B", "A", "endColorVar.b", "endColorVar.a", "number", 0, 0)
-            createInputLong(nil, "startSpin", "number", 0)
-            createInputLong(nil, "startSpinVar", "number", 0)
-            createInputLong(nil, "endSpin", "number", 0)
-            createInputLong(nil, "endSpinVar", "number", 0)
-            createInputLong(nil, "emissionRate", "number", 0)
-        end
     end
 
-    --------------------------- custom ext nodes   ---------------------------
+    --------------------------- custom node displayer   ---------------------------
     local getTitle = function(prop)
         if not prop.title then
             local key = prop.key
@@ -1359,7 +1212,7 @@ function panel:displayNode(node)
             if pairProps then
                 for i = 1, #pairProps do
                     local prop = pairProps[i]
-                    createInputMiddle(getTitle(prop), prop.subTitle1, prop.subTitle2, prop.key1, prop.key2, "number", prop.default1, prop.default2)
+                    createInputMiddle(prop.titles[1], prop.titles[2], prop.titles[3], prop.keys[1], prop.keys[2], "number", prop.defaults and prop.defaults[1], prop.defaults and prop.defaults[2])
                 end
             end
             local selectProps = ext.selectProps
@@ -1369,7 +1222,17 @@ function panel:displayNode(node)
                     createSelectBoxLong(getTitle(prop), prop.selects, prop.key, prop.type, prop.default)
                 end
             end
-
+            local arrayProps = ext.arrayProps
+            if arrayProps then
+                for i = 1, #arrayProps do
+                    local prop = arrayProps[i]
+                    local numprop = prop.numProp
+                    createInputLong(getTitle(numprop), numprop.key, "number", numprop.default)
+                    for j = 1, node.__info[numprop.key] do
+                        createInputMiddle(string.format(prop.titles[1], j), prop.titles[2], prop.titles[3], string.format(prop.keys[1], j), string.format(prop.keys[2], j), "number")
+                    end
+                end
+            end
             local boolProps = ext.boolProps
             if boolProps then
                 for i = 1, #boolProps do
@@ -1380,6 +1243,20 @@ function panel:displayNode(node)
         end
     end
 
+    --------------------------- draw nodes   ---------------------------
+    if isCubicBezierNode then
+        createTitle("gk.CubicBezierNode")
+        createInputMiddle("Segments", "", "", "segments", nil, "number")
+        createInputMiddle("CurvesNum", "", "", "curvesNum", nil, "number")
+        createInputMiddle("Origin", "X", "Y", "origin.x", "origin.y", "number")
+        for i = 1, node.__info.curvesNum do
+            createInputMiddle("C" .. (i * 2 - 1), "X", "Y", "destination." .. i .. ".c1.x", "destination." .. i .. ".c1.y", "number")
+            createInputMiddle("C" .. (i * 2), "X", "Y", "destination." .. i .. ".c2.x", "destination." .. i .. ".c2.y", "number")
+            createInputMiddle("P" .. i, "X", "Y", "destination." .. i .. ".dst.x", "destination." .. i .. ".dst.y", "number")
+        end
+    end
+
+    --------------------------- physics nodes   ---------------------------
     if isPhysicsObj and tolua.type(node) == "cc.PhysicsShapePolygon" then
         createInputMiddle("PointsNum", "", "", "pointsNum", nil, "number")
         for i = 1, node.__info.pointsNum do

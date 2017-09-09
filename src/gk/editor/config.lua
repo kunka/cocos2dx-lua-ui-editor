@@ -20,11 +20,9 @@ config.supportNodes = {
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
     { type = "ToggleButton", },
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
-    { type = "CubicBezierNode" },
-    { type = "DrawNodeCircle" },
     {
         type = "ccui.EditBox",
-        normalSprite = "gk/res/texture/edit_box_bg.png",
+        normalSprite = "gk/res/texture/edit_bCubicBezierNodeox_bg.png",
         selectedSprite = "gk/res/texture/edit_box_bg.png",
         disabledSprite = "gk/res/texture/edit_box_bg.png",
         capInsets = cc.rect(20, 20, 20, 20),
@@ -133,6 +131,10 @@ config.supportNodes = {
     },
 }
 
+function config:registerPlaneSupportNode(info)
+    table.insert(config.supportNodes, info)
+end
+
 -- defValues, not modified properties, will not be saved, minimize gen file size
 config.defValues = {
     _isWidget = false,
@@ -224,7 +226,6 @@ config.defValues = {
 }
 
 config.macroFuncs = {
-    -- Scale
     minScale = function(key, node, var) return (var or 1) * gk.display:minScale() end,
     maxScale = function(key, node, var) return (var or 1) * gk.display:maxScale() end,
     xScale = function() return gk.display:xScale() end,
@@ -252,6 +253,7 @@ config.macroFuncs = {
     end,
 }
 
+-- custom properties
 config.editableProps = {
     type = {
         getter = function(node) return node.__cname or tolua.type(node) end,
@@ -381,7 +383,7 @@ config.editableProps = {
                     node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
                 end
                 node:setSpriteFrame(sf, node.__info.capInsets)
-                -- need refresh ...
+                -- need refresh size ...
                 node.__info.width, node.__info.height = node.__info.width, node.__info.height
                 --                gk.event:post("displayNode", node)
             else
@@ -458,7 +460,7 @@ config.editableProps = {
             if gk.util:instanceof(node, "ccui.EditBox") then
                 return node:getFontSize()
             else
-                return 24
+                return 18
             end
         end,
         setter = function(node, var)
@@ -500,7 +502,7 @@ config.editableProps = {
             if not gk.isBMFont(fontFile) then
                 node:setTextColor(var)
             else
-                -- bmfont not support textcolor
+                -- bmfont do not support textcolor
                 node:setColor(var)
             end
         end
@@ -521,6 +523,7 @@ config.editableProps = {
             elseif gk.isBMFont(fontFile) then
                 node:setAdditionalKerning(var)
             else
+                -- not support
             end
         end
     },
@@ -675,7 +678,8 @@ config.editableProps = {
                 node:reloadData()
             end
         end
-    }, -- ccui.Scale9Sprite, ccui.EditBox, SpriteButton
+    },
+    -- ccui.Scale9Sprite, ccui.EditBox, SpriteButton
     capInsets = {
         getter = function(_) return cc.rect(0, 0, 0, 0) end,
         setter = function(node, var)
@@ -690,13 +694,6 @@ config.editableProps = {
         setter = function(node, var)
             if gk.util:instanceof(node, "SpriteButton") then
                 node:setNormalSprite(var)
-                --                if not node.__info.capInsets or node.__info.capInsets.width == 0 or node.__info.capInsets.height == 0 then
-                --                    local rect = node:getContentNode():getSpriteFrame():getRect()
-                --                    node.__info.capInsets = cc.rect(math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3), math.shrink(rect.width / 3, 3), math.shrink(rect.height / 3, 3))
-                --                end
-                -- need refresh ...
-                --                node.__info.width, node.__info.height = node.__info.width, node.__info.height
-                --                gk.event:post("displayNode", node)
             end
         end
     },
@@ -774,62 +771,57 @@ config.editableProps = {
     },
 }
 
+function config:registerEditableProp(key, getter, setter)
+    if self.editableProps[key] then
+        gk.log("config:register prop, key repleated %s", key)
+    end
+    config.editableProps[key] = { getter = getter, setter = setter }
+end
+
+function config:registerPropByType(type, key, alias, onlyGetter)
+    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
+    self:registerEditableProp(type and (type .. "." .. key) or key,
+        function(node) return node["get" .. alias](node) end,
+        function(node, var)
+            local v = gk.generator:parseValue(key, node, var)
+            if not onlyGetter then
+                node["set" .. alias](node, v)
+            end
+        end)
+end
+
 function config:registerProp(key, alias, onlyGetter)
-    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
-    config.editableProps[key] = {
-        getter = function(node) return node["get" .. alias](node) end,
-        setter = function(node, var)
-            local v = gk.generator:parseValue(key, node, var)
-            if not onlyGetter then
-                node["set" .. alias](node, v)
-            end
-        end
-    }
+    self:registerPropByType(nil, key, alias, onlyGetter)
 end
 
-function config:registerStringProp(key, alias, onlyGetter)
+function config:registerFloatPropByType(type, key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
-    config.editableProps[key] = {
-        getter = function(node) return node["get" .. alias](node) end,
-        setter = function(node, var)
-            local v = gk.generator:parseValue(key, node, var)
-            if not onlyGetter then
-                node["set" .. alias](node, v)
-            end
-        end
-    }
-end
-
-function config:registerFloatProp(key, alias, onlyGetter)
-    local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
-    config.editableProps[key] = {
-        getter = function(node) return math.shrink(node["get" .. alias](node), 3) end,
-        setter = function(node, var)
+    self:registerEditableProp(type and (type .. "." .. key) or key, function(node) return math.shrink(node["get" .. alias](node), 3) end,
+        function(node, var)
             local v = gk.generator:parseValue(key, node, var)
             if not onlyGetter then
                 node["set" .. alias](node, tonumber(v))
             end
-        end
-    }
+        end)
+end
+
+function config:registerFloatProp(key, alias, onlyGetter)
+    self:registerFloatPropByType(nil, key, alias, onlyGetter)
 end
 
 function config:registerBoolProp(key, alias, onlyGetter)
     local alias = alias or (string.upper(key:sub(1, 1)) .. key:sub(2, key:len()))
-    config.editableProps[key] = {
-        getter = function(node) return node["is" .. alias](node) and 0 or 1 end,
-        setter = function(node, var)
+    self:registerEditableProp(key, function(node) return node["is" .. alias](node) and 0 or 1 end,
+        function(node, var)
             if not onlyGetter then
                 node["set" .. alias](node, var == 0)
             end
-        end
-    }
+        end)
 end
 
 function config:registerFuncProp(key)
-    config.editableProps[key] = {
-        getter = function(node) return "-"
-        end,
-        setter = function(node, var)
+    self:registerEditableProp(key, function(node) return "-" end,
+        function(node, var)
             local func, macro = gk.generator:parseCustomMacroFunc(node, var)
             if func then
                 node[key](node, function(...)
@@ -837,15 +829,12 @@ function config:registerFuncProp(key)
                     func(node.__rootTable, ...)
                 end)
             end
-        end
-    }
+        end)
 end
 
 function config:registerScriptHandler(key, handler)
-    config.editableProps[key] = {
-        getter = function(node) return "-"
-        end,
-        setter = function(node, var)
+    self:registerEditableProp(key, function(node) return "-" end,
+        function(node, var)
             local func, macro = gk.generator:parseCustomMacroFunc(node, var)
             if func then
                 node:registerScriptHandler(function(...)
@@ -855,44 +844,209 @@ function config:registerScriptHandler(key, handler)
                     return func(node.__rootTable, ...)
                 end, handler)
             end
-        end
-    }
+        end)
 end
 
 function config:registerPlaneProp(key, default)
-    config.editableProps[key] = {
-        getter = function(node) return default
-        end,
-        setter = function(node, var)
-        end
-    }
+    self:registerEditableProp(key, function(node) return default end, function(node, var) end)
 end
 
-function config:registerDefaultGetterProp(key, defaultValue)
-    config.editableProps[key] = {
-        getter = function(_) return defaultValue
-        end,
-    }
-end
-
-function config:getDefaultValue(node, key)
-    local prop = config.editableProps[key]
+function config:getValue(node, key)
+    local prop = config.editableProps[node.__info.type .. "." .. key] or config.editableProps[key]
     if prop then
         -- must clone value
         return clone(prop.getter(node))
     end
-    gk.log("[Error] config:getDefaultValue, not registered prop, type = %s, prop = %s", node and node.__info.type or "?", key)
+
+    gk.log("[Error] config:getValue, not registered prop, type = %s, prop = %s", node and node.__info.type or "?", key)
     return nil
 end
 
 function config:setValue(node, key, value)
-    local prop = config.editableProps[key]
+    local prop = config.editableProps[node.__info.type .. "." .. key] or config.editableProps[key]
     if prop and prop.setter then
-        -- must clone value
         prop.setter(node, value)
     else
         -- some props do not have setter
     end
+end
+
+config.nodeCreator = {
+    ["cc.Node"] = function(info, rootTable)
+        local node = cc.Node:create()
+        info.id = info.id or config:genID("node", rootTable)
+        return node
+    end,
+    ["cc.Sprite"] = function(info, rootTable)
+        local node = gk.create_sprite(info.file)
+        info.id = info.id or config:genID("sprite", rootTable)
+        return node
+    end,
+    ["ccui.Scale9Sprite"] = function(info, rootTable)
+        local node = gk.create_scale9_sprite(info.file, info.capInsets)
+        info.id = info.id or config:genID("scale9Sprite", rootTable)
+        return node
+    end,
+    ["ZoomButton"] = function(info, rootTable)
+        local node = gk.ZoomButton.new()
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["SpriteButton"] = function(info, rootTable)
+        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["ToggleButton"] = function(info, rootTable)
+        local node = gk.ToggleButton.new()
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["CheckBox"] = function(info, rootTable)
+        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
+        info.id = info.id or config:genID("checkBox", rootTable)
+        return node
+    end,
+    ["PhysicsWorld"] = function(info, rootTable)
+        local node = gk.PhysicsWorld:create()
+        info.id = info.id or config:genID("physicsWorld", rootTable)
+        return node
+    end,
+    ["ccui.EditBox"] = function(info, rootTable)
+        local node = ccui.EditBox:create(cc.size(info.width, info.height),
+            gk.create_scaleg9_sprite(info.normalSprite, info.capInsets),
+            gk.create_scale9_sprite(info.selectedSprite, info.capInsets),
+            gk.create_scale9_sprite(info.disabledSprite, info.capInsets))
+        info.id = info.id or config:genID("editBox", rootTable)
+        return node
+    end,
+    ["cc.Layer"] = function(info, rootTable)
+        local node = cc.Layer:create()
+        info.id = info.id or config:genID("layer", rootTable)
+        return node
+    end,
+    ["cc.LayerColor"] = function(info, rootTable)
+        local node = cc.LayerColor:create(info.color)
+        info.id = info.id or config:genID("layerColor", rootTable)
+        return node
+    end,
+    ["cc.LayerGradient"] = function(info, rootTable)
+        local node = cc.LayerGradient:create(info.startColor, info.endColor)
+        info.id = info.id or config:genID("layerGradient", rootTable)
+        return node
+    end,
+    --        ["ccui.Layout"] = function(info, rootTable)
+    --            local node = ccui.Layout:create()
+    --            info.id = info.id or config:genID("layout", rootTable)
+    --            return node
+    --        end,
+    ["cc.Label"] = function(info, rootTable)
+        local node = gk.create_label_local(info)
+        info.id = info.id or config:genID("label", rootTable)
+        return node
+    end,
+    ["cc.ScrollView"] = function(info, rootTable)
+        local node = cc.ScrollView:create(cc.size(info.width, info.height))
+        node:setDelegate()
+        info.id = info.id or config:genID("scrollView", rootTable)
+        return node
+    end,
+    ["cc.TableView"] = function(info, rootTable)
+        local node = cc.TableView:create(cc.size(info.width, info.height))
+        node:setDelegate()
+        info.id = info.id or config:genID("tableView", rootTable)
+        return node
+    end,
+    ["cc.ClippingNode"] = function(info, rootTable)
+        -- Add an useless node
+        local node = cc.ClippingNode:create(cc.Node:create())
+        info.id = info.id or config:genID("clippingNode", rootTable)
+        return node
+    end,
+    ["cc.ClippingRectangleNode"] = function(info, rootTable)
+        -- Add an useless node
+        local node = cc.ClippingRectangleNode:create(info.clippingRegion)
+        info.id = info.id or config:genID("clippingRectNode", rootTable)
+        return node
+    end,
+    ["cc.ProgressTimer"] = function(info, rootTable)
+        if info.sprite then
+            -- create content sprite first
+            local sprite = generator:createNode(info.sprite, nil, rootTable)
+            -- create ProgressTimer
+            sprite.__info._lock = 0
+            local node = cc.ProgressTimer:create(sprite)
+            info.id = info.id or config:genID("progressTimer", rootTable)
+            sprite.__info.id = info.id .. "_sprite"
+            return node
+        end
+        return nil
+    end,
+    ["cc.TMXTiledMap"] = function(info, rootTable)
+        if info.tmx then
+            local node = cc.TMXTiledMap:create(info.tmx)
+            info.id = info.id or config:genID("tmxTiledMap", rootTable)
+            return node
+        end
+        return nil
+    end,
+    ["cc.ParticleSystemQuad"] = function(info, rootTable)
+        if info.particle and info.particle ~= "" then
+            local node = cc.ParticleSystemQuad:create(info.particle)
+            info.id = info.id or config:genID("particleSystemQuad", rootTable)
+            return node
+        elseif info.totalParticles and info.totalParticles > 0 then
+            local node = cc.ParticleSystemQuad:createWithTotalParticles(info.totalParticles)
+            info.id = info.id or config:genID("particleSystemQuad", rootTable)
+            return node
+        end
+        return nil
+    end,
+    --------------------------- Custom widgets   ---------------------------
+    ["widget"] = function(info, rootTable)
+        local node = gk.injector:inflateNode(info.type)
+        node.__ignore = false
+        -- copy info
+        local keys = table.keys(node.__info.__self)
+        for _, key in ipairs(keys) do
+            if info.__self[key] == nil then
+                info.__self[key] = node.__info.__self[key]
+            end
+        end
+        info.id = info.id or config:genID(info.type, rootTable)
+        info._lock = 0
+        return node
+    end,
+}
+
+function config:registerGKNode(type, alias)
+    table.insert(config.supportNodes, { type = type })
+    config.nodeCreator[type] = function(info, rootTable)
+        local node = gk[type].new()
+        local name = alias or string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+        info.id = info.id or config:genID(name, rootTable)
+        return node
+    end
+end
+
+function config:genID(type, rootTable)
+    if type:starts("cc.Physics") then
+        type = type:gsub("cc.Physics", "")
+    end
+    local names = string.split(type, ".")
+    local names = string.split(names[1], "/")
+    type = names[#names]
+    local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+
+    local index = 1
+    while true do
+        if rootTable[string.format("%s%d", tp, index)] == nil then
+            break
+        else
+            index = index + 1
+        end
+    end
+    return string.format("%s%d", tp, index)
 end
 
 -- properties for Editor
@@ -954,7 +1108,7 @@ config:registerBoolProp("autoToggle")
 config:registerBoolProp("swallowTouches")
 config:registerBoolProp("enableKeyPad")
 config:registerBoolProp("popOnBack")
-config:registerStringProp("atlas")
+config:registerProp("atlas")
 config:registerBoolProp("autoRemoveAtlas")
 -- cc.Layer, cc.Dialog, cc.ScrollView
 config:registerBoolProp("touchEnabled")
@@ -1005,54 +1159,6 @@ config:registerProp("barChangeRate")
 -- gk.CheckBox
 config:registerBoolProp("selected")
 
--- gk.CubicBezierNode
-config:registerProp("origin")
---config:registerProp("control1")
---config:registerProp("control2")
-config:registerProp("destination")
-config:registerProp("c4f")
-config:registerFloatProp("segments")
-config:registerFloatProp("lineWidth")
-config:registerFloatProp("curvesNum")
-
--- gk.DrawNodeCircle
-config:registerProp("radius1")
-config:registerProp("angle")
-config:registerBoolProp("solid")
-config:registerBoolProp("drawLineToCenter")
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "DrawNodeCircle",
-        numProps = {
-            { key = "radius1" },
-            { key = "lineWidth", default = 1 },
-            { key = "angle", default = 0 },
-        },
-        pairProps = {
-            {
-                key = "Color4f",
-                subTitle1 = "R",
-                subTitle2 = "G",
-                key1 = "c4f.r",
-                key2 = "c4f.g",
-                default1 = 100,
-                default2 = 100,
-            }, {
-                key = "",
-                subTitle1 = "B",
-                subTitle2 = "A",
-                key1 = "c4f.b",
-                key2 = "c4f.a",
-                default1 = 0,
-                default2 = 0,
-            }
-        },
-        boolProps = {
-            { key = "solid" },
-            { key = "drawLineToCenter" },
-        },
-    })
-
 -- ccui.EditBox
 config:registerProp("fontName")
 config:registerFloatProp("placeholderFontSize")
@@ -1069,7 +1175,7 @@ config:registerPlaneProp("tmx")
 
 -- cc.ParticleSystemQuad
 config:registerPlaneProp("particle")
-config:registerStringProp("totalParticles")
+config:registerProp("totalParticles")
 config:registerProp("gravity")
 config:registerBoolProp("blendAdditive")
 config:registerFloatProp("duration")
@@ -1133,6 +1239,154 @@ config:registerHintColor3B(cc.c3b(0, 0, 0))
 config:registerHintContentSize({ width = "$fill", height = "$fill" })
 config:registerHintFontSize(24)
 
+------------------------------- draw node -------------------------------
+
+-- gk.DrawNode
+config:registerFloatProp("lineWidth")
+config:registerProp("c4f")
+table.insert(gk.exNodeDisplayer,
+    {
+        title = "gk.DrawNode",
+        type = "DrawNode",
+        numProps = {
+            { key = "lineWidth", default = 1 },
+        },
+        pairProps = {
+            {
+                titles = { "Color4f", "R", "G" },
+                keys = { "c4f.r", "c4f.g" },
+                defaults = { 1, 1 },
+            },
+            {
+                titles = { "", "B", "A" },
+                keys = { "c4f.b", "c4f.a" },
+                defaults = { 1, 1 },
+            },
+        },
+    })
+
+-- gk.CubicBezierNode
+config:registerGKNode("CubicBezierNode")
+config:registerProp("origin")
+config:registerProp("destination")
+config:registerFloatProp("segments")
+config:registerFloatProp("curvesNum")
+
+-- gk.DrawPoint
+config:registerGKNode("DrawPoint")
+config:registerProp("pointSize")
+config:registerBoolProp("dot")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawPoint",
+        title = "gk.DrawPoint",
+        numProps = {
+            { key = "pointSize" },
+        },
+        boolProps = {
+            { key = "dot" },
+        },
+    })
+
+-- gk.DrawLine
+config:registerGKNode("DrawLine")
+config:registerProp("from")
+config:registerProp("to")
+config:registerProp("radius")
+config:registerBoolProp("segment")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawLine",
+        title = "gk.DrawLine",
+        pairProps = {
+            {
+                titles = { "From", "X", "Y" },
+                keys = { "from.x", "from.y" },
+                defaults = { 0, 0 },
+            },
+            {
+                titles = { "To", "X", "Y" },
+                keys = { "to.x", "to.y" },
+                defaults = { 0, 0 },
+            },
+        },
+        numProps = {
+            { key = "radius" },
+        },
+        boolProps = {
+            { key = "segment" },
+        },
+    })
+
+-- gk.DrawNodeCircle
+config:registerGKNode("DrawNodeCircle")
+config:registerProp("radius")
+config:registerProp("angle")
+config:registerBoolProp("solid")
+config:registerBoolProp("drawLineToCenter")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawNodeCircle",
+        title = "gk.DrawNodeCircle",
+        numProps = {
+            { key = "radius" },
+            { key = "angle", default = 0 },
+        },
+        boolProps = {
+            { key = "solid" },
+            { key = "drawLineToCenter" },
+        },
+    })
+
+-- gk.DrawPolygon
+config:registerGKNode("DrawPolygon")
+config:registerFloatProp("borderWidth")
+config:registerProp("fillColor")
+config:registerPropByType("DrawPolygon", "points")
+config:registerFloatPropByType("DrawPolygon", "pointsNum")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawPolygon",
+        title = "gk.DrawPolygon",
+        numProps = {
+            { key = "borderWidth", default = 1 },
+        },
+        pairProps = {
+            {
+                titles = { "FillColor", "R", "G" },
+                keys = { "fillColor.r", "fillColor.g" },
+                defaults = { 1, 1 },
+            },
+            {
+                titles = { "", "B", "A" },
+                keys = { "fillColor.b", "fillColor.a" },
+                defaults = { 1, 1 },
+            },
+        },
+        arrayProps = {
+            { key = "points", numProp = { key = "pointsNum", default = 4 }, titles = { "P%d", "X", "Y" }, keys = { "points.%d.x", "points.%d.y" }, },
+        },
+    })
+
+-- gk.DrawCardinalSpline
+config:registerGKNode("DrawCardinalSpline")
+config:registerFloatProp("tension")
+config:registerFloatProp("segments")
+config:registerPropByType("DrawCardinalSpline", "points")
+config:registerFloatPropByType("DrawCardinalSpline", "pointsNum")
+table.insert(gk.exNodeDisplayer,
+    {
+        type = "DrawCardinalSpline",
+        title = "gk.DrawCardinalSpline",
+        numProps = {
+            { key = "tension", default = 0.5 },
+            { key = "segments" },
+        },
+        arrayProps = {
+            { key = "points", numProp = { key = "pointsNum", default = 4 }, titles = { "P%d", "X", "Y" }, keys = { "points.%d.x", "points.%d.y" }, },
+        },
+    })
+
 ------------------------------------ Physics ------------------------------------------------
 
 -- gk.PhysicsLayer(cc.PhysicsWolrd)
@@ -1149,13 +1403,9 @@ table.insert(gk.exNodeDisplayer,
         type = "PhysicsLayer",
         pairProps = {
             {
-                key = "gravity",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "gravity.x",
-                key2 = "gravity.y",
-                default1 = 0,
-                default2 = -98,
+                titles = { "Gravity", "X", "Y" },
+                keys = { "gravity.x", "gravity.y" },
+                defaults = { 0, -98 },
             },
         },
         numProps = {
@@ -1163,7 +1413,6 @@ table.insert(gk.exNodeDisplayer,
             { key = "substeps", default = 1 },
             { key = "updateRate", default = 1 },
             { key = "fixedUpdateRate", default = 0 },
-            --            { key = "debugDrawMask", default = 0 },
         },
         selectProps = {
             { key = "debugDrawMask", selects = { "DEBUGDRAW_NONE", "DEBUGDRAW_SHAPE", "DEBUGDRAW_JOINT", "DEBUGDRAW_CONTACT", "DEBUGDRAW_ALL" }, type = "string", default = "DEBUGDRAW_NONE" },
@@ -1187,18 +1436,10 @@ config:registerFloatProp("angularDamping")
 config:registerProp("positionOffset")
 config:registerProp("velocity")
 -- cc.PhysicsBody
-config.editableProps["rotationEnabled"] = {
-    getter = function(node) return node:isRotationEnabled() end,
-    setter = function(node, var)
-        node:setRotationEnable(var == 0)
-    end
-}
-config.editableProps["gravityEnabled"] = {
-    getter = function(node) return node:isGravityEnabled() end,
-    setter = function(node, var)
-        node:setGravityEnable(var == 0)
-    end
-}
+config:registerEditableProp("rotationEnabled", function(node) return node:isRotationEnabled() end,
+    function(node, var) node:setRotationEnable(var == 0) end)
+config:registerEditableProp("gravityEnabled", function(node) return node:isGravityEnabled() end,
+    function(node, var) node:setGravityEnable(var == 0) end)
 config:registerBoolProp("dynamic")
 table.insert(gk.exNodeDisplayer,
     {
@@ -1218,22 +1459,14 @@ table.insert(gk.exNodeDisplayer,
         },
         pairProps = {
             {
-                key = "positionOffset",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "positionOffset.x",
-                key2 = "positionOffset.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "PositionOffset", "X", "Y" },
+                keys = { "positionOffset.x", "positionOffset.y" },
+                defaults = { 0, 0 },
             },
             {
-                key = "velocity",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "velocity.x",
-                key2 = "velocity.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "Velocity", "X", "Y" },
+                keys = { "velocity.x", "velocity.y" },
+                defaults = { 0, 0 },
             },
         },
         boolProps = {
@@ -1268,7 +1501,7 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- cc.PhysicsShapeCircle
-config:registerProp("radius", nil, true)
+config:registerPropByType("cc.PhysicsShapeCircle", "radius", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapeCircle",
@@ -1278,46 +1511,36 @@ table.insert(gk.exNodeDisplayer,
         },
         pairProps = {
             {
-                key = "offset",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "offset.x",
-                key2 = "offset.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "Offset", "X", "Y" },
+                keys = { "offset.x", "offset.y" },
+                defaults = { 0, 0 },
             }
         },
     })
 
 -- cc.PhysicsShapePolygon
 config:registerProp("points", nil, true)
-config.editableProps["pointsNum"] = {
-    getter = function(node) return #node.__info.points
-    end,
-    setter = function(node, num)
+config:registerEditableProp("pointsNum", function(node) return node:getPointsCount() end,
+    function(node, num)
         while #node.__info.points < num do
             table.insert(node.__info.points, cc.p(0, 0))
         end
-    end
-}
+    end)
 
 table.insert(gk.exNodeDisplayer,
     {
         type = "cc.PhysicsShapePolygon",
         pairProps = {
             {
-                key = "offset",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "offset.x",
-                key2 = "offset.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "Offset", "X", "Y" },
+                keys = { "offset.x", "offset.y" },
+                defaults = { 0, 0 },
             }
         },
     })
 
 -- cc.PhysicsShapeBox
+config:registerPropByType("cc.PhysicsShapeBox", "radius", nil, true)
 config:registerProp("size", nil, true)
 table.insert(gk.exNodeDisplayer,
     {
@@ -1328,21 +1551,14 @@ table.insert(gk.exNodeDisplayer,
         },
         pairProps = {
             {
-                key = "size",
-                subTitle1 = "W",
-                subTitle2 = "H",
-                key1 = "size.width",
-                key2 = "size.height",
-                default1 = 100,
-                default2 = 100,
-            }, {
-                key = "offset",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "offset.x",
-                key2 = "offset.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "Size", "W", "H" },
+                keys = { "size.width", "size.height" },
+                defaults = { 100, 100 },
+            },
+            {
+                titles = { "Offset", "X", "Y" },
+                keys = { "offset.x", "offset.y" },
+                defaults = { 0, 0 },
             }
         },
     })
@@ -1359,21 +1575,14 @@ table.insert(gk.exNodeDisplayer,
         },
         pairProps = {
             {
-                key = "pointA",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "pointA.x",
-                key2 = "pointA.y",
-                default1 = 0,
-                default2 = 0,
-            }, {
-                key = "pointB",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "pointB.x",
-                key2 = "pointB.y",
-                default1 = 100,
-                default2 = 0,
+                titles = { "PointA", "X", "Y" },
+                keys = { "pointA.x", "pointA.y" },
+                defaults = { 0, 0 },
+            },
+            {
+                titles = { "PointB", "X", "Y" },
+                keys = { "pointB.x", "pointB.y" },
+                defaults = { 0, 0 },
             }
         },
     })
@@ -1388,21 +1597,13 @@ table.insert(gk.exNodeDisplayer,
         },
         pairProps = {
             {
-                key = "size",
-                subTitle1 = "W",
-                subTitle2 = "H",
-                key1 = "size.width",
-                key2 = "size.height",
-                default1 = 100,
-                default2 = 100,
+                titles = { "Size", "W", "H" },
+                keys = { "size.width", "size.height" },
+                defaults = { 100, 100 },
             }, {
-                key = "offset",
-                subTitle1 = "X",
-                subTitle2 = "Y",
-                key1 = "offset.x",
-                key2 = "offset.y",
-                default1 = 0,
-                default2 = 0,
+                titles = { "Offset", "X", "Y" },
+                keys = { "offset.x", "offset.y" },
+                defaults = { 0, 0 },
             }
         },
     })

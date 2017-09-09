@@ -133,6 +133,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     end)
     -- on error callback
     gk.util:registerOnErrorCallback(function(msg)
+        gk.log(msg)
     end)
 
     -- mac scan files

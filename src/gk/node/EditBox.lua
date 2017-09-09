@@ -354,11 +354,47 @@ function EditBox:handleKeyboardEvent()
             elseif key == "KEY_UP_ARROW" then
                 if self.popup then
                     self:setSelectIndex(self.selectIndex - 1)
+                else
+                    -- number var ++
+                    if tonumber(self:getInput()) then
+                        local changeVar = function()
+                            local numVar = tonumber(self:getInput())
+                            local str = tostring(numVar + 0.5)
+                            self.label:setString(str)
+                            self:changeCursorPos(str:len())
+                            if self.onEditEndedCallback then
+                                self.onEditEndedCallback(self, self:getInput(), true)
+                            end
+                        end
+                        changeVar()
+                        local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatActionDur / 2), cc.CallFunc:create(function()
+                            changeVar()
+                        end))))
+                        action:setTag(kCursorMoveAction)
+                    end
                 end
                 return
             elseif key == "KEY_DOWN_ARROW" then
                 if self.popup then
                     self:setSelectIndex(self.selectIndex + 1)
+                else
+                    -- number var --
+                    if tonumber(self:getInput()) then
+                        local changeVar = function()
+                            local numVar = tonumber(self:getInput())
+                            local str = tostring(numVar - 0.5)
+                            self.label:setString(str)
+                            self:changeCursorPos(str:len())
+                            if self.onEditEndedCallback then
+                                self.onEditEndedCallback(self, self:getInput(), true)
+                            end
+                        end
+                        changeVar()
+                        local action = self.cursorNode:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(kRepeatActionDur / 2), cc.CallFunc:create(function()
+                            changeVar()
+                        end))))
+                        action:setTag(kCursorMoveAction)
+                    end
                 end
                 return
             elseif key == "KEY_TAB" then
