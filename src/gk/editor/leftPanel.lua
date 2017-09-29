@@ -516,7 +516,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) then
         return
     end
-    local fixChild = node.__info == nil or node.__ignore
+    local fixChild = node.__info == nil or node.__ignore or (node:getPhysicsBody() and node:getPhysicsBody().__info == nil)
     local size = self:getContentSize()
     local topY = size.height - marginTop
 
@@ -527,7 +527,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     self:createButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, displayName, fixChild, node, widgetParent)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
-    if node:getPhysicsBody() then
+    if not fixChild and node:getPhysicsBody() then
         title = node:getPhysicsBody().__info.id
         self:createPhysicsButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, node:getPhysicsBody())
         self.domDepth = self.domDepth + 1
