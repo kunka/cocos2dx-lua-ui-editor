@@ -490,7 +490,12 @@ function panel:displayNode(node)
         -- only display id when dragging
         return
     end
-    createCheckBox("Lock", "_lock")
+    createCheckBox("Lock(KEY_L)", "_lock", function()
+        gk.event:post("displayDomTree", true)
+    end)
+    createCheckBox("Fold(KEY_F)", "_fold", function()
+        gk.event:post("displayDomTree", true)
+    end, true)
     --------------------------- cc.Node   ---------------------------
     createTitle("cc.Node")
     -- position
@@ -877,8 +882,9 @@ function panel:displayNode(node)
         end
         local isTTF = gk.isTTF(fontFile)
         local isBMFont = gk.isBMFont(fontFile)
-        local isSystemFont = not isTTF and not isBMFont
-        createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+        local isCharMap = gk.isCharMap(fontFile)
+        local isSystemFont = not isTTF and not isBMFont and not isCharMap
+        createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or (isCharMap and "CharMap" or "SystemFont"))))
         -- font file
         self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
         local fonts = clone(gk.resource.fontFiles)
@@ -943,14 +949,23 @@ function panel:displayNode(node)
         if not isSystemFont and node.__info.lineHeight then
             createInputMiddle("LineHeight", "", "", nil, "lineHeight", "number", 0, -1)
         end
-        createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
-        createHintFontSize("fontSize")
+        if not isCharMap then
+            createInputMiddle("FontSize", "", "", nil, "fontSize", "number")
+            createHintFontSize("fontSize")
+        end
         if not isSystemFont and node.__info.lineHeight then
             createInputMiddle("AdditionalKerning", "", "", nil, "additionalKerning", "number", 0, 0)
         end
-        if not isBMFont and node.__info.textColor then
+        if not isSystemFont then
+            createInputMiddle("LineSpacing", "", "", nil, "lineSpacing", "number", 0, 0)
+        end
+        if not isBMFont and not isCharMap and node.__info.textColor then
             createInputMiddle("TextColor4B", "R", "G", "textColor.r", "textColor.g", "number", 255, 255)
             createInputMiddle("", "B", "A", "textColor.b", "textColor.a", "number", 255, 255)
+        end
+        if isCharMap then
+            createInputMiddle("ItemSize", "W", "H", "itemWidth", "itemHeight", "number", 0, 0)
+            createInputMiddle("StartChar", "", "", nil, "startChar", "number")
         end
         if not isSystemFont then
             createCheckBox("EnableWrap", "enableWrap")
@@ -995,9 +1010,10 @@ function panel:displayNode(node)
                 end
                 local isTTF = gk.isTTF(fontFile)
                 local isBMFont = gk.isBMFont(fontFile)
-                local isSystemFont = not isTTF and not isBMFont
+                local isCharMap = gk.isCharMap(fontFile)
+                local isSystemFont = not isTTF and not isBMFont and not isCharMap
                 --            createTitle(string.format("Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
-                local label = createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or "SystemFont")))
+                local label = createTitle(string.format("cc.Label(%s)", isTTF and "TTF" or (isBMFont and "BMFont" or (isCharMap and "CharMap" or "SystemFont"))))
                 label:setOpacity(150)
                 -- font file
                 local label = self:createLabel("FontFile_" .. lan, leftX, topY - stepY * yIndex)
@@ -1086,6 +1102,8 @@ function panel:displayNode(node)
         createCheckBox("SwallowTouches", "swallowTouches")
         createCheckBox("EnableKeyPad", "enableKeyPad")
         createCheckBox("PopOnBack", "popOnBack")
+        createInputLong("Atlas", "atlas", "string")
+        createCheckBox("AutoRemoveAtlas", "autoRemoveAtlas")
     end
     if isgkDialog then
         createTitle("gk.Dialog")

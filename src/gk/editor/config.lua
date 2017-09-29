@@ -22,7 +22,7 @@ config.supportNodes = {
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
     {
         type = "ccui.EditBox",
-        normalSprite = "gk/res/texture/edit_bCubicBezierNodeox_bg.png",
+        normalSprite = "gk/res/texture/edit_box_bg.png",
         selectedSprite = "gk/res/texture/edit_box_bg.png",
         disabledSprite = "gk/res/texture/edit_box_bg.png",
         capInsets = cc.rect(20, 20, 20, 20),
@@ -505,7 +505,7 @@ config.editableProps = {
             if not gk.isBMFont(fontFile) and not gk.isCharMap(fontFile) then
                 node:setTextColor(var)
             else
-                -- bmfont do not support textcolor
+                -- bmfont not support textcolor
                 node:setColor(var)
             end
         end
