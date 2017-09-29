@@ -1,6 +1,5 @@
 return {
-	_fold = true,
-	enableKeyPad = 1,
+	_fold = false,
 	height = "$fill",
 	id = "LabelTest",
 	ignoreAnchor = 0,
@@ -8,10 +7,6 @@ return {
 	swallowTouches = 1,
 	type = "LabelTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      fontSize = 18,
 	      height = 0,
@@ -27,10 +22,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -52,10 +43,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Klee.fnt",
 	         en = "Klee.fnt"},
@@ -63,6 +50,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "000000",
 	      enableWrap = 1,
 	      fontSize = 18,
 	      height = 0,
@@ -78,10 +66,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
-	      color = {
-	         b = 0,
-	         g = 0,
-	         r = 0},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -104,10 +88,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -132,10 +112,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -160,10 +136,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -188,10 +160,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -214,10 +182,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -242,10 +206,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -270,10 +230,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -298,10 +254,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -324,10 +276,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Arial"},
@@ -351,10 +299,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Arial"},
@@ -376,10 +320,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -401,10 +341,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Klee.fnt",
 	         en = "Klee.fnt"},
@@ -412,6 +348,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label8",
@@ -426,10 +363,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -452,10 +385,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -478,10 +407,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Klee.fnt",
 	         en = "Klee.fnt"},
@@ -504,10 +429,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -515,6 +436,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label12",
@@ -529,10 +451,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -557,10 +475,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 770},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -568,6 +482,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label14",
@@ -582,10 +497,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -609,10 +520,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -644,10 +551,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -679,10 +582,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Arial"},
@@ -698,6 +597,7 @@ return {
 	         radius = 0,
 	         w = 0}},
 	   {
+	      effectColor = "ff0000ff",
 	      enableOutline = 0,
 	      fontSize = 18,
 	      height = 0,
@@ -715,15 +615,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
-	      effectColor = {
-	         a = 255,
-	         b = 0,
-	         g = 0,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -739,6 +630,7 @@ return {
 	         radius = 0,
 	         w = 0}},
 	   {
+	      effectColor = "ff0000ff",
 	      enableGlow = 0,
 	      fontSize = 18,
 	      height = 0,
@@ -756,15 +648,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
-	      effectColor = {
-	         a = 255,
-	         b = 0,
-	         g = 0,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Verdana.ttf"},
@@ -780,6 +663,7 @@ return {
 	         radius = 0,
 	         w = 0}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label19",
@@ -794,10 +678,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -805,6 +685,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label21",
@@ -819,10 +700,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Arial",
 	         en = "Arial"},
@@ -830,6 +707,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label22",
@@ -845,10 +723,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -864,6 +738,7 @@ return {
 	         radius = 0,
 	         w = 0}},
 	   {
+	      color = "ff3232",
 	      fontSize = 18,
 	      height = 0,
 	      id = "label23",
@@ -879,10 +754,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 50,
-	         g = 50,
-	         r = 255},
 	      fontFile = {
 	         cn = "Verdana.ttf",
 	         en = "Klee.fnt"},
@@ -896,4 +767,29 @@ return {
 	         h = -2,
 	         r = 0,
 	         radius = 0,
-	         w = 0}}}}
+	         w = 0}},
+	   {
+	      color = "31d294",
+	      fontSize = 18,
+	      height = 0,
+	      id = "label24",
+	      ignoreAnchor = 1,
+	      itemHeight = 39,
+	      itemWidth = 28,
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      startChar = 48,
+	      string = "0123456789",
+	      type = "cc.Label",
+	      width = 200,
+	      x = 870,
+	      y = 60,
+	      anchor = {
+	         x = 0,
+	         y = 1},
+	      fontFile = {
+	         cn = "chars.png",
+	         en = "Arial"},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

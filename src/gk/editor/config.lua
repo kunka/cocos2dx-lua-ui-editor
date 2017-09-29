@@ -9,7 +9,7 @@
 local config = {}
 
 config.supportNodes = {
-    { type = "cc.Node", physicsBody = {} },
+    { type = "cc.Node", },
     { type = "cc.Sprite", },
     {
         type = "ccui.Scale9Sprite",
@@ -75,60 +75,6 @@ config.supportNodes = {
         type = "cc.ParticleSystemQuad",
         particle = "gk/res/particle/Galaxy.plist",
     },
-    { type = "PhysicsWorld", },
-    {
-        type = "cc.PhysicsBody",
-        _isPhysics = true,
-    },
-    {
-        type = "cc.PhysicsShapeCircle",
-        radius = 1,
-        offset = cc.p(0, 0),
-        density = 0,
-        restitution = 0.5,
-        friction = 0.5,
-        _isPhysics = true,
-    },
-    {
-        type = "cc.PhysicsShapePolygon",
-        points = { cc.p(-50, -50), cc.p(-50, 50), cc.p(50, 50), cc.p(50, -50) },
-        pointsNum = 4,
-        offset = cc.p(0, 0),
-        density = 0,
-        restitution = 0.5,
-        friction = 0.5,
-        _isPhysics = true,
-    },
-    {
-        type = "cc.PhysicsShapeBox",
-        radius = 0,
-        size = cc.size(100, 100),
-        offset = cc.p(0, 0),
-        density = 0,
-        restitution = 0.5,
-        friction = 0.5,
-        _isPhysics = true,
-    },
-    {
-        type = "cc.PhysicsShapeEdgeSegment",
-        border = 1,
-        pointA = cc.p(0, 0),
-        pointB = cc.p(100, 0),
-        density = 0,
-        restitution = 0.5,
-        friction = 0.5,
-        _isPhysics = true,
-    },
-    {
-        type = "cc.PhysicsShapeEdgeBox",
-        border = 1,
-        size = cc.size(100, 100),
-        density = 0,
-        restitution = 0.5,
-        friction = 0.5,
-        offset = cc.p(0, 0),
-        _isPhysics = true,
-    },
 }
 
 function config:registerPlaneSupportNode(info)
@@ -158,7 +104,6 @@ config.defValues = {
     visible = 0,
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
-    physicsBody = {},
 
     --    centerRect = cc.rect(0, 0, 0, 0),
     -- Layer
@@ -426,7 +371,9 @@ config.editableProps = {
     lineHeight = {
         getter = function(node) return -1 end,
         setter = function(node, var)
-            if not gk.isSystemFont(node.__info.fontFile[gk.resource:getCurrentLan()]) then
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if not gk.isSystemFont(fontFile) and not gk.isCharMap(fontFile) then
                 if var > 0 then
                     node:setLineHeight(var)
                 end
@@ -449,11 +396,52 @@ config.editableProps = {
                 node:setTTFConfig(config)
             elseif gk.isBMFont(fontFile) then
                 node:setBMFontFilePath(gk.resource:getFontFile(fontFile), cc.p(0, 0), node.__info.fontSize)
+            elseif gk.isCharMap(fontFile) then
+                node:setCharMap(gk.create_sprite(gk.resource:getFontFile(fontFile)):getTexture(), node.__info.itemWidth, node.__info.itemHeight, node.__info.startChar)
             else
                 node:setSystemFontName(fontFile)
                 node:setSystemFontSize(node.__info.fontSize)
             end
         end
+    },
+    itemWidth = {
+        getter = function(node) return 0 end,
+        setter = function(node, var)
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
+            if gk.isCharMap(fontFile) then
+                node:setCharMap(gk.create_sprite(gk.resource:getFontFile(fontFile)):getTexture(), var, node.__info.itemHeight, node.__info.startChar)
+            end
+        end,
+    },
+    itemHeight = {
+        getter = function(node) return 0 end,
+        setter = function(node, var)
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
+            if gk.isCharMap(fontFile) then
+                node:setCharMap(gk.create_sprite(gk.resource:getFontFile(fontFile)):getTexture(), node.__info.itemWidth, var, node.__info.startChar)
+            end
+        end,
+    },
+    startChar = {
+        getter = function(node) return 0 end,
+        setter = function(node, var)
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
+            if gk.isCharMap(fontFile) then
+                node:setCharMap(gk.create_sprite(gk.resource:getFontFile(fontFile)):getTexture(), node.__info.itemWidth, node.__info.itemHeight, var)
+            end
+        end,
     },
     fontSize = {
         getter = function(node)
@@ -479,10 +467,25 @@ config.editableProps = {
                 node:setTTFConfig(config)
             elseif gk.isBMFont(fontFile) then
                 node:setBMFontSize(var)
+            elseif gk.isCharMap(fontFile) then
+                -- do nothing
             else
                 node:setSystemFontSize(var)
             end
         end
+    },
+    lineSpacing = {
+        getter = function(node) return 0 end,
+        setter = function(node, var)
+            local lan = gk.resource:getCurrentLan()
+            local fontFile = node.__info.fontFile[lan]
+            if fontFile == nil then
+                fontFile = gk.resource:getDefaultFont(lan)
+            end
+            if not gk.isSystemFont(fontFile) then
+                node:setLineSpacing(var)
+            end
+        end,
     },
     textColor = {
         getter = function(node)
@@ -491,7 +494,7 @@ config.editableProps = {
             if fontFile == nil then
                 fontFile = gk.resource:getDefaultFont(lan)
             end
-            return not gk.isBMFont(fontFile) and node:getTextColor()
+            return not gk.isBMFont(fontFile) and not gk.isCharMap(fontFile) and not gk.isCharMap(fontFile) and node:getTextColor()
         end,
         setter = function(node, var)
             local lan = gk.resource:getCurrentLan()
@@ -499,7 +502,7 @@ config.editableProps = {
             if fontFile == nil then
                 fontFile = gk.resource:getDefaultFont(lan)
             end
-            if not gk.isBMFont(fontFile) then
+            if not gk.isBMFont(fontFile) and not gk.isCharMap(fontFile) then
                 node:setTextColor(var)
             else
                 -- bmfont do not support textcolor
@@ -521,6 +524,8 @@ config.editableProps = {
             if gk.isTTF(fontFile) then
                 node:setAdditionalKerning(var)
             elseif gk.isBMFont(fontFile) then
+                node:setAdditionalKerning(var)
+            elseif gk.isCharMap(fontFile) then
                 node:setAdditionalKerning(var)
             else
                 -- not support
@@ -907,11 +912,6 @@ config.nodeCreator = {
         info.id = info.id or config:genID("checkBox", rootTable)
         return node
     end,
-    ["PhysicsWorld"] = function(info, rootTable)
-        local node = gk.PhysicsWorld:create()
-        info.id = info.id or config:genID("physicsWorld", rootTable)
-        return node
-    end,
     ["ccui.EditBox"] = function(info, rootTable)
         local node = ccui.EditBox:create(cc.size(info.width, info.height),
             gk.create_scaleg9_sprite(info.normalSprite, info.capInsets),
@@ -1030,9 +1030,6 @@ function config:registerGKNode(type, alias)
 end
 
 function config:genID(type, rootTable)
-    if type:starts("cc.Physics") then
-        type = type:gsub("cc.Physics", "")
-    end
     local names = string.split(type, ".")
     local names = string.split(names[1], "/")
     type = names[#names]
@@ -1055,7 +1052,6 @@ config:registerPlaneProp("_voidContent", false)
 config:registerPlaneProp("_lock", 1)
 config:registerPlaneProp("_fold", false)
 config:registerPlaneProp("id", "")
-config:registerPlaneProp("_isPhysics", false)
 
 -- cc.Node
 config:registerProp("anchor", "AnchorPoint")
@@ -1215,8 +1211,8 @@ config:registerFloatProp("endSpinVar")
 config:registerFloatProp("emissionRate")
 
 config.hintColor3Bs = {}
-function config:registerHintColor3B(c3b)
-    table.insert(self.hintColor3Bs, c3b)
+function config:registerHintColor3B(c3b, desc)
+    table.insert(self.hintColor3Bs, { c3b = c3b, desc = desc })
 end
 
 config.hintPositions = {}
@@ -1386,227 +1382,5 @@ table.insert(gk.exNodeDisplayer,
             { key = "points", numProp = { key = "pointsNum", default = 4 }, titles = { "P%d", "X", "Y" }, keys = { "points.%d.x", "points.%d.y" }, },
         },
     })
-
------------------------------------- Physics ------------------------------------------------
-
--- gk.PhysicsLayer(cc.PhysicsWolrd)
-config:registerProp("gravity")
-config:registerFloatProp("speed")
-config:registerFloatProp("substeps")
-config:registerFloatProp("updateRate")
-config:registerFloatProp("fixedUpdateRate")
-config:registerProp("debugDrawMask")
-config:registerBoolProp("autoStep")
-table.insert(gk.exNodeDisplayer,
-    {
-        title = "gk.PhysicsLayer",
-        type = "PhysicsLayer",
-        pairProps = {
-            {
-                titles = { "Gravity", "X", "Y" },
-                keys = { "gravity.x", "gravity.y" },
-                defaults = { 0, -98 },
-            },
-        },
-        numProps = {
-            { key = "speed", default = 1 },
-            { key = "substeps", default = 1 },
-            { key = "updateRate", default = 1 },
-            { key = "fixedUpdateRate", default = 0 },
-        },
-        selectProps = {
-            { key = "debugDrawMask", selects = { "DEBUGDRAW_NONE", "DEBUGDRAW_SHAPE", "DEBUGDRAW_JOINT", "DEBUGDRAW_CONTACT", "DEBUGDRAW_ALL" }, type = "string", default = "DEBUGDRAW_NONE" },
-        },
-        boolProps = { { key = "autoStep" } },
-    })
-
--- cc.PhysicsBody, cc.PhysicsShape
---config:registerFloatProp("mass")
---config:registerFloatProp("moment")
-config:registerFloatProp("tag")
-config:registerFloatProp("group")
-config:registerFloatProp("categoryBitmask")
-config:registerFloatProp("contactTestBitmask")
-config:registerFloatProp("collisionBitmask")
-
--- cc.PhysicsBody
-config:registerFloatProp("rotationOffset")
-config:registerFloatProp("linearDamping")
-config:registerFloatProp("angularDamping")
-config:registerProp("positionOffset")
-config:registerProp("velocity")
--- cc.PhysicsBody
-config:registerEditableProp("rotationEnabled", function(node) return node:isRotationEnabled() end,
-    function(node, var) node:setRotationEnable(var == 0) end)
-config:registerEditableProp("gravityEnabled", function(node) return node:isGravityEnabled() end,
-    function(node, var) node:setGravityEnable(var == 0) end)
-config:registerBoolProp("dynamic")
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsBody",
-        stringProps = {},
-        numProps = {
-            --            { key = "mass", default = 1 },
-            --            { key = "moment", default = 0 },
-            { key = "group", default = 0 },
-            { key = "categoryBitmask", default = -1 },
-            { key = "contactTestBitmask", default = 0 },
-            { key = "collisionBitmask", default = -1 },
-            { key = "tag", default = 0 },
-            { key = "rotationOffset", default = 0 },
-            { key = "linearDamping", default = 0 },
-            { key = "angularDamping", default = 0 },
-        },
-        pairProps = {
-            {
-                titles = { "PositionOffset", "X", "Y" },
-                keys = { "positionOffset.x", "positionOffset.y" },
-                defaults = { 0, 0 },
-            },
-            {
-                titles = { "Velocity", "X", "Y" },
-                keys = { "velocity.x", "velocity.y" },
-                defaults = { 0, 0 },
-            },
-        },
-        boolProps = {
-            { key = "gravityEnabled" },
-            { key = "rotationEnabled" },
-            { key = "dynamic" },
-        },
-    })
-
--- cc.PhysicsShape
-config:registerFloatProp("density")
-config:registerFloatProp("restitution")
-config:registerFloatProp("friction")
-config:registerBoolProp("sensor")
-config:registerProp("offset", nil, true)
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShape",
-        numProps = {
-            --            { key = "mass", default = 0 },
-            --            { key = "moment", default = 0 },
-            { key = "density", default = 0 },
-            { key = "restitution", default = 0 },
-            { key = "friction", default = 0 },
-            { key = "group", default = 0 },
-            { key = "categoryBitmask", default = -1 },
-            { key = "contactTestBitmask", default = 0 },
-            { key = "collisionBitmask", default = -1 },
-            { key = "tag", default = 0 },
-        },
-        boolProps = { { key = "sensor" } },
-    })
-
--- cc.PhysicsShapeCircle
-config:registerPropByType("cc.PhysicsShapeCircle", "radius", nil, true)
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShapeCircle",
-        stringProps = {},
-        numProps = {
-            { key = "radius", default = 1 },
-        },
-        pairProps = {
-            {
-                titles = { "Offset", "X", "Y" },
-                keys = { "offset.x", "offset.y" },
-                defaults = { 0, 0 },
-            }
-        },
-    })
-
--- cc.PhysicsShapePolygon
-config:registerProp("points", nil, true)
-config:registerEditableProp("pointsNum", function(node) return node:getPointsCount() end,
-    function(node, num)
-        while #node.__info.points < num do
-            table.insert(node.__info.points, cc.p(0, 0))
-        end
-    end)
-
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShapePolygon",
-        pairProps = {
-            {
-                titles = { "Offset", "X", "Y" },
-                keys = { "offset.x", "offset.y" },
-                defaults = { 0, 0 },
-            }
-        },
-    })
-
--- cc.PhysicsShapeBox
-config:registerPropByType("cc.PhysicsShapeBox", "radius", nil, true)
-config:registerProp("size", nil, true)
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShapeBox",
-        stringProps = {},
-        numProps = {
-            { key = "radius", default = 0 },
-        },
-        pairProps = {
-            {
-                titles = { "Size", "W", "H" },
-                keys = { "size.width", "size.height" },
-                defaults = { 100, 100 },
-            },
-            {
-                titles = { "Offset", "X", "Y" },
-                keys = { "offset.x", "offset.y" },
-                defaults = { 0, 0 },
-            }
-        },
-    })
-
--- cc.PhysicsShapeEdgeSegment
-config:registerPlaneProp("border")
-config:registerFloatProp("pointA", nil, true)
-config:registerFloatProp("pointB", nil, true)
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShapeEdgeSegment",
-        numProps = {
-            { key = "border", default = 1 },
-        },
-        pairProps = {
-            {
-                titles = { "PointA", "X", "Y" },
-                keys = { "pointA.x", "pointA.y" },
-                defaults = { 0, 0 },
-            },
-            {
-                titles = { "PointB", "X", "Y" },
-                keys = { "pointB.x", "pointB.y" },
-                defaults = { 0, 0 },
-            }
-        },
-    })
-
--- cc.PhysicsShapeEdgeBox
-table.insert(gk.exNodeDisplayer,
-    {
-        type = "cc.PhysicsShapeEdgeBox",
-        stringProps = {},
-        numProps = {
-            { key = "border", default = 0 },
-        },
-        pairProps = {
-            {
-                titles = { "Size", "W", "H" },
-                keys = { "size.width", "size.height" },
-                defaults = { 100, 100 },
-            }, {
-                titles = { "Offset", "X", "Y" },
-                keys = { "offset.x", "offset.y" },
-                defaults = { 0, 0 },
-            }
-        },
-    })
-
 
 return config

@@ -67,6 +67,13 @@ function Dialog:animateOut(callback)
 end
 
 function Dialog:onTouchBegan(touch, event)
+    if self.popOnTouchOutsideBg and self.popOnTouchInsideBg then
+        gk.log("[%s]: popOnTouch", self.__cname)
+        self:runAction(cc.CallFunc:create(function()
+            self:pop()
+        end))
+        return true
+    end
     if self.dialogBg then
         local location = touch:getLocation()
         local touchBeginPoint = { x = location.x, y = location.y }
@@ -79,7 +86,7 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.swallowTouches
+                return true
             end
         else
             if self.popOnTouchInsideBg then
@@ -87,7 +94,7 @@ function Dialog:onTouchBegan(touch, event)
                 self:runAction(cc.CallFunc:create(function()
                     self:pop()
                 end))
-                return self.swallowTouches
+                return true
             end
         end
     end
@@ -114,9 +121,15 @@ end
 function Dialog:onKeyBack()
     if self.popOnBack then
         gk.log("[%s]: pop onKeyBack", self.__cname)
-        self:pop()
+        if self.onKeyBackCallback then
+            self.onKeyBackCallback()
+        else
+            self:pop()
+        end
+        return true
     else
         gk.log("[%s]: pop onKeyBack is disable", self.__cname)
+        return false
     end
 end
 

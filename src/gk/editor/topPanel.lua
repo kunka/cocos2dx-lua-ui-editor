@@ -210,8 +210,6 @@ function panel.create(parent)
         gk.util:addMouseMoveEffect(node)
         if self.widgets[i]._isWidget then
             node:setColor(cc.c3b(0xEE, 0x99, 0xEE))
-        elseif self.widgets[i]._isPhysics then
-            node:setColor(cc.c3b(0x33, 0xCC, 0x99))
         end
         node.type = self.widgets[i].type
         node:setScale(iconScale)
@@ -325,34 +323,27 @@ function panel.create(parent)
                     local widget = self.widgets[i]
                     local info = clone(widget)
                     local type = widget.type
-                    if widget._isPhysics then
-                        local obj = generator:createPhysicObject(info, self._containerNode, self.parent.scene.layer)
+                    node = generator:createNode(info, nil, self.parent.scene.layer)
+                    if node then
+                        self.parent:rescaleNode(node, self._containerNode)
+                        if widget._isWidget or type == "cc.Layer" then
+                            node.__info.x, node.__info.y = 0, 0
+                        else
+                            local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                            local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
+                            node.__info.x, node.__info.y = x, y
+                        end
+                        self._containerNode:addChild(node)
+                        gk.log("add new node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
+                        gk.event:post("executeCmd", "ADD", {
+                            id = node.__info.id,
+                            panel = self.parent,
+                        })
                         gk.event:post("postSync")
-                        gk.event:post("displayNode", obj)
+                        gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
                     else
-                        node = generator:createNode(info, nil, self.parent.scene.layer)
-                        if node then
-                            self.parent:rescaleNode(node, self._containerNode)
-                            if widget._isWidget or type == "cc.Layer" then
-                                node.__info.x, node.__info.y = 0, 0
-                            else
-                                local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
-                                local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
-                                node.__info.x, node.__info.y = x, y
-                            end
-                            self._containerNode:addChild(node)
-                            gk.log("add new node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
-                            gk.event:post("executeCmd", "ADD", {
-                                id = node.__info.id,
-                                panel = self.parent,
-                            })
-                            gk.event:post("postSync")
-                            gk.event:post("displayNode", node)
-                            gk.event:post("displayDomTree")
-                        else
-                            gk.log("cannot create node %s", type)
-                        end
+                        gk.log("cannot create node %s", type)
                     end
                 else
                     gk.log("cancel put node, not inside of container node")

@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = 100,
 	id = "TableCell1",
 	ignoreAnchor = 1,
@@ -8,25 +8,17 @@ return {
 	anchor = {
 	   x = 0,
 	   y = 0},
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	scaleSize = {
 	   h = "$minScale",
 	   w = "$xScale"},
 	children = {	   {
+	      color = "66659bff",
 	      height = 100,
 	      id = "Member",
 	      ignoreAnchor = 0,
 	      opacity = 0,
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      color = {
-	         a = 255,
-	         b = 155,
-	         g = 101,
-	         r = 102},
 	      scaleSize = {
 	         h = "$minScale",
 	         w = "1"},
@@ -49,10 +41,6 @@ return {
 	            blendFunc = {
 	               dst = 771,
 	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "1"}},
@@ -79,14 +67,11 @@ return {
 	               width = 60,
 	               x = 20,
 	               y = 55},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "1"}},
 	         {
+	            color = "0000ff",
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
@@ -103,10 +88,6 @@ return {
 	            anchor = {
 	               x = 0,
 	               y = 1},
-	            color = {
-	               b = 255,
-	               g = 0,
-	               r = 0},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},
@@ -114,17 +95,13 @@ return {
 	               x = "$scaleX",
 	               y = "1"}}}},
 	   {
+	      color = "00c86400",
 	      height = 50,
 	      id = "Time",
 	      ignoreAnchor = 0,
 	      opacity = 0,
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      color = {
-	         a = 0,
-	         b = 100,
-	         g = 200,
-	         r = 0},
 	      scaleSize = {
 	         h = "$minScale",
 	         w = "1"},
@@ -151,10 +128,6 @@ return {
 	               width = 40,
 	               x = 20,
 	               y = 20},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "1"}},
@@ -171,10 +144,6 @@ return {
 	            width = 0,
 	            x = 640,
 	            y = 25,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},
@@ -183,17 +152,13 @@ return {
 	               y = "1"}}}},
 	   {
 	      _fold = false,
+	      color = "c80063ff",
 	      height = 100,
 	      id = "Me",
 	      ignoreAnchor = 0,
 	      opacity = 0,
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      color = {
-	         a = 255,
-	         b = 99,
-	         g = 0,
-	         r = 200},
 	      scaleSize = {
 	         h = "$minScale",
 	         w = "1"},
@@ -223,10 +188,6 @@ return {
 	               width = 60,
 	               x = 20,
 	               y = 55},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "1"}},
@@ -246,14 +207,11 @@ return {
 	            blendFunc = {
 	               dst = 771,
 	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "1"}},
 	         {
+	            color = "0000ff",
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
@@ -269,10 +227,6 @@ return {
 	            anchor = {
 	               x = 0,
 	               y = 1},
-	            color = {
-	               b = 255,
-	               g = 0,
-	               r = 0},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},

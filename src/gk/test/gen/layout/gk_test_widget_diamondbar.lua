@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = 56,
 	id = "DiamondBar",
 	scaleX = "$minScale",
@@ -8,10 +8,6 @@ return {
 	width = 206,
 	x = 0,
 	y = 0,
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      file = "hud/bs1.png",
@@ -25,10 +21,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      children = {	         {
 	            cascadeColorEnabled = 0,
 	            cascadeOpacityEnabled = 0,
@@ -40,10 +32,6 @@ return {
 	            y = 29,
 	            zoomEnabled = 0,
 	            zoomScale = 1,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            children = {	               {
 	                  _lock = 0,
 	                  file = "hud/add.png",
@@ -55,11 +43,7 @@ return {
 	                  y = 30,
 	                  blendFunc = {
 	                     dst = 771,
-	                     src = 1},
-	                  color = {
-	                     b = 255,
-	                     g = 255,
-	                     r = 255}}}},
+	                     src = 1}}}},
 	         {
 	            fontSize = 28,
 	            height = 0,
@@ -70,10 +54,6 @@ return {
 	            width = 0,
 	            x = 95,
 	            y = 28,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "en_de.ttf",
 	               en = "Arial"}},
@@ -87,8 +67,4 @@ return {
 	            y = 28,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255}}}}}}
+	               src = 1}}}}}}

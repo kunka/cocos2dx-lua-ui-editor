@@ -1,13 +1,22 @@
 return {
 	_fold = false,
-	enableKeyPad = 1,
 	height = "$fill",
 	id = "MainLayer",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "MainLayer",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255}}
+	children = {	   {
+	      fontSize = 24,
+	      id = "label1",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      string = "label",
+	      type = "cc.Label",
+	      x = 479,
+	      y = 334,
+	      fontFile = {
+	         en = "Arial"},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"}}}}

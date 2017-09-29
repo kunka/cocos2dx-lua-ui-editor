@@ -516,7 +516,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     if tolua.type(node) == "cc.DrawNode" or gk.util:isDebugNode(node) then
         return
     end
-    local fixChild = node.__info == nil or node.__ignore or (node:getPhysicsBody() and node:getPhysicsBody().__info == nil)
+    local fixChild = node.__info == nil or node.__ignore
     local size = self:getContentSize()
     local topY = size.height - marginTop
 
@@ -527,18 +527,6 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     self:createButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, displayName, fixChild, node, widgetParent)
     self.domDepth = self.domDepth + 1
     layer = layer + 1
-    if not fixChild and node:getPhysicsBody() then
-        title = node:getPhysicsBody().__info.id
-        self:createPhysicsButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, node:getPhysicsBody())
-        self.domDepth = self.domDepth + 1
-        layer = layer + 1
-        local shapes = node:getPhysicsBody():getShapes()
-        for i = 1, #shapes do
-            title = shapes[i].__info.id
-            self:createPhysicsButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, shapes[i])
-            self.domDepth = self.domDepth + 1
-        end
-    end
     local preWidgetParent = widgetParent
     local widgetParent = widgetParent
     if (node.__info and node.__info._isWidget) then
@@ -689,38 +677,6 @@ function panel:displayGroup(key, layer, displayName, domItem)
 
     self:createButtonGroup(key, leftX + stepX * layer, topY - stepY * self.domDepth, key or displayName, domItem)
     self.domDepth = self.domDepth + 1
-end
-
-function panel:createPhysicsButton(content, x, y, obj)
-    local string = string.format("*%s", content)
-    local label = gk.create_label(string, fontName, fontSize)
-    local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
-    label:setDimensions(contentSize.width - x / scale, contentSize.height)
-    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-    gk.set_label_color(label, cc.c3b(0x33, 0xCC, 0x00))
-    label:setPosition(x, y)
-    gk.util:addMouseMoveEffect(label)
-    local button = gk.ZoomButton.new(label)
-    button:setScale(scale)
-    self.displayInfoNode:addChild(button)
-    button:setAnchorPoint(0, 0.5)
-    button:setPosition(x, y)
-    button:onClicked(function()
-        self.selectedNode = button
-        gk.util:drawNodeBg(button, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
-        gk.event:post("displayNode", obj)
-        gk.event:post("displayDomTree", true, true)
-    end)
-    -- select
-    if self.parent.displayingNode == obj then
-        self.displayingDomDepth = self.domDepth
-        --            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
-        gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
-        --            end)))
-        self.selectedNode = button
-    end
-    return button
 end
 
 function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)

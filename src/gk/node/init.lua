@@ -18,9 +18,6 @@ gk.CheckBox = import(".CheckBox")
 gk.TableViewCell = import(".TableViewCell")
 gk.Widget = import(".Widget")
 
--- physics
-gk.PhysicsLayer = import(".PhysicsLayer")
-
 -- draw node
 gk.DrawNodeCircle = import(".DrawNodeCircle")
 gk.CubicBezierNode = import(".CubicBezierNode")
@@ -93,12 +90,17 @@ local function isBMFont(fontFile)
     return string.lower(tostring(fontFile)):ends(".fnt")
 end
 
+local function isCharMap(fontFile)
+    return string.lower(tostring(fontFile)):ends(".png")
+end
+
 local function isSystemFont(fontFile)
-    return not isTTF(fontFile) and not isBMFont(fontFile)
+    return not isTTF(fontFile) and not isBMFont(fontFile) and not isCharMap(fontFile)
 end
 
 gk.isTTF = isTTF
 gk.isBMFont = isBMFont
+gk.isCharMap = isCharMap
 gk.isSystemFont = isSystemFont
 
 local function create_label_local(info)
@@ -116,6 +118,9 @@ local function create_label_local(info)
     elseif isBMFont(fontFile) then
         label = cc.Label:createWithBMFont(file, info.string, cc.TEXT_ALIGNMENT_LEFT)
         label:setBMFontSize(info.fontSize)
+    elseif isCharMap(fontFile) then
+        label = cc.Label:createWithCharMap(gk.create_sprite(file):getTexture(), info.itemWidth or 20, info.itemHeight or 40, 0x30)
+        label:setString(info.string or "")
     end
     if not label then
         label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
@@ -141,6 +146,9 @@ local function create_label(string, fontFile, fontSize, c3b)
         if c3b then
             label:setColor(c3b)
         end
+        --    elseif isCharMap(fontFile) then
+        --        label = cc.Label:createWithCharMap(gk.create_sprite(fontFile):getTexture(), info.itemWidth or 20, info.itemHeight or 40, 30)
+        --        label:setString(string or "")
     else
         label = cc.Label:createWithSystemFont(string, fontFile or gk.theme.font_sys, fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         if c3b then

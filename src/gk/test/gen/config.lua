@@ -60,11 +60,6 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_mainlayer.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/MainLayer"},
-	   MapLayer = {
-	      cname = "MapLayer",
-	      genPath = "gk/test/gen/layout/gk_test_maplayer.lua",
-	      genSrcPath = "gk/test/",
-	      path = "gk/test/MapLayer"},
 	   NodeTest = {
 	      cname = "NodeTest",
 	      genPath = "gk/test/gen/layout/gk_test_nodetest.lua",
@@ -75,11 +70,6 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_particlesystemtest.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/ParticleSystemTest"},
-	   PhysicsTest = {
-	      cname = "PhysicsTest",
-	      genPath = "gk/test/gen/layout/gk_test_physicstest.lua",
-	      genSrcPath = "gk/test/",
-	      path = "gk/test/PhysicsTest"},
 	   ProgressTimerTest = {
 	      cname = "ProgressTimerTest",
 	      genPath = "gk/test/gen/layout/gk_test_progresstimertest.lua",

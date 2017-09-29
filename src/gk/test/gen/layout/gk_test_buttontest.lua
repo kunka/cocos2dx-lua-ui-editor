@@ -1,6 +1,5 @@
 return {
-	_fold = false,
-	enableKeyPad = 1,
+	_fold = true,
 	height = "$fill",
 	id = "ButtonTest",
 	ignoreAnchor = 0,
@@ -10,10 +9,6 @@ return {
 	anchor = {
 	   x = 0.5,
 	   y = 0.5},
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      cascadeColorEnabled = 0,
@@ -31,10 +26,6 @@ return {
 	      y = 633,
 	      zoomEnabled = 0,
 	      zoomScale = 1,
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -51,10 +42,6 @@ return {
 	            blendFunc = {
 	               dst = 771,
 	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            children = {	               {
 	                  fontSize = 16,
 	                  height = 0,
@@ -65,10 +52,6 @@ return {
 	                  width = 0,
 	                  x = 87.5,
 	                  y = 19.5,
-	                  color = {
-	                     b = 255,
-	                     g = 255,
-	                     r = 255},
 	                  fontFile = {
 	                     cn = "Helvetica",
 	                     en = "Arial"}}}}}},
@@ -99,10 +82,6 @@ return {
 	         width = 58.333,
 	         x = 58.333,
 	         y = 13},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -116,10 +95,6 @@ return {
 	            width = 0,
 	            x = 87.5,
 	            y = 19.5,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Helvetica",
 	               en = "Arial"}}}},
@@ -139,10 +114,6 @@ return {
 	      y = 486,
 	      zoomEnabled = 0,
 	      zoomScale = 1,
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -158,11 +129,7 @@ return {
 	            y = 39,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255}},
+	               src = 1}},
 	         {
 	            file = "selected.png",
 	            flippedX = 1,
@@ -174,11 +141,7 @@ return {
 	            y = 39,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255}},
+	               src = 1}},
 	         {
 	            file = "disabled.png",
 	            flippedX = 1,
@@ -190,12 +153,9 @@ return {
 	            y = 39,
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255}},
+	               src = 1}},
 	         {
+	            color = "ff0000",
 	            fontSize = 18,
 	            height = 0,
 	            id = "label3",
@@ -205,10 +165,6 @@ return {
 	            width = 0,
 	            x = 87.5,
 	            y = 19.5,
-	            color = {
-	               b = 0,
-	               g = 0,
-	               r = 255},
 	            fontFile = {
 	               cn = "Helvetica",
 	               en = "Arial"}}}},

@@ -18,12 +18,7 @@ function SceneManager:createScene(layerName, ...)
         local var = { ... }
         local status, _ = xpcall(function()
             gk.profile:start("SceneManager:createScene")
-            if clazz._isPhysics then
-                scene:initWithPhysics()
-                layer = clazz:create(scene:getPhysicsWorld(), unpack(var))
-            else
-                layer = clazz:create(unpack(var))
-            end
+            layer = clazz:create(unpack(var))
             gk.profile:stop("SceneManager:createScene", layerName)
         end, function(msg)
             local msg = debug.traceback(msg, 3)
@@ -130,6 +125,24 @@ function SceneManager:showDialogNode(dialogNode)
         gk.log("SceneManager:showDialogNode error, cannot find root layer")
         return nil
     end
+end
+
+-- show notification node with duration
+function SceneManager:showNotificationNode(node)
+    cc.Director:getInstance():setNotificationNode(node)
+    node:runAction(cc.Sequence:create(cc.DelayTime:create(node:getDuration() - 0.016), cc.CallFunc:create(function()
+        cc.Director:getInstance():setNotificationNode(cc.Node:create())
+    end)))
+end
+
+-- show notification node with duration
+function SceneManager:showNotification(nodeType, ...)
+    local node = gk.injector:inflateNode(nodeType, ...)
+    cc.Director:getInstance():setNotificationNode(node)
+    node:runAction(cc.Sequence:create(cc.DelayTime:create(node:getDuration() - 0.016), cc.CallFunc:create(function()
+        cc.Director:getInstance():setNotificationNode(cc.Node:create())
+    end)))
+    return node
 end
 
 local function printDialogStack(layer, indent)

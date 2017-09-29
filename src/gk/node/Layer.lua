@@ -108,6 +108,9 @@ end
 
 function Layer:setEnableKeyPad(enabled)
     self.enableKeyPad = enabled
+    if self.keyBoardListener then
+        self.keyBoardListener:setEnabled(enabled)
+    end
 end
 
 function Layer:isPopOnBack()
@@ -145,10 +148,10 @@ function Layer:onEnter()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
     self.touchListener = listener
 
-    if self.enableKeyPad and not self.keyBoardListener and gk.mode ~= gk.MODE_EDIT then
+    if gk.mode ~= gk.MODE_EDIT and not self.keyBoardListener then
         -- should only add once
         local function onKeyReleased(keyCode, event)
-            if gk.focusNode then
+            if gk.focusNode or not self.enableKeyPad then
                 return
             end
             local key = cc.KeyCodeKey[keyCode + 1]
@@ -162,6 +165,7 @@ function Layer:onEnter()
         end
 
         local listener = cc.EventListenerKeyboard:create()
+        listener:setEnabled(self.enableKeyPad)
         listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
         self.keyBoardListener = listener
@@ -174,15 +178,20 @@ end
 
 function Layer:handleKeyBack(node)
     --    gk.log("[%s]: handleKeyBack", node.__cname)
+    if not node.enableKeyPad then
+        gk.log("[%s]: handleKeyBack, enableKeyPad = false", self.__cname)
+        return false
+    end
     if #node.dialogsStack > 0 then
         for i = #node.dialogsStack, 1, -1 do
             local d = node.dialogsStack[i]
-            d:handleKeyBack(d)
-            -- dialog on the top which cannot pop on back will block the whole ui
-            return
+            if d:handleKeyBack(d) then
+                -- dialog on the top which cannot pop on back will block the whole ui
+                return true
+            end
         end
     end
-    node:onKeyBack()
+    return node:onKeyBack()
 end
 
 -- override func for subclasses to process back pressed
@@ -191,10 +200,16 @@ function Layer:onKeyBack()
         gk.log("[%s]: pop onKeyBack", self.__cname)
         local scene = gk.SceneManager:getRunningScene()
         if scene and scene.layer == self then
-            gk.SceneManager:pop()
+            if self.onKeyBackCallback then
+                self.onKeyBackCallback()
+            else
+                gk.SceneManager:pop()
+            end
         end
+        return true
     else
         gk.log("[%s]: pop onKeyBack is disabled", self.__cname)
+        return false
     end
 end
 

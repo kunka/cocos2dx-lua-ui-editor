@@ -1,20 +1,15 @@
 return {
 	_fold = false,
-	enableKeyPad = 1,
 	height = "$fill",
 	id = "WidgetTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "WidgetTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      _isWidget = 0,
-	      enableKeyPad = 1,
+	      enableKeyPad = 0,
 	      height = "$fill",
 	      id = "financeHud1",
 	      ignoreAnchor = 0,
@@ -25,10 +20,6 @@ return {
 	      width = "$fill",
 	      x = 0,
 	      y = 0,
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleSize = {
 	         h = 1,
 	         w = "1"},

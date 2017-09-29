@@ -1,6 +1,6 @@
 return {
 	_fold = false,
-	enableKeyPad = 1,
+	enableKeyPad = 0,
 	height = "$fill",
 	id = "APITest",
 	ignoreAnchor = 0,

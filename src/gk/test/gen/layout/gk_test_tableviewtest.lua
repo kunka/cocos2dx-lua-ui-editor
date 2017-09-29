@@ -1,27 +1,18 @@
 return {
 	_fold = false,
-	enableKeyPad = 1,
 	height = "$fill",
 	id = "TableViewTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "TableViewTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
+	      color = "646464ff",
 	      height = "$fill",
 	      id = "bg",
 	      ignoreAnchor = 0,
 	      type = "cc.LayerColor",
-	      width = "$fill",
-	      color = {
-	         a = 255,
-	         b = 100,
-	         g = 100,
-	         r = 100}},
+	      width = "$fill"},
 	   {
 	      _fold = false,
 	      cellAtIndex = "&cellAtIndex",
@@ -34,10 +25,6 @@ return {
 	      type = "cc.TableView",
 	      verticalFillOrder = 0,
 	      width = 0,
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      viewSize = {
 	         height = "$fill",
 	         width = "$fill"}}}}

@@ -119,7 +119,7 @@ function injector:onNodeCreate(node)
         if status then
             -- must clone values
             info = clone(info)
-            gk.log("inflate node with file %s", path)
+            --            gk.log("inflate node with file %s", path)
             gk.generator:inflate(info, node, node)
             local isWidget = node.class and node.class._isWidget
             if not isWidget and not gk.util:instanceof(node, "TableViewCell") then

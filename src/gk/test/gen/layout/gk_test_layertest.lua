@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 1,
 	height = "$fill",
 	id = "LayerTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "LayerTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      height = "$win.h",
@@ -18,10 +13,6 @@ return {
 	      ignoreAnchor = 0,
 	      type = "cc.Layer",
 	      width = "$win.w",
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      children = {	         {
 	            height = 360,
 	            id = "layer2",
@@ -30,10 +21,6 @@ return {
 	            width = 120,
 	            x = 126,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleSize = {
 	               h = "$xScale",
 	               w = "$yScale"},
@@ -41,6 +28,7 @@ return {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "999999ff",
 	            height = 360,
 	            id = "layer3",
 	            ignoreAnchor = 0,
@@ -48,11 +36,6 @@ return {
 	            width = 120,
 	            x = 426,
 	            y = 60,
-	            color = {
-	               a = 255,
-	               b = 153,
-	               g = 153,
-	               r = 153},
 	            scaleSize = {
 	               h = "$yScale",
 	               w = "$xScale"},
@@ -72,10 +55,6 @@ return {
 	            width = 0,
 	            x = 184,
 	            y = 604,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},
@@ -95,10 +74,6 @@ return {
 	            width = 0,
 	            x = 504,
 	            y = 604,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},
@@ -106,6 +81,7 @@ return {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "99999900",
 	            height = 360,
 	            id = "layer4",
 	            ignoreAnchor = 1,
@@ -117,11 +93,6 @@ return {
 	            anchor = {
 	               x = 0.5,
 	               y = 0},
-	            color = {
-	               a = 0,
-	               b = 153,
-	               g = 153,
-	               r = 153},
 	            scaleSize = {
 	               h = "$yScale",
 	               w = "$xScale"},
@@ -141,10 +112,6 @@ return {
 	            width = 0,
 	            x = 828,
 	            y = 604,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},
@@ -193,10 +160,6 @@ return {
 	            width = 0,
 	            x = 1142,
 	            y = 604,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               cn = "Verdana.ttf",
 	               en = "Verdana.ttf"},

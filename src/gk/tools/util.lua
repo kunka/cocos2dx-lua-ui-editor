@@ -86,6 +86,11 @@ function util:registerOnRestartGameCallback(callback)
     table.insert(self.onRestartGameCallbacks, callback)
 end
 
+util.beforeRestartGameCallbacks = util.beforeRestartGameCallbacks or {}
+function util:registerBeforeRestartGameCallback(callback)
+    table.insert(self.beforeRestartGameCallbacks, callback)
+end
+
 function util:registerRestartGameCallback(callback)
     util.restartGameCallback = callback
     local platform = cc.Application:getInstance():getTargetPlatform()
@@ -132,18 +137,22 @@ function util:restartGame(mode)
     gk.event:init()
     gk:increaseRuntimeVersion()
     gk.scheduler:unscheduleAll()
+    for _, callback in ipairs(self.beforeRestartGameCallbacks) do
+        callback()
+    end
+    self.beforeRestartGameCallbacks = {}
     local scene = cc.Scene:create()
     cc.Director:getInstance():popToRootScene()
     cc.Director:getInstance():replaceScene(scene)
     scene:runAction(cc.CallFunc:create(function()
         gk.log("removeResBeforeRestartGame")
-        gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
-        collectgarbage("collect")
-        gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         for _, callback in ipairs(self.onRestartGameCallbacks) do
             callback()
         end
         self.onRestartGameCallbacks = {}
+        gk.log("collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
+        collectgarbage("collect")
+        gk.log("after collect: lua mem -> %.2fMB", collectgarbage("count") / 1024)
         if self.restartGameCallback then
             self.restartGameCallback(mode)
         end
@@ -807,14 +816,6 @@ function util:addMouseMoveEffect(node, c4f)
     end
 end
 
--- show notification node with duration
-function util:showNotificationNode(node, duration)
-    cc.Director:getInstance():setNotificationNode(node)
-    node:runAction(cc.Sequence:create(cc.DelayTime:create(duration), cc.CallFunc:create(function()
-        cc.Director:getInstance():setNotificationNode(nil)
-    end)))
-end
-
 -- set 1 at pos, (pos = 1~32)
 function util:setBit1(int32, pos)
     return bit.bor(int32, bit.lshift(1, pos - 1))
@@ -825,7 +826,7 @@ function util:setBit0(int32, pos)
     return bit.band(int32, 0xFFFFFFFF - bit.lshift(1, pos - 1))
 end
 
--- is 0 at pos
+-- is 1 at pos
 function util:isBit1(int32, pos)
     local var = bit.lshift(1, pos - 1)
     return bit.band(int32, var) == var
