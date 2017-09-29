@@ -926,7 +926,7 @@ config.nodeCreator = {
         return node
     end,
     ["cc.LayerColor"] = function(info, rootTable)
-        local node = cc.LayerColor:create(info.color)
+        local node = cc.LayerColor:create(info.color or cc.c4b(255, 255, 255, 255))
         info.id = info.id or config:genID("layerColor", rootTable)
         return node
     end,
@@ -972,7 +972,7 @@ config.nodeCreator = {
     ["cc.ProgressTimer"] = function(info, rootTable)
         if info.sprite then
             -- create content sprite first
-            local sprite = generator:createNode(info.sprite, nil, rootTable)
+            local sprite = gk.generator:createNode(info.sprite, nil, rootTable)
             -- create ProgressTimer
             sprite.__info._lock = 0
             local node = cc.ProgressTimer:create(sprite)

@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = "$fill",
 	id = "LabelTest",
 	ignoreAnchor = 0,

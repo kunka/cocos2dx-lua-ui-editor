@@ -1,16 +1,11 @@
 return {
-	_fold = false,
-	enableKeyPad = 0,
+	_fold = true,
 	height = "$fill",
 	id = "ScreenAdaptTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "ScreenAdaptTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _lock = 0,
 	      file = "bg.jpg",
@@ -25,10 +20,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -49,10 +40,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleTP"},
@@ -67,10 +54,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -91,10 +74,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleTP"},
@@ -109,10 +88,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -132,10 +107,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleBT"},
@@ -150,10 +121,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -173,10 +140,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleBT"},
@@ -191,10 +154,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -214,10 +173,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleLT",
 	         y = "$scaleY"},
@@ -232,10 +187,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -255,10 +206,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleLT",
 	         y = "$scaleY"},
@@ -273,10 +220,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -297,10 +240,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleRT",
 	         y = "$scaleY"},
@@ -315,10 +254,6 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
@@ -339,10 +274,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleRT",
 	         y = "$scaleY"},
@@ -357,9 +288,5 @@ return {
 	            width = 0,
 	            x = 91,
 	            y = 60,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"}}}}}}

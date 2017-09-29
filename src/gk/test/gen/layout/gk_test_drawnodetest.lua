@@ -69,22 +69,9 @@ return {
 	         r = 0},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"},
-	      points = {	         {
-	            x = 0,
-	            y = 0},
-	         {
-	            x = 50,
-	            y = 50},
-	         {
-	            x = 100,
-	            y = 50},
-	         {
-	            x = 150,
-	            y = 0}}},
+	         y = "$scaleY"}},
 	   {
 	      id = "drawCardinalSpline1",
-	      pointsNum = 6,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      segments = 100,
@@ -94,25 +81,7 @@ return {
 	      y = 620,
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"},
-	      points = {	         {
-	            x = 0,
-	            y = 0},
-	         {
-	            x = 50,
-	            y = 50},
-	         {
-	            x = 100,
-	            y = 0},
-	         {
-	            x = 150,
-	            y = -50},
-	         {
-	            x = 200,
-	            y = 0},
-	         {
-	            x = 250,
-	            y = 50}}},
+	         y = "$scaleY"}},
 	   {
 	      dot = 1,
 	      id = "drawPoint1",
@@ -181,7 +150,6 @@ return {
 	   {
 	      borderWidth = 1,
 	      id = "drawPolygon2",
-	      pointsNum = 3,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "DrawPolygon",
@@ -199,22 +167,9 @@ return {
 	         r = 0},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"},
-	      points = {	         {
-	            x = 0,
-	            y = 0},
-	         {
-	            x = 50,
-	            y = 60},
-	         {
-	            x = 100,
-	            y = 0},
-	         {
-	            x = 150,
-	            y = 0}}},
+	         y = "$scaleY"}},
 	   {
 	      id = "drawCardinalSpline2",
-	      pointsNum = 6,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      segments = 100,
@@ -224,25 +179,7 @@ return {
 	      y = 430,
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"},
-	      points = {	         {
-	            x = 0,
-	            y = 0},
-	         {
-	            x = 50,
-	            y = 50},
-	         {
-	            x = 100,
-	            y = 0},
-	         {
-	            x = 150,
-	            y = -50},
-	         {
-	            x = 200,
-	            y = 0},
-	         {
-	            x = 250,
-	            y = 50}}},
+	         y = "$scaleY"}},
 	   {
 	      dot = 0,
 	      id = "drawPoint2",
@@ -258,7 +195,6 @@ return {
 	   {
 	      borderWidth = 1,
 	      id = "drawPolygon3",
-	      pointsNum = 5,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      type = "DrawPolygon",
@@ -276,19 +212,4 @@ return {
 	         r = 0},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"},
-	      points = {	         {
-	            x = 0,
-	            y = 0},
-	         {
-	            x = 150,
-	            y = 0},
-	         {
-	            x = 25,
-	            y = -100},
-	         {
-	            x = 75,
-	            y = 50},
-	         {
-	            x = 125,
-	            y = -100}}}}}
+	         y = "$scaleY"}}}}
