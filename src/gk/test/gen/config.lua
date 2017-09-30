@@ -1,7 +1,8 @@
 return {
-	fontDir = "src/gk/test/res/font/",
+	fontDir = "gk/test/res/font/",
 	genDir = "gk/test/gen/",
 	shaderDir = "",
+	fontFiles = {},
 	genNodes = {
 	   APITest = {
 	      cname = "APITest",
@@ -119,8 +120,4 @@ return {
 	      cname = "WidgetTest",
 	      genPath = "gk/test/gen/layout/gk_test_widgettest.lua",
 	      genSrcPath = "gk/test/",
-	      path = "gk/test/WidgetTest"}},
-	fontFiles = {	   "Cambria.fnt",
-	   "Klee.fnt",
-	   "Verdana.ttf",
-	   "Wingdings.ttf"}}
+	      path = "gk/test/WidgetTest"}}}

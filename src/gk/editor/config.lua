@@ -906,7 +906,7 @@ config.editableProps = {
 
 function config:registerEditableProp(key, getter, setter)
     if self.editableProps[key] then
-        gk.log("[Warning]config:register prop, key repleated %s", key)
+        gk.log("[Warning]config:register prop, key repeated %s", key)
     end
     config.editableProps[key] = { getter = getter, setter = setter }
 end

@@ -13,17 +13,17 @@ local hotUpdate = {}
 function hotUpdate:init(originVersion)
     local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()
 
-    local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_curVersion")
+    local curVersion = cc.UserDefault:getInstance():getStringForKey(gk.CUR_VERSION)
     if curVersion == "" then
         curVersion = originVersion
     end
-    local ret = self:compairVersion(curVersion, originVersion)
+    local ret = self:compareVersion(curVersion, originVersion)
     if ret == 1 then
         -- current is new, hot update exist
         print(string.format("curVersion = %s is big than originVersion = %s, use hot update", curVersion, originVersion))
         if not cc.FileUtils:getInstance():isDirectoryExist(DOC_ROOT .. curVersion .. "/") then
             print(string.format("hot update dir not exist = %s, need redownload hotupdate", DOC_ROOT .. curVersion .. "/"))
-            cc.UserDefault:getInstance():setStringForKey("gk_curVersion", originVersion)
+            cc.UserDefault:getInstance():setStringForKey(gk.CUR_VERSION, originVersion)
             cc.UserDefault:getInstance():flush()
         else
             -- hot update search path
@@ -38,13 +38,13 @@ function hotUpdate:init(originVersion)
         print(string.format("big version = %s, remove old version = %s", originVersion, curVersion))
         self:removeOldVersion(curVersion)
         curVersion = originVersion
-        cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
+        cc.UserDefault:getInstance():setStringForKey(gk.CUR_VERSION, curVersion)
         cc.UserDefault:getInstance():flush()
     else
         -- equal, do nothing
         curVersion = originVersion
         print(string.format("same version = %s, no hotupdate", curVersion))
-        cc.UserDefault:getInstance():setStringForKey("gk_curVersion", curVersion)
+        cc.UserDefault:getInstance():setStringForKey(gk.CUR_VERSION, curVersion)
         cc.UserDefault:getInstance():flush()
     end
 
@@ -54,7 +54,7 @@ end
 -- return 1:version1 > version2
 -- return 0:version1 == version2
 -- return -1:version1 < version2
-function hotUpdate:compairVersion(version1, version2)
+function hotUpdate:compareVersion(version1, version2)
     if version1 == version2 then
         return 0
     end
@@ -100,7 +100,7 @@ end
 
 function hotUpdate:updateToNewVersion(newVersion)
     print(string.format("update newVersion = %s", newVersion))
-    cc.UserDefault:getInstance():setStringForKey("gk_curVersion", newVersion)
+    cc.UserDefault:getInstance():setStringForKey(gk.CUR_VERSION, newVersion)
     cc.UserDefault:getInstance():flush()
     local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()
     cc.FileUtils:getInstance():setSearchPaths({})
@@ -112,7 +112,7 @@ end
 
 function hotUpdate:reset()
     print(string.format("hotUpdate reset"))
-    cc.UserDefault:getInstance():setStringForKey("gk_curVersion", "")
+    cc.UserDefault:getInstance():setStringForKey(gk.CUR_VERSION, "")
     cc.UserDefault:getInstance():flush()
     cc.FileUtils:getInstance():setSearchPaths({})
     cc.FileUtils:getInstance():addSearchPath("src/")

@@ -14,7 +14,7 @@ function Scene:ctor(sceneType)
     self.__sceneType = sceneType
     if gk.displayRuntimeVersion then
         local version = gk:getRuntimeVersion()
-        local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_curVersion")
+        local curVersion = cc.UserDefault:getInstance():getStringForKey(gk.CUR_VERSION)
         if curVersion ~= "" then
             version = curVersion .. "/" .. version
         end

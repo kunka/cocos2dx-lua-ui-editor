@@ -5,13 +5,13 @@ require "gk.init"
 local init = {}
 
 local function getConfig(entry)
-    entry = 1
+    entry = entry or 1
     return entry == 0 and {
         -- run demo app
         entry = entry,
         codeDir = "demoapp/",
-        fontDir = "src/demoapp/res/font/",
-        shaderDir = "res/shader/",
+        fontDir = "demoapp/res/font/",
+        shaderDir = "shader/",
         genDir = "demoapp/gen/",
         textureDir = "demoapp/res/texture/",
         launchEntry = "demoapp/SplashLayer",
@@ -21,7 +21,7 @@ local function getConfig(entry)
         -- run test mode
         entry = entry,
         codeDir = "gk/test/",
-        fontDir = "src/gk/test/res/font/",
+        fontDir = "gk/test/res/font/",
         shaderDir = "",
         genDir = "gk/test/gen/",
         textureDir = "gk/test/res/texture/",
@@ -38,13 +38,14 @@ local config = getConfig()
 -- mode 0 --> Press F3 to restart app with release mode at default launch entry.
 function init:startGame(mode, ...)
     mode = mode or 0
-    gk.log("init:startGame with mode %d", mode)
+    local curVersion = cc.UserDefault:getInstance():getStringForKey(gk.CUR_VERSION)
+    local codeVersion = require("version")
+    printf("init:startGame with mode %d, curVersion = %s, codeVersion = %s", mode, curVersion, codeVersion)
     init:initGameKit(mode, ...)
 
     gk.lastLaunchEntryKey = config.launchEntryKey
     local platform = cc.Application:getInstance():getTargetPlatform()
     if platform == 2 and mode ~= gk.MODE_RELEASE then
-        --    cc.UserDefault:getInstance():setStringForKey("gk_lastLaunchEntry", launchEntry)
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         local _, ret = gk.SceneManager:replace(path)
         if not ret then
@@ -58,9 +59,9 @@ end
 
 function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     -- init code root
-    gk.MAC_ROOT = MAC_ROOT
-    gk.ANDROID_ROOT = ANDROID_ROOT
-    gk.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME
+    gk.MAC_ROOT = MAC_ROOT or ""
+    gk.ANDROID_ROOT = ANDROID_ROOT or ""
+    gk.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME or ""
 
     -- use custom log func
     gk.log = function(format, ...)
@@ -79,9 +80,9 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     cc.Director:getInstance():setDisplayStats(gk.config.CFG_SHOW_FPS)
 
     -- print code root
-    gk.log("# MAC_ROOT                     = " .. MAC_ROOT)
-    gk.log("# ANDROID_ROOT                 = " .. ANDROID_ROOT)
-    gk.log("# ANDROID_PACKAGE_NAME         = " .. ANDROID_PACKAGE_NAME)
+    gk.log("# MAC_ROOT                     = " .. gk.MAC_ROOT)
+    gk.log("# ANDROID_ROOT                 = " .. gk.ANDROID_ROOT)
+    gk.log("# ANDROID_PACKAGE_NAME         = " .. gk.ANDROID_PACKAGE_NAME)
 
     -- print runtime version
     gk.log("runtime version = %s", gk:getRuntimeVersion())
@@ -96,8 +97,10 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- custom profile func, such as calculate execute time
     gk.profile.onStart = function(key, ...)
+        --
     end
     gk.profile.onStop = function(key, desc, ...)
+        --
     end
 
     -- init lua gamekit
