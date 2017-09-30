@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 0,
 	height = "$fill",
 	id = "ProgressTimerTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "ProgressTimerTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      barType = 1,
 	      height = 150,
@@ -27,10 +22,6 @@ return {
 	      barChangeRate = {
 	         x = 1,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      midpoint = {
 	         x = 0.5,
 	         y = 0.5},
@@ -46,11 +37,7 @@ return {
 	         type = "cc.Sprite",
 	         blendFunc = {
 	            dst = 771,
-	            src = 1},
-	         color = {
-	            b = 255,
-	            g = 255,
-	            r = 255}}},
+	            src = 1}}},
 	   {
 	      _fold = false,
 	      barType = 0,
@@ -68,10 +55,6 @@ return {
 	      barChangeRate = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      midpoint = {
 	         x = 0.5,
 	         y = 0.5},
@@ -88,11 +71,7 @@ return {
 	         type = "cc.Sprite",
 	         blendFunc = {
 	            dst = 771,
-	            src = 1},
-	         color = {
-	            b = 255,
-	            g = 255,
-	            r = 255}}},
+	            src = 1}}},
 	   {
 	      barType = 1,
 	      height = 150,
@@ -109,10 +88,6 @@ return {
 	      barChangeRate = {
 	         x = 1,
 	         y = 0},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      midpoint = {
 	         x = 0,
 	         y = 1},
@@ -128,11 +103,7 @@ return {
 	         type = "cc.Sprite",
 	         blendFunc = {
 	            dst = 771,
-	            src = 1},
-	         color = {
-	            b = 255,
-	            g = 255,
-	            r = 255}}},
+	            src = 1}}},
 	   {
 	      _fold = false,
 	      barType = 0,
@@ -150,10 +121,6 @@ return {
 	      barChangeRate = {
 	         x = 0,
 	         y = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      midpoint = {
 	         x = 0.1,
 	         y = 0.1},
@@ -170,8 +137,4 @@ return {
 	         type = "cc.Sprite",
 	         blendFunc = {
 	            dst = 771,
-	            src = 1},
-	         color = {
-	            b = 255,
-	            g = 255,
-	            r = 255}}}}}
+	            src = 1}}}}}

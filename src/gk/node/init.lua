@@ -146,6 +146,7 @@ local function create_label(string, fontFile, fontSize, c3b)
         if c3b then
             label:setColor(c3b)
         end
+        -- TODO
         --    elseif isCharMap(fontFile) then
         --        label = cc.Label:createWithCharMap(gk.create_sprite(fontFile):getTexture(), info.itemWidth or 20, info.itemHeight or 40, 30)
         --        label:setString(string or "")
@@ -176,7 +177,6 @@ end
 
 gk.set_label_color = set_label_color
 
---local function nextFocusNode(x, y, root)
 local function nextFocusNode(x, y, root)
     local all = {}
     local function focusNodes(node)

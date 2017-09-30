@@ -6,10 +6,6 @@ return {
 	popOnBack = 1,
 	type = "SplashLayer",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      file = "splash/arc.jpg",
 	      flippedX = 1,
@@ -23,10 +19,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 770},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}}}}

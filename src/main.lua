@@ -39,7 +39,7 @@ local function clearModules()
     end
 end
 
--- if don't need instance run on Android, set it to nil
+-- if don't need instance-run on Android, set it to nil
 local android_package_name = "com.gk.demo"
 local instanceRun = require("gk.instanceRun")
 local platform = cc.Application:getInstance():getTargetPlatform()

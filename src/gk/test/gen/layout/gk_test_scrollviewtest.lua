@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 0,
 	height = "$fill",
 	id = "ScrollViewTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "ScrollViewTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      didScroll = "&onScrollViewDidScroll",
@@ -21,10 +16,6 @@ return {
 	      width = 480,
 	      x = 20,
 	      y = 20,
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      contentOffset = {
 	         x = 0,
 	         y = -240},

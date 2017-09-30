@@ -7,10 +7,6 @@ return {
 	anchor = {
 	   x = 0,
 	   y = 0},
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	scaleSize = {
 	   h = "$minScale",
 	   w = "1"},
@@ -20,22 +16,13 @@ return {
 	      ignoreAnchor = 0,
 	      type = "cc.LayerColor",
 	      width = "$fill",
-	      color = {
-	         a = 255,
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      children = {	         {
+	            color = "f0f0f0ff",
 	            height = 1,
 	            id = "line",
 	            ignoreAnchor = 0,
 	            type = "cc.LayerColor",
 	            width = "$fill",
-	            color = {
-	               a = 255,
-	               b = 240,
-	               g = 240,
-	               r = 240},
 	            scaleSize = {
 	               h = "1",
 	               w = 1}},
@@ -52,14 +39,11 @@ return {
 	            blendFunc = {
 	               dst = 771,
 	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "000000",
 	            enableWrap = true,
 	            fontSize = 32,
 	            height = 0,
@@ -76,16 +60,13 @@ return {
 	            anchor = {
 	               x = 0,
 	               y = 0.5},
-	            color = {
-	               b = 0,
-	               g = 0,
-	               r = 0},
 	            fontFile = {
 	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "a6a6a6",
 	            enableWrap = true,
 	            fontSize = 20,
 	            height = 0,
@@ -103,16 +84,13 @@ return {
 	            anchor = {
 	               x = 0,
 	               y = 0.5},
-	            color = {
-	               b = 166,
-	               g = 166,
-	               r = 166},
 	            fontFile = {
 	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "a6a6a6",
 	            enableWrap = true,
 	            fontSize = 20,
 	            height = 0,
@@ -129,16 +107,13 @@ return {
 	            anchor = {
 	               x = 1,
 	               y = 0.5},
-	            color = {
-	               b = 166,
-	               g = 166,
-	               r = 166},
 	            fontFile = {
 	               en = "Arial"},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}},
 	         {
+	            color = "ff0000",
 	            file = "main/dot.png",
 	            flippedX = 1,
 	            id = "dot",
@@ -151,10 +126,6 @@ return {
 	            blendFunc = {
 	               dst = 771,
 	               src = 1},
-	            color = {
-	               b = 0,
-	               g = 0,
-	               r = 255},
 	            scaleXY = {
 	               x = "$scaleX",
 	               y = "$scaleY"}}}}}}

@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 0,
 	height = "$fill",
 	id = "NodeTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "NodeTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      disabledSprite = "gk/res/texture/edit_box_bg.png",
 	      height = 45,

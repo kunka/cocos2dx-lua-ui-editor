@@ -19,4 +19,14 @@ return {
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
+	         y = "$scaleY"}},
+	   {
+	      id = "sprite1",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      type = "cc.Sprite",
+	      x = 774,
+	      y = 350,
+	      scaleXY = {
+	         x = "$scaleX",
 	         y = "$scaleY"}}}}

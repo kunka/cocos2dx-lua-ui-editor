@@ -8,80 +8,204 @@
 
 local config = {}
 
+----------------------------- support node list -----------------------------------
 config.supportNodes = {
+    -- cc nodes
     { type = "cc.Node", },
     { type = "cc.Sprite", },
-    {
-        type = "ccui.Scale9Sprite",
-        capInsets = cc.rect(0, 0, 0, 0),
-    },
-    { type = "cc.Label", string = "label", fontSize = 24, },
+    { type = "ccui.Scale9Sprite", capInsets = cc.rect(0, 0, 0, 0), },
+    { type = "cc.Label", string = "label", fontSize = 18, },
+    { type = "ccui.EditBox", normalSprite = "gk/res/texture/edit_box_bg.png", selectedSprite = "gk/res/texture/edit_box_bg.png", disabledSprite = "gk/res/texture/edit_box_bg.png", capInsets = cc.rect(20, 20, 20, 20), width = 200, height = 45, },
+    { type = "cc.Layer", width = "$fill", height = "$fill", },
+    { type = "cc.LayerColor", width = "$fill", height = "$fill", color = cc.c4b(153, 153, 153, 255), },
+    { type = "cc.LayerGradient", width = "$fill", height = "$fill", startColor = cc.c4b(0, 0, 0, 255), endColor = cc.c4b(255, 255, 255, 255), },
+    { type = "cc.ScrollView", _fold = true, width = 200, height = 500, viewSize = cc.size(200, 300), },
+    { type = "cc.TableView", _fold = true, width = 200, height = 500, viewSize = cc.size(200, 300), },
+    { type = "cc.ClippingNode" },
+    { type = "cc.ClippingRectangleNode", clippingRegion = cc.rect(0, 0, 100, 100), },
+    { type = "cc.ProgressTimer", sprite = { file = "", type = "cc.Sprite", _voidContent = true, _lock = 1 }, },
+    { type = "cc.TMXTiledMap", tmx = "gk/res/data/default.tmx", },
+    { type = "cc.ParticleSystemQuad", particle = "gk/res/particle/Galaxy.plist", },
+    -- gk nodes
     { type = "ZoomButton", },
     { type = "SpriteButton", normalSprite = "gk/res/texture/btn_bg.png" },
     { type = "ToggleButton", },
     { type = "CheckBox", normalSprite = "gk/res/texture/check_box_normal.png", selectedSprite = "gk/res/texture/check_box_selected.png" },
-    {
-        type = "ccui.EditBox",
-        normalSprite = "gk/res/texture/edit_box_bg.png",
-        selectedSprite = "gk/res/texture/edit_box_bg.png",
-        disabledSprite = "gk/res/texture/edit_box_bg.png",
-        capInsets = cc.rect(20, 20, 20, 20),
-        width = 200,
-        height = 45,
-    },
-    {
-        type = "cc.Layer",
-        width = "$fill",
-        height = "$fill",
-    },
-    {
-        type = "cc.LayerColor",
-        width = "$fill",
-        height = "$fill",
-        color = cc.c4b(153, 153, 153, 255),
-    },
-    {
-        type = "cc.LayerGradient",
-        width = "$fill",
-        height = "$fill",
-        startColor = cc.c4b(0, 0, 0, 255),
-        endColor = cc.c4b(255, 255, 255, 255),
-    },
-    {
-        type = "cc.ScrollView",
-        _fold = true,
-        width = 200,
-        height = 500,
-        viewSize = cc.size(200, 300),
-    },
-    {
-        type = "cc.TableView",
-        _fold = true,
-        width = 200,
-        height = 500,
-        viewSize = cc.size(200, 300),
-    },
-    { type = "cc.ClippingNode" },
-    { type = "cc.ClippingRectangleNode", clippingRegion = cc.rect(0, 0, 100, 100), },
-    {
-        type = "cc.ProgressTimer",
-        sprite = { file = "", type = "cc.Sprite", _voidContent = true, _lock = 1 },
-    },
-    {
-        type = "cc.TMXTiledMap",
-        tmx = "gk/res/data/default.tmx",
-    },
-    {
-        type = "cc.ParticleSystemQuad",
-        particle = "gk/res/particle/Galaxy.plist",
-    },
 }
 
-function config:registerPlaneSupportNode(info)
+function config:registerSupportNode(info)
     table.insert(config.supportNodes, info)
 end
 
--- defValues, not modified properties, will not be saved, minimize gen file size
+----------------------------- node creator -----------------------------------
+
+config.nodeCreator = {
+    ["cc.Node"] = function(info, rootTable)
+        local node = cc.Node:create()
+        info.id = info.id or config:genID("node", rootTable)
+        return node
+    end,
+    ["cc.Sprite"] = function(info, rootTable)
+        local node = gk.create_sprite(info.file)
+        info.id = info.id or config:genID("sprite", rootTable)
+        return node
+    end,
+    ["ccui.Scale9Sprite"] = function(info, rootTable)
+        local node = gk.create_scale9_sprite(info.file, info.capInsets)
+        info.id = info.id or config:genID("scale9Sprite", rootTable)
+        return node
+    end,
+    ["cc.Label"] = function(info, rootTable)
+        local node = gk.create_label_local(info)
+        info.id = info.id or config:genID("label", rootTable)
+        return node
+    end,
+    ["ccui.EditBox"] = function(info, rootTable)
+        local node = ccui.EditBox:create(cc.size(info.width, info.height),
+            gk.create_scale9_sprite(info.normalSprite, info.capInsets),
+            gk.create_scale9_sprite(info.selectedSprite, info.capInsets),
+            gk.create_scale9_sprite(info.disabledSprite, info.capInsets))
+        info.id = info.id or config:genID("editBox", rootTable)
+        return node
+    end,
+    ["cc.Layer"] = function(info, rootTable)
+        local node = cc.Layer:create()
+        info.id = info.id or config:genID("layer", rootTable)
+        return node
+    end,
+    ["cc.LayerColor"] = function(info, rootTable)
+        local node = cc.LayerColor:create(info.color or cc.c4b(255, 255, 255, 255))
+        info.id = info.id or config:genID("layerColor", rootTable)
+        return node
+    end,
+    ["cc.LayerGradient"] = function(info, rootTable)
+        local node = cc.LayerGradient:create(info.startColor, info.endColor)
+        info.id = info.id or config:genID("layerGradient", rootTable)
+        return node
+    end,
+    ["cc.ScrollView"] = function(info, rootTable)
+        local node = cc.ScrollView:create(cc.size(info.width, info.height))
+        node:setDelegate()
+        info.id = info.id or config:genID("scrollView", rootTable)
+        return node
+    end,
+    ["cc.TableView"] = function(info, rootTable)
+        local node = cc.TableView:create(cc.size(info.width, info.height))
+        node:setDelegate()
+        info.id = info.id or config:genID("tableView", rootTable)
+        return node
+    end,
+    ["cc.ClippingNode"] = function(info, rootTable)
+        -- Add an useless node
+        local node = cc.ClippingNode:create(cc.Node:create())
+        info.id = info.id or config:genID("clippingNode", rootTable)
+        return node
+    end,
+    ["cc.ClippingRectangleNode"] = function(info, rootTable)
+        local node = cc.ClippingRectangleNode:create(info.clippingRegion)
+        info.id = info.id or config:genID("clippingRectNode", rootTable)
+        return node
+    end,
+    ["cc.ProgressTimer"] = function(info, rootTable)
+        if info.sprite then
+            -- create content sprite first
+            local sprite = gk.generator:createNode(info.sprite, nil, rootTable)
+            -- create ProgressTimer
+            sprite.__info._lock = 0
+            local node = cc.ProgressTimer:create(sprite)
+            info.id = info.id or config:genID("progressTimer", rootTable)
+            sprite.__info.id = info.id .. "_sprite"
+            return node
+        end
+        return nil
+    end,
+    ["cc.TMXTiledMap"] = function(info, rootTable)
+        if info.tmx then
+            local node = cc.TMXTiledMap:create(info.tmx)
+            info.id = info.id or config:genID("tmxTiledMap", rootTable)
+            return node
+        end
+        return nil
+    end,
+    ["cc.ParticleSystemQuad"] = function(info, rootTable)
+        if info.particle and info.particle ~= "" then
+            local node = cc.ParticleSystemQuad:create(info.particle)
+            info.id = info.id or config:genID("particleSystemQuad", rootTable)
+            return node
+        elseif info.totalParticles and info.totalParticles > 0 then
+            local node = cc.ParticleSystemQuad:createWithTotalParticles(info.totalParticles)
+            info.id = info.id or config:genID("particleSystemQuad", rootTable)
+            return node
+        end
+        return nil
+    end,
+    --------------------------- gk nodes   ---------------------------
+    ["ZoomButton"] = function(info, rootTable)
+        local node = gk.ZoomButton:create()
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["SpriteButton"] = function(info, rootTable)
+        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["ToggleButton"] = function(info, rootTable)
+        local node = gk.ToggleButton.new()
+        info.id = info.id or config:genID("button", rootTable)
+        return node
+    end,
+    ["CheckBox"] = function(info, rootTable)
+        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
+        info.id = info.id or config:genID("checkBox", rootTable)
+        return node
+    end,
+    --------------------------- Custom widgets   ---------------------------
+    ["widget"] = function(info, rootTable)
+        local node = gk.injector:inflateNode(info.type)
+        node.__ignore = false
+        -- copy info
+        local keys = table.keys(node.__info.__self)
+        for _, key in ipairs(keys) do
+            if info.__self[key] == nil then
+                info.__self[key] = node.__info.__self[key]
+            end
+        end
+        info.id = info.id or config:genID(info.type, rootTable)
+        info._lock = 0
+        return node
+    end,
+}
+
+function config:registerGKNodeCreator(type, alias)
+    config.nodeCreator[type] = function(info, rootTable)
+        local node = gk[type].new()
+        local name = alias or string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+        info.id = info.id or config:genID(name, rootTable)
+        return node
+    end
+end
+
+function config:genID(type, rootTable)
+    local names = string.split(type, ".")
+    local names = string.split(names[1], "/")
+    type = names[#names]
+    local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
+
+    local index = 1
+    while true do
+        if rootTable[string.format("%s%d", tp, index)] == nil then
+            break
+        else
+            index = index + 1
+        end
+    end
+    return string.format("%s%d", tp, index)
+end
+
+----------------------------- default values not gen -----------------------------------
+
+-- default values, not modified properties, will not be saved, minimize gen file size
 config.defValues = {
     _isWidget = false,
     _voidContent = false,
@@ -105,7 +229,7 @@ config.defValues = {
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
 
-    --    centerRect = cc.rect(0, 0, 0, 0),
+    -- centerRect = cc.rect(0, 0, 0, 0),
     -- Layer
     swallowTouches = 0,
     touchEnabled = 0,
@@ -125,7 +249,7 @@ config.defValues = {
     bounceable = 0,
     clipToBD = 0,
     direction = 2,
-    --    touchEnabled = 0,
+    -- touchEnabled = 0,
     -- label
     additionalKerning = 0,
     enableBold = 1,
@@ -170,6 +294,8 @@ config.defValues = {
     onSelectedTagChanged = "-",
 }
 
+----------------------------- macro funcs -----------------------------------
+
 config.macroFuncs = {
     minScale = function(key, node, var) return (var or 1) * gk.display:minScale() end,
     maxScale = function(key, node, var) return (var or 1) * gk.display:maxScale() end,
@@ -185,7 +311,7 @@ config.macroFuncs = {
     scaleRT = function(key, node, ...) return gk.display:scaleRT(...) end,
     ["win.w"] = function() return gk.display:winSize().width end,
     ["win.h"] = function() return gk.display:winSize().height end,
-    -- contentSize, ViewSize
+    -- contentSize, ViewSize(fill-parent)
     fill = function(key, node)
         local parent
         if node.__info and node.__rootTable then
@@ -197,6 +323,8 @@ config.macroFuncs = {
         return parent and parent:getContentSize()[key] or gk.display:winSize()[key]
     end,
 }
+
+----------------------------- custom editable props -----------------------------------
 
 -- custom properties
 config.editableProps = {
@@ -778,7 +906,7 @@ config.editableProps = {
 
 function config:registerEditableProp(key, getter, setter)
     if self.editableProps[key] then
-        gk.log("config:register prop, key repleated %s", key)
+        gk.log("[Warning]config:register prop, key repleated %s", key)
     end
     config.editableProps[key] = { getter = getter, setter = setter }
 end
@@ -793,6 +921,11 @@ function config:registerPropByType(type, key, alias, onlyGetter)
                 node["set" .. alias](node, v)
             end
         end)
+end
+
+-- no getter and setter props
+function config:registerPlaneProp(key, default)
+    self:registerEditableProp(key, function(node) return default end, function(node, var) end)
 end
 
 function config:registerProp(key, alias, onlyGetter)
@@ -852,10 +985,7 @@ function config:registerScriptHandler(key, handler)
         end)
 end
 
-function config:registerPlaneProp(key, default)
-    self:registerEditableProp(key, function(node) return default end, function(node, var) end)
-end
-
+-- when node.__info[key] not exist, get default value by this
 function config:getValue(node, key)
     local prop = config.editableProps[node.__info.type .. "." .. key] or config.editableProps[key]
     if prop then
@@ -876,182 +1006,13 @@ function config:setValue(node, key, value)
     end
 end
 
-config.nodeCreator = {
-    ["cc.Node"] = function(info, rootTable)
-        local node = cc.Node:create()
-        info.id = info.id or config:genID("node", rootTable)
-        return node
-    end,
-    ["cc.Sprite"] = function(info, rootTable)
-        local node = gk.create_sprite(info.file)
-        info.id = info.id or config:genID("sprite", rootTable)
-        return node
-    end,
-    ["ccui.Scale9Sprite"] = function(info, rootTable)
-        local node = gk.create_scale9_sprite(info.file, info.capInsets)
-        info.id = info.id or config:genID("scale9Sprite", rootTable)
-        return node
-    end,
-    ["ZoomButton"] = function(info, rootTable)
-        local node = gk.ZoomButton.new()
-        info.id = info.id or config:genID("button", rootTable)
-        return node
-    end,
-    ["SpriteButton"] = function(info, rootTable)
-        local node = gk.SpriteButton.new(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
-        info.id = info.id or config:genID("button", rootTable)
-        return node
-    end,
-    ["ToggleButton"] = function(info, rootTable)
-        local node = gk.ToggleButton.new()
-        info.id = info.id or config:genID("button", rootTable)
-        return node
-    end,
-    ["CheckBox"] = function(info, rootTable)
-        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
-        info.id = info.id or config:genID("checkBox", rootTable)
-        return node
-    end,
-    ["ccui.EditBox"] = function(info, rootTable)
-        local node = ccui.EditBox:create(cc.size(info.width, info.height),
-            gk.create_scaleg9_sprite(info.normalSprite, info.capInsets),
-            gk.create_scale9_sprite(info.selectedSprite, info.capInsets),
-            gk.create_scale9_sprite(info.disabledSprite, info.capInsets))
-        info.id = info.id or config:genID("editBox", rootTable)
-        return node
-    end,
-    ["cc.Layer"] = function(info, rootTable)
-        local node = cc.Layer:create()
-        info.id = info.id or config:genID("layer", rootTable)
-        return node
-    end,
-    ["cc.LayerColor"] = function(info, rootTable)
-        local node = cc.LayerColor:create(info.color or cc.c4b(255, 255, 255, 255))
-        info.id = info.id or config:genID("layerColor", rootTable)
-        return node
-    end,
-    ["cc.LayerGradient"] = function(info, rootTable)
-        local node = cc.LayerGradient:create(info.startColor, info.endColor)
-        info.id = info.id or config:genID("layerGradient", rootTable)
-        return node
-    end,
-    --        ["ccui.Layout"] = function(info, rootTable)
-    --            local node = ccui.Layout:create()
-    --            info.id = info.id or config:genID("layout", rootTable)
-    --            return node
-    --        end,
-    ["cc.Label"] = function(info, rootTable)
-        local node = gk.create_label_local(info)
-        info.id = info.id or config:genID("label", rootTable)
-        return node
-    end,
-    ["cc.ScrollView"] = function(info, rootTable)
-        local node = cc.ScrollView:create(cc.size(info.width, info.height))
-        node:setDelegate()
-        info.id = info.id or config:genID("scrollView", rootTable)
-        return node
-    end,
-    ["cc.TableView"] = function(info, rootTable)
-        local node = cc.TableView:create(cc.size(info.width, info.height))
-        node:setDelegate()
-        info.id = info.id or config:genID("tableView", rootTable)
-        return node
-    end,
-    ["cc.ClippingNode"] = function(info, rootTable)
-        -- Add an useless node
-        local node = cc.ClippingNode:create(cc.Node:create())
-        info.id = info.id or config:genID("clippingNode", rootTable)
-        return node
-    end,
-    ["cc.ClippingRectangleNode"] = function(info, rootTable)
-        -- Add an useless node
-        local node = cc.ClippingRectangleNode:create(info.clippingRegion)
-        info.id = info.id or config:genID("clippingRectNode", rootTable)
-        return node
-    end,
-    ["cc.ProgressTimer"] = function(info, rootTable)
-        if info.sprite then
-            -- create content sprite first
-            local sprite = gk.generator:createNode(info.sprite, nil, rootTable)
-            -- create ProgressTimer
-            sprite.__info._lock = 0
-            local node = cc.ProgressTimer:create(sprite)
-            info.id = info.id or config:genID("progressTimer", rootTable)
-            sprite.__info.id = info.id .. "_sprite"
-            return node
-        end
-        return nil
-    end,
-    ["cc.TMXTiledMap"] = function(info, rootTable)
-        if info.tmx then
-            local node = cc.TMXTiledMap:create(info.tmx)
-            info.id = info.id or config:genID("tmxTiledMap", rootTable)
-            return node
-        end
-        return nil
-    end,
-    ["cc.ParticleSystemQuad"] = function(info, rootTable)
-        if info.particle and info.particle ~= "" then
-            local node = cc.ParticleSystemQuad:create(info.particle)
-            info.id = info.id or config:genID("particleSystemQuad", rootTable)
-            return node
-        elseif info.totalParticles and info.totalParticles > 0 then
-            local node = cc.ParticleSystemQuad:createWithTotalParticles(info.totalParticles)
-            info.id = info.id or config:genID("particleSystemQuad", rootTable)
-            return node
-        end
-        return nil
-    end,
-    --------------------------- Custom widgets   ---------------------------
-    ["widget"] = function(info, rootTable)
-        local node = gk.injector:inflateNode(info.type)
-        node.__ignore = false
-        -- copy info
-        local keys = table.keys(node.__info.__self)
-        for _, key in ipairs(keys) do
-            if info.__self[key] == nil then
-                info.__self[key] = node.__info.__self[key]
-            end
-        end
-        info.id = info.id or config:genID(info.type, rootTable)
-        info._lock = 0
-        return node
-    end,
-}
+----------------------------- properties for Editor -----------------------------------
 
-function config:registerGKNode(type, alias)
-    table.insert(config.supportNodes, { type = type })
-    config.nodeCreator[type] = function(info, rootTable)
-        local node = gk[type].new()
-        local name = alias or string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
-        info.id = info.id or config:genID(name, rootTable)
-        return node
-    end
-end
-
-function config:genID(type, rootTable)
-    local names = string.split(type, ".")
-    local names = string.split(names[1], "/")
-    type = names[#names]
-    local tp = string.lower(type:sub(1, 1)) .. type:sub(2, type:len())
-
-    local index = 1
-    while true do
-        if rootTable[string.format("%s%d", tp, index)] == nil then
-            break
-        else
-            index = index + 1
-        end
-    end
-    return string.format("%s%d", tp, index)
-end
-
--- properties for Editor
+config:registerPlaneProp("id", "")
 config:registerPlaneProp("_isWidget", false)
 config:registerPlaneProp("_voidContent", false)
 config:registerPlaneProp("_lock", 1)
 config:registerPlaneProp("_fold", false)
-config:registerPlaneProp("id", "")
 
 -- cc.Node
 config:registerProp("anchor", "AnchorPoint")
@@ -1079,33 +1040,6 @@ config:registerProp("renderingType")
 config:registerProp("state")
 config:registerBoolProp("gravityEnabled")
 
--- Button
-config:registerFuncProp("onClicked")
-config:registerFuncProp("onSelectChanged")
-config:registerFuncProp("onEnableChanged")
-config:registerFuncProp("onLongPressed")
-config:registerBoolProp("enabled")
-config:registerProp("clickedSid")
-config:registerProp("selectedGLProgram")
-config:registerProp("disabledGLProgram")
-config:registerBoolProp("cascadeGLProgramEnabled")
-
--- SpriteButton
-config:registerProp("selectMode")
--- ZoomButton
-config:registerProp("zoomScale")
-config:registerBoolProp("zoomEnabled")
--- ToggleButton
-config:registerFuncProp("onSelectedTagChanged")
-config:registerProp("selectedTag")
-config:registerBoolProp("autoToggle")
-
--- gk.Layer, gk.Dialog
-config:registerBoolProp("swallowTouches")
-config:registerBoolProp("enableKeyPad")
-config:registerBoolProp("popOnBack")
-config:registerProp("atlas")
-config:registerBoolProp("autoRemoveAtlas")
 -- cc.Layer, cc.Dialog, cc.ScrollView
 config:registerBoolProp("touchEnabled")
 -- cc.Dialog
@@ -1118,8 +1052,6 @@ config:registerProp("startOpacity")
 config:registerProp("endOpacity")
 config:registerProp("vector")
 config:registerBoolProp("compressedInterpolation")
--- ccui.Layout
---config:registerProp("layoutType")
 
 -- cc.Label
 config:registerProp("hAlign", "HorizontalAlignment")
@@ -1151,9 +1083,6 @@ config:registerProp("percentage")
 config:registerBoolProp("reverseDirection")
 config:registerProp("midpoint")
 config:registerProp("barChangeRate")
-
--- gk.CheckBox
-config:registerBoolProp("selected")
 
 -- ccui.EditBox
 config:registerProp("fontName")
@@ -1210,6 +1139,38 @@ config:registerFloatProp("endSpin")
 config:registerFloatProp("endSpinVar")
 config:registerFloatProp("emissionRate")
 
+-- gk.Button
+config:registerFuncProp("onClicked")
+config:registerFuncProp("onSelectChanged")
+config:registerFuncProp("onEnableChanged")
+config:registerFuncProp("onLongPressed")
+config:registerBoolProp("enabled")
+config:registerProp("clickedSid")
+config:registerProp("selectedGLProgram")
+config:registerProp("disabledGLProgram")
+config:registerBoolProp("cascadeGLProgramEnabled")
+
+-- gk.ZoomButton
+config:registerProp("zoomScale")
+config:registerBoolProp("zoomEnabled")
+-- gk.SpriteButton
+config:registerProp("selectMode")
+-- gk.ToggleButton
+config:registerFuncProp("onSelectedTagChanged")
+config:registerProp("selectedTag")
+config:registerBoolProp("autoToggle")
+-- gk.CheckBox
+config:registerBoolProp("selected")
+
+-- gk.Layer, gk.Dialog
+config:registerBoolProp("swallowTouches")
+config:registerBoolProp("enableKeyPad")
+config:registerBoolProp("popOnBack")
+config:registerProp("atlas")
+config:registerBoolProp("autoRemoveAtlas")
+
+----------------------------- hint valus for Editor -----------------------------------
+
 config.hintColor3Bs = {}
 function config:registerHintColor3B(c3b, desc)
     table.insert(self.hintColor3Bs, { c3b = c3b, desc = desc })
@@ -1233,9 +1194,9 @@ end
 config:registerHintColor3B(cc.c3b(255, 255, 255))
 config:registerHintColor3B(cc.c3b(0, 0, 0))
 config:registerHintContentSize({ width = "$fill", height = "$fill" })
-config:registerHintFontSize(24)
+config:registerHintFontSize(18)
 
-------------------------------- draw node -------------------------------
+------------------------------- ext: draw node -------------------------------
 
 -- gk.DrawNode
 config:registerFloatProp("lineWidth")
@@ -1262,14 +1223,16 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- gk.CubicBezierNode
-config:registerGKNode("CubicBezierNode")
+config:registerSupportNode({ type = "CubicBezierNode" })
+config:registerGKNodeCreator("CubicBezierNode")
 config:registerProp("origin")
 config:registerProp("destination")
 config:registerFloatProp("segments")
 config:registerFloatProp("curvesNum")
 
 -- gk.DrawPoint
-config:registerGKNode("DrawPoint")
+config:registerSupportNode({ type = "DrawPoint" })
+config:registerGKNodeCreator("DrawPoint")
 config:registerProp("pointSize")
 config:registerBoolProp("dot")
 table.insert(gk.exNodeDisplayer,
@@ -1285,7 +1248,8 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- gk.DrawLine
-config:registerGKNode("DrawLine")
+config:registerSupportNode({ type = "DrawLine" })
+config:registerGKNodeCreator("DrawLine")
 config:registerProp("from")
 config:registerProp("to")
 config:registerProp("radius")
@@ -1315,7 +1279,8 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- gk.DrawNodeCircle
-config:registerGKNode("DrawNodeCircle")
+config:registerSupportNode({ type = "DrawNodeCircle" })
+config:registerGKNodeCreator("DrawNodeCircle")
 config:registerProp("radius")
 config:registerProp("angle")
 config:registerBoolProp("solid")
@@ -1335,7 +1300,8 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- gk.DrawPolygon
-config:registerGKNode("DrawPolygon")
+config:registerSupportNode({ type = "DrawPolygon" })
+config:registerGKNodeCreator("DrawPolygon")
 config:registerFloatProp("borderWidth")
 config:registerProp("fillColor")
 config:registerPropByType("DrawPolygon", "points")
@@ -1365,7 +1331,8 @@ table.insert(gk.exNodeDisplayer,
     })
 
 -- gk.DrawCardinalSpline
-config:registerGKNode("DrawCardinalSpline")
+config:registerSupportNode({ type = "DrawCardinalSpline" })
+config:registerGKNodeCreator("DrawCardinalSpline")
 config:registerFloatProp("tension")
 config:registerFloatProp("segments")
 config:registerPropByType("DrawCardinalSpline", "points")

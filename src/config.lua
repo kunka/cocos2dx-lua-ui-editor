@@ -11,5 +11,6 @@ DEBUG = 2
 -- use framework, will disable all deprecated API, false - use legacy API
 CC_USE_FRAMEWORK = true
 
--- scan editable nodes on mac
+-- TODO fix io.popen crash error when run by XCode
+-- scan editable nodes on mac, if you run by XCode, disabled it, just run app in runtime/mac/<youapp>.app
 CFG_SCAN_NODES = true

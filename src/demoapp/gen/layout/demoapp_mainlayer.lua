@@ -6,10 +6,6 @@ return {
 	popOnBack = 1,
 	type = "MainLayer",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      _fold = false,
 	      _lock = 0,
@@ -43,6 +39,7 @@ return {
 	         x = 0,
 	         y = -1},
 	      children = {	         {
+	            color = "1aad02",
 	            enableWrap = true,
 	            fontSize = 24,
 	            height = 0,
@@ -55,25 +52,17 @@ return {
 	            width = 0,
 	            x = 46,
 	            y = 11,
-	            color = {
-	               b = 2,
-	               g = 173,
-	               r = 26},
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
 	      _lock = 0,
+	      color = "efeff4ff",
 	      height = 78,
 	      id = "layerColor1",
 	      ignoreAnchor = 0,
 	      type = "cc.LayerColor",
 	      width = "$fill",
 	      y = 1088,
-	      color = {
-	         a = 255,
-	         b = 244,
-	         g = 239,
-	         r = 239},
 	      scaleSize = {
 	         h = "$minScale",
 	         w = "1"},
@@ -126,10 +115,6 @@ return {
 	            width = 0,
 	            x = 360,
 	            y = 56,
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255},
 	            fontFile = {
 	               en = "Arial"},
 	            scaleXY = {
@@ -150,10 +135,6 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 0},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleSize = {
 	         h = "$minScale",
 	         w = 1},

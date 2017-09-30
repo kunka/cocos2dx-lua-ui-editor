@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 0,
 	height = "$fill",
 	id = "ClippingNodeTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "ClippingNodeTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      file = "stencil.png",
 	      flippedX = 1,
@@ -27,10 +22,6 @@ return {
 	      blendFunc = {
 	         dst = 771,
 	         src = 1},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -49,14 +40,11 @@ return {
 	      anchor = {
 	         x = 0,
 	         y = 0},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
 	      children = {	         {
+	            color = "ffc8ff",
 	            file = "Hello.png",
 	            flippedX = 1,
 	            id = "sprite1_1",
@@ -69,11 +57,7 @@ return {
 	               y = 0},
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 200,
-	               r = 255}}}},
+	               src = 1}}}},
 	   {
 	      _fold = false,
 	      clippingEnabled = 1,
@@ -94,10 +78,6 @@ return {
 	         width = 100,
 	         x = 0,
 	         y = 0},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"},
@@ -109,8 +89,4 @@ return {
 	            type = "cc.Sprite",
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            color = {
-	               b = 255,
-	               g = 255,
-	               r = 255}}}}}}
+	               src = 1}}}}}}

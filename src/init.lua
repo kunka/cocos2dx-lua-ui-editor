@@ -26,7 +26,7 @@ local function getConfig(entry)
         genDir = "gk/test/gen/",
         textureDir = "gk/test/res/texture/",
         launchEntry = "gk/test/MainLayer",
-        launchEntryKey = "gk_launchEntry_2",
+        launchEntryKey = "gk_launchEntry_2", -- remember last entry
         designSize = cc.size(1280, 768),
     }
 end

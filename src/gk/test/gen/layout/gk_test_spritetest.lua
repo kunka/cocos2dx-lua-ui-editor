@@ -1,16 +1,11 @@
 return {
 	_fold = false,
-	enableKeyPad = 0,
 	height = "$fill",
 	id = "SpriteTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
 	type = "SpriteTest",
 	width = "$fill",
-	color = {
-	   b = 255,
-	   g = 255,
-	   r = 255},
 	children = {	   {
 	      file = "pop_l.png",
 	      height = 80,
@@ -143,10 +138,6 @@ return {
 	         width = 60,
 	         x = 20,
 	         y = 55},
-	      color = {
-	         b = 255,
-	         g = 255,
-	         r = 255},
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
