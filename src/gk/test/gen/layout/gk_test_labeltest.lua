@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	height = "$fill",
 	id = "LabelTest",
 	ignoreAnchor = 0,
@@ -17,7 +17,7 @@ return {
 	      string = "SystemFontLabel: Arial",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 720,
 	      anchor = {
 	         x = 0,
@@ -38,7 +38,7 @@ return {
 	      string = "BMFontLabel: Klee.fnt",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 450,
+	      x = 360,
 	      y = 720,
 	      anchor = {
 	         x = 0,
@@ -50,7 +50,7 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      color = "000000",
+	      color = "00ffff",
 	      enableWrap = 1,
 	      fontSize = 18,
 	      height = 0,
@@ -177,7 +177,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 450,
+	      x = 360,
 	      y = 480,
 	      anchor = {
 	         x = 0,
@@ -201,7 +201,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 250,
-	      x = 450,
+	      x = 360,
 	      y = 420,
 	      anchor = {
 	         x = 0,
@@ -225,7 +225,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 250,
-	      x = 450,
+	      x = 360,
 	      y = 360,
 	      anchor = {
 	         x = 0,
@@ -249,7 +249,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 300,
-	      x = 450,
+	      x = 360,
 	      y = 300,
 	      anchor = {
 	         x = 0,
@@ -271,7 +271,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 480,
 	      anchor = {
 	         x = 0,
@@ -294,7 +294,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 300,
-	      x = 870,
+	      x = 720,
 	      y = 300,
 	      anchor = {
 	         x = 0,
@@ -336,7 +336,7 @@ return {
 	      string = "BMFontLabel: EnableWrap with multi-lines",
 	      type = "cc.Label",
 	      width = 300,
-	      x = 450,
+	      x = 360,
 	      y = 660,
 	      anchor = {
 	         x = 0,
@@ -358,7 +358,7 @@ return {
 	      string = "Not Support",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 660,
 	      anchor = {
 	         x = 0,
@@ -402,7 +402,7 @@ return {
 	      string = "BMFontLabel: EnableWrap&LineBreakWithoutSpace",
 	      type = "cc.Label",
 	      width = 300,
-	      x = 450,
+	      x = 360,
 	      y = 580,
 	      anchor = {
 	         x = 0,
@@ -424,7 +424,7 @@ return {
 	      string = "SystemFontLabel: LineBreakWithoutSpace",
 	      type = "cc.Label",
 	      width = 300,
-	      x = 870,
+	      x = 720,
 	      y = 580,
 	      anchor = {
 	         x = 0,
@@ -446,7 +446,7 @@ return {
 	      string = "Not Support",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 421,
 	      anchor = {
 	         x = 0,
@@ -492,7 +492,7 @@ return {
 	      string = "Not Support",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 360,
 	      anchor = {
 	         x = 0,
@@ -546,7 +546,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 450,
+	      x = 360,
 	      y = 220,
 	      anchor = {
 	         x = 0,
@@ -577,7 +577,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 220,
 	      anchor = {
 	         x = 0,
@@ -673,7 +673,7 @@ return {
 	      string = "Not Support",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 170,
 	      anchor = {
 	         x = 0,
@@ -695,7 +695,7 @@ return {
 	      string = "Not Support",
 	      type = "cc.Label",
 	      width = 0,
-	      x = 870,
+	      x = 720,
 	      y = 124,
 	      anchor = {
 	         x = 0,
@@ -718,7 +718,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 450,
+	      x = 360,
 	      y = 165,
 	      anchor = {
 	         x = 0,
@@ -749,7 +749,7 @@ return {
 	      type = "cc.Label",
 	      vAlign = 1,
 	      width = 0,
-	      x = 450,
+	      x = 360,
 	      y = 124,
 	      anchor = {
 	         x = 0,
@@ -782,8 +782,8 @@ return {
 	      string = "0123456789",
 	      type = "cc.Label",
 	      width = 200,
-	      x = 870,
-	      y = 60,
+	      x = 1060,
+	      y = 660,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -792,4 +792,47 @@ return {
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"}}}}
+	         y = "$scaleY"}},
+	   {
+	      fontSize = 18,
+	      height = 0,
+	      id = "label25",
+	      ignoreAnchor = 1,
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      string = "CharMap:",
+	      type = "cc.Label",
+	      width = 0,
+	      x = 1060,
+	      y = 720,
+	      anchor = {
+	         x = 0,
+	         y = 1},
+	      fontFile = {
+	         cn = "Arial",
+	         en = "Arial"},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"}},
+	   {
+	      id = "drawLine1",
+	      radius = 5,
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      type = "DrawLine",
+	      x = 640,
+	      y = 680,
+	      c4f = {
+	         a = 1,
+	         b = 1,
+	         g = 0,
+	         r = 1},
+	      from = {
+	         x = -640,
+	         y = 0},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"},
+	      to = {
+	         x = 1280,
+	         y = 0}}}}

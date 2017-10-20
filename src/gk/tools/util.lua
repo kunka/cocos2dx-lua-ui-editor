@@ -832,4 +832,15 @@ function util:isBit1(int32, pos)
     return bit.band(int32, var) == var
 end
 
+function util:alignNodes(node1, node2, gapX, centerX)
+    centerX = centerX or 0
+    local w1 = node1:getContentSize().width * node1:getScaleX()
+    local w2 = node2:getContentSize().width * node2:getScaleX()
+    node1:setAnchorPoint(0.5, node1:getAnchorPoint().y)
+    node2:setAnchorPoint(0.5, node1:getAnchorPoint().y)
+    local w = w1 + w2 + gapX
+    node1:setPositionX(centerX + w1 / 2 - w / 2)
+    node2:setPositionX(centerX + w / 2 - w2 / 2)
+end
+
 return util

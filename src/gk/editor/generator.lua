@@ -149,7 +149,7 @@ function generator:createNode(info, rootNode, rootTable)
     if rootTable then
         -- warning: duplicated id
         if rootTable[info.id] then
-            local id = generator:genID(node.__info.type, rootTable)
+            local id = config:genID(node.__info.type, rootTable)
             local pre = info.id
             local otherNode = rootTable[info.id]
             info.id = id

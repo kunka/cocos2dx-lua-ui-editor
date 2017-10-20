@@ -187,7 +187,7 @@ function panel:onNodeCreate(node)
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(1)
                 if self.commandPressed then
-                    if self.displayingNode and not table.indexof(self.multiSelectNodes, node) then
+                    if self.displayingNode and not table.indexof(self.multiSelectNodes, self.displayingNode) then
                         table.insert(self.multiSelectNodes, self.displayingNode)
                     end
                     local index = table.indexof(self.multiSelectNodes, node)
@@ -587,6 +587,7 @@ function panel:handleEvent()
             -- TODO: hold
             self.moveActions = self.moveActions or {
                 KEY_LEFT_ARROW = function(info, step)
+                    gk.log("%s, %d", info.id, step)
                     info.x = math.floor(info.x - step)
                 end,
                 KEY_RIGHT_ARROW = function(info, step)
@@ -612,10 +613,10 @@ function panel:handleEvent()
                     local action = self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(0.01), cc.CallFunc:create(function()
                         if #self.multiSelectNodes > 0 then
                             for _, nd in ipairs(self.multiSelectNodes) do
-                                move(nd.__info, 5)
+                                move(nd.__info, 1)
                             end
                         else
-                            move(self.displayingNode.__info, 5)
+                            move(self.displayingNode.__info, 1)
                         end
                         gk.event:post("displayNode", self.displayingNode)
                     end))))

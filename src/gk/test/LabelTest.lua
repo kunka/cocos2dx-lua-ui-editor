@@ -12,7 +12,7 @@ function LabelTest:ctor()
     LabelTest.super.ctor(self)
     local color = cc.c4f(128 / 255, 128 / 255, 0, 100 / 255)
     for _, child in pairs(self:getChildren()) do
-        if child:getDimensions().width > 0 then
+        if gk.util:instanceof(child, "cc.Label") and child:getDimensions().width > 0 then
             gk.util:drawNode(child, color, -3)
         end
     end

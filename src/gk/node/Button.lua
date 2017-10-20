@@ -242,18 +242,20 @@ function Button:onTouchBegan(touch, event)
             end
         end
         self.longPressdTriggled = false
-        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
-            if self.trackingTouch then
-                self:retain()
-                self:stopTracking()
-                if self.longPressdCallback then
-                    self.longPressdTriggled = true
-                    self.longPressdCallback()
+        if self.longPressdCallback then
+            local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(1), cc.CallFunc:create(function()
+                if self.trackingTouch then
+                    self:retain()
+                    self:stopTracking()
+                    if self.longPressdCallback then
+                        self.longPressdTriggled = true
+                        self.longPressdCallback()
+                    end
+                    self:release()
                 end
-                self:release()
-            end
-        end)))
-        action:setTag(kLongPressedActionTag)
+            end)))
+            action:setTag(kLongPressedActionTag)
+        end
         self.trackingTouch = true
         Button.trackingButton = true
         --        gk.log("Button.tracking true")

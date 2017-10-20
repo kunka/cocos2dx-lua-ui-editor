@@ -19,8 +19,6 @@ gk.defaultSpritePathRelease = "gk/res/texture/release.png"
 gk.exception = false
 gk.displayRuntimeVersion = true
 gk.exNodeDisplayer = {}
--- strings
-gk.CUR_VERSION = gk.CUR_VERSION
 
 -- export global variable
 local __g = _G
