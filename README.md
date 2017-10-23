@@ -17,6 +17,10 @@ a lightweight ui generator for cocos2d-x-lua implemented by pure lua code, less 
  
  ## How to use
  1. Create an empty lua-project by cocos2d-x 3.15
- 2. Copy "gk/" dir to "src"
+ 2. Copy "gk/" dir to "src/"
  3. Init gamekit
+ 4. Build app and run by Xcode, then you can directly run use "runtime/mac/<youapp>.app"
+ 
+ #### Notice:
+  * io.popen may crash when run by Xcode :(
   
