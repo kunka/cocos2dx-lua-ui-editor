@@ -160,7 +160,7 @@ local function printDialogStack(layer, indent)
 end
 
 function SceneManager:printSceneStack()
-    gk.log("\n*********************** SceneStack ***********************")
+    gk.log("*********************** SceneStack ***********************")
     for i = self.sceneStack.first, self.sceneStack.last do
         local s = self.sceneStack[i]
         gk.log(s.__sceneType or "unknown SceneType")

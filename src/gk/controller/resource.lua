@@ -31,6 +31,7 @@ resource.genDir = ""
 function resource:setGenDir(dir)
     gk.log("resource:setGenDir \"%s\"", dir)
     self.genDir = dir
+    self:setGenOutputPath(self.genDir .. "layout/")
 end
 
 function resource:scanFontFiles(path)

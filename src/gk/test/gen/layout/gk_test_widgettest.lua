@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = "$fill",
 	id = "WidgetTest",
 	ignoreAnchor = 0,

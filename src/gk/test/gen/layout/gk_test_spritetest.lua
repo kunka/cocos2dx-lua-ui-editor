@@ -182,4 +182,20 @@ return {
 	         y = 30},
 	      scaleXY = {
 	         x = "$scaleX",
+	         y = "$scaleY"}},
+	   {
+	      id = "sprite1",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      type = "cc.Sprite",
+	      x = 60,
+	      y = 153,
+	      anchor = {
+	         x = 0,
+	         y = 0.5},
+	      blendFunc = {
+	         dst = 770,
+	         src = 1},
+	      scaleXY = {
+	         x = "$scaleX",
 	         y = "$scaleY"}}}}

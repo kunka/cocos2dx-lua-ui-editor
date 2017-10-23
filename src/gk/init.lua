@@ -16,8 +16,8 @@ gk.MODE_RELEASE = 0
 gk.mode = gk.MODE_RELEASE
 gk.defaultSpritePathDebug = "gk/res/texture/default_debug.png"
 gk.defaultSpritePathRelease = "gk/res/texture/release.png"
-gk.exception = false
-gk.displayRuntimeVersion = true
+gk.exception = false -- disable sync when exception occurs
+gk.displayRuntimeVersion = true -- display runtime version on right-bottom corner
 gk.exNodeDisplayer = {}
 
 -- export global variable

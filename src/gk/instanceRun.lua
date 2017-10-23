@@ -9,13 +9,14 @@
 local instanceRun = {}
 
 -- must init this in main.lua before require any other modules
-function instanceRun:init(platform, androidPackageName)
+function instanceRun:init(androidPackageName)
     androidPackageName = androidPackageName or ""
     local MAC_ROOT = ""
     local ANDROID_PACKAGE_NAME = androidPackageName
     local ANDROID_ROOT = "/sdcard/" .. androidPackageName .. "/"
     print("android root = \"" .. ANDROID_PACKAGE_NAME .. "\"")
 
+    local platform = cc.Application:getInstance():getTargetPlatform()
     -- mac use local search path for restart instantly
     if platform == 2 then
         print("initInstanceRun on macos")

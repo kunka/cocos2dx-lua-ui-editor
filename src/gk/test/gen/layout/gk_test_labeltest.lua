@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = "$fill",
 	id = "LabelTest",
 	ignoreAnchor = 0,
@@ -800,7 +800,7 @@ return {
 	      ignoreAnchor = 1,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
-	      string = "CharMap:",
+	      string = "CharMapLabel",
 	      type = "cc.Label",
 	      width = 0,
 	      x = 1060,
@@ -813,26 +813,4 @@ return {
 	         en = "Arial"},
 	      scaleXY = {
 	         x = "$scaleX",
-	         y = "$scaleY"}},
-	   {
-	      id = "drawLine1",
-	      radius = 5,
-	      scaleX = "$minScale",
-	      scaleY = "$minScale",
-	      type = "DrawLine",
-	      x = 640,
-	      y = 680,
-	      c4f = {
-	         a = 1,
-	         b = 1,
-	         g = 0,
-	         r = 1},
-	      from = {
-	         x = -640,
-	         y = 0},
-	      scaleXY = {
-	         x = "$scaleX",
-	         y = "$scaleY"},
-	      to = {
-	         x = 1280,
-	         y = 0}}}}
+	         y = "$scaleY"}}}}

@@ -225,8 +225,10 @@ function config:addKeys()
         end
     end
 
-    for _, key in ipairs(self.buttonKeys) do
-        createButton(key.key, key.desc, key.callback)
+    if self.buttonKeys then
+        for _, key in ipairs(self.buttonKeys) do
+            createButton(key.key, key.desc, key.callback)
+        end
     end
 end
 

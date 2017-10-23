@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	height = "$fill",
 	id = "NodeTest",
 	ignoreAnchor = 0,

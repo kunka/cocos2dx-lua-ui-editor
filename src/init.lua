@@ -11,11 +11,11 @@ local function getConfig(entry)
         entry = entry,
         codeDir = "demoapp/",
         fontDir = "demoapp/res/font/",
-        shaderDir = "shader/",
+        shaderDir = "demoapp/shader/",
         genDir = "demoapp/gen/",
         textureDir = "demoapp/res/texture/",
         launchEntry = "demoapp/SplashLayer",
-        launchEntryKey = "gk_launchEntry_1",
+        launchEntryKey = "gk_launchEntry_1", -- remember last entry when restart
         designSize = cc.size(720, 1280),
     } or {
         -- run test mode
@@ -26,7 +26,7 @@ local function getConfig(entry)
         genDir = "gk/test/gen/",
         textureDir = "gk/test/res/texture/",
         launchEntry = "gk/test/MainLayer",
-        launchEntryKey = "gk_launchEntry_2", -- remember last entry
+        launchEntryKey = "gk_launchEntry_2", -- remember last entry when restart
         designSize = cc.size(1280, 768),
     }
 end
@@ -38,12 +38,12 @@ local config = getConfig()
 -- mode 0 --> Press F3 to restart app with release mode at default launch entry.
 function init:startGame(mode, ...)
     mode = mode or 0
-    local curVersion = cc.UserDefault:getInstance():getStringForKey(gk.CUR_VERSION)
+    local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_currentVersion")
     local codeVersion = require("version")
     printf("init:startGame with mode %d, curVersion = %s, codeVersion = %s", mode, curVersion, codeVersion)
-    init:initGameKit(mode, ...)
+    self:initGameKit(mode, ...)
 
-    gk.lastLaunchEntryKey = config.launchEntryKey
+    gk.lastLaunchEntryKey = config.launchEntryKey -- remember last entry by editor
     local platform = cc.Application:getInstance():getTargetPlatform()
     if platform == 2 and mode ~= gk.MODE_RELEASE then
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
@@ -87,7 +87,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     -- print runtime version
     gk.log("runtime version = %s", gk:getRuntimeVersion())
 
-    -- dump search path
+    -- dump package path
     gk.util:dump(package.path)
     local searchPath = cc.FileUtils:getInstance():getSearchPaths()
     gk.log("app search paths:")
@@ -105,7 +105,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- init lua gamekit
     gk.mode = mode
-    -- custom desigin size
+    -- custom desigin size for editor
     gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
     gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.FIXED_WIDTH)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
@@ -114,7 +114,6 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.resource:setGenSrcPath(config.codeDir)
     gk.resource:setShaderDir(config.shaderDir)
     gk.resource:setGenDir(config.genDir)
-    gk.resource:setGenOutputPath(config.genDir .. "layout/")
 
     -- custom localize string get func
     local strings = {
@@ -127,12 +126,26 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         return strings[lan][key] or ("@" .. key)
     end)
 
+    -- u can scan by scripts
+    local k1 = { "@strings" }
+    local maxTipsCount = 16
+    gk.resource:setAutoCompleteFunc(function(key)
+        if key == "@" then
+            return k1
+        end
+        if key:len() > 1 and key:sub(1, 1) == "@" then
+            -- TODO:
+        end
+        return {}
+    end)
+
+    -- call before restart
+    gk.util:registerOnRestartGameCallback(function()
+        -- release resource here
+    end)
     -- restart func
     gk.util:registerRestartGameCallback(function(...)
         restartGame(...)
-    end)
-    -- call before restart
-    gk.util:registerOnRestartGameCallback(function()
     end)
     -- on error callback
     gk.util:registerOnErrorCallback(function(msg)
@@ -149,6 +162,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         gk.resource:load(config.genDir .. "config.lua")
     end
 
+    ---------------------- for edtior ----------------------
     --- editor ex ---
 
     -- shaders
@@ -156,20 +170,21 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/HighLight.fsh")
 
     -- hint c3bs
-    gk.generator.config:registerHintColor3B(cc.c3b(255, 0, 0))
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 0))
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 255))
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 0, 0))
-    gk.generator.config:registerHintColor3B(cc.c3b(255, 255, 255))
+    gk.generator.config:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
+    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 0), "Green")
+    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 255), "Yellow")
+    gk.generator.config:registerHintColor3B(cc.c3b(0, 0, 0), "Black")
+    gk.generator.config:registerHintColor3B(cc.c3b(255, 255, 255), "White")
 
     -- hint contentSizes or button size
-    gk.generator.config:registerHintContentSize(cc.size(200, 100))
+    gk.generator.config:registerHintContentSize(cc.size(200, 50))
 
     -- hint fontSizes
     gk.generator.config:registerHintFontSize(16)
     gk.generator.config:registerHintFontSize(18)
     gk.generator.config:registerHintFontSize(20)
     gk.generator.config:registerHintFontSize(24)
+    ---------------------- for edtior ----------------------
 end
 
 function init:initConfig()

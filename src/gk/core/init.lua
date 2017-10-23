@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 
 if cc.Application:getInstance():getTargetPlatform() ~= 2 then
+    -- runtime version is valid only on mac and edit mode
     gk.runtimeVersion = "0"
 end
 

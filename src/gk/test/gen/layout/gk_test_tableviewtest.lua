@@ -14,7 +14,7 @@ return {
 	      type = "cc.LayerColor",
 	      width = "$fill"},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      cellAtIndex = "&cellAtIndex",
 	      cellNums = "&cellNumForTable",
 	      cellSizeForIndex = "&cellSizeForTable",

@@ -1,23 +1,6 @@
 #!/usr/bin/env python
 import os
 
-#set -o errexit
-#
-##cd ../../../../../
-#cd ../../../
-#adb="$1"
-#packageName="$2"
-#defaultActivity="$3"
-#dir="$4"
-#echo $adb
-#echo $packageName
-#echo $defaultActivity
-#echo $dir
-##pwd
-#
-#find res -name '.DS_Store' -type f -delete
-#find src -name '.DS_Store' -type f -delete
-
 project_root=os.sys.argv[1]
 adb=os.sys.argv[2]
 packageName=os.sys.argv[3]
