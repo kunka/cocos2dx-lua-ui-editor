@@ -208,12 +208,18 @@ function resource:getGenNodeFullPath(cname)
 end
 
 function resource:require(path)
-    local status, clazz = pcall(require, path)
-    if status then
+    local status, clazz = xpcall(function()
+        return require(path)
+    end, function(msg)
+        local msg = debug.traceback(msg, 3)
+        gk.util:reportError(msg)
+    end)
+    if status and clazz then
         return clazz
+    else
+        gk.log("resource:require --> %s failed", path)
+        return nil
     end
-    gk.log("resource:require --> %s failed", path)
-    return nil
 end
 
 function resource:flush(path)
@@ -236,8 +242,13 @@ end
 
 function resource:load(path)
     gk.log("resource:load --> %s", path)
-    local status, info = pcall(require, path)
-    if status then
+    local status, info = xpcall(function()
+        return require(path)
+    end, function(msg)
+        local msg = debug.traceback(msg, 3)
+        gk.util:reportError(msg)
+    end)
+    if status and info then
         self.fontFiles = info.fontFiles
         self.fontDir = info.fontDir
         self.genNodes = info.genNodes

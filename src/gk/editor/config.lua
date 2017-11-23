@@ -156,7 +156,7 @@ config.nodeCreator = {
         return node
     end,
     ["CheckBox"] = function(info, rootTable)
-        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite)
+        local node = gk.CheckBox:create(info.normalSprite, info.selectedSprite, info.disabledSprite, info.capInsets)
         info.id = info.id or config:genID("checkBox", rootTable)
         return node
     end,
@@ -173,6 +173,7 @@ config.nodeCreator = {
         end
         info.id = info.id or config:genID(info.type, rootTable)
         info._lock = 0
+        info._fold = true
         return node
     end,
 }
@@ -1304,8 +1305,10 @@ config:registerSupportNode({ type = "DrawPolygon" })
 config:registerGKNodeCreator("DrawPolygon")
 config:registerFloatProp("borderWidth")
 config:registerProp("fillColor")
-config:registerPropByType("DrawPolygon", "points")
-config:registerFloatPropByType("DrawPolygon", "pointsNum")
+config:registerProp("points")
+config:registerFloatProp("pointsNum")
+--config:registerPropByType("DrawPolygon", "points")
+--config:registerFloatPropByType("DrawPolygon", "pointsNum")
 table.insert(gk.exNodeDisplayer,
     {
         type = "DrawPolygon",

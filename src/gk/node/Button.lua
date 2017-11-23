@@ -26,7 +26,7 @@ function Button:ctor(contentNode)
     self.delaySelect = nil -- optimize for button in ScrollView
     self.swallowTouches = true
     self.autoSelected = true -- auto select and unselect when touch
-    self.clickedSid = "" -- sound id, when clicked
+    self.clickedSid = nil -- sound id, when clicked
     self.cacheProgram = {}
     self.cascadeGLProgramEnabled = true -- set shader of all children(only cc.Sprite)
     self.selectedGLProgram = nil
@@ -168,6 +168,8 @@ function Button:activate()
     if self.enabled then
         if self.clickedSid then
             gk.audio:playEffect(self.clickedSid)
+        elseif Button.defaultClickedSid then
+            gk.audio:playEffect(Button.defaultClickedSid)
         end
         if self.onClickedCallback then
             --            gk.log("[%s]: activate", self.__cname)
@@ -227,6 +229,17 @@ function Button:onTouchBegan(touch, event)
     end
     -- hit test
     if not Button.trackingButton and gk.util:hitTest(self, touch) then
+        if self.delaySelect then
+            -- if in scrollview, check whether touch is in visible rect
+            local c = self:getParent()
+            while c ~= nil do
+                if gk.util:instanceof(c, "cc.ScrollView") and not gk.util:hitTest(c, touch) then
+                    --                    gk.log("[%s]: In ScrollView, but touch is not in visible rect", self.__cname)
+                    return false
+                end
+                c = c:getParent()
+            end
+        end
         --        gk.log("Button:onTouchBegan")
         self:updateDelaySelect()
         if self.autoSelected then

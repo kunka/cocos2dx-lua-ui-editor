@@ -7,7 +7,7 @@
 
 if cc.Application:getInstance():getTargetPlatform() ~= 2 then
     -- runtime version is valid only on mac and edit mode
-    gk.runtimeVersion = "0"
+    gk.runtimeVersion = ""
 end
 
 -- xx.xx.xx.xx

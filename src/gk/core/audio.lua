@@ -36,6 +36,11 @@ function audio:setBgmOn(var)
         self.bgmOn = var
         cc.UserDefault:getInstance():setBoolForKey("gk_bgmOn", var)
         cc.UserDefault:getInstance():flush()
+        if not var then
+            self:stopMusic()
+        else
+            self:playMusic(self.music, self.loop)
+        end
     end
 end
 
@@ -92,6 +97,12 @@ function audio:playMusic(sid, isLoop)
             engine:playMusic(s.path, isLoop)
         end
     end
+    self.music = sid
+    self.loop = isLoop
+end
+
+function audio:stopMusic(releaseData)
+    cc.SimpleAudioEngine:getInstance():stopMusic(releaseData)
 end
 
 return audio

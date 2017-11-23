@@ -324,6 +324,10 @@ function panel.create(parent)
                     local info = clone(widget)
                     local type = widget.type
                     node = generator:createNode(info, nil, self.parent.scene.layer)
+                    if node.__info._isWidget then
+                        node.__info._lock = 0
+                        node.__info._fold = true
+                    end
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
                         if widget._isWidget or type == "cc.Layer" then

@@ -514,8 +514,12 @@ function panel:displayNode(node)
             size = gk.display:designSize()
         else
             local sx, sy = gk.util:getGlobalScale(node:getParent())
-            if sx ~= 1 or sy ~= 1 or gk.util:instanceof(self.parent.scene.layer, "Widget") then
-                size = node:getParent():getContentSize()
+            if sx ~= 1 or sy ~= 1 or gk.util:instanceof(self.parent.scene.layer, "Widget") or gk.util:instanceof(self.parent.scene.layer, "TableViewCell") then
+                if node:getParent() ~= nil then
+                    size = node:getParent():getContentSize()
+                else
+                    size = cc.size(0,0)
+                end
             else
                 size = gk.display:designSize()
             end

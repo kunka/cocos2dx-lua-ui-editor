@@ -168,7 +168,26 @@ function panel:onNodeCreate(node)
                 self.multiSelectNodes = {}
                 --                gk.event:post("undisplayNode")
             end
-            if node.__info and node.__info._lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch) then
+            local hit = false
+            -- child of locked widget
+            if node.__info._isWidget then
+                hit = node.__info and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch)
+            else
+                hit = node.__info and node.__info._lock == 1 and node ~= self.scene.layer and gk.util:isAncestorsVisible(node) and gk.util:hitTest(node, touch)
+                if hit then
+                    local c = node:getParent()
+                    while c ~= nil do
+                        if node.__rootTable == c and c.__info and c.__info._isWidget then
+                            if c.__info._lock == 0 then
+                                return false
+                            end
+                            break
+                        end
+                        c = c:getParent()
+                    end
+                end
+            end
+            if hit then
                 --                if self.displayingNode and self.displayingNode ~= self.scene.layer and node ~= self.displayingNode and gk.util:hitTest(self.displayingNode,
                 --                    touch) then
                 --                    -- priority use pre displayingNode

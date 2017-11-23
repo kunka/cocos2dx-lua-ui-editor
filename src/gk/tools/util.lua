@@ -342,12 +342,12 @@ function util:drawLabelOnNode(node, content, fontSize, pos, c3b, tag)
     end
     if not label then
         label = gk.create_label(content, gk.theme.font_font, fontSize and fontSize or 12)
-        local size = node:getContentSize()
-        label:setPosition(pos and pos or cc.p(size.width, size.height))
         node:add(label, 999, tg)
     else
         label:setString(content)
     end
+    local size = node:getContentSize()
+    label:setPosition(pos and pos or cc.p(size.width, size.height))
     gk.set_label_color(label, c3b and c3b or cc.c3b(0, 255, 0))
     local sx, sy = util:getGlobalScale(node)
     label:setScale(1 / sx)
@@ -469,6 +469,9 @@ end
 function util:hitTest(node, touch)
     local location = touch:getLocation()
     local s = node:getContentSize()
+    if gk.util:instanceof(node, "cc.ScrollView") then
+        s = node:getViewSize()
+    end
     local rect = { x = 0, y = 0, width = s.width, height = s.height }
     local touchP = node:convertToNodeSpace(cc.p(location.x, location.y))
     return cc.rectContainsPoint(rect, touchP)
@@ -549,6 +552,14 @@ function util:setRecursiveCascadeOpacityEnabled(node, enabled)
     local children = node:getChildren()
     for _, c in pairs(children) do
         util:setRecursiveCascadeOpacityEnabled(c, enabled)
+    end
+end
+
+function util:setRecursiveCascadeColorEnabled(node, enabled)
+    node:setCascadeColorEnabled(enabled)
+    local children = node:getChildren()
+    for _, c in pairs(children) do
+        util:setRecursiveCascadeColorEnabled(c, enabled)
     end
 end
 
@@ -828,6 +839,7 @@ end
 
 -- is 1 at pos
 function util:isBit1(int32, pos)
+    int32 = int32 or 0
     local var = bit.lshift(1, pos - 1)
     return bit.band(int32, var) == var
 end
