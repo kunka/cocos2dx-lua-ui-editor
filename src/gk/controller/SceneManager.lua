@@ -26,6 +26,7 @@ function SceneManager:createScene(layerName, ...)
         end)
         if status then
             if gk.mode == gk.MODE_EDIT then
+                -- wrap node in editor panel
                 local node = cc.Node:create()
                 node:addChild(layer)
                 node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2, gk.display.bottomHeight))

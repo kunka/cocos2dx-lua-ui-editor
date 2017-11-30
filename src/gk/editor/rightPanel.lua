@@ -6,7 +6,6 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local generator = import(".generator")
 local panel = {}
 
 function panel.create(parent)
@@ -35,11 +34,11 @@ end
 local onLabelInputChanged = function(node, label, input)
     local isMacro = true
     repeat
-        local v = generator:parseMacroFunc(node, input)
+        local v = gk.generator:parseMacroFunc(node, input)
         if v then
             break
         end
-        v = generator:parseCustomMacroFunc(node, input)
+        v = gk.generator:parseCustomMacroFunc(node, input)
         if v then
             break
         end
@@ -114,7 +113,6 @@ function panel:createCheckBox(selected, x, y, callback)
     node:setScale(scale * 1.2)
     node:setSelected(selected)
     self.displayInfoNode:addChild(node)
-    node:setAnchorPoint(0, 0.5)
     node:onSelectChanged(function(_, selected)
         callback(selected)
     end)
@@ -294,26 +292,21 @@ function panel:displayNode(node)
 
     local topY = size.height - 20
     local stepY = 25
-    local gapX = 20 -- "X" width
+    local gapX = 20 -- gap x between input double
     local leftX = 15 -- margin left
-    -- input middle 1 left x
-    local leftX_input_1 = 100
+    local inputMiddleX1 = 100 -- input double lefeX1
     -- input width
-    local inputLong = size.width - leftX - leftX_input_1
-    local inputMiddle = (inputLong - gapX) / 2
-    local inputShort = (inputLong - gapX * 2) / 3
-    -- "X" left x
-    local leftX_input_1_left = leftX_input_1 - gapX / 2
-    local leftX3_0 = 110 + 20
-    -- input middle 2 left x
-    local leftX_input_2 = leftX_input_1 + inputMiddle + gapX
-    local leftX_input_2_left = leftX_input_2 - gapX / 2
-    -- input middle 2 left x
-    local leftX_input_short_2 = leftX_input_1 + inputShort + gapX
-    local leftX_input_short_2_left = leftX_input_short_2 - gapX / 2
-    local leftX_input_short_3 = leftX_input_1 + inputShort * 2 + gapX * 2
-    local leftX_input_short_3_left = leftX_input_short_3 - gapX / 2
-    local checkbox_right = size.width - leftX
+    local inputLongWidth = size.width - leftX - inputMiddleX1
+    local inputMiddleWidth = (inputLongWidth - gapX) / 2
+    local inputShortWidth = (inputLongWidth - gapX * 2) / 3
+    local inputMiddleX2 = inputMiddleX1 + inputMiddleWidth + gapX
+    local inputMiddleTextX1 = inputMiddleX1 - gapX / 2 -- "X"
+    local inputMiddleTextX2 = inputMiddleX2 - gapX / 2 -- "Y"
+    local inputShortX2 = inputMiddleX1 + inputShortWidth + gapX
+    local inputShortTextX2 = inputShortX2 - gapX / 2
+    local inputShortX3 = inputMiddleX1 + inputShortWidth * 2 + gapX * 2
+    local inputShortText3 = inputShortX3 - gapX / 2
+    local checkBoxX = size.width - leftX
 
     local isLabel = gk.util:instanceof(node, "cc.Label")
     local isSprite = gk.util:instanceof(node, "cc.Sprite")
@@ -332,18 +325,13 @@ function panel:displayNode(node)
     local isCubicBezierNode = gk.util:instanceof(node, "CubicBezierNode")
     local isDrawPolygon = gk.util:instanceof(node, "DrawPolygon")
     local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
-    local isClippingRectangleNode = gk.util:instanceof(node, "cc.ClippingRectangleNode")
     local isProgressTimer = gk.util:instanceof(node, "cc.ProgressTimer")
-    local isClippingNode = gk.util:instanceof(node, "cc.ClippingNode")
-    local isTmxTiledMap = gk.util:instanceof(node, "cc.TMXTiledMap")
     local isParticleSystemQuad = gk.util:instanceof(node, "cc.ParticleSystemQuad")
     local isLayout = gk.util:instanceof(node, "ccui.Layout")
     local isgkLayer = gk.util:instanceof(node, "Layer")
     local isgkDialog = gk.util:instanceof(node, "Dialog")
     local isWidget = gk.util:instanceof(node, "Widget")
     local isTableViewCell = gk.util:instanceof(node, "TableViewCell")
-
-    local isRootNode = false --self.parent.scene.layer == node
 
     local yIndex = 0
     local function createTitle(title)
@@ -354,17 +342,30 @@ function panel:displayNode(node)
         return label
     end
 
+    local function parseVar(key)
+        local keys = string.split(key, ".")
+        local ret = #keys == 1 and node.__info[key] or node.__info[keys[1]][keys[2]]
+        if #keys > 2 then
+            local var = node.__info[keys[1]]
+            for i = 2, #keys do
+                var = var[tonumber(keys[i]) and tonumber(keys[i]) or keys[i]]
+            end
+            ret = var
+        end
+        if type(ret) == "number" then
+            ret = math.shrink(ret, 3)
+        end
+        return ret
+    end
+
     local function createInputLong(title, key, tp, default, height)
         if not title then
             title = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
         end
-        local var = node.__info[key]
-        if type(tp) == "number" then
-            var = math.shrink(var, 3)
-        end
+        local var = parseVar(key)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        local editBox = self:createInput(tostring(var), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input, isNumVar)
-            editBox:setInput(self:modify(node, key, input, tp, isNumVar))
+        local editBox = self:createInput(tostring(var), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(editBox, input, isNumVar)
+            editBox:setInput(self:modifyByInput(node, key, input, tp, isNumVar))
             if key == "clickedSid" and gk.audio:isValidEvent(input) then
                 gk.audio:playEffect(input)
             end
@@ -377,59 +378,63 @@ function panel:displayNode(node)
         self:createLabel(title, leftX, topY - stepY * yIndex)
         local linput, rinput
         if lkey then
-            local lkeys = string.split(lkey, ".")
-            local lvar = #lkeys == 1 and node.__info[lkey] or node.__info[lkeys[1]][lkeys[2]]
-            if #lkeys > 2 then
-                local var = node.__info[lkeys[1]]
-                for i = 2, #lkeys do
-                    var = var[tonumber(lkeys[i]) and tonumber(lkeys[i]) or lkeys[i]]
-                end
-                lvar = var
-            end
-            if type(lvar) == "number" then
-                lvar = math.shrink(lvar, 3)
-            end
-            self:createLabel(l, leftX_input_1_left, topY - stepY * yIndex)
-            linput = self:createInput(tostring(lvar), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input, isNumVar)
-                editBox:setInput(self:modify(node, lkey, input, tp, isNumVar))
+            local lvar = parseVar(lkey)
+            self:createLabel(l, inputMiddleTextX1, topY - stepY * yIndex)
+            linput = self:createInput(tostring(lvar), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input, isNumVar)
+                editBox:setInput(self:modifyByInput(node, lkey, input, tp, isNumVar))
             end, ldefault)
         end
         if rkey then
-            local rkeys = string.split(rkey, ".")
-            local rvar = #rkeys == 1 and node.__info[rkey] or node.__info[rkeys[1]][rkeys[2]]
-            if #rkeys > 2 then
-                local var = node.__info[rkeys[1]]
-                for i = 2, #rkeys do
-                    var = var[tonumber(rkeys[i]) and tonumber(rkeys[i]) or rkeys[i]]
-                end
-                rvar = var
-            end
-            if type(rvar) == "number" then
-                rvar = math.shrink(rvar, 3)
-            end
-            self:createLabel(r, leftX_input_2_left, topY - stepY * yIndex)
-            rinput = self:createInput(tostring(rvar), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input, isNumVar)
-                editBox:setInput(self:modify(node, rkey, input, tp, isNumVar))
+            local rvar = parseVar(rkey)
+            self:createLabel(r, inputMiddleTextX2, topY - stepY * yIndex)
+            rinput = self:createInput(tostring(rvar), inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input, isNumVar)
+                editBox:setInput(self:modifyByInput(node, rkey, input, tp, isNumVar))
             end, rdefault)
         end
         yIndex = yIndex + 1
         return linput, rinput
     end
 
-    local function createSelectBox(title, l, r, lkey, rkey, lvars, rvars, type, ldefault, rdefault)
-        local lkeys = string.split(lkey, ".")
-        local lvar = #lkeys == 1 and node.__info[lkey] or node.__info[lkeys[1]][lkeys[2]]
+    local function createInputTriple(title, l, m, r, lkey, mkey, rkey, tp, ldefault, mdefault, rdefault)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createLabel(l, leftX_input_1_left, topY - stepY * yIndex)
-        self:createSelectBox(lvars, table.indexof(lvars, tostring(lvar)), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
-            self:modify(node, lkey, lvars[index], type)
+        local linput, minput, rinput
+        if lkey then
+            local lvar = parseVar(lkey)
+            self:createLabel(l, inputMiddleTextX1, topY - stepY * yIndex)
+            linput = self:createInput(tostring(lvar), inputMiddleX1, topY - stepY * yIndex, inputShortWidth, function(editBox, input, isNumVar)
+                editBox:setInput(self:modifyByInput(node, lkey, input, tp, isNumVar))
+            end, ldefault)
+        end
+        if mkey then
+            local mvar = parseVar(mkey)
+            self:createLabel(m, inputShortTextX2, topY - stepY * yIndex)
+            rinput = self:createInput(tostring(mvar), inputShortX2, topY - stepY * yIndex, inputShortWidth, function(editBox, input, isNumVar)
+                editBox:setInput(self:modifyByInput(node, mkey, input, tp, isNumVar))
+            end, mdefault)
+        end
+        if rkey then
+            local rvar = parseVar(rkey)
+            self:createLabel(r, inputShortText3, topY - stepY * yIndex)
+            rinput = self:createInput(tostring(rvar), inputShortX3, topY - stepY * yIndex, inputShortWidth, function(editBox, input, isNumVar)
+                editBox:setInput(self:modifyByInput(node, rkey, input, tp, isNumVar))
+            end, rdefault)
+        end
+        yIndex = yIndex + 1
+        return linput, minput, rinput
+    end
+
+    local function createSelectBox(title, l, r, lkey, rkey, lvars, rvars, type, ldefault, rdefault)
+        local lvar = parseVar(lkey)
+        self:createLabel(title, leftX, topY - stepY * yIndex)
+        self:createLabel(l, inputMiddleTextX1, topY - stepY * yIndex)
+        self:createSelectBox(lvars, table.indexof(lvars, tostring(lvar)), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(index)
+            self:modifyByInput(node, lkey, lvars[index], type)
         end, ldefault)
         if rkey then
-            local rkeys = string.split(rkey, ".")
-            local rvar = #rkeys == 1 and node.__info[rkey] or node.__info[rkeys[1]][rkeys[2]]
-            self:createLabel(r, leftX_input_2_left, topY - stepY * yIndex)
-            self:createSelectBox(rvars, table.indexof(rvars, tostring(rvar)), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
-                self:modify(node, rkey, rvars[index], type)
+            local rvar = parseVar(rkey)
+            self:createLabel(r, inputMiddleTextX2, topY - stepY * yIndex)
+            self:createSelectBox(rvars, table.indexof(rvars, tostring(rvar)), inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(index)
+                self:modifyByInput(node, rkey, rvars[index], type)
             end, rdefault)
         end
         yIndex = yIndex + 1
@@ -437,8 +442,8 @@ function panel:displayNode(node)
 
     local function createSelectBoxLong(title, vars, key, type, default, callback)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        self:createSelectBox(vars, type == "number" and (node.__info[key] + 1) or table.indexof(vars, node.__info[key]), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, key, type == "number" and (index - 1) or vars[index], type)
+        self:createSelectBox(vars, type == "number" and (node.__info[key] + 1) or table.indexof(vars, node.__info[key]), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, key, type == "number" and (index - 1) or vars[index], type)
             if callback then
                 callback()
             end
@@ -454,11 +459,11 @@ function panel:displayNode(node)
         else
             select = node.__info[key] == 0
         end
-        self:createCheckBox(select, checkbox_right, topY - stepY * yIndex, function(selected)
+        self:createCheckBox(select, checkBoxX, topY - stepY * yIndex, function(selected)
             if isbool then
-                self:modify(node, key, selected, "boolean")
+                self:modifyByInput(node, key, selected, "boolean")
             else
-                self:modify(node, key, selected and 0 or 1, "number")
+                self:modifyByInput(node, key, selected and 0 or 1, "number")
             end
             if callback then
                 callback()
@@ -477,13 +482,13 @@ function panel:displayNode(node)
             end
         end
         table.sort(funcs)
-        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info[key])), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, key, funcs[index], "string")
+        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info[key])), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, key, funcs[index], "string")
         end, "-")
         yIndex = yIndex + 1
     end
 
-
+    local is3d = node.__info._is3d
     --------------------------- ID   ---------------------------
     createInputLong("ID", "id", "string")
     if self.parent._containerNode == node or self.parent.leftPanel._containerNode then
@@ -499,13 +504,15 @@ function panel:displayNode(node)
     --------------------------- cc.Node   ---------------------------
     createTitle("cc.Node")
     -- position
-    if not isRootNode then
+    if is3d then
+        createInputTriple("Position", "X", "Y", "Z", "x", "y", "z", "number", 0, 0, 0)
+    else
         createInputMiddle("Position", "X", "Y", "x", "y", "number", 0, 0)
         local vars = {}
         local index = 0
         local pos = cc.p(node.__info.x, node.__info.y)
         local ps = {}
-        for i, p in ipairs(gk.generator.config.hintPositions) do
+        for i, p in ipairs(gk.editorConfig.hintPositions) do
             table.insert(ps, { p = clone(p), desc = p.x .. ", " .. p.y })
         end
 
@@ -518,7 +525,7 @@ function panel:displayNode(node)
                 if node:getParent() ~= nil then
                     size = node:getParent():getContentSize()
                 else
-                    size = cc.size(0,0)
+                    size = cc.size(0, 0)
                 end
             else
                 size = gk.display:designSize()
@@ -545,158 +552,171 @@ function panel:displayNode(node)
                 index = i
             end
         end
-        self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
+        self:createHintSelectBox(vars, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
             self:modifyValue(node, "x", ps[index].p.x)
             self:modifyValue(node, "y", ps[index].p.y)
         end)
     end
 
-    local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
-    local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
-    createSelectBox("ScalePos", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
-        generator.config.defValues["scaleXY"].x, generator.config.defValues["scaleXY"].y)
+    if not is3d then
+        local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
+        local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
+        createSelectBox("ScalePos", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
+            gk.editorConfig.defValues["scaleXY"].x, gk.editorConfig.defValues["scaleXY"].y)
 
-    createInputMiddle("AnchorPoint", "X", "Y", "anchor.x", "anchor.y", "number")
-    local vars = {
-        cc.p(0, 0), cc.p(0, 1), cc.p(1, 0), cc.p(1, 1), cc.p(0.5, 0.5),
-        cc.p(0.5, 0), cc.p(0.5, 1), cc.p(0, 0.5), cc.p(1, 0.5)
-    }
-    local anchor = node.__info.anchor
-    local index = 0
-    local vs = {}
-    for i, a in ipairs(vars) do
-        vs[i] = a.x .. ", " .. a.y
-        if index == 0 and gk.util:table_eq(a, anchor) then
-            index = i
-        end
-    end
-    self:createHintSelectBox(vs, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-        self:modifyValue(node, "anchor", vars[index])
-    end)
-
-    createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
-    -- size
-    if not isLabel and not isTableView then
-        local w, h = createInputMiddle("ContentSize", "W", "H", "width", "height", "number")
-
-        local vars = {}
+        createInputMiddle("AnchorPoint", "X", "Y", "anchor.x", "anchor.y", "number")
+        local vars = {
+            cc.p(0, 0), cc.p(0, 1), cc.p(1, 0), cc.p(1, 1), cc.p(0.5, 0.5),
+            cc.p(0.5, 0), cc.p(0.5, 1), cc.p(0, 0.5), cc.p(1, 0.5)
+        }
+        local anchor = node.__info.anchor
         local index = 0
-        local size = cc.size(node.__info.width, node.__info.height)
-        table.sort(gk.generator.config.hintContentSizes, function(s1, s2)
-            if type(s1.width) == "string" then return true
-            elseif type(s2.width) == "string" then return false
-            else return s1.width < s2.width or (s1.width == s2.width and s1.height < s2.height)
-            end
-        end)
-        for i, s in ipairs(gk.generator.config.hintContentSizes) do
-            vars[i] = s.width .. ", " .. s.height
-            if index == 0 and gk.util:table_eq(size, s) then
+        local vs = {}
+        for i, a in ipairs(vars) do
+            vs[i] = a.x .. ", " .. a.y
+            if index == 0 and gk.util:table_eq(a, anchor) then
                 index = i
             end
         end
-        local box = self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-            local size = gk.generator.config.hintContentSizes[index]
-            self:modifyValue(node, "width", size.width)
-            self:modifyValue(node, "height", size.height)
+        self:createHintSelectBox(vs, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+            self:modifyValue(node, "anchor", vars[index])
         end)
-        if (isSprite and not isScale9Sprite) or (isButton and not isSpriteButton) then
-            w:setOpacity(150)
-            w:setCascadeOpacityEnabled(true)
-            w.enabled = false
-            h:setOpacity(150)
-            h:setCascadeOpacityEnabled(true)
-            h.enabled = false
-            box:hide()
-        end
-        if not isSprite then
-            local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
-            local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
-            createSelectBox("ScaleSize", "W", "H", "scaleSize.w", "scaleSize.h", scaleWs, scaleHs, "string", 1, 1)
+
+        createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
+        -- size
+        if not isLabel and not isTableView then
+            local w, h = createInputMiddle("ContentSize", "W", "H", "width", "height", "number")
+
+            local vars = {}
+            local index = 0
+            local size = cc.size(node.__info.width, node.__info.height)
+            table.sort(gk.editorConfig.hintContentSizes, function(s1, s2)
+                if type(s1.width) == "string" then return true
+                elseif type(s2.width) == "string" then return false
+                else return s1.width < s2.width or (s1.width == s2.width and s1.height < s2.height)
+                end
+            end)
+            for i, s in ipairs(gk.editorConfig.hintContentSizes) do
+                vars[i] = s.width .. ", " .. s.height
+                if index == 0 and gk.util:table_eq(size, s) then
+                    index = i
+                end
+            end
+            local box = self:createHintSelectBox(vars, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+                local size = gk.editorConfig.hintContentSizes[index]
+                self:modifyValue(node, "width", size.width)
+                self:modifyValue(node, "height", size.height)
+            end)
+            if (isSprite and not isScale9Sprite) or (isButton and not isSpriteButton) then
+                w:setOpacity(150)
+                w:setCascadeOpacityEnabled(true)
+                w.enabled = false
+                h:setOpacity(150)
+                h:setCascadeOpacityEnabled(true)
+                h.enabled = false
+                box:hide()
+            end
+            if not isSprite then
+                local scaleWs = { "1", "$xScale", "$minScale", "$maxScale" }
+                local scaleHs = { "1", "$yScale", "$minScale", "$maxScale" }
+                createSelectBox("ScaleSize", "W", "H", "scaleSize.w", "scaleSize.h", scaleWs, scaleHs, "string", 1, 1)
+            end
         end
     end
 
     if not isScrollView then
-        -- scale
-        self:createLabel("Scale", leftX, topY - stepY * yIndex)
-        local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
-        local s = tostring(node.__info.scaleX)
-        if not table.indexof(scales, s) then
-            table.insert(scales, s)
-        end
-        self:createLabel("X", leftX_input_1_left, topY - stepY * yIndex)
-        self:createSelectAndInput(s, scales, table.indexof(scales, s), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-            editBox:setInput(self:modify(node, "scaleX", input, "number"))
-        end, generator.config.defValues["scaleX"])
-        self:createLabel("Y", leftX_input_2_left, topY - stepY * yIndex)
-        local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
-        local s = tostring(node.__info.scaleY)
-        if not table.indexof(scales, s) then
-            table.insert(scales, s)
-        end
-        self:createSelectAndInput(s, scales, table.indexof(scales, s), leftX_input_2, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-            editBox:setInput(self:modify(node, "scaleY", input, "number"))
-        end, generator.config.defValues["scaleY"])
-        yIndex = yIndex + 1
+        if is3d then
+            createInputTriple("Scale", "X", "Y", "Z", "scaleX", "scaleY", "scaleZ", "number", 1, 1, 1)
+            createInputTriple("Rotation", "X", "Y", "Z", "rotation3D.x", "rotation3D.y", "rotation3D.z", "number", 0, 0, 0)
+            --            createInputMiddle("RotationQuat", "X", "Y", "rotationQuat.x", "rotationQuat.y", "number")
+            --            createInputMiddle("", "Z", "W", "rotationQuat.z", "rotationQuat.w", "number")
+        else
+            -- scale
+            self:createLabel("Scale", leftX, topY - stepY * yIndex)
+            local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+            local s = tostring(node.__info.scaleX)
+            if not table.indexof(scales, s) then
+                table.insert(scales, s)
+            end
+            self:createLabel("X", inputMiddleTextX1, topY - stepY * yIndex)
+            self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
+                editBox:setInput(self:modifyByInput(node, "scaleX", input, "number"))
+            end, gk.editorConfig.defValues["scaleX"])
+            self:createLabel("Y", inputMiddleTextX2, topY - stepY * yIndex)
+            local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+            local s = tostring(node.__info.scaleY)
+            if not table.indexof(scales, s) then
+                table.insert(scales, s)
+            end
+            self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
+                editBox:setInput(self:modifyByInput(node, "scaleY", input, "number"))
+            end, gk.editorConfig.defValues["scaleY"])
+            yIndex = yIndex + 1
 
-        createInputMiddle("Skew", "X", "Y", "skewX", "skewY", "number", generator.config.defValues["skewX"], generator.config.defValues["skewY"])
+            createInputMiddle("Skew", "X", "Y", "skewX", "skewY", "number", gk.editorConfig.defValues["skewX"], gk.editorConfig.defValues["skewY"])
+        end
     end
     if (isLabel or isSprite or isZoomButton or isSpriteButton) and not isLayerColor then
         -- color3B
         self:createLabel("Color3B", leftX, topY - stepY * yIndex)
-        self:createLabel("R", leftX_input_1_left, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.color.r), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
-            editBox:setInput(self:modify(node, "color.r", input, "number"))
+        self:createLabel("R", inputMiddleTextX1, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.color.r), inputMiddleX1, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "color.r", input, "number"))
         end, 255)
-        self:createLabel("G", leftX_input_short_2_left, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.color.g), leftX_input_short_2, topY - stepY * yIndex, inputShort, function(editBox, input)
-            editBox:setInput(self:modify(node, "color.g", input, "number"))
+        self:createLabel("G", inputShortTextX2, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.color.g), inputShortX2, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "color.g", input, "number"))
         end, 255)
-        self:createLabel("B", leftX_input_short_3_left, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.color.b), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
-            editBox:setInput(self:modify(node, "color.b", input, "number"))
+        self:createLabel("B", inputShortText3, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.color.b), inputShortX3, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "color.b", input, "number"))
         end, 255)
         yIndex = yIndex + 1
         local vars = {}
         local index = 0
         local color = node.__info.color
-        table.sort(gk.generator.config.hintColor3Bs, function(s1, s2)
+        table.sort(gk.editorConfig.hintColor3Bs, function(s1, s2)
             return s1.c3b.r < s2.c3b.r or (s1.c3b.r == s2.c3b.r and s1.c3b.g < s2.c3b.g) or (s1.c3b.r == s2.c3b.r and s1.c3b.g == s2.c3b.g and s1.c3b.b < s2.c3b.b)
         end)
-        for i, var in ipairs(gk.generator.config.hintColor3Bs) do
+        for i, var in ipairs(gk.editorConfig.hintColor3Bs) do
             local c3b = var.c3b
             vars[i] = c3b.r .. "," .. c3b.g .. "," .. c3b.b .. (string.format("(#%02x%02x%02x)%s", c3b.r, c3b.g, c3b.b, var.desc or ""))
             if index == 0 and gk.util:table_eq(c3b, color) then
                 index = i
             end
         end
-        self:createHintSelectBox(vars, index, leftX_input_1, topY - stepY * (yIndex - 1), inputLong, function(index)
-            self:modifyValue(node, "color", gk.generator.config.hintColor3Bs[index].c3b)
+        self:createHintSelectBox(vars, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+            self:modifyValue(node, "color", gk.editorConfig.hintColor3Bs[index].c3b)
         end)
     end
 
     if not isScrollView then
-        -- rotation
-        self:createLabel("Rotation", leftX, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.rotation), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
-            editBox:setInput(self:modify(node, "rotation", input, "number"))
-        end, generator.config.defValues["rotation"])
+        if not is3d then
+            -- rotation
+            self:createLabel("Rotation", leftX, topY - stepY * yIndex)
+            self:createInput(tostring(node.__info.rotation), inputMiddleX1, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+                editBox:setInput(self:modifyByInput(node, "rotation", input, "number"))
+            end, gk.editorConfig.defValues["rotation"])
+        end
         -- opacity
-        self:createLabel("Opacity", leftX_input_short_2, topY - stepY * yIndex)
-        self:createInput(tostring(node.__info.opacity), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
-            editBox:setInput(self:modify(node, "opacity", input, "number"))
-        end, generator.config.defValues["opacity"])
+        self:createLabel("Opacity", inputShortX2, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.opacity), inputShortX3, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "opacity", input, "number"))
+        end, gk.editorConfig.defValues["opacity"])
         yIndex = yIndex + 1
     end
-    -- localZOrder
-    self:createLabel("LocalZOrder", leftX, topY - stepY * yIndex)
-    self:createInput(tostring(node.__info.localZOrder), leftX_input_1, topY - stepY * yIndex, inputShort, function(editBox, input)
-        editBox:setInput(self:modify(node, "localZOrder", input, "number"))
-    end, generator.config.defValues["localZOrder"])
+    if not is3d then
+        -- localZOrder
+        self:createLabel("LocalZOrder", leftX, topY - stepY * yIndex)
+        self:createInput(tostring(node.__info.localZOrder), inputMiddleX1, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "localZOrder", input, "number"))
+        end, gk.editorConfig.defValues["localZOrder"])
+    end
     -- tag
-    self:createLabel("Tag", leftX_input_short_2, topY - stepY * yIndex)
-    self:createInput(tostring(node.__info.tag), leftX_input_short_3, topY - stepY * yIndex, inputShort, function(editBox, input)
-        editBox:setInput(self:modify(node, "tag", input, "number"))
-    end, generator.config.defValues["tag"])
+    self:createLabel("Tag", inputShortX2, topY - stepY * yIndex)
+    self:createInput(tostring(node.__info.tag), inputShortX3, topY - stepY * yIndex, inputShortWidth, function(editBox, input)
+        editBox:setInput(self:modifyByInput(node, "tag", input, "number"))
+    end, gk.editorConfig.defValues["tag"])
     yIndex = yIndex + 1
     createCheckBox("CascadeOpacityEnabled", "cascadeOpacityEnabled")
     createCheckBox("CascadeColorEnabled", "cascadeColorEnabled")
@@ -787,8 +807,8 @@ function panel:displayNode(node)
                 end
             end
         end
-        self:createSelectBox(tags, table.indexof(tags, node.__info.selectedTag), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, "selectedTag", tags[index], "number")
+        self:createSelectBox(tags, table.indexof(tags, node.__info.selectedTag), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, "selectedTag", tags[index], "number")
         end, 1)
         yIndex = yIndex + 1
         createFunc("onSelectTagChanged", "onSelectedTagChanged", "on")
@@ -798,14 +818,14 @@ function panel:displayNode(node)
         local vars = {}
         local index = 0
         local size = node.__info[key]
-        for i, s in ipairs(gk.generator.config.hintFontSizes) do
+        for i, s in ipairs(gk.editorConfig.hintFontSizes) do
             vars[i] = "" .. s
             if size == s then
                 index = i
             end
         end
-        self:createHintSelectBox(vars, index, leftX_input_2, topY - stepY * (yIndex - 1), inputMiddle, function(index)
-            self:modifyValue(node, key, gk.generator.config.hintFontSizes[index])
+        self:createHintSelectBox(vars, index, inputMiddleX2, topY - stepY * (yIndex - 1), inputMiddleWidth, function(index)
+            self:modifyValue(node, key, gk.editorConfig.hintFontSizes[index])
         end)
     end
 
@@ -846,7 +866,7 @@ function panel:displayNode(node)
     -- blendFunc
     if node.setBlendFunc and type(node.setBlendFunc) == "function" then
         self:createLabel("blendFunc", leftX, topY - stepY * yIndex)
-        self:createLabel("S", leftX_input_1_left, topY - stepY * yIndex)
+        self:createLabel("S", inputMiddleTextX1, topY - stepY * yIndex)
         local FUNCS = { "ZERO", "ONE", "SRC_COLOR", "ONE_MINUS_SRC_COLOR", "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA", "DST_ALPHA", "ONE_MINUS_DST_ALPHA", "DST_COLOR", "ONE_MINUS_DST_COLOR" }
         local getIndex = function(value)
             for i, key in ipairs(FUNCS) do
@@ -855,13 +875,13 @@ function panel:displayNode(node)
                 end
             end
         end
-        self:createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, "blendFunc.src", gl[FUNCS[index]], "number")
+        self:createSelectBox(FUNCS, getIndex(node.__info.blendFunc.src), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, "blendFunc.src", gl[FUNCS[index]], "number")
         end, "ONE")
         yIndex = yIndex + 1
-        self:createLabel("D", leftX_input_1_left, topY - stepY * yIndex)
-        self:createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, "blendFunc.dst", gl[FUNCS[index]], "number")
+        self:createLabel("D", inputMiddleTextX1, topY - stepY * yIndex)
+        self:createSelectBox(FUNCS, getIndex(node.__info.blendFunc.dst), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, "blendFunc.dst", gl[FUNCS[index]], "number")
         end, "ONE_MINUS_SRC_ALPHA")
         yIndex = yIndex + 1
     end
@@ -897,16 +917,16 @@ function panel:displayNode(node)
             table.insert(fonts, font)
         end
         self:createSelectAndInput(font, fonts, table.indexof(fonts, font),
-            leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                editBox:setInput(self:modify(node, "fontFile." .. lan, input, "string"))
+            inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(editBox, input)
+                editBox:setInput(self:modifyByInput(node, "fontFile." .. lan, input, "string"))
                 gk.event:post("displayNode", node)
             end)
         yIndex = yIndex + 1
 
         -- string
         self:createLabel("String", leftX, topY - stepY * yIndex)
-        local editBox = self:createInput(tostring(node.__info.string), leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-            editBox:setInput(self:modify(node, "string", input, "string"))
+        local editBox = self:createInput(tostring(node.__info.string), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "string", input, "string"))
         end, "", 1.6)
         editBox:setAutoCompleteFunc(gk.resource.autoCompleteFunc)
         editBox:onCreatePopupLabel(function()
@@ -923,29 +943,29 @@ function panel:displayNode(node)
             overflows = { "NONE", "RESIZE_HEIGHT" }
             values = { 0, 3 }
         end
-        self:createSelectBox(overflows, table.indexof(values, node.__info.overflow), leftX_input_1, topY - stepY * yIndex, inputLong, function(index)
-            self:modify(node, "overflow", values[index], "number")
+        self:createSelectBox(overflows, table.indexof(values, node.__info.overflow), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+            self:modifyByInput(node, "overflow", values[index], "number")
         end, "NONE")
         yIndex = yIndex + 1
         createInputMiddle("Dimensions", "W", "H", "width", "height", "number", 0, 0)
         -- alignment
         self:createLabel("Alignment", leftX, topY - stepY * yIndex)
-        self:createLabel("H", leftX_input_1_left, topY - stepY * yIndex)
+        self:createLabel("H", inputMiddleTextX1, topY - stepY * yIndex)
         local hAligns = { "LEFT", "CENTER", "RIGHT" }
-        self:createSelectBox(hAligns, node.__info.hAlign + 1, leftX_input_1, topY - stepY * yIndex, inputMiddle, function(index)
-            self:modify(node, "hAlign", index - 1, "number")
+        self:createSelectBox(hAligns, node.__info.hAlign + 1, inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(index)
+            self:modifyByInput(node, "hAlign", index - 1, "number")
         end, "LEFT")
-        self:createLabel("V", leftX_input_2_left, topY - stepY * yIndex)
+        self:createLabel("V", inputMiddleTextX2, topY - stepY * yIndex)
         local vAligns = { "TOP", "CENTER", "BOTTOM" }
-        self:createSelectBox(vAligns, node.__info.vAlign + 1, leftX_input_2, topY - stepY * yIndex, inputMiddle, function(index)
-            self:modify(node, "vAlign", index - 1, "number")
+        self:createSelectBox(vAligns, node.__info.vAlign + 1, inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(index)
+            self:modifyByInput(node, "vAlign", index - 1, "number")
         end, "TOP")
         yIndex = yIndex + 1
         -- maxLineWidth
         --        if node.__info.maxLineWidth then
         --            self:createLabel("MaxLineWidth", leftX, topY - stepY * yIndex)
-        --            self:createInput(tostring(node.__info.maxLineWidth), leftX_input_1, topY - stepY * yIndex, inputMiddle, function(editBox, input)
-        --                editBox:setInput(self:modify(node, "maxLineWidth", input, "number"))
+        --            self:createInput(tostring(node.__info.maxLineWidth), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
+        --                editBox:setInput(self:modifyByInput(node, "maxLineWidth", input, "number"))
         --            end)
         --            yIndex = yIndex + 1
         --        end
@@ -1028,8 +1048,8 @@ function panel:displayNode(node)
                     table.insert(fonts, font)
                 end
                 self:createSelectAndInput(font, fonts, table.indexof(fonts, font),
-                    leftX_input_1, topY - stepY * yIndex, inputLong, function(editBox, input)
-                        editBox:setInput(self:modify(node, "fontFile." .. lan, input, "string"))
+                    inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(editBox, input)
+                        editBox:setInput(self:modifyByInput(node, "fontFile." .. lan, input, "string"))
                         gk.event:post("displayNode", node)
                     end)
                 yIndex = yIndex + 1
@@ -1116,11 +1136,6 @@ function panel:displayNode(node)
     end
 
     --------------------------- other nodes   ---------------------------
-    if isClippingNode then
-        createTitle("cc.ClippingNode")
-        createInputLong("AlphaThreshold", "alphaThreshold", "number")
-        createCheckBox("Inverted", "inverted")
-    end
 
     if isProgressTimer then
         createTitle("cc.ProgressTimer")
@@ -1134,16 +1149,6 @@ function panel:displayNode(node)
         if node.__info.barType == 1 then
             createInputMiddle("BarChangeRate", "X", "Y", "barChangeRate.x", "barChangeRate.y", "number")
         end
-    end
-    if isClippingRectangleNode then
-        createTitle("cc.ClippingRectangleNode")
-        createInputMiddle("ClipRegion", "X", "Y", "clippingRegion.x", "clippingRegion.y", "number")
-        createInputMiddle("", "W", "H", "clippingRegion.width", "clippingRegion.height", "number")
-        createCheckBox("ClippingEnabled", "clippingEnabled")
-    end
-    if isTmxTiledMap then
-        createTitle("cc.TMXTiledMap")
-        createInputLong("TMXFile", "tmx", "string")
     end
     if isParticleSystemQuad then
         createTitle("cc.ParticleSystemQuad")
@@ -1211,38 +1216,28 @@ function panel:displayNode(node)
         local ext = gk.exNodeDisplayer[i]
         if node.__info.type == ext.type or gk.util:instanceof(node, ext.type) then
             createTitle(ext.title or ext.type)
-            local stringProps = ext.stringProps
-            if stringProps then
-                for i = 1, #stringProps do
-                    local prop = stringProps[i]
+            if ext.stringProps then
+                for i, prop in ipairs(ext.stringProps) do
                     createInputLong(getTitle(prop), prop.key, "string", prop.default)
                 end
             end
-            local numProps = ext.numProps
-            if numProps then
-                for i = 1, #numProps do
-                    local prop = numProps[i]
+            if ext.numProps then
+                for i, prop in ipairs(ext.numProps) do
                     createInputLong(getTitle(prop), prop.key, "number", prop.default)
                 end
             end
-            local pairProps = ext.pairProps
-            if pairProps then
-                for i = 1, #pairProps do
-                    local prop = pairProps[i]
+            if ext.pairProps then
+                for i, prop in ipairs(ext.pairProps) do
                     createInputMiddle(prop.titles[1], prop.titles[2], prop.titles[3], prop.keys[1], prop.keys[2], "number", prop.defaults and prop.defaults[1], prop.defaults and prop.defaults[2])
                 end
             end
-            local selectProps = ext.selectProps
-            if selectProps then
-                for i = 1, #selectProps do
-                    local prop = selectProps[i]
+            if ext.selectProps then
+                for i, prop in ipairs(ext.selectProps) do
                     createSelectBoxLong(getTitle(prop), prop.selects, prop.key, prop.type, prop.default)
                 end
             end
-            local arrayProps = ext.arrayProps
-            if arrayProps then
-                for i = 1, #arrayProps do
-                    local prop = arrayProps[i]
+            if ext.arrayProps then
+                for i, prop in ipairs(ext.arrayProps) do
                     local numprop = prop.numProp
                     createInputLong(getTitle(numprop), numprop.key, "number", numprop.default)
                     for j = 1, node.__info[numprop.key] do
@@ -1250,10 +1245,8 @@ function panel:displayNode(node)
                     end
                 end
             end
-            local boolProps = ext.boolProps
-            if boolProps then
-                for i = 1, #boolProps do
-                    local prop = boolProps[i]
+            if ext.boolProps then
+                for i, prop in ipairs(ext.boolProps) do
                     createCheckBox(getTitle(prop), prop.key)
                 end
             end
@@ -1311,21 +1304,21 @@ function panel:handleEvent()
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
-function panel:modify(node, property, input, valueType, notPostChanged)
-    local var = generator:modify(node, property, input, valueType, notPostChanged)
+function panel:modifyByInput(node, property, input, valueType, notPostChanged)
+    local var = gk.generator:modifyByInput(node, property, input, valueType, notPostChanged)
     for _, nd in ipairs(self.parent.multiSelectNodes) do
         if node ~= nd and nd.__info.type == node.__info.type then
-            generator:modify(nd, property, input, valueType, notPostChanged)
+            gk.generator:modifyByInput(nd, property, input, valueType, notPostChanged)
         end
     end
     gk.event:post("displayNode", node)
 end
 
 function panel:modifyValue(node, property, value, notPostChanged)
-    local var = generator:modifyValue(node, property, value, notPostChanged)
+    local var = gk.generator:modifyValue(node, property, value, notPostChanged)
     for _, nd in ipairs(self.parent.multiSelectNodes) do
         if node ~= nd and nd.__info.type == node.__info.type then
-            generator:modifyValue(nd, property, value, notPostChanged)
+            gk.generator:modifyValue(nd, property, value, notPostChanged)
         end
     end
     gk.event:post("displayNode", node)

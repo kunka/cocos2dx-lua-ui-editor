@@ -6,7 +6,6 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local generator = import(".generator")
 local panel = {}
 
 function panel.create(parent)
@@ -33,7 +32,8 @@ function panel.create(parent)
     local leftX2 = gk.display.leftWidth - inputWidth1 - leftX
     local leftX_input_2 = 100
     local inputWidth2 = gk.display.rightWidth - leftX - leftX_input_2
-    local stepX = 64 --51
+    --    local stepX = 64 --51
+    local stepX = 10
     local stepY = 25
     local leftX_widget = 15 --10
     local createLabel = function(content, x, y)
@@ -175,13 +175,21 @@ function panel.create(parent)
         return gk.create_label("", gk.theme.font_sys, fontSize)
     end)
 
-    -- widgets
-    self.widgets = clone(generator.config.supportNodes)
-    table.sort(self.widgets, function(k1, k2)
-        local arr1 = string.split(k1.type, ".")
-        local arr2 = string.split(k2.type, ".")
-        return arr1[#arr1] < arr2[#arr2]
-    end)
+    -- content node
+    local iconScale = 0.32
+    local width = leftX_widget
+    -- clipping rect
+    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width + gk.display.extWidth, self:getContentSize().height)
+    self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
+    self:addChild(self.clippingNode)
+
+    -- cc nodes and gk nodes and ex nodes
+    self.widgets = clone(gk.editorConfig.supportNodes)
+    for _, node in ipairs(self.widgets) do
+        if node.type:find("%.") == nil then
+            node._isGKNode = true
+        end
+    end
     -- self pre defined widget
     local keys = table.keys(gk.resource.genNodes)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
@@ -191,47 +199,36 @@ function panel.create(parent)
             table.insert(self.widgets, { type = nodeInfo.path, cname = nodeInfo.cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
         end
     end
-    -- content node
-    local iconScale = 0.32
-    local width = leftX_widget * 2 + iconScale * 108 + stepX * (#self.widgets - 1)
-    self.displayInfoNode:setContentSize(cc.size(width, self:getContentSize().height))
-    self.displayInfoNode:setAnchorPoint(cc.p(0, 0))
-    self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
-    --    gk.util:drawNodeBounds(self.displayInfoNode)
-    -- clipping
-    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width + gk.display.extWidth, self:getContentSize().height)
-    self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
-    self:addChild(self.clippingNode)
-    self.clippingNode:addChild(self.displayInfoNode)
 
     local winSize = cc.Director:getInstance():getWinSize()
     for i = 1, #self.widgets do
-        local node = gk.create_sprite(self.widgets[i].file or "gk/res/texture/icon_cocos.png")
+        local typeInfo = self.widgets[i]
+        local node = gk.create_sprite(typeInfo.file or "gk/res/texture/icon_cocos.png")
         gk.util:addMouseMoveEffect(node)
-        if self.widgets[i]._isWidget then
-            node:setColor(cc.c3b(0xEE, 0x99, 0xEE))
-        end
-        node.type = self.widgets[i].type
+        node.type = typeInfo.type
         node:setScale(iconScale)
-        --        local originPos = cc.p(gk.display.leftWidth + leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
-        local originPos = cc.p(leftX_widget + node:getScale() * node:getContentSize().width / 2 + stepX * (i - 1), size.height / 2)
-        originPos.y = originPos.y + 8
-        node:setPosition(originPos)
         self.displayInfoNode:addChild(node)
 
-        local names = string.split(self.widgets[i].displayName and self.widgets[i].displayName or self.widgets[i].type, ".")
-        --        local label = gk.create_label(self.widgets[i]._isWidget and names[1] or names[#names], fontName, 7 * 4)
-        local label = gk.create_label(self.widgets[i]._isWidget and self.widgets[i].cname or names[#names], fontName, fontSize)
+        local label = gk.create_label(typeInfo._isWidget and typeInfo.cname or typeInfo.type, fontName, fontSize)
         label:setScale(scale)
-        label:setDimensions(node:getContentSize().width + stepX * 2, 60)
-        label:setOverflow(2)
-        --        gk.util:drawNodeBounds(label)
-        label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-        label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
         gk.set_label_color(label, gk.theme.config.fontColorNormal)
         self.displayInfoNode:addChild(label)
         label:setAnchorPoint(0.5, 0.5)
-        label:setPosition(originPos.x, originPos.y - 40)
+        --        label:setPosition(originPos.x, originPos.y - 40)
+        if typeInfo._isWidget then
+            label:setColor(cc.c3b(0xEE, 0x99, 0xEE))
+        elseif typeInfo._isGKNode then
+            label:setColor(cc.c3b(0x33, 0x66, 0xEE))
+        end
+        local itemWidth = label:getContentSize().width * scale
+        itemWidth = math.ceil(itemWidth / 10) * 10
+        width = width + itemWidth + stepX
+        node:setPosition(cc.p(width - stepX / 2 - itemWidth / 2, size.height / 2 + 8))
+        label:setPosition(cc.p(width - stepX / 2 - itemWidth / 2, 8 + 8))
+        --        gk.util:drawNodeBounds(label)
+        local originPos = cc.p(width - stepX / 2 - itemWidth / 2, size.height / 2 + 8)
+        gk.util:drawSegmentOnNode(self.displayInfoNode, cc.p(width, size.height - 25), cc.p(width, 15), 5, cc.c4f(0x99 / 255, 0xcc / 255, 0 / 255,
+            0.2), 1000 + i)
 
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
@@ -247,7 +244,7 @@ function panel.create(parent)
             local p = node:convertToNodeSpace(location)
             self._containerNode = nil
             if cc.rectContainsPoint(rect, p) then
-                local type = self.widgets[i].type
+                local type = typeInfo.type
                 gk.log("choose node %s", type)
                 gk.event:post("undisplayNode")
                 gk.event:post("displayNode", node)
@@ -261,7 +258,7 @@ function panel.create(parent)
             local p = self:convertToNodeSpace(location)
             local pos = cc.p(originPos.x + self.displayInfoNode:getPositionX(), originPos.y)
             if not self.draggingNode then
-                local node = gk.create_sprite(self.widgets[i].file or "gk/res/texture/icon_cocos.png")
+                local node = gk.create_sprite(typeInfo.file or "gk/res/texture/icon_cocos.png")
                 node:setPosition(pos)
                 node:setScale(iconScale) -- gk.display:minScale())
                 self:addChild(node)
@@ -320,10 +317,10 @@ function panel.create(parent)
                 p = self._containerNode:convertToNodeSpace(self:convertToWorldSpace(p))
                 if cc.rectContainsPoint(rect, p) then
                     local node
-                    local widget = self.widgets[i]
+                    local widget = typeInfo
                     local info = clone(widget)
                     local type = widget.type
-                    node = generator:createNode(info, nil, self.parent.scene.layer)
+                    node = gk.generator:createNode(info, nil, self.parent.scene.layer)
                     if node.__info._isWidget then
                         node.__info._lock = 0
                         node.__info._fold = true
@@ -333,15 +330,14 @@ function panel.create(parent)
                         if widget._isWidget or type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                         else
-                            local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
-                            local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
+                            local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                            local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                             node.__info.x, node.__info.y = x, y
                         end
                         self._containerNode:addChild(node)
                         gk.log("add new node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
                         gk.event:post("executeCmd", "ADD", {
-                            id = node.__info.id,
-                            panel = self.parent,
+                            id = node.__info.id, panel = self.parent,
                         })
                         gk.event:post("postSync")
                         gk.event:post("displayNode", node)
@@ -371,6 +367,13 @@ function panel.create(parent)
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end
+
+    width = width + leftX_widget
+    self.displayInfoNode:setContentSize(cc.size(width, self:getContentSize().height))
+    self.displayInfoNode:setAnchorPoint(cc.p(0, 0))
+    self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
+    --    gk.util:drawNodeBounds(self.displayInfoNode)
+    self.clippingNode:addChild(self.displayInfoNode)
 
     self:handleEvent()
 

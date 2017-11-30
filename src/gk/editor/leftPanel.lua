@@ -6,7 +6,6 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-local generator = import(".generator")
 local panel = {}
 
 local marginTop = 15
@@ -400,8 +399,8 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                             parent:setContentNode(nil)
                         end
                         self.parent:rescaleNode(node, container)
-                        local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
-                        local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
+                        local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                        local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                         node.__info.x, node.__info.y = x, y
                         node:removeFromParent()
                         container:addChild(node)

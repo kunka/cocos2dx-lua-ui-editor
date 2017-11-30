@@ -5,6 +5,19 @@
 -- Time: 上午10:12
 -- To change this template use File | Settings | File Templates.
 
+import(".List")
+import(".log")
+gk.event = import(".event")
+gk.event:init()
+gk.audio = import(".audio")
+gk.audio:init()
+gk.injector = import(".injector")
+gk.injector:init()
+gk.display = import(".display")
+gk.generator = import(".generator")
+
+----------------------------------- runtime version for mac editor --------------------------------------------
+
 if cc.Application:getInstance():getTargetPlatform() ~= 2 then
     -- runtime version is valid only on mac and edit mode
     gk.runtimeVersion = ""
@@ -26,7 +39,7 @@ gk.getRuntimeVersion = function()
                 return result.version
             else
                 local table2lua = require("gk.tools.table2lua")
-                if not gk.exception then
+                if not gk.errorOccurs then
                     io.writefile(path, table2lua.encode_pretty({ version }))
                 end
             end
@@ -36,7 +49,7 @@ gk.getRuntimeVersion = function()
             if pos then
                 path = path:sub(1, pos - 1) .. "/runtimeversion.lua"
                 local table2lua = require("gk.tools.table2lua")
-                if not gk.exception then
+                if not gk.errorOccurs then
                     io.writefile(path, table2lua.encode_pretty({ version = "0.0.0.0" }))
                 end
             end
@@ -53,21 +66,9 @@ gk.increaseRuntimeVersion = function()
         version = table.concat(vs, ".")
         gk.runtimeVersion = version
         local table2lua = require("gk.tools.table2lua")
-        if not gk.exception then
+        if not gk.errorOccurs then
             local path = cc.FileUtils:getInstance():fullPathForFilename("gk/core/runtimeversion.lua")
             io.writefile(path, table2lua.encode_pretty({ version = version }))
         end
     end
 end
-
-import(".List")
-import(".log")
-gk.event = import(".event")
-gk.event:init()
-gk.audio = import(".audio")
-gk.audio:init()
-gk.injector = import(".injector")
-gk.injector:init()
-gk.display = import(".display")
-
-

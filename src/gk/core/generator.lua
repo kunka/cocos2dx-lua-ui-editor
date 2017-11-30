@@ -7,15 +7,13 @@
 --
 
 local generator = {}
-local config = require("gk.editor.config")
-generator.config = config
 
 function generator:deflate(node)
     local info = {}
 
     -- add edit properties
     for k, ret in pairs(node.__info.__self) do
-        if k ~= "children" and generator.config.editableProps[k] ~= nil then
+        if k ~= "children" and gk.editorConfig.editableProps[k] ~= nil then
             -- use %x to replace table
             if k == "color" or k == "textColor" or k == "effectColor" then
                 local var = string.format("%02x%02x%02x", cc.clampf(ret.r, 0, 255), cc.clampf(ret.g, 0, 255), cc.clampf(ret.b, 0, 255))
@@ -28,7 +26,7 @@ function generator:deflate(node)
                     info[k] = var
                 end
             else
-                local def = config.defValues[k]
+                local def = gk.editorConfig.defValues[k]
                 if def then
                     -- filter def value, except widget which save all values
                     local isWidget = node.class and node.class._isWidget
@@ -93,18 +91,6 @@ function generator:deflate(node)
     return info
 end
 
-function generator:resetIds(info)
-    info.id = nil
-    if info.children then
-        for i = 1, #info.children do
-            local child = info.children[i]
-            if child then
-                self:resetIds(child)
-            end
-        end
-    end
-end
-
 function generator:inflate(info, rootNode, rootTable)
     local children = info.children
     local node = self:createNode(info, rootNode, rootTable)
@@ -128,7 +114,7 @@ function generator:createNode(info, rootNode, rootTable)
     if rootNode then
         node = rootNode
     else
-        local creator = config.nodeCreator[info._isWidget and "widget" or info.type]
+        local creator = gk.editorConfig.nodeCreator[info._isWidget and "widget" or info.type]
         if creator then
             node = creator(info, rootTable)
             --            gk.log("createNode %s,%s", node, info.id)
@@ -149,7 +135,7 @@ function generator:createNode(info, rootNode, rootTable)
     if rootTable then
         -- warning: duplicated id
         if rootTable[info.id] then
-            local id = config:genID(node.__info.type, rootTable)
+            local id = gk.editorConfig:genID(node.__info.type, rootTable)
             local pre = info.id
             local otherNode = rootTable[info.id]
             info.id = id
@@ -207,7 +193,7 @@ function generator:setProp(proxy, key, value, info, rootTable)
         if node then
             local pre = proxy[key]
             proxy[key] = value
-            self.config:setValue(node, key, value)
+            gk.editorConfig:setValue(node, key, value)
             if pre ~= value then
                 gk.event:post("postSync")
             end
@@ -235,7 +221,7 @@ function generator:getProp(proxy, key, info, rootTable)
         end
         if var == nil then
             local node = rootTable and rootTable[proxy["id"]] or nil
-            return node and self.config:getValue(node, key) or nil
+            return node and gk.editorConfig:getValue(node, key) or nil
         else
             return var
         end
@@ -260,7 +246,7 @@ function generator:wrap(info, rootTable)
 end
 
 function generator:parseValue(key, node, input, ...)
-    local v = generator:parseMacroFunc(node, input)
+    local v = self:parseMacroFunc(node, input)
     if v then
         v = v(key, node, ...)
     end
@@ -268,26 +254,26 @@ function generator:parseValue(key, node, input, ...)
 end
 
 function generator:parseX(node, x, scaleX)
-    local x = generator:parseValue("x", node, x)
-    x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX, x)
+    local x = self:parseValue("x", node, x)
+    x = tonumber(scaleX) == 1 and x or self:parseValue("scaleX", node, scaleX, x)
     return x
 end
 
 function generator:parseY(node, y, scaleY)
-    local y = generator:parseValue("y", node, y)
-    y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY, y)
+    local y = self:parseValue("y", node, y)
+    y = tonumber(scaleY) == 1 and y or self:parseValue("scaleY", node, scaleY, y)
     return y
 end
 
 function generator:parseXRvs(node, x, scaleX)
-    local x = generator:parseValue("x", node, x)
-    x = tonumber(scaleX) == 1 and x or generator:parseValue("scaleX", node, scaleX .. "Rvs", x)
+    local x = self:parseValue("x", node, x)
+    x = tonumber(scaleX) == 1 and x or self:parseValue("scaleX", node, scaleX .. "Rvs", x)
     return x
 end
 
 function generator:parseYRvs(node, y, scaleY)
-    local y = generator:parseValue("y", node, y)
-    y = tonumber(scaleY) == 1 and y or generator:parseValue("scaleY", node, scaleY .. "Rvs", y)
+    local y = self:parseValue("y", node, y)
+    y = tonumber(scaleY) == 1 and y or self:parseValue("scaleY", node, scaleY .. "Rvs", y)
     return y
 end
 
@@ -295,7 +281,7 @@ function generator:parseMacroFunc(node, input)
     if type(input) == "string" and string.len(input) > 1 and input:sub(1, 1) == "$" then
         local macro = input:sub(2, #input)
         -- global preset get func
-        local func = self.config.macroFuncs[macro]
+        local func = gk.editorConfig.macroFuncs[macro]
         if func then
             return func, macro
         end
@@ -318,7 +304,7 @@ function generator:parseCustomMacroFunc(node, input)
 end
 
 -- for editor use
-function generator:modify(node, property, input, valueType, notPostChanged)
+function generator:modifyByInput(node, property, input, valueType, notPostChanged)
     local props = string.split(property, ".")
     local prop1, prop2
     if #props == 2 then

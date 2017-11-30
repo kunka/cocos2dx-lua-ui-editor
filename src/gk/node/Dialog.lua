@@ -6,11 +6,12 @@
 -- To change this template use File | Settings | File Templates.
 --
 
--- Pop up dialog, default pop self when click Android back
+--- Pop up dialog: default pop self when click Android back(keyboard Esc)
 local Layer = import(".Layer")
 local Dialog = class("Dialog", Layer)
 
 function Dialog:ctor()
+    -- set default value before ctor, inflate from __info may change it
     self.popOnTouchOutsideBg = false
     self.popOnTouchInsideBg = false
     Dialog.super.ctor(self)

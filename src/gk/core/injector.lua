@@ -35,7 +35,7 @@ function injector:scene_method_swizz(type, methodName)
         local __method = function(...)
             local node = method(...)
             if gk.mode == gk.MODE_EDIT then
-                gk.display:addEditorPanel(node)
+                gk.editorPanel:attachToScene(node)
             end
             return node
         end
@@ -74,6 +74,7 @@ injector:node_method_swizz(cc.Label, "createWithTTF")
 injector:node_method_swizz(cc.Label, "createWithBMFont")
 injector:node_method_swizz(cc.ClippingNode, "create")
 
+-- for root containers
 function injector:ctor_method_swizz(type, methodName)
     if not type["__" .. methodName .. "__swizzed"] then
         local method = type[methodName]
@@ -96,9 +97,11 @@ function injector:inflateNode(path, ...)
     local clazz = gk.resource:require(path)
     if clazz then
         local node = clazz:create(...)
+        -- ignore by editor
         node.__ignore = true
         return node
     else
+        gk.log("inflateNode %s error, return nil", path)
         return nil
     end
 end
@@ -108,6 +111,7 @@ function injector:onNodeCreate(node)
         -- root container node
         local path = gk.resource:getGenNodePath(node.__cname)
         if not path then
+            gk.log("onNodeCreate %s error, cannot find gen node path", node.__cname)
             return
         end
         if gk.mode == gk.MODE_EDIT then
@@ -130,7 +134,7 @@ function injector:onNodeCreate(node)
                 -- init first time
                 gk.log("inflate node first time %s ", path)
                 node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
-                node.__info.id = gk.generator.config:genID(node.__cname, node)
+                node.__info.id = gk.editorConfig:genID(node.__cname, node)
                 node[node.__info.id] = node
                 node.__info.width, node.__info.height = "$fill", "$fill"
                 self:sync(node)
@@ -143,13 +147,12 @@ end
 function injector:sync(node)
     if CFG_SCAN_NODES and node and gk.resource.genNodes[node.__cname] then
         -- root container node
-        local generator = require("gk.editor.generator")
         local nd = node or self.scene.layer
         gk.log("start sync %s", nd.__info.id)
-        local info = generator:deflate(nd)
+        local info = gk.generator:deflate(nd)
         local path = gk.resource:getGenNodeFullPath(nd.__cname)
         local table2lua = require("gk.tools.table2lua")
-        if gk.exception then
+        if gk.errorOccurs then
             gk.log(table2lua.encode_pretty(info))
             gk.log("[Warning!] exception occured! please fix it then flush to file!")
         else

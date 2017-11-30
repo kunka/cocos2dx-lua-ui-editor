@@ -27,7 +27,7 @@ local function getConfig(entry)
         textureDir = "gk/test/res/texture/",
         launchEntry = "gk/test/MainLayer",
         launchEntryKey = "gk_launchEntry_2", -- remember last entry when restart
-        designSize = cc.size(1280, 768),
+        designSize = cc.size(1280, 720),
     }
 end
 
@@ -170,20 +170,20 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/HighLight.fsh")
 
     -- hint c3bs
-    gk.generator.config:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 0), "Green")
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 255, 255), "Yellow")
-    gk.generator.config:registerHintColor3B(cc.c3b(0, 0, 0), "Black")
-    gk.generator.config:registerHintColor3B(cc.c3b(255, 255, 255), "White")
+    gk.editorConfig:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
+    gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 0), "Green")
+    gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 255), "Yellow")
+    gk.editorConfig:registerHintColor3B(cc.c3b(0, 0, 0), "Black")
+    gk.editorConfig:registerHintColor3B(cc.c3b(255, 255, 255), "White")
 
     -- hint contentSizes or button size
-    gk.generator.config:registerHintContentSize(cc.size(200, 50))
+    gk.editorConfig:registerHintContentSize(cc.size(200, 50))
 
     -- hint fontSizes
-    gk.generator.config:registerHintFontSize(16)
-    gk.generator.config:registerHintFontSize(18)
-    gk.generator.config:registerHintFontSize(20)
-    gk.generator.config:registerHintFontSize(24)
+    gk.editorConfig:registerHintFontSize(16)
+    gk.editorConfig:registerHintFontSize(18)
+    gk.editorConfig:registerHintFontSize(20)
+    gk.editorConfig:registerHintFontSize(24)
     ---------------------- for edtior ----------------------
 end
 

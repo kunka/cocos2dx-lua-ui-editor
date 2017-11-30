@@ -14,6 +14,11 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_buttontest.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/ButtonTest"},
+	   C3DLayerTest = {
+	      cname = "C3DLayerTest",
+	      genPath = "gk/test/gen/layout/gk_test_c3dlayertest.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/C3DLayerTest"},
 	   ClippingNodeTest = {
 	      cname = "ClippingNodeTest",
 	      genPath = "gk/test/gen/layout/gk_test_clippingnodetest.lua",

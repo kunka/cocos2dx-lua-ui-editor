@@ -7,7 +7,7 @@
 --
 
 --- Use as Layer or Scene
---- As Scene: default popDialog when click Android back(keyboard ESC), otherwise popScene
+--- As Scene: default popDialog when click Android back(keyboard Esc), otherwise popScene
 local Layer = class("Layer", function()
     return cc.Layer:create()
 end)

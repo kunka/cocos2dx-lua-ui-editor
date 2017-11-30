@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+-- for wrap node
 local Scene = class("Scene", function()
     return cc.Scene:create()
 end)
@@ -13,10 +14,22 @@ end)
 function Scene:ctor(sceneType)
     self.__sceneType = sceneType
     if gk.displayRuntimeVersion then
-        local version = gk:getRuntimeVersion()
-        local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_currentVersion")
+        local version = ""
+        local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_currentVersion", "")
         if curVersion ~= "" then
-            version = curVersion .. "/" .. version
+            version = version .. curVersion
+        end
+        local sid = SERVER_ID or ""
+        if sid ~= "" then
+            version = version .. "/s" .. sid
+        end
+        local rv = gk:getRuntimeVersion()
+        if rv and rv ~= "" then
+            if version ~= "" then
+                version = version .. "/" .. rv
+            else
+                version = rv
+            end
         end
         local label = gk.create_label(version, "Arial", 15)
         gk.set_label_color(label, cc.c3b(230, 230, 230))

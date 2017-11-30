@@ -1,5 +1,4 @@
 local panel = {}
-local generator = import(".generator")
 local cmd = import(".cmd")
 
 local kMoveNodeAction = -1102
@@ -139,7 +138,7 @@ function panel:onNodeCreate(node)
     self.multiSelectNodes = self.multiSelectNodes or {}
     --    gk.log("onNodeCreate onCreate %s %s", node, node.__info)
     node:onNodeEvent("enter", function()
-        if gk.exception then
+        if gk.errorOccurs then
             return
         end
         if not node.__info or not node.__info.id then
@@ -372,16 +371,16 @@ function panel:onNodeCreate(node)
                     parent:setContentNode(nil)
                 end
                 self:rescaleNode(node, self._containerNode)
-                local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
-                local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
+                local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 node.__info.x, node.__info.y = x, y
                 node:removeFromParent()
                 self._containerNode:addChild(node)
                 node:release()
                 gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
             else
-                local x = math.round(generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
-                local y = math.round(generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
+                local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
+                local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 --                node.__info.x, node.__info.y = x, y
                 --                gk.log("move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
                 if self._containerNode ~= nil then
@@ -409,6 +408,9 @@ function panel:onNodeCreate(node)
 end
 
 function panel:rescaleNode(node, parent)
+    if node.__info._is3d then
+        return
+    end
     if node:isIgnoreAnchorPointForPosition() then
         -- Layer, ScrollView ...
         node.__info.scaleX, node.__info.scaleY = "1", "1"
@@ -470,10 +472,10 @@ function panel:drawNodeCoordinate(node)
         end
         local size = parent:getContentSize()
 
-        local disX = generator:parseXRvs(node, x, node.__info.scaleXY.x)
-        local disY = generator:parseXRvs(node, y, node.__info.scaleXY.y)
-        local disX2 = generator:parseXRvs(node, (size.width - x), node.__info.scaleXY.x)
-        local disY2 = generator:parseXRvs(node, (size.height - y), node.__info.scaleXY.y)
+        local disX = gk.generator:parseXRvs(node, x, node.__info.scaleXY.x)
+        local disY = gk.generator:parseXRvs(node, y, node.__info.scaleXY.y)
+        local disX2 = gk.generator:parseXRvs(node, (size.width - x), node.__info.scaleXY.x)
+        local disY2 = gk.generator:parseXRvs(node, (size.height - y), node.__info.scaleXY.y)
         -- left
         createArrow(x, disX, sx, cc.p(3, y + 2), 180, cc.p(0, 0))
         -- down
@@ -500,7 +502,7 @@ function panel:undisplayNode(expRightPanel)
 end
 
 function panel:displayNode(node, noneCoordinate)
-    if not node or not node.__info then
+    if not node or not node.__info or node.__ignore then
         return
     end
     local displayCoordinate = not noneCoordinate
@@ -518,20 +520,6 @@ function panel:displayNode(node, noneCoordinate)
     end
     self.rightPanel:displayNode(node)
     --    gk.profile:stop("displayNode")
-
-    -- print info
-    --    if node.__rootTable and node.__rootTable.__info then
-    --        gk.log("%s.rootTableId = %s", node.__info.id, node.__rootTable.__info.id)
-    --    end
-    --    if node.__info then
-    --        gk.log("%s.parentId = %s", node.__info.id, node.__info.parentId)
-    --    end
-    --    if node.__info._isWidget then
-    --        gk.log("%s:_isWidget = true", node.__info.id)
-    --    end
-    --    if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
-    --        gk.log("%s:_isWidget's Child = true", node.__info.id)
-    --    end
 end
 
 function panel:handleEvent()
@@ -555,10 +543,9 @@ function panel:handleEvent()
                 gk.log("copy node %s", self.displayingNode.__info.id)
                 self.copyingNode = self.displayingNode
             elseif key == "KEY_V" and self.copyingNode then
-                local info = clone(generator:deflate(self.copyingNode))
-                -- clear id info
-                generator:resetIds(info)
-                local node = generator:inflate(info, nil, self.scene.layer)
+                local info = clone(gk.generator:deflate(self.copyingNode))
+                self:resetIds(info)
+                local node = gk.generator:inflate(info, nil, self.scene.layer)
                 if node then
                     self.copyingNodeTimes = self.copyingNodeTimes or 0
                     self.copyingNodeTimes = self.copyingNodeTimes + 1
@@ -653,7 +640,7 @@ function panel:handleEvent()
         if key == "KEY_BACKSPACE" then
             -- delete node
             if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id and self.displayingNode ~= self.scene.layer then
-                local info = clone(generator:deflate(self.displayingNode))
+                local info = clone(gk.generator:deflate(self.displayingNode))
                 gk.event:post("executeCmd", "DELETE", {
                     info = info,
                     parentId = self.displayingNode.__info.parentId,
@@ -722,6 +709,19 @@ function panel:handleEvent()
     --    listener:registerScriptHandler(function(touch, event)
     --    end, cc.Handler.EVENT_MOUSE_SCROLL)
     --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+end
+
+function panel:resetIds(info)
+    -- clear id info
+    info.id = nil
+    if info.children then
+        for i = 1, #info.children do
+            local child = info.children[i]
+            if child then
+                self:resetIds(child)
+            end
+        end
+    end
 end
 
 function panel:deleteNode(node)

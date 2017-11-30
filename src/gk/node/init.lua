@@ -6,8 +6,12 @@
 -- To change this template use File | Settings | File Templates.
 
 gk.Scene = import(".Scene")
+-- root containers
 gk.Layer = import(".Layer")
 gk.Dialog = import(".Dialog")
+gk.TableViewCell = import(".TableViewCell")
+gk.Widget = import(".Widget")
+-- gk custom nodes
 gk.Button = import(".Button")
 gk.EditBox = import(".EditBox")
 gk.SelectBox = import(".SelectBox")
@@ -15,17 +19,13 @@ gk.ZoomButton = import(".ZoomButton")
 gk.ToggleButton = import(".ToggleButton")
 gk.SpriteButton = import(".SpriteButton")
 gk.CheckBox = import(".CheckBox")
-gk.TableViewCell = import(".TableViewCell")
-gk.Widget = import(".Widget")
-
--- draw node
+-- gk draw nodes
 gk.DrawNodeCircle = import(".DrawNodeCircle")
 gk.CubicBezierNode = import(".CubicBezierNode")
 gk.DrawPolygon = import(".DrawPolygon")
 gk.DrawCardinalSpline = import(".DrawCardinalSpline")
 gk.DrawPoint = import(".DrawPoint")
 gk.DrawLine = import(".DrawLine")
-
 -- root containers
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")
 gk.injector:ctor_method_swizz(gk.Dialog, "ctor")
@@ -132,6 +132,7 @@ end
 
 gk.create_label_local = create_label_local
 
+--- [Editor use only, no localization info]
 local function create_label(string, fontFile, fontSize, c3b)
     local label
     -- TODO: createWithCharMap
@@ -161,6 +162,7 @@ end
 
 gk.create_label = create_label
 
+-- for all kinds of label
 local function set_label_color(label, c3b)
     local config = label:getTTFConfig()
     if config.fontFilePath ~= "" then
@@ -177,7 +179,8 @@ end
 
 gk.set_label_color = set_label_color
 
-local function nextFocusNode(x, y, root)
+--- [Editor use only, for EditBox and SelectBox]
+local function __nextFocusNode(x, y, root)
     local all = {}
     local function focusNodes(node)
         if node then
@@ -238,5 +241,5 @@ local function nextFocusNode(x, y, root)
     return nil
 end
 
-gk.nextFocusNode = nextFocusNode
+gk.__nextFocusNode = __nextFocusNode
 

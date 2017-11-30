@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+--- [Editor use only]
 local EditBox = class("EditBox", function()
     return cc.Node:create()
 end)
@@ -410,13 +411,13 @@ function EditBox:handleKeyboardEvent()
                 --                end
                 local x, y = self:getPosition()
                 local root = gk.util:getRootNode(self)
-                local next = gk.nextFocusNode(x, y, root)
+                local next = gk.__nextFocusNode(x, y, root)
                 if next then
                     self:unfocus()
                 end
                 -- delay
                 root:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(function()
-                    local next = gk.nextFocusNode(x, y, root)
+                    local next = gk.__nextFocusNode(x, y, root)
                     if next then
                         next:focus()
                     end

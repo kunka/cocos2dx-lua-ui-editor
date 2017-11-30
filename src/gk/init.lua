@@ -15,9 +15,9 @@ gk.MODE_RELEASE = 0
 
 gk.mode = gk.MODE_RELEASE
 gk.defaultSpritePathDebug = "gk/res/texture/default_debug.png"
-gk.defaultSpritePathRelease = "gk/res/texture/release.png"
-gk.exception = false -- disable sync when exception occurs
-gk.displayRuntimeVersion = true -- display runtime version on right-bottom corner
+gk.defaultSpritePathRelease = "gk/res/texture/default_release.png"
+gk.errorOccurs = false -- disable sync when error occurs
+gk.displayRuntimeVersion = true -- display runtime version on scene's right-bottom corner
 gk.exNodeDisplayer = {}
 
 -- export global variable
@@ -37,7 +37,4 @@ require "gk.action.init"
 require "gk.node.init"
 require "gk.controller.init"
 require "gk.editor.init"
-gk.util = require "gk.tools.util"
-gk.profile = require "gk.tools.profile"
-gk.config = require "gk.tools.config"
-gk.scheduler = require "gk.tools.scheduler"
+require "gk.tools.init"

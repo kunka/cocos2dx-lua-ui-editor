@@ -178,6 +178,10 @@ config.nodeCreator = {
     end,
 }
 
+function config:registerNodeCreator(type, creator)
+    config.nodeCreator[type] = creator
+end
+
 function config:registerGKNodeCreator(type, alias)
     config.nodeCreator[type] = function(info, rootTable)
         local node = gk[type].new()
@@ -206,7 +210,7 @@ end
 
 ----------------------------- default values not gen -----------------------------------
 
--- default values, not modified properties, will not be saved, minimize gen file size
+-- default values and never modified properties will not be saved, minimize gen file size
 config.defValues = {
     _isWidget = false,
     _voidContent = false,
@@ -1007,6 +1011,10 @@ function config:setValue(node, key, value)
     end
 end
 
+function config:registerDisplayProps(displayer)
+    table.insert(gk.exNodeDisplayer, displayer)
+end
+
 ----------------------------- properties for Editor -----------------------------------
 
 config:registerPlaneProp("id", "")
@@ -1075,9 +1083,32 @@ config:registerScriptHandler("cellTouched", cc.TABLECELL_TOUCHED)
 -- cc.ClippingNode
 config:registerBoolProp("inverted")
 config:registerProp("alphaThreshold")
+config:registerDisplayProps({
+    type = "cc.ClippingNode",
+    numProps = {
+        { key = "alphaThreshold", default = 0 },
+    },
+    boolProps = { { key = "inverted" }, }
+})
+
 -- cc.ClippingRectangleNode
 config:registerProp("clippingRegion")
 config:registerBoolProp("clippingEnabled")
+config:registerDisplayProps({
+    type = "cc.ClippingRectangleNode",
+    pairProps = {
+        {
+            titles = { "ClipRegion", "X", "Y" },
+            keys = { "clippingRegion.x", "clippingRegion.y" },
+        },
+        {
+            titles = { "", "W", "H" },
+            keys = { "clippingRegion.width", "clippingRegion.height" },
+        },
+    },
+    boolProps = { { key = "clippingEnabled" }, }
+})
+
 -- cc.ProgressTimer
 config:registerProp("barType", "Type")
 config:registerProp("percentage")
@@ -1098,6 +1129,10 @@ config:registerProp("returnType")
 
 -- cc.TMXTiledMap
 config:registerPlaneProp("tmx")
+config:registerDisplayProps({
+    type = "cc.TMXTiledMap",
+    stringProps = { { key = "tmx", title = "TMXFile" }, },
+})
 
 -- cc.ParticleSystemQuad
 config:registerPlaneProp("particle")
@@ -1271,12 +1306,8 @@ table.insert(gk.exNodeDisplayer,
                 defaults = { 0, 0 },
             },
         },
-        numProps = {
-            { key = "radius" },
-        },
-        boolProps = {
-            { key = "segment" },
-        },
+        numProps = { { key = "radius" }, },
+        boolProps = { { key = "segment" }, },
     })
 
 -- gk.DrawNodeCircle
