@@ -122,16 +122,6 @@ function panel.create(parent)
         onValueChanged(editBox, input)
     end)
     onValueChanged(editBox, sdk)
-
-    --    createLabel("Package Name", leftX5, topY - stepY * yIndex)
-    --    local var = gk.ANDROID_PACKAGE_NAME or "" -- cc.UserDefault:getInstance():getStringForKey("gk_gk.ANDROID_PACKAGE_NAME", "gk.ANDROID_PACKAGE_NAME")
-    --    local input = createInput(var, leftX6, topY - stepY * yIndex, inputWidth1, function(editBox, input)
-    --        --        cc.UserDefault:getInstance():setStringForKey("gk_gk.ANDROID_PACKAGE_NAME", input)
-    --        --        cc.UserDefault:getInstance():flush()
-    --    end)
-    --    input:setOpacity(150)
-    --    input:setCascadeOpacityEnabled(true)
-    --    input.isEnabled = false
     yIndex = yIndex + 1
 
     createLabel("Default Activity", leftX, topY - stepY * yIndex)
@@ -269,13 +259,13 @@ function panel.create(parent)
         gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             gk.set_label_color(label, cc.c3b(50, 255, 50))
-            local packageName = gk.ANDROID_PACKAGE_NAME or ""
+            local packageName = gk.editorConfig.ANDROID_PACKAGE_NAME or ""
             local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
             if packageName == "" then
                 gk.log("must set packageName")
                 return
             end
-            if not gk.ANDROID_ROOT or gk.ANDROID_ROOT == "/" then
+            if not gk.editorConfig.ANDROID_ROOT or gk.editorConfig.ANDROID_ROOT == "/" then
                 gk.log("must set gk.ANDROID_ROOT")
                 return
             end
@@ -286,12 +276,12 @@ function panel.create(parent)
             end
             gk.log("----------------------------------")
             gk.log("Cleaning ......")
-            local dir = gk.MAC_ROOT .. "gen"
+            local dir = gk.editorConfig.MAC_ROOT .. "gen"
             gk.log("remove dir %s", dir)
             cc.FileUtils:getInstance():removeDirectory(dir)
             local adb = sdk .. "/platform-tools/adb"
-            gk.log("remove dir %s", gk.ANDROID_ROOT)
-            local handle = io.popen(adb .. " shell rm -rf " .. gk.ANDROID_ROOT)
+            gk.log("remove dir %s", gk.editorConfig.ANDROID_ROOT)
+            local handle = io.popen(adb .. " shell rm -rf " .. gk.editorConfig.ANDROID_ROOT)
             local result = handle:read("*a")
             handle:close()
             gk.log("Clean finished!")
@@ -315,7 +305,7 @@ function panel.create(parent)
     gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 1), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
-        local packageName = gk.ANDROID_PACKAGE_NAME or ""
+        local packageName = gk.editorConfig.ANDROID_PACKAGE_NAME or ""
         local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
         if packageName == "" then
             gk.log("must set packageName")
@@ -344,9 +334,9 @@ function panel.create(parent)
         gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             gk.set_label_color(label, cc.c3b(50, 255, 50))
-            local dir = gk.ANDROID_ROOT or "/"
+            local dir = gk.editorConfig.ANDROID_ROOT or "/"
             local adb = sdk .. "/platform-tools/adb"
-            local handle = io.popen(gk.MAC_ROOT .. "src/gk/script/push.py " .. gk.MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
+            local handle = io.popen(gk.editorConfig.MAC_ROOT .. "src/gk/script/push.py " .. gk.editorConfig.MAC_ROOT .. " " .. adb .. " " .. packageName .. " " .. defaultActivity .. " " .. dir)
             local result = handle:read("*a")
             print(result)
             handle:close()

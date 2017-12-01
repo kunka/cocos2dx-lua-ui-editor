@@ -52,7 +52,7 @@ for _, v in ipairs(searchPath) do
     print("searchPath:\"" .. v .. "\"")
 end
 
-local MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME
+local MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME -- only used by editor
 local function initInstanceRun()
     local android_package_name = "com.demo.gk"
     local instanceRun = require("gk.instanceRun")
@@ -65,10 +65,11 @@ local function initHotUpdate()
     hotUpdate:init(codeVersion)
 end
 
-function startGame(mode)
+local function startGame(mode)
     return require("init"):startGame(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 end
 
+-- will be called in some other place to restart game
 function restartGame(mode)
     print("restartGame")
     clearModules()
@@ -83,8 +84,8 @@ end
 -- 1: edit mode
 if cc.Application:getInstance():getTargetPlatform() == 2 then
     --- mac default run with edit mode with instance run enabled
-    initInstanceRun()
-    startGame(1)
+    initInstanceRun() -- instance run on Mac, with ui editor
+    startGame(1) -- default run with edit mode
     -- initHotUpdate()
     -- startGame(0)
 else

@@ -49,7 +49,7 @@ function init:startGame(mode, ...)
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         local _, ret = gk.SceneManager:replace(path)
         if not ret then
-            -- use default
+            -- reset to default
             cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         end
     else
@@ -59,9 +59,9 @@ end
 
 function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     -- init code root
-    gk.MAC_ROOT = MAC_ROOT or ""
-    gk.ANDROID_ROOT = ANDROID_ROOT or ""
-    gk.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME or ""
+    gk.editorConfig.MAC_ROOT = MAC_ROOT or ""
+    gk.editorConfig.ANDROID_ROOT = ANDROID_ROOT or ""
+    gk.editorConfig.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME or ""
 
     -- use custom log func
     gk.log = function(format, ...)
@@ -80,9 +80,9 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     cc.Director:getInstance():setDisplayStats(gk.config.CFG_SHOW_FPS)
 
     -- print code root
-    gk.log("# MAC_ROOT                     = " .. gk.MAC_ROOT)
-    gk.log("# ANDROID_ROOT                 = " .. gk.ANDROID_ROOT)
-    gk.log("# ANDROID_PACKAGE_NAME         = " .. gk.ANDROID_PACKAGE_NAME)
+    gk.log("# MAC_ROOT                     = " .. gk.editorConfig.MAC_ROOT)
+    gk.log("# ANDROID_ROOT                 = " .. gk.editorConfig.ANDROID_ROOT)
+    gk.log("# ANDROID_PACKAGE_NAME         = " .. gk.editorConfig.ANDROID_PACKAGE_NAME)
 
     -- print runtime version
     gk.log("runtime version = %s", gk:getRuntimeVersion())

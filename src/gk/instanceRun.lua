@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+-- instance run on Mac or Android platform
 local instanceRun = {}
 
 -- must init this in main.lua before require any other modules
