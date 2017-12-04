@@ -344,7 +344,12 @@ function panel:displayNode(node)
 
     local function parseVar(key)
         local keys = string.split(key, ".")
-        local ret = #keys == 1 and node.__info[key] or node.__info[keys[1]][keys[2]]
+        local ret
+        if #keys == 1 then
+            ret = node.__info[key]
+        else
+            ret = node.__info[keys[1]][keys[2]]
+        end
         if #keys > 2 then
             local var = node.__info[keys[1]]
             for i = 2, #keys do
