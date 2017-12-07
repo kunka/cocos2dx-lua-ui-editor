@@ -53,12 +53,22 @@ function event:unsubscribe(target, eventName)
 end
 
 function event:unsubscribeAll(target)
-    for _, listeners in pairs(self._listeners) do
+    for eventName, listeners in pairs(self._listeners) do
         if listeners and #listeners > 0 then
+            local validList = {}
             for _, l in ipairs(listeners) do
                 if l.tg == target then
                     l.valid = false
+                elseif l.valid then
+                    table.insert(validList, l)
                 end
+            end
+            if #validList == 0 then
+                --            gk.log("event:unsubscribe %s, target = %s, targetCount = 0", eventName, target.__cname)
+                self._listeners[eventName] = nil
+            else
+                self._listeners[eventName] = validList
+                --            gk.log("event:unsubscribe %s, target = %s, targetCount = %d", eventName, target.__cname, #validList)
             end
         end
     end

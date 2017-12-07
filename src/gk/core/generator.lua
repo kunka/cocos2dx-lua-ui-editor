@@ -13,7 +13,8 @@ function generator:deflate(node)
 
     -- add edit properties
     for k, ret in pairs(node.__info.__self) do
-        if k ~= "children" and gk.editorConfig.editableProps[k] ~= nil then
+        if k ~= "_children" and (gk.editorConfig.editableProps[k] ~= nil or (node.__cname and gk.editorConfig.editableProps[node.__cname .. "." .. k] ~= nil))
+        then
             -- use %x to replace table
             if k == "color" or k == "textColor" or k == "effectColor" then
                 local var = string.format("%02x%02x%02x", cc.clampf(ret.r, 0, 255), cc.clampf(ret.g, 0, 255), cc.clampf(ret.b, 0, 255))
@@ -46,6 +47,8 @@ function generator:deflate(node)
                     info[k] = clone(ret)
                 end
             end
+        else
+            --            print(k)
         end
     end
     if (gk.util:instanceof(node, "Button") and not gk.util:instanceof(node, "SpriteButton")) or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then
@@ -65,34 +68,46 @@ function generator:deflate(node)
         local _isWidget = node.__info._isWidget
         for i = 1, #children do
             local child = children[i]
-            if child and child.__info and child.__info.id and not gk.util:isDebugNode(child) then
+            if child and child.__info and child.__info._id and not gk.util:isDebugNode(child) then
                 if child.__ignore or (_isWidget and child.__rootTable == node) then
                     -- ignore widget child
                 else
-                    info.children = info.children or {}
+                    info._children = info._children or {}
                     local c = self:deflate(child)
-                    --                    c.parentId = info.id
-                    table.insert(info.children, c)
+                    table.insert(info._children, c)
                 end
             end
         end
     end
 
-    if info.children and #info.children == 0 then
-        info.children = nil
+    if info._children and #info._children == 0 then
+        info._children = nil
     end
 
     if gk.util:instanceof(node, "cc.ProgressTimer") then
         local sprite = node:getSprite()
         if sprite then
-            info.sprite = self:deflate(sprite)
+            info._sprite = self:deflate(sprite)
         end
     end
     return info
 end
 
 function generator:inflate(info, rootNode, rootTable)
-    local children = info.children
+    -- TODO:compitiable with old "children", "id", "type", remove this after upgrade all
+    if info.id then
+        info._id = info.id
+    end
+    if info.children then
+        info._children = info.children
+    end
+    if info.type then
+        info._type = info.type
+    end
+    if info.sprite then
+        info._sprite = info.sprite
+    end
+    local children = info._children
     local node = self:createNode(info, rootNode, rootTable)
     if node and children then
         for _, child in ipairs(children) do
@@ -114,17 +129,18 @@ function generator:createNode(info, rootNode, rootTable)
     if rootNode then
         node = rootNode
     else
-        local creator = gk.editorConfig.nodeCreator[info._isWidget and "widget" or info.type]
+        -- TODO:compitiable with old "children", "id", "type", remove this after upgrade all
+        local creator = gk.editorConfig.nodeCreator[info._isWidget and "widget" or info._type]
         if creator then
             node = creator(info, rootTable)
-            --            gk.log("createNode %s,%s", node, info.id)
+            --            gk.log("createNode %s,%s", node, info._id)
             if not node then
-                local msg = gk.log("createNode error, return nil, type = %s", info.type)
+                local msg = gk.log("createNode error, return nil, type = %s", info._type)
                 gk.util:reportError(msg)
                 return nil
             end
         else
-            local msg = gk.log("createNode error, cannot find type to create node, type = %s!", info.type)
+            local msg = gk.log("createNode error, cannot find type to create node, type = %s!", info._type)
             gk.util:reportError(msg)
             return nil
         end
@@ -134,15 +150,15 @@ function generator:createNode(info, rootNode, rootTable)
     -- index node
     if rootTable then
         -- warning: duplicated id
-        if rootTable[info.id] then
-            local id = gk.editorConfig:genID(node.__info.type, rootTable)
-            local pre = info.id
-            local otherNode = rootTable[info.id]
-            info.id = id
+        if rootTable[info._id] then
+            local id = gk.editorConfig:genID(node.__info._type, rootTable)
+            local pre = info._id
+            local otherNode = rootTable[info._id]
+            info._id = id
             -- restore
             rootTable[pre] = otherNode
         end
-        rootTable[info.id] = node
+        rootTable[info._id] = node
         node.__rootTable = rootTable
     end
 
@@ -159,15 +175,15 @@ end
 
 function generator:setProp(proxy, key, value, info, rootTable)
     --            gk.log("set %s,%s", key, tostring(value))
-    if key == "id" then
+    if key == "_id" then
         local b = string.len(value) > 0 and string.byte(value:sub(1, 1)) or -1
         if (b >= 65 and b <= 90) or (b >= 97 and b <= 122) or b == 95 then
             value = string.trim(value)
             if rootTable[value] == nil then
-                local node = rootTable and rootTable[proxy["id"]] or nil
+                local node = rootTable and rootTable[proxy["_id"]] or nil
                 if node then
                     -- clear old
-                    rootTable[proxy["id"]] = nil
+                    rootTable[proxy["_id"]] = nil
                     -- change id
                     rootTable[value] = node
                     proxy[key] = value
@@ -189,7 +205,7 @@ function generator:setProp(proxy, key, value, info, rootTable)
             gk.log("error set invalid id %s", value)
         end
     else
-        local node = rootTable and rootTable[proxy["id"]] or nil
+        local node = rootTable and rootTable[proxy["_id"]] or nil
         if node then
             local pre = proxy[key]
             proxy[key] = value
@@ -220,9 +236,10 @@ function generator:getProp(proxy, key, info, rootTable)
             return v
         end
         if var == nil then
-            local node = rootTable and rootTable[proxy["id"]] or nil
+            local node = rootTable and rootTable[proxy["_id"]] or nil
             return node and gk.editorConfig:getValue(node, key) or nil
         else
+            --            gk.log("get %s,%s", key, var)
             return var
         end
     end
@@ -383,7 +400,7 @@ end
 
 -- for editor use
 function generator:modifyValue(node, property, value, notPostChanged)
-    if property == "id" then
+    if property == "_id" then
         local ori_value = node.__info[property]
         node.__info[property] = value
         local cur_value = node.__info[property]
@@ -398,7 +415,7 @@ function generator:modifyValue(node, property, value, notPostChanged)
         local cur_value = value
         if ori_value ~= cur_value and not (type(ori_value) == "table" and gk.util:table_eq(ori_value, cur_value)) then
             gk.event:post("executeCmd", "CHANGE_PROP", {
-                id = node.__info.id,
+                id = node.__info._id,
                 key = property,
                 from = ori_value,
                 parentId = node.__info.parentId,

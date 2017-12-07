@@ -55,6 +55,8 @@ function init:startGame(mode, ...)
     else
         gk.SceneManager:replace(config.launchEntry)
     end
+
+    --    gk.resource:testAllGenNodes()
 end
 
 function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)

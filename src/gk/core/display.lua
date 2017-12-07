@@ -33,7 +33,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     local topMargin = 100
     local rightMargin = 280
     local bottomMargin = 100
-    if gk.mode == gk.MODE_EDIT then
+    if gk.mode ~= gk.MODE_RELEASE then
         self.leftWidth = leftMargin
         self.topHeight = topMargin
         self.rightWidth = rightMargin
@@ -60,7 +60,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
             s.size.height = s.size.height * rate
         end
         local s = self.deviceSizes[cc.UserDefault:getInstance():getIntegerForKey("gk_deviceSizeIndex", 1)].size
-        if s.width < minDesignWinWidth and gk.mode == gk.MODE_EDIT then
+        if s.width < minDesignWinWidth and gk.mode ~= gk.MODE_RELEASE then
             self.extWidth = minDesignWinWidth - s.width
         end
 

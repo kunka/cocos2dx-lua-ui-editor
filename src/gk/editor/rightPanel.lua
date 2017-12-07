@@ -495,7 +495,7 @@ function panel:displayNode(node)
 
     local is3d = node.__info._is3d
     --------------------------- ID   ---------------------------
-    createInputLong("ID", "id", "string")
+    createInputLong("ID", "_id", "string")
     if self.parent._containerNode == node or self.parent.leftPanel._containerNode then
         -- only display id when dragging
         return
@@ -804,7 +804,7 @@ function panel:displayNode(node)
         local children = node:getChildren()
         for i = 1, #children do
             local child = children[i]
-            if child and child.__info and child.__info.id then
+            if child and child.__info and child.__info._id then
                 if child.__info.tag ~= -1 then
                     if not table.indexof(tags, child.__info.tag) then
                         table.insert(tags, child.__info.tag)
@@ -1094,7 +1094,7 @@ function panel:displayNode(node)
         createFunc("DidScroll", "didScroll", "on")
     end
     if isWidget then
-        createTitle("gk.Widget(" .. node.__info.type .. ")")
+        createTitle("gk.Widget(" .. node.__info._type .. ")")
         self:createLabel("-", leftX, topY - stepY * yIndex)
         yIndex = yIndex + 1
     end
@@ -1217,10 +1217,9 @@ function panel:displayNode(node)
         end
         return prop.title
     end
-    for i = 1, #gk.exNodeDisplayer do
-        local ext = gk.exNodeDisplayer[i]
-        if node.__info.type == ext.type or gk.util:instanceof(node, ext.type) then
-            createTitle(ext.title or ext.type)
+    for _, ext in pairs(gk.exNodeDisplayer) do
+        if node.__info._type == ext._type or gk.util:instanceof(node, ext._type) then
+            createTitle(ext.title or ext._type)
             if ext.stringProps then
                 for i, prop in ipairs(ext.stringProps) do
                     createInputLong(getTitle(prop), prop.key, "string", prop.default)
@@ -1278,7 +1277,7 @@ function panel:displayNode(node)
     end
 
     -- keep last scroll offset
-    if (self.lastDisplayNodeId == node.__info.id or self.lastDisplayNodeType == node.__info.type) and self.lastDisplayInfoOffset then
+    if (self.lastDisplayNodeId == node.__info._id or self.lastDisplayNodeType == node.__info._type) and self.lastDisplayInfoOffset then
         local y = self.lastDisplayInfoOffset.y
         y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
         self.lastDisplayInfoOffset.y = y
@@ -1287,8 +1286,8 @@ function panel:displayNode(node)
         self.lastDisplayInfoOffset = cc.p(0, 0)
         self.displayInfoNode:setPosition(self.lastDisplayInfoOffset)
     end
-    self.lastDisplayNodeId = node.__info.id
-    self.lastDisplayNodeType = node.__info.type
+    self.lastDisplayNodeId = node.__info._id
+    self.lastDisplayNodeType = node.__info._type
 end
 
 function panel:handleEvent()
@@ -1307,12 +1306,22 @@ function panel:handleEvent()
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+
+    -- swallow touches
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function(touch, event)
+        if gk.util:hitTest(self, touch) then
+            return true
+        end
+    end, cc.Handler.EVENT_TOUCH_BEGAN)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 function panel:modifyByInput(node, property, input, valueType, notPostChanged)
     local var = gk.generator:modifyByInput(node, property, input, valueType, notPostChanged)
     for _, nd in ipairs(self.parent.multiSelectNodes) do
-        if node ~= nd and nd.__info.type == node.__info.type then
+        if node ~= nd and nd.__info._type == node.__info._type then
             gk.generator:modifyByInput(nd, property, input, valueType, notPostChanged)
         end
     end
@@ -1322,7 +1331,7 @@ end
 function panel:modifyValue(node, property, value, notPostChanged)
     local var = gk.generator:modifyValue(node, property, value, notPostChanged)
     for _, nd in ipairs(self.parent.multiSelectNodes) do
-        if node ~= nd and nd.__info.type == node.__info.type then
+        if node ~= nd and nd.__info._type == node.__info._type then
             gk.generator:modifyValue(nd, property, value, notPostChanged)
         end
     end

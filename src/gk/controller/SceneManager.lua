@@ -25,7 +25,7 @@ function SceneManager:createScene(layerName, ...)
             gk.util:reportError(msg)
         end)
         if status then
-            if gk.mode == gk.MODE_EDIT then
+            if gk.mode ~= gk.MODE_RELEASE then
                 -- wrap node in editor panel
                 local node = cc.Node:create()
                 node:addChild(layer)
@@ -35,7 +35,7 @@ function SceneManager:createScene(layerName, ...)
                 scene:addChild(layer)
             end
             scene.layer = layer
-            if gk.mode == gk.MODE_EDIT then
+            if gk.mode ~= gk.MODE_RELEASE then
                 gk.event:post("displayNode", layer)
                 gk.event:post("displayDomTree")
             end
@@ -170,6 +170,7 @@ function SceneManager:printSceneStack()
         end
     end
     gk.log("*********************** SceneStack ***********************\n")
+    gk.event:post("displayDomTree")
 end
 
 return SceneManager

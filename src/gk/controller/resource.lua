@@ -267,4 +267,26 @@ function resource:load(path)
     end
 end
 
+function resource:testAllGenNodes()
+    local co = coroutine.create(function()
+        local co = coroutine.running()
+        local keys = table.keys(gk.resource.genNodes)
+        table.sort(keys)
+        for _, k in ipairs(keys) do
+            local v = gk.resource.genNodes[k]
+            gk.scheduler:performWithDelayGlobal(function()
+                gk.event:unsubscribeAll(gk.editorPanel:getPanel(gk.SceneManager:getRunningScene()))
+                local scene, ret = gk.SceneManager:replace(v.path)
+                if ret and not gk.errorOccurs then
+                    coroutine.resume(co)
+                else
+                    gk.log("error create node %s", v.path)
+                end
+            end, 0.1)
+            coroutine.yield()
+        end
+    end)
+    coroutine.resume(co)
+end
+
 return resource

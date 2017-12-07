@@ -346,7 +346,20 @@ function panel.create(parent)
     end)
 
     yIndex = yIndex + 1
+    self:handleEvent()
     return self
+end
+
+function panel:handleEvent()
+    -- swallow touches
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function(touch, event)
+        if gk.util:hitTest(self, touch) then
+            return true
+        end
+    end, cc.Handler.EVENT_TOUCH_BEGAN)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 return panel

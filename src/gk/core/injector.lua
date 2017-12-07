@@ -13,7 +13,7 @@ function injector:layer_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.mode == gk.MODE_EDIT then
+            if gk.mode ~= gk.MODE_RELEASE then
                 local vars = { ... }
                 local count = #vars
                 if count <= 2 then
@@ -34,7 +34,7 @@ function injector:scene_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.mode == gk.MODE_EDIT then
+            if gk.mode ~= gk.MODE_RELEASE then
                 gk.editorPanel:attachToScene(node)
             end
             return node
@@ -50,7 +50,7 @@ function injector:node_method_swizz(type, methodName)
         local method = meta[methodName]
         local __method = function(...)
             local node = method(...)
-            if gk.mode == gk.MODE_EDIT then
+            if gk.mode ~= gk.MODE_RELEASE then
                 gk.event:post("onNodeCreate", node)
             end
             return node
@@ -114,11 +114,12 @@ function injector:onNodeCreate(node)
             gk.log("onNodeCreate %s error, cannot find gen node path", node.__cname)
             return
         end
-        if gk.mode == gk.MODE_EDIT then
+        if gk.mode ~= gk.MODE_RELEASE then
             -- reload package
             package.loaded[path] = nil
         end
         gk.profile:start("injector:createNode")
+        self:registerCustomProp(node)
         local status, info = pcall(require, path)
         if status then
             -- must clone values
@@ -134,8 +135,8 @@ function injector:onNodeCreate(node)
                 -- init first time
                 gk.log("inflate node first time %s ", path)
                 node.__info = gk.generator:wrap({ type = node.__cname, width = "$fill", height = "$fill" }, node)
-                node.__info.id = gk.editorConfig:genID(node.__cname, node)
-                node[node.__info.id] = node
+                node.__info._id = gk.editorConfig:genID(node.__cname, node)
+                node[node.__info._id] = node
                 node.__info.width, node.__info.height = "$fill", "$fill"
                 self:sync(node)
             end
@@ -148,7 +149,7 @@ function injector:sync(node)
     if CFG_SCAN_NODES and node and gk.resource.genNodes[node.__cname] then
         -- root container node
         local nd = node or self.scene.layer
-        gk.log("start sync %s", nd.__info.id)
+        gk.log("start sync %s", nd.__info._id)
         local info = gk.generator:deflate(nd)
         local path = gk.resource:getGenNodeFullPath(nd.__cname)
         local table2lua = require("gk.tools.table2lua")
@@ -157,6 +158,41 @@ function injector:sync(node)
             gk.log("[Warning!] exception occured! please fix it then flush to file!")
         else
             gk.log("sync to file: " .. path .. (io.writefile(path, table2lua.encode_pretty(info)) and " success!" or " failed!!!"))
+        end
+    end
+end
+
+function injector:registerCustomProp(node)
+    node.registerCustomProp = function(_, prop, propType, default)
+        if gk.mode ~= gk.MODE_RELEASE then
+            local tp = node.__cname
+            -- check getter and setter
+            --        local getter = "get" .. string.upper(prop:sub(1, 1)) .. prop:sub(2, prop:len())
+            --        local setter = "set" .. string.upper(prop:sub(1, 1)) .. prop:sub(2, prop:len())
+            --        if type(node[getter]) ~= "function" or type(node[setter]) ~= "function" then
+            --            gk.util:reportError(string.format("registerCustomProp %s-%s error, getter or setter not found", tp, prop))
+            --            return
+            --        end
+            if propType == "number" then
+                --                gk.editorConfig:registerCustomFloatProp(tp, prop)
+                local tbl = gk.exNodeDisplayer[tp]
+                if not tbl then
+                    tbl = { _type = tp, }
+                    gk.editorConfig:registerDisplayProps(tbl)
+                end
+                local numProps = tbl.numProps or {}
+                local notFound = true
+                for _, p in ipairs(numProps) do
+                    if p.key == prop then
+                        notFound = false
+                        break
+                    end
+                end
+                if notFound then
+                    table.insert(numProps, { key = prop, default = default })
+                    tbl.numProps = numProps
+                end
+            end
         end
     end
 end

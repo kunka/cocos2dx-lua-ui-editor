@@ -809,7 +809,7 @@ function util:c4b2c4f(c4b)
 end
 
 function util:addMouseMoveEffect(node, c4f)
-    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT then
+    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode ~= gk.MODE_RELEASE then
         local listener = cc.EventListenerMouse:create()
         listener:registerScriptHandler(function(touch, event)
             if not node.noneMouseMoveEffect then

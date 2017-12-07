@@ -1,18 +1,18 @@
 return {
 	_fold = false,
+	_id = "ScrollViewTest",
+	_type = "ScrollViewTest",
 	height = "$fill",
-	id = "ScrollViewTest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
-	type = "ScrollViewTest",
 	width = "$fill",
-	children = {	   {
+	_children = {	   {
 	      _fold = false,
+	      _id = "scrollView1",
+	      _type = "cc.ScrollView",
 	      didScroll = "&onScrollViewDidScroll",
 	      height = 720,
-	      id = "scrollView1",
 	      ignoreAnchor = 0,
-	      type = "cc.ScrollView",
 	      width = 480,
 	      x = 20,
 	      y = 20,
@@ -36,16 +36,16 @@ return {
 	      viewSize = {
 	         height = 480,
 	         width = 480},
-	      children = {	         {
+	      _children = {	         {
+	            _id = "label1",
+	            _type = "cc.Label",
 	            fontSize = 32,
-	            id = "label1",
 	            scaleX = "$minScale",
 	            scaleY = "$minScale",
 	            string = "There has been an important development in the big crack cutting across the Larsen C Ice Shelf in Antarctica.\\\
 The fissure, which threatens to spawn one of the biggest bergs ever seen, has dramatically changed direction.\\\
 \\\"The rift has propagated a further 16km, with a significant apparent right turn towards the end, moving the tip 13km from the ice edge,\\\" said Swansea University's Prof Adrian Luckman.\\\
 The calving of the berg could now be very close, he told BBC News.",
-	            type = "cc.Label",
 	            width = 440,
 	            x = 58,
 	            y = 636,

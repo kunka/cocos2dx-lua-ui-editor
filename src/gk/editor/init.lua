@@ -15,7 +15,11 @@ import(".config3d"):register(gk.editorConfig)
 -- attach editor panel to editing scene
 gk.editorPanel.attachToScene = function(_, scene)
     gk.log("attachScene editorPanel")
-    scene:addChild(gk.editorPanel.create(scene), 9999999)
+    scene:addChild(gk.editorPanel.create(scene), 9999999, -99999)
     local c4b = gk.theme.config.backgroundColor
     gk.util:drawNodeBg(scene, gk.util:c4b2c4f(c4b), -89)
+end
+
+gk.editorPanel.getPanel = function(_, scene)
+    return scene:getChildByTag(-99999)
 end

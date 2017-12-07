@@ -49,55 +49,87 @@ function panel.create(scene)
         gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
     end
 
-    self:handleEvent()
-    self:subscribeEvent()
+    if gk.mode == gk.MODE_EDIT then
+        self:handleEvent()
 
-    bg:setOpacity(0)
-    local breathAction = gk.BreathAction:create(cc.FadeTo:create(6, 255))
-    breathAction:start(bg)
-    bg:enableNodeEvents()
-    bg.onExitCallback_ = function()
-        breathAction:stop()
+        bg:setOpacity(0)
+        local breathAction = gk.BreathAction:create(cc.FadeTo:create(6, 255))
+        breathAction:start(bg)
+        bg:enableNodeEvents()
+        bg.onExitCallback_ = function()
+            breathAction:stop()
+        end
+        self:subscribeEvent()
     end
-
+    if gk.mode == gk.MODE_RELEASE_CURRENT then
+        self:enableNodeEvents()
+        self.onExitCallback_ = function()
+            gk.event:unsubscribeAll(self)
+        end
+        self.onEnterCallback_ = function()
+            self:subscribeEvent()
+            gk.event:post("displayDomTree")
+        end
+    end
     return self
 end
 
 function panel:subscribeEvent()
     -- cmds
-    self.cmd = cmd:create(200)
-    gk.event:subscribe(self, "executeCmd", function(name, params)
-        self.cmd:execute(name, self.scene.layer, params)
-    end)
-    gk.event:subscribe(self, "undoCmd", function()
-        self.cmd:undo()
-    end)
-    gk.event:subscribe(self, "onNodeCreate", function(node)
-        self:onNodeCreate(node)
-    end)
-    gk.event:subscribe(self, "undisplayNode", function(node)
-        self:undisplayNode()
-    end)
-    gk.event:subscribe(self, "displayNode", function(node, var)
-        -- do not display tablecell in tableView
-        local type = tolua.type(node)
-        if type ~= "cc.TableView" then
-            if gk.util:isAncestorsType(node, "cc.TableView") then
-                return
+    if gk.mode == gk.MODE_EDIT then
+        self.cmd = cmd:create(200)
+        gk.event:subscribe(self, "executeCmd", function(name, params)
+            self.cmd:execute(name, self.scene.layer, params)
+        end)
+        gk.event:subscribe(self, "undoCmd", function()
+            self.cmd:undo()
+        end)
+        gk.event:subscribe(self, "onNodeCreate", function(node)
+            self:onNodeCreate(node)
+        end)
+        gk.event:subscribe(self, "undisplayNode", function(node)
+            self:undisplayNode()
+        end)
+        gk.event:subscribe(self, "displayNode", function(node, var)
+            -- do not display tablecell in tableView
+            local type = tolua.type(node)
+            if type ~= "cc.TableView" then
+                if gk.util:isAncestorsType(node, "cc.TableView") then
+                    return
+                end
             end
-        end
-        local layer = self.scene.layer
-        if layer then
-            gk.util:stopActionByTagSafe(layer, -2342)
-            local action = layer:runAction(cc.CallFunc:create(function()
-                self:displayNode(node, var)
-            end))
-            action:setTag(-2342)
-        end
-    end)
+            local layer = self.scene.layer
+            if layer then
+                gk.util:stopActionByTagSafe(layer, -2342)
+                local action = layer:runAction(cc.CallFunc:create(function()
+                    self:displayNode(node, var)
+                end))
+                action:setTag(-2342)
+            end
+        end)
+        gk.event:subscribe(self, "changeRootLayout", function(key)
+            gk.log("changeRootLayout --> %s", key)
+            local path = gk.resource.genNodes[key].path
+            if path then
+                gk.event:unsubscribeAll(self)
+                gk.SceneManager:replace(path)
+            end
+        end)
+        gk.event:subscribe(self, "postSync", function(node)
+            gk.util:stopActionByTagSafe(self, -234)
+            local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(function()
+                local injector = require("gk.core.injector")
+                injector:sync(node or self.scene.layer)
+            end)))
+            action:setTag(-234)
+        end)
+        gk.event:subscribe(self, "syncNow", function(node)
+            local injector = require("gk.core.injector")
+            injector:sync(node or (self.scene and self.scene.layer))
+        end)
+    end
+
     gk.event:subscribe(self, "displayDomTree", function(...)
-        --        self.leftPanel:displayDomTree(node or self.scene.layer)
-        --        node = node or self.scene.layer
         local node = self.scene.layer
         if node then
             local param = { ... }
@@ -108,26 +140,6 @@ function panel:subscribeEvent()
             action:setTag(-2341)
         end
     end)
-    gk.event:subscribe(self, "changeRootLayout", function(key)
-        gk.log("changeRootLayout --> %s", key)
-        local path = gk.resource.genNodes[key].path
-        if path then
-            gk.event:unsubscribeAll(self)
-            gk.SceneManager:replace(path)
-        end
-    end)
-    gk.event:subscribe(self, "postSync", function(node)
-        gk.util:stopActionByTagSafe(self, -234)
-        local action = self:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(function()
-            local injector = require("gk.core.injector")
-            injector:sync(node or self.scene.layer)
-        end)))
-        action:setTag(-234)
-    end)
-    gk.event:subscribe(self, "syncNow", function(node)
-        local injector = require("gk.core.injector")
-        injector:sync(node or (self.scene and self.scene.layer))
-    end)
 end
 
 function panel:onNodeCreate(node)
@@ -137,11 +149,12 @@ function panel:onNodeCreate(node)
     end
     self.multiSelectNodes = self.multiSelectNodes or {}
     --    gk.log("onNodeCreate onCreate %s %s", node, node.__info)
-    node:onNodeEvent("enter", function()
+
+    local onEnterCallback = function()
         if gk.errorOccurs then
             return
         end
-        if not node.__info or not node.__info.id then
+        if not node.__info or not node.__info._id then
             return
         end
         -- cannot select and move tableView cell which is auto gen
@@ -215,7 +228,7 @@ function panel:onNodeCreate(node)
                         table.remove(self.multiSelectNodes, index)
                     else
                         table.insert(self.multiSelectNodes, node)
-                        gk.log("multi select node %s, id = %s, count = %d", type, node.__info.id, #self.multiSelectNodes)
+                        gk.log("multi select node %s, id = %s, count = %d", type, node.__info._id, #self.multiSelectNodes)
                         gk.util:drawNode(node)
                     end
                     if not self.displayingNode then
@@ -226,7 +239,7 @@ function panel:onNodeCreate(node)
                         gk.util:clearDrawNode(nd)
                     end
                     self.multiSelectNodes = {}
-                    --                    gk.log("click node %s, id = %s", type, node.__info.id)
+                    --                    gk.log("click node %s, id = %s", type, node.__info._id)
                     gk.event:post("displayNode", node)
                 end
                 gk.util:clearDrawNode(self.scene.layer, -3)
@@ -238,7 +251,7 @@ function panel:onNodeCreate(node)
                     self:undisplayNode(true)
                     gk.util:clearDrawNode(self.scene.layer, -3)
                 end
-                --                gk.log("click none %s", node.__info.id)
+                --                gk.log("click none %s", node.__info._id)
                 return false
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
@@ -303,7 +316,7 @@ function panel:onNodeCreate(node)
                         local type = nd.__cname and nd.__cname or tolua.type(nd)
                         if self._containerNode ~= nd then
                             self._containerNode = nd
-                            gk.log("find container node %s, id = %s", type, nd.__info.id)
+                            gk.log("find container node %s, id = %s", type, nd.__info._id)
                             gk.event:post("displayNode", nd, true)
                             gk.event:post("displayDomTree")
                         end
@@ -357,9 +370,9 @@ function panel:onNodeCreate(node)
                 local sy = clone(node.__info.scaleY)
                 local sxy = clone(node.__info.scaleXY)
                 gk.event:post("executeCmd", "CHANGE_CONTAINER", {
-                    id = node.__info.id,
+                    id = node.__info._id,
                     fromPid = node.__info.parentId,
-                    toPid = self._containerNode.__info.id,
+                    toPid = self._containerNode.__info._id,
                     fromPos = cc.p(node.__info.x, node.__info.y),
                     sx = sx,
                     sy = sy,
@@ -377,15 +390,15 @@ function panel:onNodeCreate(node)
                 node:removeFromParent()
                 self._containerNode:addChild(node)
                 node:release()
-                gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
+                gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info._id, node.__info.x, node.__info.y)
             else
                 local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
                 local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 --                node.__info.x, node.__info.y = x, y
-                --                gk.log("move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
+                --                gk.log("move node %s to %.2f, %.2f", node.__info._id, node.__info.x, node.__info.y)
                 if self._containerNode ~= nil then
                     gk.event:post("executeCmd", "MOVE", {
-                        id = node.__info.id,
+                        id = node.__info._id,
                         from = cc.p(node.__info.x, node.__info.y),
                         to = cc.p(x, y)
                     })
@@ -404,7 +417,18 @@ function panel:onNodeCreate(node)
             self._containerNode = nil
         end, cc.Handler.EVENT_TOUCH_CANCELLED)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
-    end)
+    end
+    if node.onEnterCallback_ then
+        local pre = node.onEnterCallback_
+        node:onNodeEvent("enter", function()
+            pre()
+            onEnterCallback()
+        end)
+    else
+        node:onNodeEvent("enter", function()
+            onEnterCallback()
+        end)
+    end
 end
 
 function panel:rescaleNode(node, parent)
@@ -417,7 +441,7 @@ function panel:rescaleNode(node, parent)
     elseif not (self.scene.layer and self.scene.layer.class and self.scene.layer.class._isWidget) and not gk.util:instanceof(self.scene.layer, "TableViewCell") then
         -- normal node
         local sx, sy = gk.util:getGlobalScale(parent)
-        gk.log("rescaleNode(%s) sx %f, sy %f", node.__info.id, sx, sy)
+        gk.log("rescaleNode(%s) sx %f, sy %f", node.__info._id, sx, sy)
         if sx ~= 1 or sy ~= 1 then
             node.__info.scaleX, node.__info.scaleY = 1, 1
             node.__info.scaleXY = { x = "1", y = "1" }
@@ -429,7 +453,7 @@ function panel:rescaleNode(node, parent)
 end
 
 function panel:drawNodeCoordinate(node)
-    if node.__info and node.__info.id then
+    if node.__info and node.__info._id then
         local parent = node:getParent()
         if not parent then
             return
@@ -506,7 +530,7 @@ function panel:displayNode(node, noneCoordinate)
         return
     end
     local displayCoordinate = not noneCoordinate
-    gk.log("displayNode --------------------- %s", node.__info.id)
+    gk.log("displayNode --------------------- %s", node.__info._id)
     --    gk.profile:start("displayNode")
     self:undisplayNode()
     self.displayingNode = node
@@ -540,7 +564,7 @@ function panel:handleEvent()
         -- copy node
         if self.commandPressed then
             if key == "KEY_C" and self.displayingNode then
-                gk.log("copy node %s", self.displayingNode.__info.id)
+                gk.log("copy node %s", self.displayingNode.__info._id)
                 self.copyingNode = self.displayingNode
             elseif key == "KEY_V" and self.copyingNode then
                 local info = clone(gk.generator:deflate(self.copyingNode))
@@ -551,9 +575,9 @@ function panel:handleEvent()
                     self.copyingNodeTimes = self.copyingNodeTimes + 1
                     node.__info.x, node.__info.y = node.__info.x + 20 * self.copyingNodeTimes, node.__info.y --+ 20 * self.copyingNodeTimes
                     self.copyingNode:getParent():addChild(node)
-                    gk.log("paste node %s", node.__info.id)
+                    gk.log("paste node %s", node.__info._id)
                     gk.event:post("executeCmd", "ADD", {
-                        id = node.__info.id,
+                        id = node.__info._id,
                         panel = self,
                     })
                     gk.event:post("postSync")
@@ -593,7 +617,7 @@ function panel:handleEvent()
             -- TODO: hold
             self.moveActions = self.moveActions or {
                 KEY_LEFT_ARROW = function(info, step)
-                    gk.log("%s, %d", info.id, step)
+                    gk.log("%s, %d", info._id, step)
                     info.x = math.floor(info.x - step)
                 end,
                 KEY_RIGHT_ARROW = function(info, step)
@@ -639,7 +663,7 @@ function panel:handleEvent()
 
         if key == "KEY_BACKSPACE" then
             -- delete node
-            if self.shiftPressed and self.displayingNode and self.displayingNode.__info.id and self.displayingNode ~= self.scene.layer then
+            if self.shiftPressed and self.displayingNode and self.displayingNode.__info._id and self.displayingNode ~= self.scene.layer then
                 local info = clone(gk.generator:deflate(self.displayingNode))
                 gk.event:post("executeCmd", "DELETE", {
                     info = info,
@@ -713,10 +737,10 @@ end
 
 function panel:resetIds(info)
     -- clear id info
-    info.id = nil
-    if info.children then
-        for i = 1, #info.children do
-            local child = info.children[i]
+    info._id = nil
+    if info._children then
+        for i = 1, #info._children do
+            local child = info._children[i]
             if child then
                 self:resetIds(child)
             end
@@ -725,7 +749,7 @@ function panel:resetIds(info)
 end
 
 function panel:deleteNode(node)
-    gk.log("delete node %s", node.__info.id)
+    gk.log("delete node %s", node.__info._id)
     -- button child
     local parent = node:getParent()
     if parent and parent.__info and gk.util:instanceof(parent, "Button") and parent:getContentNode() == node then
@@ -747,8 +771,8 @@ function panel:deleteNode(node)
 end
 
 function panel:removeNodeIndex(node, rootTable)
-    if node.__info and node.__info.id and rootTable[node.__info.id] == node then
-        rootTable[node.__info.id] = nil
+    if node.__info and node.__info._id and rootTable[node.__info._id] == node then
+        rootTable[node.__info._id] = nil
     end
     local children = node:getChildren()
     if children then

@@ -23,19 +23,18 @@ function config3D:register(config)
     --        function(node, var) node:setRotation(cc.vec3(node.__info.rotateX, node.__info.rotateY, var)) end)
 
     ----------------------------- cc.Sprite3D -----------------------------------
-    config:registerSupportNode({ type = "cc.Sprite3D", modelPath = "gk/res/3d/orc.c3b", _is3d = true })
+    config:registerSupportNode({ _type = "cc.Sprite3D", modelPath = "gk/res/3d/orc.c3b", _is3d = true })
     config:registerPlaneProp("modelPath")
-    table.insert(gk.exNodeDisplayer,
-        {
-            type = "cc.Sprite3D",
-            stringProps = {
-                { key = "modelPath" },
-            },
-            --            boolProps = {},
-        })
+    config:registerDisplayProps({
+        _type = "cc.Sprite3D",
+        stringProps = {
+            { key = "modelPath" },
+        },
+        --            boolProps = {},
+    })
     config:registerNodeCreator("cc.Sprite3D", function(info, rootTable)
         local node = cc.Sprite3D:create(info.modelPath)
-        info.id = info.id or config:genID("sprite3D", rootTable)
+        info._id = info._id or config:genID("sprite3D", rootTable)
         return node
     end)
 end

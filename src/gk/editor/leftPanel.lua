@@ -53,11 +53,15 @@ end
 
 function panel:displayDomTree(rootLayer, force, notForceUnfold)
     if rootLayer and rootLayer.__info then
-        if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info.id == self.lastDisplayingNode.__info.id then
+        if gk.mode == gk.MODE_RELEASE_CURRENT then
+            self:displaySceneStack(rootLayer)
+            return
+        end
+        if not force and self.lastDisplayingNode and self.parent.displayingNode == self.lastDisplayingNode and self.parent.displayingNode.__info._id == self.lastDisplayingNode.__info._id then
             return
         end
         local forceUnfold = not notForceUnfold
-        --        gk.log("displayDomTree %s, %s", rootLayer.__info.id, forceUnfold)
+        --        gk.log("displayDomTree %s, %s", rootLayer.__info._id, forceUnfold)
         --        gk.profile:start("displayDomTree")
         self.lastDisplayingNode = self.parent.displayingNode
         -- current layout
@@ -175,7 +179,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
     if children then
         for i = 1, #children do
             local child = children[i]
-            if child and tolua.type(child) ~= "cc.DrawNode" and child:getTag() ~= -99 then --and child.__info and child.__info.id then
+            if child and tolua.type(child) ~= "cc.DrawNode" and child:getTag() ~= -99 then --and child.__info and child.__info._id then
             group = true
             break
             end
@@ -385,9 +389,9 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                         local sy = clone(node.__info.scaleY)
                         local sxy = clone(node.__info.scaleXY)
                         gk.event:post("executeCmd", "CHANGE_CONTAINER", {
-                            id = node.__info.id,
+                            id = node.__info._id,
                             fromPid = node.__info.parentId,
-                            toPid = container.__info.id,
+                            toPid = container.__info._id,
                             fromPos = cc.p(node.__info.x, node.__info.y),
                             sx = sx,
                             sy = sy,
@@ -446,7 +450,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                                             end
                                         end
                                         node.__info.localZOrder = z2
-                                        gk.log("dom:reorder node %s before %s", node.__info.id, child.__info.id)
+                                        gk.log("dom:reorder node %s before %s", node.__info._id, child.__info._id)
                                     end
                                     break
                                 end
@@ -481,7 +485,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                                 end
                             end
                             node.__info.localZOrder = z2
-                            gk.log("dom:reorder node %s after %s", node.__info.id, bro.__info.id)
+                            gk.log("dom:reorder node %s after %s", node.__info._id, bro.__info._id)
                         end
                         gk.event:post("displayDomTree", true)
                         gk.event:post("postSync")
@@ -519,9 +523,9 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
     local size = self:getContentSize()
     local topY = size.height - marginTop
 
-    local title = fixChild and tolua.type(node) or node.__info.id
+    local title = fixChild and tolua.type(node) or node.__info._id
     if node.__ignore then
-        title = node.__info.type
+        title = node.__info._type
     end
     self:createButton(title, leftX + stepX * layer, topY - stepY * self.domDepth, displayName, fixChild, node, widgetParent)
     self.domDepth = self.domDepth + 1
@@ -545,7 +549,7 @@ function panel:displayDomNode(node, layer, displayName, widgetParent)
         local children = node:getChildren()
         if children then
             for _, child in ipairs(children) do
-                --and child.__info and child.__info.id then
+                --and child.__info and child.__info._id then
                 if child.__rootTable == widgetParent then
                     self:displayDomNode(child, layer, nil, widgetParent)
                 elseif child.__rootTable == preWidgetParent then
@@ -678,6 +682,71 @@ function panel:displayGroup(key, layer, displayName, domItem)
     self.domDepth = self.domDepth + 1
 end
 
+function panel:createTitle(content, x, y, type, layerDepth)
+    local string = type == "Dialog" and string.format("[%s]", content) or content
+    for i = 0, layerDepth do
+        string = " " .. string
+    end
+    local label = gk.create_label(string, fontName, fontSize)
+    local contentSize = cc.size(gk.display.leftWidth / scale, 20 / scale)
+    label:setDimensions(contentSize.width - x / scale, contentSize.height)
+    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    if type == "Title" then
+        gk.set_label_color(label, cc.c3b(180, 120, 75))
+    else
+        gk.set_label_color(label, cc.c3b(0x99, 0xcc, 0x00))
+    end
+    label:setScale(scale)
+    self.displayInfoNode:addChild(label)
+    label:setAnchorPoint(0, 0.5)
+    label:setPosition(x, y)
+    label:setTag(1)
+    gk.util:addMouseMoveEffect(label)
+    -- select
+    --    if self.parent.displayingNode == node then
+    --        self.displayingDomDepth = self.domDepth
+    --        --            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
+    --        gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
+    --        --            end)))
+    --        self.selectedNode = label
+    --    end
+    return label
+end
+
+function panel:displaySceneStack(rootLayer)
+    self:undisplayNode()
+    self.domDepth = 0
+    local layerDepth = 0
+    local size = self:getContentSize()
+    local topY = size.height - marginTop
+    self:createTitle("************ SceneStack ************", leftX, topY - stepY * self.domDepth, "Title", layerDepth)
+    self.domDepth = self.domDepth + 1
+    for i = gk.SceneManager.sceneStack.first, gk.SceneManager.sceneStack.last do
+        local s = gk.SceneManager.sceneStack[i]
+        local st = s.__sceneType or "unknown SceneType"
+        self:createTitle(st, leftX, topY - stepY * self.domDepth, "Layer", layerDepth)
+        self.domDepth = self.domDepth + 1
+        if s.layer then
+            self:displayDialogStack(s.layer, layerDepth + 1)
+        end
+    end
+    self.domDepth = self.domDepth + 1
+end
+
+function panel:displayDialogStack(layer, layerDepth)
+    local size = self:getContentSize()
+    local topY = size.height - marginTop
+    if layer.dialogsStack then
+        for i = 1, #layer.dialogsStack do
+            local d = layer.dialogsStack[i]
+            self:createTitle(d.__dialogType or "unknown DialogType", leftX, topY - stepY * self.domDepth, "Dialog", layerDepth)
+            self.domDepth = self.domDepth + 1
+            self:displayDialogStack(d, layerDepth + 1)
+        end
+    end
+end
+
 function panel:sortChildrenOfSceneGraphPriority(node, isRootNode)
     if isRootNode then
         self.sortedChildren = {}
@@ -725,6 +794,16 @@ function panel:handleEvent()
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)
+    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
+
+    -- swallow touches
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function(touch, event)
+        if gk.util:hitTest(self, touch) then
+            return true
+        end
+    end, cc.Handler.EVENT_TOUCH_BEGAN)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 

@@ -34,7 +34,7 @@ function Dialog:isPopOnTouchOutsideBg()
 end
 
 function Dialog:addMaskLayer(opacity)
-    local opa = opacity or (Dialog.MASK_OPACITY and Dialog.MASK_OPACITY or 200)
+    local opa = opacity or (Dialog.MASK_OPACITY and Dialog.MASK_OPACITY or 150)
     local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, opa))
     self:addChild(layerColor, -1)
     self.maskLayer = layerColor

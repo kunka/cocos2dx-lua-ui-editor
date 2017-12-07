@@ -118,7 +118,7 @@ function panel.create(parent)
         view:setFrameSize(size.width, size.height)
         view:setDesignResolutionSize(size.width, size.height, 0)
         gk.log("set OpenGLView size(%.1f,%.1f)", size.width, winSize.height)
-        gk.util:restartGame(1)
+        gk.util:restartGame(gk.mode)
     end)
     --    node.enabled = false
     --    node:setOpacity(150)
@@ -186,7 +186,7 @@ function panel.create(parent)
     -- cc nodes and gk nodes and ex nodes
     self.widgets = clone(gk.editorConfig.supportNodes)
     for _, node in ipairs(self.widgets) do
-        if node.type:find("%.") == nil then
+        if node._type:find("%.") == nil then
             node._isGKNode = true
         end
     end
@@ -196,7 +196,7 @@ function panel.create(parent)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource.genNodes[key]
         if nodeInfo.isWidget then
-            table.insert(self.widgets, { type = nodeInfo.path, cname = nodeInfo.cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
+            table.insert(self.widgets, { _type = nodeInfo.path, cname = nodeInfo.cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
         end
     end
 
@@ -205,11 +205,11 @@ function panel.create(parent)
         local typeInfo = self.widgets[i]
         local node = gk.create_sprite(typeInfo.file or "gk/res/texture/icon_cocos.png")
         gk.util:addMouseMoveEffect(node)
-        node.type = typeInfo.type
+        node._type = typeInfo._type
         node:setScale(iconScale)
         self.displayInfoNode:addChild(node)
 
-        local label = gk.create_label(typeInfo._isWidget and typeInfo.cname or typeInfo.type, fontName, fontSize)
+        local label = gk.create_label(typeInfo._isWidget and typeInfo.cname or typeInfo._type, fontName, fontSize)
         label:setScale(scale)
         gk.set_label_color(label, gk.theme.config.fontColorNormal)
         self.displayInfoNode:addChild(label)
@@ -244,8 +244,8 @@ function panel.create(parent)
             local p = node:convertToNodeSpace(location)
             self._containerNode = nil
             if cc.rectContainsPoint(rect, p) then
-                local type = typeInfo.type
-                gk.log("choose node %s", type)
+                local _type = typeInfo._type
+                gk.log("choose node %s", _type)
                 gk.event:post("undisplayNode")
                 gk.event:post("displayNode", node)
                 return true
@@ -298,8 +298,8 @@ function panel.create(parent)
                     if gk.util:isAncestorsVisible(node) and cc.rectContainsPoint(rect, p) then
                         if self._containerNode ~= node then
                             self._containerNode = node
-                            local type = node.__cname and node.__cname or tolua.type(node)
-                            gk.log("find container node %s, id = %s", type, node.__info.id)
+                            local _type = node.__cname and node.__cname or tolua.type(node)
+                            gk.log("find container node %s, id = %s", _type, node.__info._id)
                             gk.event:post("displayNode", node)
                         end
                         break
@@ -319,7 +319,7 @@ function panel.create(parent)
                     local node
                     local widget = typeInfo
                     local info = clone(widget)
-                    local type = widget.type
+                    local _type = widget._type
                     node = gk.generator:createNode(info, nil, self.parent.scene.layer)
                     if node.__info._isWidget then
                         node.__info._lock = 0
@@ -327,7 +327,7 @@ function panel.create(parent)
                     end
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        if widget._isWidget or type == "cc.Layer" then
+                        if widget._isWidget or _type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                         else
                             local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
@@ -335,15 +335,15 @@ function panel.create(parent)
                             node.__info.x, node.__info.y = x, y
                         end
                         self._containerNode:addChild(node)
-                        gk.log("add new node %s, id = %s, pos = %.1f,%.1f", type, node.__info.id, p.x, p.y)
+                        gk.log("add new node %s, id = %s, pos = %.1f,%.1f", _type, node.__info._id, p.x, p.y)
                         gk.event:post("executeCmd", "ADD", {
-                            id = node.__info.id, panel = self.parent,
+                            id = node.__info._id, panel = self.parent,
                         })
                         gk.event:post("postSync")
                         gk.event:post("displayNode", node)
                         gk.event:post("displayDomTree")
                     else
-                        gk.log("cannot create node %s", type)
+                        gk.log("cannot create node %s", _type)
                     end
                 else
                     gk.log("cancel put node, not inside of container node")

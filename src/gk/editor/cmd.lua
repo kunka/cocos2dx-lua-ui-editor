@@ -31,7 +31,7 @@ cmd.actions = {
         end,
         undo = function(rootLayer, params)
             local node = getNode(rootLayer, params.curId)
-            node.__info.id = params.oldId
+            node.__info._id = params.oldId
             gk.log("[undo:MODIFY_ID] from %s to %s", params.curId, params.oldId)
         end
     },
@@ -39,18 +39,18 @@ cmd.actions = {
         execute = function(rootLayer, params)
             local node = getNode(rootLayer, params.id)
             node.__info.x, node.__info.y = params.to.x, params.to.y
-            gk.log("[execute:MOVE] move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
+            gk.log("[execute:MOVE] move node %s to %.2f, %.2f", node.__info._id, node.__info.x, node.__info.y)
         end,
         undo = function(rootLayer, params)
             local node = getNode(rootLayer, params.id)
             node.__info.x, node.__info.y = params.from.x, params.from.y
-            gk.log("[undo:MOVE] move node %s to %.2f, %.2f", node.__info.id, node.__info.x, node.__info.y)
+            gk.log("[undo:MOVE] move node %s to %.2f, %.2f", node.__info._id, node.__info.x, node.__info.y)
         end
     },
     CHANGE_PROP = {
         execute = function(rootLayer, params)
             local node = getNode(rootLayer, params.id)
-            gk.log("[execute:CHANGE_PROP] %s %s", node.__info.id, params.key)
+            gk.log("[execute:CHANGE_PROP] %s %s", node.__info._id, params.key)
             if params.key == "localZOrder" then
                 local parent = getNode(rootLayer, params.parentId)
                 params.ordersBefore = cmd:genOrders(parent)
@@ -59,7 +59,7 @@ cmd.actions = {
         undo = function(rootLayer, params)
             local node = getNode(rootLayer, params.id)
             node.__info[params.key] = params.from
-            gk.log("[undo:CHANGE_PROP] %s %s", node.__info.id, params.key)
+            gk.log("[undo:CHANGE_PROP] %s %s", node.__info._id, params.key)
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             if params.ordersBefore then
@@ -80,7 +80,7 @@ cmd.actions = {
     },
     DELETE = {
         execute = function(rootLayer, params)
-            gk.log("[execute:DELETE] %s, parentId = %s", params.info.id, params.parentId)
+            gk.log("[execute:DELETE] %s, parentId = %s", params.info._id, params.parentId)
             local parent = getNode(rootLayer, params.parentId)
             params.ordersBefore = cmd:genOrders(parent)
         end,
@@ -90,7 +90,7 @@ cmd.actions = {
             if node and parent then
                 parent:addChild(node)
                 cmd:applyOrders(rootLayer, params.ordersBefore)
-                gk.log("[undo:DELETE] node %s", node.__info.id)
+                gk.log("[undo:DELETE] node %s", node.__info._id)
                 gk.event:post("postSync")
                 gk.event:post("displayNode", node)
                 gk.event:post("displayDomTree")
@@ -124,7 +124,7 @@ cmd.actions = {
                 node.__info.scaleXY = params.sxy
                 node.__info.x, node.__info.y = params.fromPos.x, params.fromPos.y
                 node:release()
-                gk.log("[undo:CHANGE_CONTAINER] node %s, to %s", node.__info.id, params.fromPid)
+                gk.log("[undo:CHANGE_CONTAINER] node %s, to %s", node.__info._id, params.fromPid)
                 gk.event:post("postSync")
                 gk.event:post("displayNode", node)
                 gk.event:post("displayDomTree", true)
@@ -202,7 +202,7 @@ function cmd:genOrders(parent)
     for i = 1, #children do
         local child = children[i]
         if child.__info then
-            table.insert(orders, { id = child.__info.id, zOrder = child:getLocalZOrder() })
+            table.insert(orders, { id = child.__info._id, zOrder = child:getLocalZOrder() })
         end
     end
     return orders

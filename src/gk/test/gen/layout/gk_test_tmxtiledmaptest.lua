@@ -1,16 +1,16 @@
 return {
 	_fold = false,
+	_id = "tMXTiledMapTest1",
+	_type = "TMXTiledMapTest",
 	height = "$fill",
-	id = "tMXTiledMapTest1",
-	type = "TMXTiledMapTest",
 	width = "$fill",
-	children = {	   {
+	_children = {	   {
+	      _id = "tmxTiledMap1",
+	      _type = "cc.TMXTiledMap",
 	      height = 192,
-	      id = "tmxTiledMap1",
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      tmx = "gk/res/data/default.tmx",
-	      type = "cc.TMXTiledMap",
 	      width = 256,
 	      scaleXY = {
 	         x = "$scaleX",

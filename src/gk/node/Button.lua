@@ -166,7 +166,7 @@ end
 
 function Button:activate()
     if self.enabled then
-        if self.clickedSid then
+        if self.clickedSid and self.clickedSid ~="" then
             gk.audio:playEffect(self.clickedSid)
         elseif Button.defaultClickedSid then
             gk.audio:playEffect(Button.defaultClickedSid)
