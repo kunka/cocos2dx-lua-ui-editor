@@ -38,6 +38,12 @@ function Dialog:addMaskLayer(opacity)
     local layerColor = cc.LayerColor:create(cc.c4b(0, 0, 0, opa))
     self:addChild(layerColor, -1)
     self.maskLayer = layerColor
+    if gk.display:iPhoneX() then
+        local winSize = gk.display:winSize()
+        local accWinSize = gk.display:accuWinSize()
+        layerColor:setContentSize(accWinSize)
+        layerColor:setPositionX(winSize.width / 2 - accWinSize.width / 2)
+    end
 end
 
 function Dialog:animateOut(callback)

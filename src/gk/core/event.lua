@@ -14,7 +14,6 @@ function event:init()
 end
 
 function event:subscribe(target, eventName, callback)
-    --    gk.log("event:subscribe %s, taget = %s", eventName, target.__cname)
     --    self:checkValidEventName(eventName)
     local listeners = self._listeners[eventName]
     if not listeners then
@@ -29,6 +28,7 @@ function event:subscribe(target, eventName, callback)
         end
         table.insert(listeners, { tg = target, en = eventName, cb = callback, valid = true })
     end
+    --    gk.log("event:subscribe %s, taget = %s", eventName, target.__cname)
 end
 
 function event:unsubscribe(target, eventName)

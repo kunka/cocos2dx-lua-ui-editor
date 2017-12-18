@@ -11,11 +11,17 @@ display.deviceSizes = {
     { size = cc.size(1280, 720), desc = "1280x720(16:9)" },
     { size = cc.size(1280, 960), desc = "1280x960(4:3)" },
     { size = cc.size(720, 1280), desc = "720x1280(9:16)" },
+    { size = cc.size(2436, 1125), desc = "2436x1125(iPhoneX)" },
 }
 
 -- register custom device size
 function display:registerCustomDeviceSize(size, desc)
     table.insert(self.deviceSizes, { size = cc.size(size.width, size.height), desc = desc })
+end
+
+function display:iPhoneX()
+    local winSize = self:accuWinSize() --cc.Director:getInstance():getWinSize()
+    return math.floor(100 * winSize.width / winSize.height) == 216
 end
 
 -- new resolution policy "UNIVERSAL"
@@ -45,6 +51,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
         self.bottomHeight = 0
     end
     self.extWidth = 0
+    self.iPhoneXExtWidth = 0
 
     -- set editor win size
     local platform = cc.Application:getInstance():getTargetPlatform()
@@ -77,12 +84,22 @@ function display:initWithDesignSize(size, resolutionPolicy)
 
     local winSize = cc.Director:getInstance():getWinSize()
     gk.log("display init with winSize(%.1f,%.1f), resolutionPolicy = %s", winSize.width, winSize.height, self.resolutionPolicyDesc)
-    self.winSize = function() return cc.size(winSize.width - self.leftWidth - self.rightWidth - self.extWidth, winSize.height - self.topHeight
-            - self.bottomHeight)
+    self.accuWinSize = function()
+        return cc.size(winSize.width - self.leftWidth - self.rightWidth - self.extWidth, winSize.height - self.topHeight - self.bottomHeight)
     end
     self.width = function() return size.width end
     self.height = function() return size.height end
-    local xScale, yScale = self:winSize().width / self.width(), self:winSize().height / self.height()
+    local xScale, yScale = self:accuWinSize().width / self.width(), self:accuWinSize().height / self.height()
+    if self:iPhoneX() then
+        self.iPhoneXExtWidth = self:accuWinSize().width * (132 * 2) / 2436
+        xScale = self:accuWinSize().width * (2436 - 132 * 2) / 2436 / self.width()
+    end
+    self.winSize = function()
+        return cc.size(winSize.width - self.leftWidth - self.rightWidth - self.extWidth - self.iPhoneXExtWidth, winSize.height - self.topHeight - self.bottomHeight)
+    end
+    self.scaleiPX = function()
+        return self:accuWinSize().width / self.width()
+    end
     local minScale, maxScale = math.min(xScale, yScale), math.max(xScale, yScale)
     if self.resolutionPolicy == cc.ResolutionPolicy.FIXED_WIDTH then
         self.xScale = function() return xScale end
@@ -209,13 +226,12 @@ function display:initWithDesignSize(size, resolutionPolicy)
         self.scaleBT = self.scaleY
     end
 
-    -- actual content size
-    self.contentSize = function() return cc.size(self:xScale() * self.width(), self:yScale() * self.height()) end
     self.designSize = function() return size end
 
-    gk.log("self.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
-        size.width, size.height, self:winSize().width, self:winSize().height,
+    gk.log("display.init designSize(%.1f,%.1f), winSize(%.1f,%.1f), accuWinSize(%.1f,%.1f), xScale(%.4f), yScale(%.4f), minScale(%.4f), maxScale(%.4f)",
+        size.width, size.height, self:winSize().width, self:winSize().height, self:accuWinSize().width, self:accuWinSize().height,
         self:xScale(), self:yScale(), self:minScale(), self:maxScale())
+    gk.log("display.scaleiPX = %.2f", self.scaleiPX())
 end
 
 return display

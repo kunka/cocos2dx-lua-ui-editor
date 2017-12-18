@@ -29,8 +29,8 @@ function panel.create(parent)
 
     -- size label
     local fontName = gk.theme.font_fnt
-    local content = string.format("designSize(%.0fx%.0f) winSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f) minScale(%.2f)",
-        gk.display.width(), gk.display.height(), gk.display:winSize().width, gk.display:winSize().height, gk.display:xScale(), gk.display:yScale(), gk.display:minScale())
+    local content = string.format("designSize(%.0fx%.0f) ScreenSize(%.0fx%.0f) accuWinSize(%.0fx%.0f) xScale(%.2f) yScale(%.2f) minScale(%.2f)",
+        gk.display.width(), gk.display.height(), gk.display:winSize().width, gk.display:winSize().height, gk.display:accuWinSize().width, gk.display:accuWinSize().height, gk.display:xScale(), gk.display:yScale(), gk.display:minScale())
     local label = gk.create_label(content, fontName, fontSize)
     label:setScale(scale)
     local height = 20

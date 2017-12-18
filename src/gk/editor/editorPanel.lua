@@ -29,24 +29,41 @@ function panel.create(scene)
     -- win frame
     local bg = gk.create_scale9_sprite("gk/res/texture/frame.png", cc.rect(30, 30, 290, 130))
     local p = cc.p(15, 17)
-    bg:setContentSize(cc.size(gk.display:winSize().width + p.x * 2 + gk.display.extWidth, gk.display:winSize().height + p.y * 2))
+    bg:setContentSize(cc.size(gk.display:accuWinSize().width + p.x * 2 + gk.display.extWidth, gk.display:accuWinSize().height + p.y * 2))
     bg:setAnchorPoint(cc.p(0, 0))
     bg:setPosition(cc.p(gk.display.leftWidth - p.x, gk.display.bottomHeight - p.y))
     self:addChild(bg)
     -- contentSize frame
-    local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display:contentSize().width, gk.display:contentSize().height)
+    local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display:accuWinSize().width, gk.display:accuWinSize().height)
     bg:addChild(layer)
     layer:setAnchorPoint(cc.p(0.5, 0.5))
     layer:setIgnoreAnchorPointForPosition(false)
     layer:setPosition(bg:getContentSize().width / 2, bg:getContentSize().height / 2)
-    gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
+    --    gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
+    gk.util:drawNodeBounds(layer, cc.c4f(0, 0, 0, 1), -99)
     if gk.display.extWidth > 0 then
-        local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display:winSize().width + gk.display.extWidth, gk.display:winSize().height)
+        local layer = cc.LayerColor:create(cc.c4b(0, 0, 0, 0), gk.display:accuWinSize().width + gk.display.extWidth, gk.display:accuWinSize().height)
         bg:addChild(layer)
         layer:setAnchorPoint(cc.p(0.5, 0.5))
         layer:setIgnoreAnchorPointForPosition(false)
         layer:setPosition(bg:getContentSize().width / 2, bg:getContentSize().height / 2)
         gk.util:drawNodeBounds(layer, cc.c4f(0, 1, 1, 0.2), -99)
+    end
+    -- iPhoneX safe area frame
+    if gk.display:iPhoneX() then
+        local xScale = gk.display:accuWinSize().width / 2436
+        local x1 = gk.display.leftWidth + 132 * xScale
+        local x2 = gk.display.leftWidth + (2436 - 132) * xScale
+        local y1 = gk.display.bottomHeight
+        local y2 = gk.display.bottomHeight + gk.display:accuWinSize().height
+        gk.util:drawSegmentOnNode(self, cc.p(x1, y1), cc.p(x1, y2), 5, cc.c4f(0, 1, 1, 0.15), -991)
+        gk.util:drawSegmentOnNode(self, cc.p(x2, y1), cc.p(x2, y2), 5, cc.c4f(0, 1, 1, 0.15), -991)
+
+        local overlay = gk.create_sprite("gk/res/texture/ipx.png")
+        layer:addChild(overlay, -1)
+        overlay:setColor(cc.c3b(26, 26, 26))
+        overlay:setScale(layer:getContentSize().width / overlay:getContentSize().width)
+        overlay:setPosition(layer:getContentSize().width / 2, layer:getContentSize().height / 2)
     end
 
     if gk.mode == gk.MODE_EDIT then
@@ -560,7 +577,10 @@ function panel:handleEvent()
             self.commandPressed = true
             return
         end
-
+        if key == "KEY_ESCAPE" and gk.mode == gk.MODE_EDIT then
+            self:undisplayNode(true)
+            gk.util:clearDrawNode(self.scene.layer, -3)
+        end
         -- copy node
         if self.commandPressed then
             if key == "KEY_C" and self.displayingNode then

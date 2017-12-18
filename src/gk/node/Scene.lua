@@ -43,10 +43,18 @@ function Scene:ctor(sceneType)
         self:addChild(button, 9999999)
         button:setAnchorPoint(cc.p(1, 0))
         button:setScale(gk.display:minScale())
-        button:setPosition((gk.display.leftWidth or 0) + (gk.display.extWidth / 2 or 0) + gk.display:scaleX(gk.display:designSize().width - 1), gk.display.bottomHeight or 0)
+        button:setPosition((gk.display.leftWidth or 0) + (gk.display.extWidth / 2 or 0) + (gk.display.iPhoneXExtWidth / 2 or 0) + gk.display:scaleX(gk.display:designSize().width - 1), gk.display.bottomHeight or 0)
         button:onClicked(function()
             gk.config:openConfigDialog()
         end)
+    end
+
+    if gk.display:iPhoneX() and gk.mode == gk.MODE_RELEASE and cc.Application:getInstance():getTargetPlatform() == 2 then
+        local overlay = gk.create_sprite("gk/res/texture/ipx.png")
+        self:addChild(overlay, 9999999)
+        overlay:setColor(cc.c3b(26, 26, 26))
+        overlay:setScale(self:getContentSize().width / overlay:getContentSize().width)
+        overlay:setPosition(self:getContentSize().width / 2, self:getContentSize().height / 2)
     end
 end
 

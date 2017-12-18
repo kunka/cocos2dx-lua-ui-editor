@@ -147,14 +147,16 @@ function SelectBox:openPopup()
             bg:addChild(button)
             button:setPosition(cc.p(size.width / 2, height - size.height / 2 - (i - 1) * size.height))
             button:onClicked(function()
-                self:closePopup()
-                --                self:unfocus()
-                if self.selectIndex ~= i and i > 0 and i <= #self.selectItems then
-                    self.selectIndex = i
-                    self.label:setString(self.selectItems[i])
-                    gk.set_label_color(label, i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
-                    if self.onSelectChangedCallback then
-                        self.onSelectChangedCallback(i)
+                if self.popup then
+                    self:closePopup()
+                    --                self:unfocus()
+                    if self.selectIndex ~= i and i > 0 and i <= #self.selectItems then
+                        self.selectIndex = i
+                        self.label:setString(self.selectItems[i])
+                        gk.set_label_color(label, i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
+                        if self.onSelectChangedCallback then
+                            self.onSelectChangedCallback(i)
+                        end
                     end
                 end
             end)

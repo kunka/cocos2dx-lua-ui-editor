@@ -596,7 +596,9 @@ function panel:displayNode(node)
             local index = 0
             local size = cc.size(node.__info.width, node.__info.height)
             table.sort(gk.editorConfig.hintContentSizes, function(s1, s2)
-                if type(s1.width) == "string" then return true
+                if type(s1.width) == "string" and type(s2.width) == "string" then
+                    return s1.width < s2.width
+                elseif type(s1.width) == "string" then return true
                 elseif type(s2.width) == "string" then return false
                 else return s1.width < s2.width or (s1.width == s2.width and s1.height < s2.height)
                 end
@@ -638,7 +640,7 @@ function panel:displayNode(node)
         else
             -- scale
             self:createLabel("Scale", leftX, topY - stepY * yIndex)
-            local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+            local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
             local s = tostring(node.__info.scaleX)
             if not table.indexof(scales, s) then
                 table.insert(scales, s)
@@ -648,7 +650,7 @@ function panel:displayNode(node)
                 editBox:setInput(self:modifyByInput(node, "scaleX", input, "number"))
             end, gk.editorConfig.defValues["scaleX"])
             self:createLabel("Y", inputMiddleTextX2, topY - stepY * yIndex)
-            local scales = { "1", "$xScale", "$yScale", "$minScale", "$maxScale" }
+            local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
             local s = tostring(node.__info.scaleY)
             if not table.indexof(scales, s) then
                 table.insert(scales, s)

@@ -25,11 +25,11 @@ function SceneManager:createScene(layerName, ...)
             gk.util:reportError(msg)
         end)
         if status then
-            if gk.mode ~= gk.MODE_RELEASE then
+            if gk.mode ~= gk.MODE_RELEASE or gk.display:iPhoneX() then
                 -- wrap node in editor panel
                 local node = cc.Node:create()
                 node:addChild(layer)
-                node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2, gk.display.bottomHeight))
+                node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2 + gk.display.iPhoneXExtWidth / 2, gk.display.bottomHeight))
                 scene:addChild(node)
             else
                 scene:addChild(layer)

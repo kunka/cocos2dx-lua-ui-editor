@@ -319,6 +319,7 @@ config.macroFuncs = {
     yScale = function() return gk.display:yScale() end,
     scaleX = function(key, node, ...) return gk.display:scaleX(...) end,
     scaleY = function(key, node, ...) return gk.display:scaleY(...) end,
+    scaleiPX = function(key, node, ...) return gk.display:scaleiPX(...) end,
     scaleXRvs = function(key, node, ...) return gk.display:scaleXRvs(...) end,
     scaleYRvs = function(key, node, ...) return gk.display:scaleYRvs(...) end,
     scaleTP = function(key, node, ...) return gk.display:scaleTP(...) end,
@@ -327,6 +328,8 @@ config.macroFuncs = {
     scaleRT = function(key, node, ...) return gk.display:scaleRT(...) end,
     ["win.w"] = function() return gk.display:winSize().width end,
     ["win.h"] = function() return gk.display:winSize().height end,
+    ["accuWin.w"] = function() return gk.display:accuWinSize().width end,
+    ["accuWin.h"] = function() return gk.display:accuWinSize().height end,
     -- contentSize, ViewSize(fill-parent)
     fill = function(key, node)
         local parent
@@ -1036,7 +1039,12 @@ end
 
 -- when node.__info[key] not exist, get default value by this
 function config:getValue(node, key)
-    local prop = config.editableProps[node.__info._type .. "." .. key] or config.editableProps[key]
+    local prop
+    if key == "_type" then
+        prop = config.editableProps[key]
+    else
+        prop = config.editableProps[node.__info._type .. "." .. key] or config.editableProps[key]
+    end
     if prop then
         -- must clone value
         return clone(prop.getter(node))
@@ -1294,6 +1302,9 @@ end
 config:registerHintColor3B(cc.c3b(255, 255, 255))
 config:registerHintColor3B(cc.c3b(0, 0, 0))
 config:registerHintContentSize({ width = "$fill", height = "$fill" })
+config:registerHintContentSize({ width = "$win.w", height = "$win.h" })
+config:registerHintContentSize({ width = "$accuWin.w", height = "$accuWin.h" })
+config:registerHintContentSize({ width = 0, height = 0 })
 config:registerHintFontSize(18)
 
 ------------------------------- ext: draw node -------------------------------

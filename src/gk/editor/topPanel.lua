@@ -92,7 +92,7 @@ function panel.create(parent)
     end
 
     createLine(gk.display.leftWidth)
-    createLine(gk.display.leftWidth + gk.display:winSize().width + gk.display.extWidth)
+    createLine(gk.display.leftWidth + gk.display:accuWinSize().width + gk.display.extWidth)
 
     local yIndex = 0
     -- device size
@@ -152,7 +152,7 @@ function panel.create(parent)
     yIndex = yIndex + 1
 
     -- right
-    local rightX = gk.display.leftWidth + gk.display:winSize().width + leftX + gk.display.extWidth
+    local rightX = gk.display.leftWidth + gk.display:accuWinSize().width + leftX + gk.display.extWidth
     local rightX2 = size.width - inputWidth1 - leftX
     local rightX3 = rightX + 100 - leftX
     local yIndex = 0
@@ -179,7 +179,7 @@ function panel.create(parent)
     local iconScale = 0.32
     local width = leftX_widget
     -- clipping rect
-    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:winSize().width + gk.display.extWidth, self:getContentSize().height)
+    local clippingRect = cc.rect(gk.display.leftWidth, 0, gk.display:accuWinSize().width + gk.display.extWidth, self:getContentSize().height)
     self.clippingNode = cc.ClippingRectangleNode:create(clippingRect)
     self:addChild(self.clippingNode)
 
@@ -385,10 +385,10 @@ function panel:handleEvent()
     listener:registerScriptHandler(function(touch, event)
         local location = touch:getLocationInView()
         local s = self:getContentSize()
-        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:winSize().width + gk.display.extWidth, height = s.height }
+        local rect = { x = gk.display.leftWidth, y = 0, width = gk.display:accuWinSize().width + gk.display.extWidth, height = s.height }
         local touchP = self:convertToNodeSpace(cc.p(location.x, location.y))
         if cc.rectContainsPoint(rect, touchP) then
-            if self.displayInfoNode:getContentSize().width > gk.display:winSize().width then
+            if self.displayInfoNode:getContentSize().width > gk.display:accuWinSize().width then
                 local scrollX = touch:getScrollX()
                 -- mouse cannot scroll horizontal
                 local scrollY = 0
@@ -397,7 +397,7 @@ function panel:handleEvent()
                 end
                 local x, y = self.displayInfoNode:getPosition()
                 x = x + scrollX * 10 + scrollY * 10
-                x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display:winSize().width), gk.display.leftWidth)
+                x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display:accuWinSize().width), gk.display.leftWidth)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayInfoOffset = cc.p(x, y)
             end
