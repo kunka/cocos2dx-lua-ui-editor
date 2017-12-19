@@ -126,7 +126,7 @@ function panel:subscribeEvent()
         end)
         gk.event:subscribe(self, "changeRootLayout", function(key)
             gk.log("changeRootLayout --> %s", key)
-            local path = gk.resource.genNodes[key].path
+            local path = gk.resource:getGenNode(key).path
             if path then
                 gk.event:unsubscribeAll(self)
                 gk.SceneManager:replace(path)
@@ -276,7 +276,7 @@ function panel:onNodeCreate(node)
             if self.commandPressed or gk.util:isAncestorsIgnore(node) then
                 return
             end
-            if node.__info and node.__info._lock == 0 then
+            if node.__info and (node.__info._lock == 0 and not node.__info._isWidget) then
                 return
             end
             if node.__rootTable and node.__rootTable.__info and node.__rootTable.__info._isWidget then
@@ -355,7 +355,7 @@ function panel:onNodeCreate(node)
             local p = node:getParent():convertToNodeSpace(location)
             cc.Director:getInstance():setDepthTest(false)
             node:setPositionZ(0)
-            if node.__info and node.__info._lock == 0 then
+            if node.__info and (node.__info._lock == 0 and not node.__info._isWidget) then
                 self._containerNode = nil
                 gk.event:post("displayDomTree")
                 return
@@ -404,7 +404,7 @@ function panel:onNodeCreate(node)
                 local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
                 local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                 node.__info.x, node.__info.y = x, y
-                node:removeFromParent()
+                node:removeFromParentAndCleanup(false)
                 self._containerNode:addChild(node)
                 node:release()
                 gk.log("change node's container %s, new pos = %.2f, %.2f", node.__info._id, node.__info.x, node.__info.y)

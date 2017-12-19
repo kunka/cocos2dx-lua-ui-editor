@@ -30,7 +30,7 @@ gk.DrawLine = import(".DrawLine")
 gk.injector:ctor_method_swizz(gk.Layer, "ctor")
 gk.injector:ctor_method_swizz(gk.Dialog, "ctor")
 gk.injector:ctor_method_swizz(gk.TableViewCell, "ctor")
-gk.injector:ctor_method_swizz(gk.Widget, "ctor")
+gk.injector:widget_ctor_method_swizz(gk.Widget, "ctor")
 
 ----------------------------------------- create sprite  -------------------------------------------------
 

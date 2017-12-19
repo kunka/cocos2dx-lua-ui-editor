@@ -144,9 +144,12 @@ function resource:scanGenNodes(path)
     self.genFullPathPrefix = path
     self.genNodes = {}
     self:scanDir(path .. self.genSrcPath, self.genSrcPath)
+    -- internal
+    self.genNodesInternal = {}
+    self:scanDir(path .. "gk/layout/", "gk/layout/", true)
 end
 
-function resource:scanDir(dir, genSrcPath)
+function resource:scanDir(dir, genSrcPath, internal)
     if not dir or dir == "" or genSrcPath:find(self.genDir) then
         return
     end
@@ -160,7 +163,7 @@ function resource:scanDir(dir, genSrcPath)
         end
         for _, name in ipairs(lines) do
             if name:ends(".lua") then
-                self:loadEditableNodes(dir .. name, genSrcPath)
+                self:loadEditableNodes(dir .. name, genSrcPath, internal)
             elseif not name:find("%.") then
                 self:scanDir(dir .. name .. "/", genSrcPath .. name .. "/")
             end
@@ -169,7 +172,7 @@ function resource:scanDir(dir, genSrcPath)
     end
 end
 
-function resource:loadEditableNodes(path, genSrcPath)
+function resource:loadEditableNodes(path, genSrcPath, internal)
     if not gk.errorOccurs then
         local status, clazz = xpcall(function()
             return require(path)
@@ -182,8 +185,9 @@ function resource:loadEditableNodes(path, genSrcPath)
             -- TODO: other types
             local isEditable = gk.util:iskindof(clazz, "Layer") or gk.util:iskindof(clazz, "TableViewCell") or gk.util:iskindof(clazz, "Widget")
             if isEditable then
-                local genPath = self:_getGenNodePath(genSrcPath, clazz.__cname)
-                self.genNodes[clazz.__cname] = {
+                local genPath = self:_getGenNodePath(genSrcPath, clazz.__cname, internal)
+                local table = internal and self.genNodesInternal or self.genNodes
+                table[clazz.__cname] = {
                     isWidget = clazz._isWidget,
                     cname = clazz.__cname,
                     genPath = genPath,
@@ -196,14 +200,19 @@ function resource:loadEditableNodes(path, genSrcPath)
     end
 end
 
-function resource:_getGenNodePath(genSrcPath, cname)
+function resource:_getGenNodePath(genSrcPath, cname, internal)
+    local output = internal and "gk/gen/layout/" or self.genOutputPath
     local path = genSrcPath:gsub("/", "_")
-    local genPath = self.genOutputPath .. path:lower() .. cname:lower() .. ".lua"
+    local genPath = output .. path:lower() .. cname:lower() .. ".lua"
     return genPath
 end
 
+function resource:getGenNode(cname)
+    return self.genNodes[cname] or self.genNodesInternal[cname]
+end
+
 function resource:getGenNodePath(cname)
-    local node = self.genNodes[cname]
+    local node = self.genNodes[cname] or self.genNodesInternal[cname]
     if node then
         return node.genPath
     else
@@ -246,6 +255,18 @@ function resource:flush(path)
     else
         gk.log("flush to file: " .. path .. (io.writefile(path, table2lua.encode_pretty(info)) and " success!" or " failed!!!"))
     end
+    -- flush internal
+    path = self.genFullPathPrefix .. "gk/gen/config.lua"
+    local info = {
+        genNodes = self.genNodesInternal,
+    }
+    if gk.errorOccurs then
+        gk.log(table2lua.encode_pretty(info))
+        gk.log("[Warning!] exception occured! please fix it then flush to file!")
+    else
+        gk.log("flush to file: " .. path .. (io.writefile(path, table2lua.encode_pretty(info)) and " success!" or " failed!!!"))
+    end
+    -- flush internal
 end
 
 function resource:load(path)
@@ -262,6 +283,19 @@ function resource:load(path)
         self.genNodes = info.genNodes
         self.shaderDir = info.shaderDir
         self.genDir = info.genDir
+    else
+        gk.log("resource:load --> %s failed", path)
+    end
+    -- load internal
+    path = self.genFullPathPrefix .. "gk/gen/config.lua"
+    local status, info = xpcall(function()
+        return require(path)
+    end, function(msg)
+        local msg = debug.traceback(msg, 3)
+        gk.util:reportError(msg)
+    end)
+    if status and info then
+        self.genNodesInternal = info.genNodes
     else
         gk.log("resource:load --> %s failed", path)
     end

@@ -16,4 +16,8 @@ function Widget:ctor()
     self:enableNodeEvents()
 end
 
+function Widget:registerCustomProp(...)
+    gk.injector:registerCustomProp(self, ...)
+end
+
 return Widget

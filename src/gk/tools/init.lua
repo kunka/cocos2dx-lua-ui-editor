@@ -10,4 +10,5 @@ gk.config = import(".config")
 gk.util = import(".util")
 gk.profile = import(".profile")
 gk.scheduler = import(".scheduler")
+gk.ErrorReporter = import(".ErrorReporter")
 

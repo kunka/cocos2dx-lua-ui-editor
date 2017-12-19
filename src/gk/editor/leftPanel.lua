@@ -78,9 +78,11 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
 
         -- scan layouts
         if not self.domTree then
-            local keys = table.keys(gk.resource.genNodes)
+            local total = clone(gk.resource.genNodes)
+            table.merge(total, gk.resource.genNodesInternal)
+            local keys = table.keys(total)
             table.sort(keys, function(k1, k2)
-                local dir1, dir2 = gk.resource.genNodes[k1].genSrcPath, gk.resource.genNodes[k2].genSrcPath
+                local dir1, dir2 = gk.resource:getGenNode(k1).genSrcPath, gk.resource:getGenNode(k2).genSrcPath
                 if dir1 == dir2 then
                     return k1 < k2
                 else
@@ -94,8 +96,8 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
             end)
             self.domTree = { _children = {}, _fold = false }
             for _, key in ipairs(keys) do
-                local value = gk.resource.genNodes[key]
-                local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.genSrcPath
+                local value = gk.resource:getGenNode(key)
+                local displayName = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. key or value.path
                 local ks = string.split(displayName, "/")
                 local parent = self.domTree
                 for i = 1, #ks - 1 do
@@ -111,7 +113,7 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
             end
         end
 
-        local value = gk.resource.genNodes[rootLayer.__cname]
+        local value = gk.resource:getGenNode(rootLayer.__cname)
         local displayingPath = value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. rootLayer.__cname or value.genSrcPath
 
         self.displayDom = self.displayDom or function(rootLayer, dom, layer, forceUnfold)
@@ -130,7 +132,7 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
                 end
             end
             for _, child in ipairs(dom._children) do
-                local value = gk.resource.genNodes[child]
+                local value = gk.resource:getGenNode(child)
                 local displayName = child --value.genSrcPath:starts(gk.resource.genSrcPath) and value.genSrcPath:sub(gk.resource.genSrcPath:len() + 1) .. child or value.genSrcPath
                 if child == rootLayer.__cname then
                     cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, value.path)
@@ -406,7 +408,7 @@ function panel:createButton(content, x, y, displayName, fixChild, node, widgetPa
                         local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))
                         local y = math.round(gk.generator:parseYRvs(node, p.y, node.__info.scaleXY.y))
                         node.__info.x, node.__info.y = x, y
-                        node:removeFromParent()
+                        node:removeFromParentAndCleanup(false)
                         container:addChild(node)
                         node:release()
                         gk.log("dom:change node container, new pos = %.2f, %.2f", node.__info.x, node.__info.y)

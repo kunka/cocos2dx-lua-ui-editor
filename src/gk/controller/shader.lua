@@ -8,6 +8,7 @@
 
 local shader = {}
 
+shader.cachedGLPrograms = {}
 function shader:addGLProgram(vPath, fPath)
     self.cachedGLPrograms = self.cachedGLPrograms or {}
     local glProgram = cc.GLProgram:createWithFilenames(vPath, fPath)

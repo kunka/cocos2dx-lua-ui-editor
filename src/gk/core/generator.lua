@@ -10,11 +10,10 @@ local generator = {}
 
 function generator:deflate(node)
     local info = {}
-
     -- add edit properties
     for k, ret in pairs(node.__info.__self) do
-        if k ~= "_children" and (gk.editorConfig.editableProps[k] ~= nil or (node.__cname and gk.editorConfig.editableProps[node.__cname .. "." .. k] ~= nil))
-        then
+        if k ~= "_children" and (gk.editorConfig.editableProps[k] ~= nil or (node.__cname and gk.editorConfig.editableProps[node.__cname .. "." .. k] ~= nil)
+                or gk.editorConfig.customProps[k]) then
             -- use %x to replace table
             if k == "color" or k == "textColor" or k == "effectColor" then
                 local var = string.format("%02x%02x%02x", cc.clampf(ret.r, 0, 255), cc.clampf(ret.g, 0, 255), cc.clampf(ret.b, 0, 255))
@@ -48,7 +47,7 @@ function generator:deflate(node)
                 end
             end
         else
-            --            print(k)
+            -- ignore
         end
     end
     if (gk.util:instanceof(node, "Button") and not gk.util:instanceof(node, "SpriteButton")) or (gk.util:instanceof(node, "cc.Sprite") and not gk.util:instanceof(node, "ccui.Scale9Sprite")) then

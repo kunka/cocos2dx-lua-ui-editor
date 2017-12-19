@@ -80,7 +80,19 @@ function injector:ctor_method_swizz(type, methodName)
         local method = type[methodName]
         local __method = function(node, ...)
             method(node, ...)
-            gk.event:post("onNodeCreate", node)
+            gk.event:post("onNodeCreate", node, ...)
+        end
+        type[methodName] = __method
+        type["__" .. methodName .. "__swizzed"] = true
+    end
+end
+
+function injector:widget_ctor_method_swizz(type, methodName)
+    if not type["__" .. methodName .. "__swizzed"] then
+        local method = type[methodName]
+        local __method = function(node, ...)
+            method(node)
+            gk.event:post("onNodeCreate", node, ...)
         end
         type[methodName] = __method
         type["__" .. methodName .. "__swizzed"] = true
@@ -88,8 +100,8 @@ function injector:ctor_method_swizz(type, methodName)
 end
 
 function injector:init()
-    gk.event:subscribe(self, "onNodeCreate", function(node)
-        self:onNodeCreate(node)
+    gk.event:subscribe(self, "onNodeCreate", function(node, presetInfo)
+        self:onNodeCreate(node, presetInfo)
     end)
 end
 
@@ -106,7 +118,7 @@ function injector:inflateNode(path, ...)
     end
 end
 
-function injector:onNodeCreate(node)
+function injector:onNodeCreate(node, presetInfo)
     if node and not node.__info and node.__cname then
         -- root container node
         local path = gk.resource:getGenNodePath(node.__cname)
@@ -119,11 +131,16 @@ function injector:onNodeCreate(node)
             package.loaded[path] = nil
         end
         gk.profile:start("injector:createNode")
-        self:registerCustomProp(node)
         local status, info = pcall(require, path)
         if status then
             -- must clone values
             info = clone(info)
+            if presetInfo then
+                -- merge widget info
+                for key, value in pairs(presetInfo) do
+                    info[key] = value
+                end
+            end
             --            gk.log("inflate node with file %s", path)
             gk.generator:inflate(info, node, node)
             local isWidget = node.class and node.class._isWidget
@@ -146,7 +163,7 @@ function injector:onNodeCreate(node)
 end
 
 function injector:sync(node)
-    if CFG_SCAN_NODES and node and gk.resource.genNodes[node.__cname] then
+    if CFG_SCAN_NODES and node and gk.resource:getGenNode(node.__cname) then
         -- root container node
         local nd = node or self.scene.layer
         gk.log("start sync %s", nd.__info._id)
@@ -162,37 +179,45 @@ function injector:sync(node)
     end
 end
 
-function injector:registerCustomProp(node)
-    node.registerCustomProp = function(_, prop, propType, default)
-        if gk.mode ~= gk.MODE_RELEASE then
-            local tp = node.__cname
-            -- check getter and setter
-            --        local getter = "get" .. string.upper(prop:sub(1, 1)) .. prop:sub(2, prop:len())
-            --        local setter = "set" .. string.upper(prop:sub(1, 1)) .. prop:sub(2, prop:len())
-            --        if type(node[getter]) ~= "function" or type(node[setter]) ~= "function" then
-            --            gk.util:reportError(string.format("registerCustomProp %s-%s error, getter or setter not found", tp, prop))
-            --            return
-            --        end
-            if propType == "number" then
-                --                gk.editorConfig:registerCustomFloatProp(tp, prop)
-                local tbl = gk.exNodeDisplayer[tp]
-                if not tbl then
-                    tbl = { _type = tp, }
-                    gk.editorConfig:registerDisplayProps(tbl)
-                end
-                local numProps = tbl.numProps or {}
-                local notFound = true
-                for _, p in ipairs(numProps) do
-                    if p.key == prop then
-                        notFound = false
-                        break
-                    end
-                end
-                if notFound then
-                    table.insert(numProps, { key = prop, default = default })
-                    tbl.numProps = numProps
+function injector:registerCustomProp(clazz, prop, propType, default)
+    if gk.mode ~= gk.MODE_RELEASE then
+        local tp = clazz.__cname
+        if propType == "number" then
+            local tbl = gk.exNodeDisplayer[tp]
+            if not tbl then
+                tbl = { _type = tp, }
+            end
+            gk.editorConfig:registerDisplayProps(tbl, prop)
+            local numProps = tbl.numProps or {}
+            local notFound = true
+            for _, p in ipairs(numProps) do
+                if p.key == prop then
+                    notFound = false
+                    break
                 end
             end
+            if notFound then
+                table.insert(numProps, { key = prop, default = default })
+            end
+            tbl.numProps = numProps
+        elseif propType == "string" then
+            local tbl = gk.exNodeDisplayer[tp]
+            if not tbl then
+                tbl = { _type = tp, }
+            end
+            gk.editorConfig:registerDisplayProps(tbl, prop)
+            local stringProps = tbl.stringProps or {}
+            local notFound = true
+            for _, p in ipairs(stringProps) do
+                if p.key == prop then
+                    notFound = false
+                    break
+                end
+            end
+            if notFound then
+                table.insert(stringProps, { key = prop, default = default })
+            end
+            tbl.stringProps = stringProps
         end
     end
 end

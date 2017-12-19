@@ -174,7 +174,7 @@ config.nodeCreator = {
     --------------------------- Custom widgets   ---------------------------
     ["widget"] = function(info, rootTable)
         -- compitiable
-        local node = gk.injector:inflateNode(info.type or info._type)
+        local node = gk.injector:inflateNode(info.type or info._type, info.__self)
         node.__ignore = false
         -- copy info
         local keys = table.keys(node.__info.__self)
@@ -1049,8 +1049,21 @@ function config:getValue(node, key)
         -- must clone value
         return clone(prop.getter(node))
     end
-
-    gk.log("[Error] config:getValue, not registered prop, type = %s, prop = %s", node and node.__info._type or "?", key)
+    -- some props do not have getter
+    if self.customProps[key] then
+        --                gk.log("no setter found for %s - %s", node.__info._type, key)
+        -- custom prop, try find out the setter
+        local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
+        local getter = "get" .. alias
+        if type(node[getter]) == "function" then
+            -- delay execute custom prop
+            return node[getter](node)
+        else
+            return node[key]
+        end
+    elseif not key:starts("_") then
+        gk.log("[Error] config:getValue, not registered prop, type = %s, prop = %s", node and node.__info._type or "?", key)
+    end
     return nil
 end
 
@@ -1060,31 +1073,26 @@ function config:setValue(node, key, value)
         prop.setter(node, value)
     else
         -- some props do not have setter
-        if gk.mode ~= gk.MODE_RELEASE then
-            if not key:starts("_") then
-                --                gk.log("no setter found for %s - %s", node.__info._type, key)
-                -- custom prop, try find out the setter
-                local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
-                local setter = "set" .. alias
-                if type(node[setter]) == "function" then
-                    -- delay execute custom prop
-                    if node:isRunning() then
-                        node[setter](node, value)
-                    else
-                        node:onNodeEvent("enter", function()
-                            node[setter](node, value)
-                        end)
-                    end
-                else
-                    gk.log("no setter found for custom prop %s - %s", node.__info._type, key)
-                end
+        if self.customProps[key] then
+            local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
+            local setter = "set" .. alias
+            if type(node[setter]) == "function" then
+                node[setter](node, value)
+            else
+                node[key] = value
             end
+        elseif not key:starts("_") then
+            gk.log("[Error] config:setValue, not registered prop, type = %s, prop = %s", node and node.__info._type or "?", key)
         end
     end
 end
 
-function config:registerDisplayProps(displayer)
+config.customProps = {}
+function config:registerDisplayProps(displayer, prop)
     gk.exNodeDisplayer[displayer._type] = displayer
+    if prop then
+        self.customProps[prop] = true
+    end
 end
 
 ----------------------------- properties for Editor -----------------------------------

@@ -756,7 +756,7 @@ function panel:displayNode(node)
     local shaders = { "ShaderPositionTextureColor_noMVP", "ShaderUIGrayScale", }
     for k, v in pairs(gk.shader.cachedGLPrograms) do
         table.insert(shaders, k)
-    end
+end
     if isButton then
         createTitle("gk.Button")
         -- TODO: super class's click function

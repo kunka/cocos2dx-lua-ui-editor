@@ -194,7 +194,7 @@ function panel.create(parent)
     local keys = table.keys(gk.resource.genNodes)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do
-        local nodeInfo = gk.resource.genNodes[key]
+        local nodeInfo = gk.resource:getGenNode(key)
         if nodeInfo.isWidget then
             table.insert(self.widgets, { _type = nodeInfo.path, cname = nodeInfo.cname, displayName = nodeInfo.genSrcPath .. key, _isWidget = 0 })
         end
@@ -337,7 +337,8 @@ function panel.create(parent)
                         self._containerNode:addChild(node)
                         gk.log("add new node %s, id = %s, pos = %.1f,%.1f", _type, node.__info._id, p.x, p.y)
                         gk.event:post("executeCmd", "ADD", {
-                            id = node.__info._id, panel = self.parent,
+                            id = node.__info._id,
+                            panel = self.parent,
                         })
                         gk.event:post("postSync")
                         gk.event:post("displayNode", node)
