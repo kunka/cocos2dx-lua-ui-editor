@@ -6,13 +6,11 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-
 local ErrorReporter = {}
 
 local lastReportTime
 function ErrorReporter:reportException(detail)
     if true then
-        -- 限制1秒最多上报一次
         local now = os.time()
         if lastReportTime == nil or now - lastReportTime > 1 then
             lastReportTime = now

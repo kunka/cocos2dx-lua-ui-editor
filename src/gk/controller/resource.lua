@@ -42,7 +42,12 @@ function resource:scanFontFiles(path)
 end
 
 function resource:getFontFile(key)
-    return self.fontDir and (self.fontDir .. key) or key
+    local file = self.fontDir .. key
+    if cc.FileUtils:getInstance():isFileExist(file) then
+        return file
+    else
+        return key
+    end
 end
 
 function resource:scanFontDir(dir)
