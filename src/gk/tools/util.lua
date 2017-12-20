@@ -191,28 +191,30 @@ function util:isDebugTag(tag)
 end
 
 function util:clearDrawNode(node, tag)
-    local tg = tag or util.tags.drawTag
-    local draw = node:getChildByTag(tg)
-    if self:instanceof(node, "cc.ScrollView") then
-        return
-        --        draw = node:getContainer():getChildByTag(tg)
-    end
-    if draw then
-        draw:clear()
-        draw:stopAllActions()
-    end
-    -- parent
-    if node:getParent() then
-        node = node:getParent()
-        local tg = tag or util.tags.drawParentTag
+    if node then
+        local tg = tag or util.tags.drawTag
         local draw = node:getChildByTag(tg)
         if self:instanceof(node, "cc.ScrollView") then
-            draw = node:getContainer():getChildByTag(tg)
+            return
+            --        draw = node:getContainer():getChildByTag(tg)
         end
-        local draw = node:getChildByTag(tg)
         if draw then
             draw:clear()
             draw:stopAllActions()
+        end
+        -- parent
+        if node:getParent() then
+            node = node:getParent()
+            local tg = tag or util.tags.drawParentTag
+            local draw = node:getChildByTag(tg)
+            if self:instanceof(node, "cc.ScrollView") then
+                draw = node:getContainer():getChildByTag(tg)
+            end
+            local draw = node:getChildByTag(tg)
+            if draw then
+                draw:clear()
+                draw:stopAllActions()
+            end
         end
     end
 end
@@ -284,6 +286,13 @@ function util:drawNode(node, c4f, tag)
         rect.width = size.width - (originSize.width - rect.width)
         rect.height = size.height - (originSize.height - rect.height)
         self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(0, 1, 1, 0.2), tg)
+    end
+    if self:instanceof(node, "DrawNode") and type(node.getMovablePoints) == "function" then
+        local ps = node:getMovablePoints()
+        for _, p in ipairs(ps) do
+            draw:drawPoint(p, 5, cc.c4f(1, 1, 0, 1))
+            draw:drawCircle(p, 10, 360, 50, false, c4f or cc.c4f(1, 1, 0, 0.2))
+        end
     end
 
     -- refresh draw, only in test mode
@@ -424,7 +433,6 @@ function util:drawRectOnNode(node, p1, p2, p3, p4, c4f, tg)
     return draw
 end
 
-
 function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
     local draw
     if tg then
@@ -436,6 +444,21 @@ function util:drawSolidRectOnNode(node, p1, p2, c4f, tg)
         draw:setPosition(cc.p(0, 0))
     end
     draw:drawSolidRect(p1, p2, c4f or cc.c4f(1, 0, 0, 0.2))
+    return draw
+end
+
+function util:drawCircleOnNode(node, p, radius, c4f, tg)
+    local tg = tg or self.tags.drawTag
+    local draw
+    if tg then
+        draw = node:getChildByTag(tg)
+    end
+    if not draw then
+        draw = cc.DrawNode:create()
+        node:add(draw, 999, tg)
+        draw:setPosition(cc.p(0, 0))
+    end
+    draw:drawCircle(p, radius, 360, 50, false, c4f or cc.c4f(1, 0, 0, 0.2))
     return draw
 end
 
@@ -467,13 +490,12 @@ function util:getGlobalScale(node)
 end
 
 function util:hitTest(node, touch)
-    local location = touch:getLocation()
     local s = node:getContentSize()
     if gk.util:instanceof(node, "cc.ScrollView") then
         s = node:getViewSize()
     end
     local rect = { x = 0, y = 0, width = s.width, height = s.height }
-    local touchP = node:convertToNodeSpace(cc.p(location.x, location.y))
+    local touchP = node:convertTouchToNodeSpace(touch)
     return cc.rectContainsPoint(rect, touchP)
 end
 

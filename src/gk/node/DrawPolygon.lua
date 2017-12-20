@@ -11,9 +11,9 @@ local drawPolygon = class("drawPolygon", DrawNode)
 
 function drawPolygon:ctor()
     drawPolygon.super.ctor(self)
-    self:addProperty("points", { cc.p(0, 0), cc.p(50, 50), cc.p(100, 0), cc.p(150, 50) })
+    self:addProperty("points", { cc.p(0, 0), cc.p(100, 0), cc.p(100, 50), cc.p(0, 50) })
     self:addProperty("borderWidth", 1)
-    self:addProperty("fillColor", cc.c4f(0, 0, 0.5, 1))
+    self:addProperty("fillColor", cc.c4f(0, 0, 0.5, 0))
     self.pointsNum = 4
 end
 
@@ -31,13 +31,31 @@ end
 
 function drawPolygon:draw()
     drawPolygon.super.draw(self)
-    if gk.mode == gk.MODE_EDIT then
-        -- draw control points
-        for _, point in ipairs(self.points) do
-            self.child:drawPoint(point, 5, cc.c4f(1, 1, 0, 1))
+    self.child:drawPolygon(self.points, self.pointsNum, self.fillColor, self.borderWidth, self.c4f)
+end
+
+function drawPolygon:getMovablePoints()
+    local ps = {}
+    for i, p in ipairs(self.points) do
+        if i > self.pointsNum then
+            return
+        end
+        table.insert(ps, p)
+    end
+    return ps
+end
+
+function drawPolygon:setMovablePoints(p, index)
+    for i, dst in ipairs(self.points) do
+        if i > self.pointsNum then
+            return
+        end
+        if i == index then
+            self.points[i] = p
+            break
         end
     end
-    self.child:drawPolygon(self.points, self.pointsNum, self.fillColor, self.borderWidth, self.c4f)
+    self:draw()
 end
 
 return drawPolygon

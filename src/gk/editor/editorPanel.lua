@@ -182,14 +182,13 @@ function panel:onNodeCreate(node)
             end
             c = c:getParent()
         end
-        --        if gk.mode == gk.MODE_EDIT and node == self.scene.layer then
-        --            gk.util:drawNode(node, cc.c4f(1, 200 / 255, 0, 1), -2)
-        --        end
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
             self.draggingNode = nil
             self._containerNode = nil
+            self.draggingControlPoint = nil
+            self.draggingControlPointIndex = nil
             if not self.commandPressed then
                 for _, nd in ipairs(self.multiSelectNodes) do
                     gk.util:clearDrawNode(nd)
@@ -197,6 +196,21 @@ function panel:onNodeCreate(node)
                 self.multiSelectNodes = {}
                 --                gk.event:post("undisplayNode")
             end
+            -- dragging control points
+            if self.displayingNode and gk.util:instanceof(self.displayingNode, "DrawNode") and type(self.displayingNode.getMovablePoints) == "function" then
+                local touchP = self.displayingNode:convertTouchToNodeSpace(touch)
+                local ps = self.displayingNode:getMovablePoints()
+                for i, p in ipairs(ps) do
+                    if cc.pDistanceSQ(p, touchP) < 100 then
+                        self.draggingControlPoint = cc.p(p)
+                        self.draggingControlPointIndex = i
+                        self._touchBegainPos = cc.p(touchP)
+                        gk.util:drawNode(self.displayingNode)
+                        return true
+                    end
+                end
+            end
+
             local hit = false
             -- child of locked widget
             if node.__info._isWidget then
@@ -228,10 +242,6 @@ function panel:onNodeCreate(node)
                 self._originPos = cc.p(node:getPosition())
                 local type = node.__cname and node.__cname or tolua.type(node)
                 self._containerNode = node:getParent()
-                --                if self._containerNode and not self._containerNode.__info then
-                --                    gk.event:post("displayNode", node)
-                --                    return false
-                --                end
                 cc.Director:getInstance():setDepthTest(true)
                 node:setPositionZ(1)
                 if self.commandPressed then
@@ -273,6 +283,15 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_BEGAN)
         listener:registerScriptHandler(function(touch, event)
+            if self.draggingControlPoint then
+                local touchP = self.displayingNode:convertTouchToNodeSpace(touch)
+                local ps = self.displayingNode:getMovablePoints()
+                local dt = cc.pSub(touchP, self._touchBegainPos)
+                local p = cc.pAdd(self.draggingControlPoint, dt)
+                self.displayingNode:setMovablePoints(p, self.draggingControlPointIndex)
+                gk.util:drawNode(self.displayingNode)
+                return
+            end
             if self.commandPressed or gk.util:isAncestorsIgnore(node) then
                 return
             end
@@ -283,8 +302,7 @@ function panel:onNodeCreate(node)
                 return
             end
             self.draggingNode = node
-            local location = touch:getLocation()
-            local p = node:getParent():convertToNodeSpace(location)
+            local p = node:getParent():convertTouchToNodeSpace(touch)
             p = cc.pAdd(self._originPos, cc.pSub(p, self._touchBegainPos))
             p = self:onNodeMoved(node, p)
 
@@ -328,7 +346,7 @@ function panel:onNodeCreate(node)
                     --                    end
                     local s = gk.util:instanceof(nd, "cc.ScrollView") and nd:getViewSize() or nd:getContentSize()
                     local rect = { x = 0, y = 0, width = s.width, height = s.height }
-                    local p = nd:convertToNodeSpace(location)
+                    local p = nd:convertTouchToNodeSpace(touch)
                     if cc.rectContainsPoint(rect, p) then
                         local type = nd.__cname and nd.__cname or tolua.type(nd)
                         if self._containerNode ~= nd then
@@ -343,6 +361,20 @@ function panel:onNodeCreate(node)
             end
         end, cc.Handler.EVENT_TOUCH_MOVED)
         listener:registerScriptHandler(function(touch, event)
+            if self.draggingControlPoint then
+                local touchP = self.displayingNode:convertTouchToNodeSpace(touch)
+                local ps = self.displayingNode:getMovablePoints()
+                local dt = cc.pSub(touchP, self._touchBegainPos)
+                local p = cc.pAdd(self.draggingControlPoint, dt)
+                self.displayingNode:setMovablePoints(p, self.draggingControlPointIndex)
+                gk.util:clearDrawNode(self.displayingNode)
+                self.draggingControlPoint = nil
+                self.draggingControlPointIndex = nil
+                gk.event:post("postSync")
+                gk.event:post("displayNode", self.displayingNode)
+                gk.event:post("displayDomTree")
+                return
+            end
             if gk.util:isAncestorsIgnore(node) then
                 return
             end
@@ -423,6 +455,8 @@ function panel:onNodeCreate(node)
             end
             self.sortedChildren = nil
             self._containerNode = nil
+            self.draggingControlPoint = nil
+            self.draggingControlPointIndex = nil
             gk.event:post("postSync")
             gk.event:post("displayNode", node)
             gk.event:post("displayDomTree")

@@ -122,6 +122,73 @@ function generator:inflate(info, rootNode, rootTable)
     return node
 end
 
+function generator:inflateFSM(info, fsmName)
+    local states = {}
+    local trans = {}
+    local default
+    for _, child in ipairs(info._children) do
+        if child._type == "gk/layout/FSMNode" then
+            assert(states[child.FSMNode_state] == nil, "duplicate state:" .. child.FSMNode_state)
+            states[child.FSMNode_state] = child.FSMNode_state
+            if child.FSMNode_default and child.FSMNode_default == 0 then
+                default = child.FSMNode_state
+            end
+        elseif child._type == "gk/layout/FSMTransNode" then
+            local ts = trans[child.FSMTransNode_action] or {}
+            for _, tran in ipairs(ts) do
+                assert(tran.from ~= child.FSMTransNode_from or tran.to ~= child.FSMTransNode_to, string.format("duplicate trans from [%s] to [%s]", tran.from, tran.to))
+            end
+            table.insert(ts, { from = child.FSMTransNode_from, to = child.FSMTransNode_to })
+            trans[child.FSMTransNode_action] = ts
+        end
+    end
+    assert(table.nums(states) > 0, "states count == 0")
+    local fsm = {}
+    local state = default
+    local callbacks = {}
+    setmetatable(fsm, {
+        __index = function(_, key)
+            if key == "getState" then
+                return function(_) return state end
+            elseif key == "is" then
+                return function(_, st) return state == st end
+            elseif trans[key] then
+                local ts = trans[key]
+                for _, tran in ipairs(ts) do
+                    local from = states[tran.from]
+                    local to = states[tran.to]
+                    assert(from, "none exist state:" .. tran.from)
+                    assert(to, "none exist state:" .. tran.to)
+                    if state == from then
+                        state = to
+                        gk.log("%s: [%s]  ----  (%s)  ---->  [%s] SUCCESS!", fsmName, from, key, to)
+                        if ts.callback then
+                            ts.callback(from, to)
+                        end
+                        return function(_) return true end
+                    end
+                end
+                gk.log("%s: [%s]  -xx-  (%s)  -xx->  [%s] FAIL!", fsmName, state, key, to)
+                return function(_) return false end
+            else
+                gk.log("%s: [%s]  ----  (%s) ??? INVALID ACTION!", fsmName, state, key)
+                return function(_) return false end
+            end
+        end,
+        __newindex = function(_, key, value)
+            if #key > 2 and type(value) == "function" then
+                local action = string.lower(key:sub(3, 3)) .. key:sub(4, key:len())
+                if trans[action] then
+                    trans[action].callback = value
+                    return
+                end
+            end
+            assert(false, "modify fsm state is forbidden!")
+        end,
+    })
+    return fsm
+end
+
 function generator:createNode(info, rootNode, rootTable)
     info = self:wrap(info, rootTable)
     local node

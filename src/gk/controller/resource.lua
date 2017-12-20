@@ -46,7 +46,11 @@ function resource:getFontFile(key)
     if cc.FileUtils:getInstance():isFileExist(file) then
         return file
     else
-        return key
+        if cc.FileUtils:getInstance():isFileExist(key) then
+            return key
+        else
+            return "Arial"
+        end
     end
 end
 
@@ -152,6 +156,10 @@ function resource:scanGenNodes(path)
     -- internal
     self.genNodesInternal = {}
     self:scanDir(path .. "gk/layout/", "gk/layout/", true)
+end
+
+function resource:displayInternalNodes()
+    self.isDisplayInternalNodes = true
 end
 
 function resource:scanDir(dir, genSrcPath, internal)

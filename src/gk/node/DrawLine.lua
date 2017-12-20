@@ -27,4 +27,19 @@ function DrawLine:draw()
     end
 end
 
+function DrawLine:getMovablePoints()
+    return { self.from, self.to }
+end
+
+function DrawLine:setMovablePoints(p, index)
+    if index == 1 then
+        self.from = p
+    elseif index == 2 then
+        self.to = p
+    end
+
+    self:draw()
+end
+
+
 return DrawLine

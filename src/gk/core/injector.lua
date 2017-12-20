@@ -118,6 +118,29 @@ function injector:inflateNode(path, ...)
     end
 end
 
+function injector:inflateFSM(path)
+    local clazz = gk.resource:require(path)
+    if clazz then
+        local path = gk.resource:getGenNodePath(clazz.__cname)
+        if not path then
+            gk.log("inflateFSM %s error, cannot find gen node path", clazz.__cname)
+            return {}
+        end
+        if gk.mode ~= gk.MODE_RELEASE then
+            -- reload package
+            package.loaded[path] = nil
+        end
+        local status, info = pcall(require, path)
+        if status then
+            return gk.generator:inflateFSM(info, clazz.__cname)
+        end
+    else
+        gk.log("inflateFSM %s error, return nil", path)
+        return {}
+    end
+    return {}
+end
+
 function injector:onNodeCreate(node, presetInfo)
     if node and not node.__info and node.__cname then
         -- root container node
@@ -179,47 +202,49 @@ function injector:sync(node)
     end
 end
 
-function injector:registerCustomProp(clazz, prop, propType, default)
+function injector:registerCustomProp(clazz, prop, propType, default, selectValues)
     if gk.mode ~= gk.MODE_RELEASE then
         local tp = clazz.__cname
+        prop = tp .. "_" .. prop
+        local tbl = self:getDisplayProp(tp, prop)
         if propType == "number" then
-            local tbl = gk.exNodeDisplayer[tp]
-            if not tbl then
-                tbl = { _type = tp, }
-            end
-            gk.editorConfig:registerDisplayProps(tbl, prop)
-            local numProps = tbl.numProps or {}
-            local notFound = true
-            for _, p in ipairs(numProps) do
-                if p.key == prop then
-                    notFound = false
-                    break
-                end
-            end
-            if notFound then
-                table.insert(numProps, { key = prop, default = default })
-            end
-            tbl.numProps = numProps
+            local config = { key = prop, default = default }
+            self:insertProp(tbl, prop, "numProps", config)
         elseif propType == "string" then
-            local tbl = gk.exNodeDisplayer[tp]
-            if not tbl then
-                tbl = { _type = tp, }
-            end
-            gk.editorConfig:registerDisplayProps(tbl, prop)
-            local stringProps = tbl.stringProps or {}
-            local notFound = true
-            for _, p in ipairs(stringProps) do
-                if p.key == prop then
-                    notFound = false
-                    break
-                end
-            end
-            if notFound then
-                table.insert(stringProps, { key = prop, default = default })
-            end
-            tbl.stringProps = stringProps
+            local config = { key = prop, default = default }
+            self:insertProp(tbl, prop, "stringProps", config)
+        elseif propType == "bool" then
+            local config = { key = prop }
+            self:insertProp(tbl, prop, "boolProps", config)
+        elseif propType == "select" then
+            local config = { key = prop, selects = selectValues, type = "number", default = default }
+            self:insertProp(tbl, prop, "selectProps", config)
         end
     end
+end
+
+function injector:getDisplayProp(type, prop)
+    local tbl = gk.exNodeDisplayer[type]
+    if not tbl then
+        tbl = { _type = type, }
+    end
+    gk.editorConfig:registerDisplayProps(tbl, prop)
+    return tbl
+end
+
+function injector:insertProp(tbl, propName, propType, config)
+    local props = tbl[propType] or {}
+    local notFound = true
+    for _, p in ipairs(props) do
+        if p.key == propName then
+            notFound = false
+            break
+        end
+    end
+    if notFound then
+        table.insert(props, config)
+    end
+    tbl[propType] = props
 end
 
 return injector

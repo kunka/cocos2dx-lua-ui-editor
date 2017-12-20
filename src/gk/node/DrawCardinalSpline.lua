@@ -12,8 +12,8 @@ local DrawCardinalSpline = class("DrawCardinalSpline", DrawNode)
 function DrawCardinalSpline:ctor()
     DrawCardinalSpline.super.ctor(self)
     self:addProperty("tension", 0.5)
-    self:addProperty("points", { cc.p(0, 0), cc.p(50, 50), cc.p(100, 0), cc.p(150, 50) })
-    self:addProperty("segments", 10)
+    self:addProperty("points", { cc.p(0, 0), cc.p(50, 25), cc.p(100, 0), cc.p(150, 25) })
+    self:addProperty("segments", 50)
     self.pointsNum = 4
 end
 
@@ -31,12 +31,6 @@ end
 
 function DrawCardinalSpline:draw()
     DrawCardinalSpline.super.draw(self)
-    if gk.mode == gk.MODE_EDIT then
-        -- draw control points
-        for _, point in ipairs(self.points) do
-            self.child:drawPoint(point, 5, cc.c4f(1, 1, 0, 1))
-        end
-    end
     self.child:drawCardinalSpline(self.points, self.tension, self.segments, self.c4f)
 end
 

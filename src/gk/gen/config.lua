@@ -4,4 +4,16 @@ return {
 	      cname = "ErrorReportDialog",
 	      genPath = "gk/gen/layout/gk_layout_errorreportdialog.lua",
 	      genSrcPath = "gk/layout/",
-	      path = "gk/layout/ErrorReportDialog"}}}
+	      path = "gk/layout/ErrorReportDialog"},
+	   FSMNode = {
+	      cname = "FSMNode",
+	      genPath = "gk/gen/layout/gk_layout_fsmnode.lua",
+	      genSrcPath = "gk/layout/",
+	      isWidget = true,
+	      path = "gk/layout/FSMNode"},
+	   FSMTransNode = {
+	      cname = "FSMTransNode",
+	      genPath = "gk/gen/layout/gk_layout_fsmtransnode.lua",
+	      genSrcPath = "gk/layout/",
+	      isWidget = true,
+	      path = "gk/layout/FSMTransNode"}}}

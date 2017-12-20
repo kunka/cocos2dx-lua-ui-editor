@@ -10,13 +10,8 @@ local ErrorReportDialog = class("ErrorReportDialog", gk.Dialog)
 
 function ErrorReportDialog:ctor()
     ErrorReportDialog.super.ctor(self)
-    --    self.dialogBg.bg:setSpriteFrame(gk.create_sprite_frame("fuYong/tancDishen.png"), self.dialogBg.bg:getCapInsets())
-    --    self:addMaskLayer()
-    --    self:animateOut()
-    --    self.dialogBg.titleLabel:setString(gk.resource:getString("g.help"))
-    --    self.dialogBg.closeBtn:onClicked(function()
-    --        self:pop()
-    --    end)
+    self:addMaskLayer()
+    self:animateOut()
 end
 
 function ErrorReportDialog:setTitle(title)

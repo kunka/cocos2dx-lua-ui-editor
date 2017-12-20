@@ -79,7 +79,9 @@ function panel:displayDomTree(rootLayer, force, notForceUnfold)
         -- scan layouts
         if not self.domTree then
             local total = clone(gk.resource.genNodes)
-            table.merge(total, gk.resource.genNodesInternal)
+            if gk.resource.isDisplayInternalNodes then
+                table.merge(total, gk.resource.genNodesInternal)
+            end
             local keys = table.keys(total)
             table.sort(keys, function(k1, k2)
                 local dir1, dir2 = gk.resource:getGenNode(k1).genSrcPath, gk.resource:getGenNode(k2).genSrcPath

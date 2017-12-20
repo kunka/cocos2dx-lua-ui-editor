@@ -14,7 +14,7 @@ function config3D:register(config)
         function(node, var) node:setPositionZ(var) end)
     config:registerFloatProp("scaleZ")
     config:registerProp("rotation3D")
-    --    config:registerProp("rotationQuat") -- no getter??? are u kidding me!
+    --    config:registerProp("rotationQuat")
     --    config:registerEditableProp("rotateX", function(_) return 0 end,
     --        function(node, var) node:setRotation(cc.vec3(var, node.__info.rotateY, node.__info.rotateZ)) end)
     --    config:registerEditableProp("rotateY", function(_) return 0 end,

@@ -41,16 +41,7 @@ return {
 	                  scaleY = 0.5,
 	                  string = "Error Occurs",
 	                  x = 450,
-	                  y = 25,
-	                  fontFile = {
-	                     cn = "Consolas",
-	                     en = "Arial",
-	                     fr = "Consolas",
-	                     jp = "Consolas",
-	                     kr = "Consolas",
-	                     pt = "Consolas",
-	                     ru = "Consolas",
-	                     tw = "Consolas"}},
+	                  y = 25},
 	               {
 	                  _id = "closeBtn",
 	                  _type = "ZoomButton",
@@ -79,6 +70,4 @@ return {
 	            y = 425,
 	            anchor = {
 	               x = 0.5,
-	               y = 1},
-	            fontFile = {
-	               en = "Arial"}}}}}}
+	               y = 1}}}}}}

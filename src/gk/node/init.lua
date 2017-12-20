@@ -22,6 +22,7 @@ gk.CheckBox = import(".CheckBox")
 -- gk draw nodes
 gk.DrawNodeCircle = import(".DrawNodeCircle")
 gk.CubicBezierNode = import(".CubicBezierNode")
+gk.QuadBezierNode = import(".QuadBezierNode")
 gk.DrawPolygon = import(".DrawPolygon")
 gk.DrawCardinalSpline = import(".DrawCardinalSpline")
 gk.DrawPoint = import(".DrawPoint")
@@ -117,15 +118,19 @@ local function create_label_local(info)
         label = cc.Label:createWithTTF(info.string, file, info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
     elseif isBMFont(fontFile) then
         label = cc.Label:createWithBMFont(file, info.string, cc.TEXT_ALIGNMENT_LEFT)
-        label:setBMFontSize(info.fontSize)
+        if label then
+            label:setBMFontSize(info.fontSize)
+        end
     elseif isCharMap(fontFile) then
         label = cc.Label:createWithCharMap(gk.create_sprite(file):getTexture(), info.itemWidth or 20, info.itemHeight or 40, 0x30)
-        label:setString(info.string or "")
+        if label then
+            label:setString(info.string or "")
+        end
     end
     if not label then
         label = cc.Label:createWithSystemFont(info.string, "Arial", info.fontSize, cc.size(0, 0), cc.TEXT_ALIGNMENT_LEFT, cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         --        info.fontFile[lan] = label:getSystemFontName()
-        --        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", info.fontFile[lan], info.string, fontFile)
+--        gk.log("warning! create_label use system font %s, string = \"%s\", fontFile = %s", fontFile[lan], info.string, file)
     end
     return label
 end

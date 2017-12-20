@@ -59,4 +59,10 @@ function DrawNode:draw()
     self.child:setLineWidth(self.lineWidth)
 end
 
+function DrawNode:afterDraw()
+    if self.onDrawCallback then
+        self.onDrawCallback()
+    end
+end
+
 return DrawNode

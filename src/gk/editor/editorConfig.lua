@@ -197,7 +197,7 @@ end
 function config:registerGKNodeCreator(type, alias)
     config.nodeCreator[type] = function(info, rootTable)
         local node = gk[type].new()
-        info._id = info._id or config:genID(name, rootTable)
+        info._id = info._id or config:genID(type, rootTable)
         return node
     end
 end
@@ -1053,6 +1053,8 @@ function config:getValue(node, key)
     if self.customProps[key] then
         --                gk.log("no setter found for %s - %s", node.__info._type, key)
         -- custom prop, try find out the setter
+        local names = string.split(key, "_")
+        local key = #names == 2 and names[2] or key
         local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
         local getter = "get" .. alias
         if type(node[getter]) == "function" then
@@ -1074,6 +1076,8 @@ function config:setValue(node, key, value)
     else
         -- some props do not have setter
         if self.customProps[key] then
+            local names = string.split(key, "_")
+            local key = #names == 2 and names[2] or key
             local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
             local setter = "set" .. alias
             if type(node[setter]) == "function" then
@@ -1347,6 +1351,10 @@ config:registerProp("origin")
 config:registerProp("destination")
 config:registerFloatProp("segments")
 config:registerFloatProp("curvesNum")
+
+-- gk.QuadBezierNode
+config:registerSupportNode({ _type = "QuadBezierNode" })
+config:registerGKNodeCreator("QuadBezierNode")
 
 -- gk.DrawPoint
 config:registerSupportNode({ _type = "DrawPoint" })

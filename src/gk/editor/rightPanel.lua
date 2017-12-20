@@ -323,6 +323,7 @@ function panel:displayNode(node)
     local isCheckBox = gk.util:instanceof(node, "CheckBox")
     local isDrawNode = gk.util:instanceof(node, "DrawNode")
     local isCubicBezierNode = gk.util:instanceof(node, "CubicBezierNode")
+    local isQuadBezierNode = gk.util:instanceof(node, "QuadBezierNode")
     local isDrawPolygon = gk.util:instanceof(node, "DrawPolygon")
     local isEditBox = gk.util:instanceof(node, "ccui.EditBox")
     local isProgressTimer = gk.util:instanceof(node, "cc.ProgressTimer")
@@ -756,7 +757,7 @@ function panel:displayNode(node)
     local shaders = { "ShaderPositionTextureColor_noMVP", "ShaderUIGrayScale", }
     for k, v in pairs(gk.shader.cachedGLPrograms) do
         table.insert(shaders, k)
-end
+    end
     if isButton then
         createTitle("gk.Button")
         -- TODO: super class's click function
@@ -1215,6 +1216,8 @@ end
     local getTitle = function(prop)
         if not prop.title then
             local key = prop.key
+            local names = string.split(key, "_")
+            key = #names == 2 and names[2] or key
             return string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
         end
         return prop.title
@@ -1268,6 +1271,16 @@ end
         for i = 1, node.__info.curvesNum do
             createInputMiddle("C" .. (i * 2 - 1), "X", "Y", "destination." .. i .. ".c1.x", "destination." .. i .. ".c1.y", "number")
             createInputMiddle("C" .. (i * 2), "X", "Y", "destination." .. i .. ".c2.x", "destination." .. i .. ".c2.y", "number")
+            createInputMiddle("P" .. i, "X", "Y", "destination." .. i .. ".dst.x", "destination." .. i .. ".dst.y", "number")
+        end
+    end
+    if isQuadBezierNode then
+        createTitle("gk.QuadBezierNode")
+        createInputMiddle("Segments", "", "", "segments", nil, "number")
+        createInputMiddle("CurvesNum", "", "", "curvesNum", nil, "number")
+        createInputMiddle("Origin", "X", "Y", "origin.x", "origin.y", "number")
+        for i = 1, node.__info.curvesNum do
+            createInputMiddle("C" .. (i * 2 - 1), "X", "Y", "destination." .. i .. ".c1.x", "destination." .. i .. ".c1.y", "number")
             createInputMiddle("P" .. i, "X", "Y", "destination." .. i .. ".dst.x", "destination." .. i .. ".dst.y", "number")
         end
     end

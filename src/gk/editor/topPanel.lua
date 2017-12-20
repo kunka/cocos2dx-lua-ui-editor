@@ -192,6 +192,9 @@ function panel.create(parent)
     end
     -- self pre defined widget
     local keys = table.keys(gk.resource.genNodes)
+    local total = clone(gk.resource.genNodes)
+    table.merge(total, gk.resource.genNodesInternal)
+    local keys = table.keys(total)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do
         local nodeInfo = gk.resource:getGenNode(key)
@@ -327,7 +330,7 @@ function panel.create(parent)
                     end
                     if node then
                         self.parent:rescaleNode(node, self._containerNode)
-                        if widget._isWidget or _type == "cc.Layer" then
+                        if _type == "cc.Layer" then
                             node.__info.x, node.__info.y = 0, 0
                         else
                             local x = math.round(gk.generator:parseXRvs(node, p.x, node.__info.scaleXY.x))

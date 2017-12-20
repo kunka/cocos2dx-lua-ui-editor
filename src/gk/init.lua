@@ -35,6 +35,7 @@ setmetatable(gk.exports, {
 require "gk.core.init"
 require "gk.action.init"
 require "gk.node.init"
+require "gk.fsm.init"
 require "gk.controller.init"
 require "gk.editor.init"
 require "gk.tools.init"
