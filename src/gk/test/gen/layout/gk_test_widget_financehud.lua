@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	_id = "FianceHud",
 	_type = "FinanceHud",
 	enableKeyPad = 0,
@@ -15,7 +15,7 @@ return {
 	   h = 1,
 	   w = "1"},
 	_children = {	   {
-	      _fold = true,
+	      _fold = false,
 	      _id = "gold_bg",
 	      _type = "cc.Sprite",
 	      file = "hud/bs1.png",
@@ -24,7 +24,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 1033,
-	      y = 750,
+	      y = 700,
 	      anchor = {
 	         x = 1,
 	         y = 1},
@@ -91,7 +91,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 817,
-	      y = 750,
+	      y = 700,
 	      anchor = {
 	         x = 1,
 	         y = 1},
@@ -160,7 +160,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 206,
 	      x = 1247,
-	      y = 750,
+	      y = 700,
 	      anchor = {
 	         x = 1,
 	         y = 1},

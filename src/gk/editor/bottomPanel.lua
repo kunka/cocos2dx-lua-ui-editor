@@ -19,7 +19,7 @@ function panel.create(parent)
     local fontSize = 40
     local scale = 0.25
     local topY = gk.display.bottomHeight - 35
-    local leftX = 0
+    local leftX = 12
     local inputWidth1 = 140
     local inputWidth2 = 400
     local stepY = 25
@@ -40,7 +40,7 @@ function panel.create(parent)
     self:addChild(label)
     label:setAnchorPoint(0, 0.5)
     label:setVerticalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-    label:setPosition(0, gk.display.bottomHeight - height / 2)
+    label:setPosition(leftX, gk.display.bottomHeight - height / 2)
 
     local createLabel = function(content, x, y)
         local label = gk.create_label(content, fontName, fontSize)

@@ -1,8 +1,8 @@
 return {
 	_fold = false,
+	_id = "APITest",
+	_type = "APITest",
 	height = "$fill",
-	id = "APITest",
 	ignoreAnchor = 0,
 	popOnBack = 1,
-	type = "APITest",
 	width = "$fill"}

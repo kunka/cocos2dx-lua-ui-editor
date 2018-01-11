@@ -18,7 +18,7 @@ return {
 	      string = "SystemFontLabel: Arial",
 	      width = 0,
 	      x = 720,
-	      y = 720,
+	      y = 700,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -39,7 +39,7 @@ return {
 	      string = "BMFontLabel: Klee.fnt",
 	      width = 0,
 	      x = 360,
-	      y = 720,
+	      y = 700,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -316,7 +316,7 @@ return {
 	      string = "TTFLabel: EnableWrap with multi-lines",
 	      width = 300,
 	      x = 30,
-	      y = 660,
+	      y = 650,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -337,7 +337,7 @@ return {
 	      string = "BMFontLabel: EnableWrap with multi-lines",
 	      width = 300,
 	      x = 360,
-	      y = 660,
+	      y = 650,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -359,7 +359,7 @@ return {
 	      string = "Not Support",
 	      width = 0,
 	      x = 720,
-	      y = 660,
+	      y = 650,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -381,7 +381,7 @@ return {
 	      string = "TTFLabel: EnableWrap&LineBreakWithoutSpace",
 	      width = 300,
 	      x = 30,
-	      y = 580,
+	      y = 570,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -403,7 +403,7 @@ return {
 	      string = "BMFontLabel: EnableWrap&LineBreakWithoutSpace",
 	      width = 300,
 	      x = 360,
-	      y = 580,
+	      y = 570,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -425,7 +425,7 @@ return {
 	      string = "SystemFontLabel: LineBreakWithoutSpace",
 	      width = 300,
 	      x = 720,
-	      y = 580,
+	      y = 570,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -468,7 +468,7 @@ return {
 	      string = "TTFLabel: Verdana.ttf",
 	      width = 0,
 	      x = 30,
-	      y = 720,
+	      y = 700,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -783,7 +783,7 @@ return {
 	      string = "0123456789",
 	      width = 200,
 	      x = 1060,
-	      y = 660,
+	      y = 650,
 	      anchor = {
 	         x = 0,
 	         y = 1},
@@ -804,7 +804,7 @@ return {
 	      string = "CharMapLabel",
 	      width = 0,
 	      x = 1060,
-	      y = 720,
+	      y = 700,
 	      anchor = {
 	         x = 0,
 	         y = 1},

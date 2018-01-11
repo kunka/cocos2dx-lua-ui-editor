@@ -1,4 +1,5 @@
 return {
+	_fold = true,
 	_id = "solarSystem1",
 	_type = "SolarSystem",
 	height = "$fill",

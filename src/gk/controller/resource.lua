@@ -60,24 +60,14 @@ function resource:scanFontDir(dir)
     end
     gk.log("resource:scanFontDir dir = \"%s\"", dir)
     -- scan all font files
-    local f = io.popen('ls ' .. dir, "r")
-    if f then
-        local lines = {}
-        for name in f:lines() do
-            table.insert(lines, name)
+    local files = cc.FileUtils:getInstance():listFiles(dir)
+    for _, name in ipairs(files) do
+        if cc.FileUtils:getInstance():isFileExist(name) and (name:ends(".fnt") or name:ends(".ttf")) then
+            table.insert(self.fontFiles, "" .. string.gsub(name, dir, ""))
         end
-        for _, name in ipairs(lines) do
-            if name:ends(".fnt") or name:ends(".ttf") then
-                table.insert(self.fontFiles, "" .. name)
-                gk.log("resource:scanFontfile:%s", "" .. name)
-            elseif not name:find("%.") then
-                self:scanFontDir(dir .. name .. "/")
-            end
-        end
-        f:close()
     end
 
-    table.sort(self.fontFiles, function(k1, k2) return k1 < k2 end)
+    table.sort(self.fontFiles)
 end
 
 ----------------------------------- lans and strings -----------------------------------
@@ -166,22 +156,15 @@ function resource:scanDir(dir, genSrcPath, internal)
     if not dir or dir == "" or genSrcPath:find(self.genDir) then
         return
     end
-    --    gk.log("resource:scanDir dir = \"%s\"", genSrcPath)
+    --    gk.log("resource:scanDir dir = \"%s\", genSrcPath = \"%s\"", dir, genSrcPath)
     -- scan all gen-able files
-    local f = io.popen('ls ' .. dir, "r")
-    if f then
-        local lines = {}
-        for name in f:lines() do
-            table.insert(lines, name)
+    local files = cc.FileUtils:getInstance():listFiles(dir)
+    for _, name in ipairs(files) do
+        if cc.FileUtils:getInstance():isFileExist(name) and name:ends(".lua") then
+            self:loadEditableNodes(name, genSrcPath, internal)
+        elseif cc.FileUtils:getInstance():isDirectoryExist(name) and not name:find("%.") then
+            self:scanDir(name, string.gsub(name, self.genFullPathPrefix, ""), internal)
         end
-        for _, name in ipairs(lines) do
-            if name:ends(".lua") then
-                self:loadEditableNodes(dir .. name, genSrcPath, internal)
-            elseif not name:find("%.") then
-                self:scanDir(dir .. name .. "/", genSrcPath .. name .. "/")
-            end
-        end
-        f:close()
     end
 end
 

@@ -41,6 +41,10 @@ function SelectBox:setItems(items)
     self.label:setString(self.selectItems[self.selectIndex])
 end
 
+function SelectBox:setItemColors(itemColors)
+    self.itemColors = itemColors
+end
+
 function SelectBox:setSelectIndex(index)
     if index ~= self.selectIndex and index > 0 and index <= #self.selectItems then
         self.label:setString(self.selectItems[index])
@@ -140,6 +144,14 @@ function SelectBox:openPopup()
             label:setString(self.selectItems[i])
             gk.set_label_color(label, i == self.selectIndex and cc.c3b(255, 0, 0) or cc.c3b(0, 0, 0))
             local layer = cc.LayerColor:create(cc.c3b(0x99, 0xcc, 0x00), size.width, size.height)
+            if self.itemColors then
+                local dot = cc.LayerColor:create(cc.c3b(0, 0, 0), size.height, size.height)
+                layer:addChild(dot)
+                dot:setPositionX(-size.height)
+                local dot = cc.LayerColor:create(self.itemColors[i], size.height - 2, size.height - 2)
+                layer:addChild(dot)
+                dot:setPositionX(-size.height)
+            end
             layer:addChild(label)
             layer:setIgnoreAnchorPointForPosition(false)
             layer:setOpacity(i == self.selectIndex and 255 or 0)

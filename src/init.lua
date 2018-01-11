@@ -18,7 +18,7 @@ local function getConfig(entry)
         launchEntryKey = "gk_launchEntry_1", -- remember last entry when restart
         designSize = cc.size(720, 1280),
     } or {
-        -- run test mode
+        -- run test demo
         entry = entry,
         codeDir = "gk/test/",
         fontDir = "gk/test/res/font/",
@@ -97,7 +97,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         gk.log("searchPath:\"" .. v .. "\"")
     end
 
-    -- custom profile func, such as calculate execute time
+    -- optional: custom profile func, such as calculate execute time
     gk.profile.onStart = function(key, ...)
         --
     end
@@ -107,9 +107,9 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- init lua gamekit
     gk.mode = mode
-    -- custom desigin size for editor
+    -- optional: custom desigin size for editor
     gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
-    gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.FIXED_WIDTH)
+    gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.UNIVERSAL)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
     gk.resource:setTextureDir(config.textureDir)
     gk.resource:setFontDir(config.fontDir)
@@ -128,34 +128,35 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         return strings[lan][key] or ("@" .. key)
     end)
 
-    -- u can scan by scripts
-    local k1 = { "@strings" }
-    local maxTipsCount = 16
-    gk.resource:setAutoCompleteFunc(function(key)
-        if key == "@" then
-            return k1
-        end
-        if key:len() > 1 and key:sub(1, 1) == "@" then
-            -- TODO:
-        end
-        return {}
-    end)
+    -- optional: auto complete string input on edit mode
+    --    local k1 = { "@strings" }
+    --    local maxTipsCount = 16
+    --    gk.resource:setAutoCompleteFunc(function(key)
+    --        if key == "@" then
+    --            return k1
+    --        end
+    --        if key:len() > 1 and key:sub(1, 1) == "@" then
+    --            -- TODO:
+    --        end
+    --        return {}
+    --    end)
 
     -- call before restart
     gk.util:registerOnRestartGameCallback(function()
         -- release resource here
+        -- cc.Director:getInstance():purgeCachedData()
     end)
-    -- restart func
+    -- did restart func
     gk.util:registerRestartGameCallback(function(...)
         restartGame(...)
     end)
     -- on error callback
     gk.util:registerOnErrorCallback(function(msg)
-        gk.log(msg)
+        gk.ErrorReporter:reportException(msg)
     end)
 
-    -- mac scan files
-    if CFG_SCAN_NODES and cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT and MAC_ROOT then
+    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT and MAC_ROOT then
+        -- mac scan files on edit mode
         local root = MAC_ROOT
         gk.resource:scanGenNodes(root .. "src/")
         gk.resource:scanFontFiles(root .. config.fontDir)
@@ -163,6 +164,8 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     else
         gk.resource:load(config.genDir .. "config.lua")
     end
+    -- display all nodes such as sprite3D, FSMNodes, DrawNodes
+    gk.resource:displayInternalNodes()
 
     ---------------------- for edtior ----------------------
     --- editor ex ---
@@ -175,8 +178,6 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.editorConfig:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
     gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 0), "Green")
     gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 255), "Yellow")
-    gk.editorConfig:registerHintColor3B(cc.c3b(0, 0, 0), "Black")
-    gk.editorConfig:registerHintColor3B(cc.c3b(255, 255, 255), "White")
 
     -- hint contentSizes or button size
     gk.editorConfig:registerHintContentSize(cc.size(200, 50))
@@ -186,7 +187,6 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.editorConfig:registerHintFontSize(18)
     gk.editorConfig:registerHintFontSize(20)
     gk.editorConfig:registerHintFontSize(24)
-    ---------------------- for edtior ----------------------
 end
 
 function init:initConfig()

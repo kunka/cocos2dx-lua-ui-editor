@@ -480,7 +480,7 @@ function panel:displayNode(node)
 
     local function createFunc(title, key, prefix)
         self:createLabel(title, leftX, topY - stepY * yIndex)
-        local funcs = { "-" }
+        local funcs = {}
         local len = #prefix
         for key, value in pairs(self.parent.scene.layer.class) do
             if type(value) == "function" and #key > len and key:sub(1, len) == prefix then
@@ -488,7 +488,9 @@ function panel:displayNode(node)
             end
         end
         table.sort(funcs)
-        self:createSelectBox(funcs, table.indexof(funcs, tostring(node.__info[key])), inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
+        table.insert(funcs, 1, "-")
+        local idx = table.indexof(funcs, tostring(node.__info[key])) or 1
+        self:createSelectBox(funcs, idx, inputMiddleX1, topY - stepY * yIndex, inputLongWidth, function(index)
             self:modifyByInput(node, key, funcs[index], "string")
         end, "-")
         yIndex = yIndex + 1
@@ -686,16 +688,19 @@ function panel:displayNode(node)
         table.sort(gk.editorConfig.hintColor3Bs, function(s1, s2)
             return s1.c3b.r < s2.c3b.r or (s1.c3b.r == s2.c3b.r and s1.c3b.g < s2.c3b.g) or (s1.c3b.r == s2.c3b.r and s1.c3b.g == s2.c3b.g and s1.c3b.b < s2.c3b.b)
         end)
+        local colors = {}
         for i, var in ipairs(gk.editorConfig.hintColor3Bs) do
             local c3b = var.c3b
+            table.insert(colors, c3b)
             vars[i] = c3b.r .. "," .. c3b.g .. "," .. c3b.b .. (string.format("(#%02x%02x%02x)%s", c3b.r, c3b.g, c3b.b, var.desc or ""))
             if index == 0 and gk.util:table_eq(c3b, color) then
                 index = i
             end
         end
-        self:createHintSelectBox(vars, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+        local sb = self:createHintSelectBox(vars, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
             self:modifyValue(node, "color", gk.editorConfig.hintColor3Bs[index].c3b)
         end)
+        sb:setItemColors(colors)
     end
 
     if not isScrollView then
@@ -1259,6 +1264,11 @@ function panel:displayNode(node)
                     createCheckBox(getTitle(prop), prop.key)
                 end
             end
+            if ext.functionProps then
+                for i, prop in ipairs(ext.functionProps) do
+                    createFunc(getTitle(prop), prop.key, "on")
+                end
+            end
         end
     end
 
@@ -1317,6 +1327,20 @@ function panel:handleEvent()
                 y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayInfoOffset = cc.p(x, y)
+
+                if not self.scrollBar then
+                    self.scrollBar = cc.LayerColor:create(cc.c3b(102, 102, 102), 0, 0)
+                    self.scrollBar:setPositionX(self:getContentSize().width - 3)
+                    self:addChild(self.scrollBar)
+                end
+                local barSize = self:getContentSize().height * self:getContentSize().height / self.displayInfoNode:getContentSize().height
+                local scrollLen = self.displayInfoNode:getContentSize().height - self:getContentSize().height
+                self.scrollBar:setContentSize(cc.size(1.5, barSize))
+                -- [0, scrollLen] <--> [self:getContentSize().height-barSize, 0]
+                self.scrollBar:setPositionY((1 - y / scrollLen) * (self:getContentSize().height - barSize))
+                self.scrollBar:stopAllActions()
+                self.scrollBar:setOpacity(255)
+                self.scrollBar:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.FadeOut:create(0.5)))
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)

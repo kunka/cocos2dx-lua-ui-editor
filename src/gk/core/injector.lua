@@ -208,7 +208,7 @@ function injector:onNodeCreate(node, presetInfo)
 end
 
 function injector:sync(node)
-    if CFG_SCAN_NODES and node and gk.resource:getGenNode(node.__cname) then
+    if gk.mode == gk.MODE_EDIT and node and gk.resource:getGenNode(node.__cname) then
         -- root container node
         local nd = node or self.scene.layer
         gk.log("start sync %s", nd.__info._id)
@@ -225,23 +225,24 @@ function injector:sync(node)
 end
 
 function injector:registerCustomProp(clazz, prop, propType, default, selectValues)
-    if gk.mode ~= gk.MODE_RELEASE then
-        local tp = clazz.__cname
-        prop = tp .. "_" .. prop
-        local tbl = self:getDisplayProp(tp, prop)
-        if propType == "number" then
-            local config = { key = prop, default = default }
-            self:insertProp(tbl, prop, "numProps", config)
-        elseif propType == "string" then
-            local config = { key = prop, default = default }
-            self:insertProp(tbl, prop, "stringProps", config)
-        elseif propType == "bool" then
-            local config = { key = prop }
-            self:insertProp(tbl, prop, "boolProps", config)
-        elseif propType == "select" then
-            local config = { key = prop, selects = selectValues, type = "number", default = default }
-            self:insertProp(tbl, prop, "selectProps", config)
-        end
+    local tp = clazz.__cname
+    prop = tp .. "_" .. prop
+    local tbl = self:getDisplayProp(tp, prop)
+    if propType == "number" then
+        local config = { key = prop, default = default }
+        self:insertProp(tbl, prop, "numProps", config)
+    elseif propType == "string" then
+        local config = { key = prop, default = default }
+        self:insertProp(tbl, prop, "stringProps", config)
+    elseif propType == "bool" then
+        local config = { key = prop }
+        self:insertProp(tbl, prop, "boolProps", config)
+    elseif propType == "function" then
+        local config = { key = prop }
+        self:insertProp(tbl, prop, "functionProps", config)
+    elseif propType == "select" then
+        local config = { key = prop, selects = selectValues, type = "number", default = default }
+        self:insertProp(tbl, prop, "selectProps", config)
     end
 end
 

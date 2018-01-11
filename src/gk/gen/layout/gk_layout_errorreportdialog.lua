@@ -7,6 +7,7 @@ return {
 	touchEnabled = 1,
 	width = "$fill",
 	_children = {	   {
+	      _fold = true,
 	      _id = "dialogBg",
 	      _type = "cc.LayerColor",
 	      color = "dcdcdcff",

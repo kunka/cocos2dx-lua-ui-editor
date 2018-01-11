@@ -795,6 +795,20 @@ function panel:handleEvent()
                 y = cc.clampf(y, 0, self.displayInfoNode:getContentSize().height - self:getContentSize().height)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayingPos = cc.p(self.displayInfoNode:getPosition())
+
+                if not self.scrollBar then
+                    self.scrollBar = cc.LayerColor:create(cc.c3b(102, 102, 102), 0, 0)
+                    self.scrollBar:setPositionX(self:getContentSize().width - 4)
+                    self:addChild(self.scrollBar)
+                end
+                local barSize = self:getContentSize().height * self:getContentSize().height / self.displayInfoNode:getContentSize().height
+                local scrollLen = self.displayInfoNode:getContentSize().height - self:getContentSize().height
+                self.scrollBar:setContentSize(cc.size(1.5, barSize))
+                -- [0, scrollLen] <--> [self:getContentSize().height-barSize, 0]
+                self.scrollBar:setPositionY((1 - y / scrollLen) * (self:getContentSize().height - barSize))
+                self.scrollBar:stopAllActions()
+                self.scrollBar:setOpacity(255)
+                self.scrollBar:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.FadeOut:create(0.5)))
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)

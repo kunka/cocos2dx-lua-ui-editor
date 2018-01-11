@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	_id = "WidgetTest",
 	_type = "WidgetTest",
 	height = "$fill",
@@ -7,7 +7,7 @@ return {
 	popOnBack = 1,
 	width = "$fill",
 	_children = {	   {
-	      _fold = false,
+	      _fold = true,
 	      _id = "financeHud1",
 	      _isWidget = 0,
 	      _type = "gk.test.widget.FinanceHud",

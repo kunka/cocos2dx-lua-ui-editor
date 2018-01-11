@@ -1311,8 +1311,8 @@ function config:registerHintFontSize(size)
     table.insert(self.hintFontSizes, size)
 end
 
-config:registerHintColor3B(cc.c3b(255, 255, 255))
-config:registerHintColor3B(cc.c3b(0, 0, 0))
+config:registerHintColor3B(cc.c3b(255, 255, 255), "White")
+config:registerHintColor3B(cc.c3b(0, 0, 0), "Black")
 config:registerHintContentSize({ width = "$fill", height = "$fill" })
 config:registerHintContentSize({ width = "$win.w", height = "$win.h" })
 config:registerHintContentSize({ width = "$accuWin.w", height = "$accuWin.h" })

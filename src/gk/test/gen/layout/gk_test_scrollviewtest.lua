@@ -47,8 +47,8 @@ The fissure, which threatens to spawn one of the biggest bergs ever seen, has dr
 \\\"The rift has propagated a further 16km, with a significant apparent right turn towards the end, moving the tip 13km from the ice edge,\\\" said Swansea University's Prof Adrian Luckman.\\\
 The calving of the berg could now be very close, he told BBC News.",
 	            width = 440,
-	            x = 58,
-	            y = 636,
+	            x = 197,
+	            y = 838,
 	            anchor = {
 	               x = 0,
 	               y = 1},

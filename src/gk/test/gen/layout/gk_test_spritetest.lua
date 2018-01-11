@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	_id = "SpriteTest",
 	_type = "SpriteTest",
 	height = "$fill",
@@ -15,7 +15,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 95,
 	      x = 1220,
-	      y = 700,
+	      y = 650,
 	      anchor = {
 	         x = 1,
 	         y = 0.5},
@@ -36,7 +36,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 95,
 	      x = 60,
-	      y = 700,
+	      y = 667,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
@@ -57,7 +57,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 200,
 	      x = 60,
-	      y = 576,
+	      y = 538,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
@@ -78,7 +78,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 80,
 	      x = 60,
-	      y = 441,
+	      y = 394,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
@@ -102,7 +102,7 @@ return {
 	      state = 0,
 	      width = 200,
 	      x = 60,
-	      y = 309,
+	      y = 246,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
@@ -129,7 +129,7 @@ return {
 	      state = 0,
 	      width = 300,
 	      x = 1220,
-	      y = 576,
+	      y = 496,
 	      anchor = {
 	         x = 1,
 	         y = 0.5},
@@ -150,7 +150,7 @@ return {
 	      scaleY = "$minScale",
 	      width = 80,
 	      x = 1220,
-	      y = 441,
+	      y = 348,
 	      anchor = {
 	         x = 1,
 	         y = 0.5},
@@ -189,7 +189,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 60,
-	      y = 153,
+	      y = 107,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},

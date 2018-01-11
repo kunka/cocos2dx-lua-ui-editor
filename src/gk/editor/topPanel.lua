@@ -241,9 +241,10 @@ function panel.create(parent)
         label:setPosition(cc.p(width - stepX / 2 - itemWidth / 2, 8 + 8))
         --        gk.util:drawNodeBounds(label)
         local originPos = cc.p(width - stepX / 2 - itemWidth / 2, size.height / 2 + 8)
-        gk.util:drawSegmentOnNode(self.displayInfoNode, cc.p(width, size.height - 25), cc.p(width, 15), 5, cc.c4f(0x99 / 255, 0xcc / 255, 0 / 255,
-            0.2), 1000 + i)
-
+        if i < #self.widgets then
+            gk.util:drawSegmentOnNode(self.displayInfoNode, cc.p(width, size.height - 25), cc.p(width, 15), 5, cc.c4f(0x99 / 255, 0xcc / 255, 0 / 255,
+                0.2), 1000 + i)
+        end
         local listener = cc.EventListenerTouchOneByOne:create()
         listener:setSwallowTouches(true)
         listener:registerScriptHandler(function(touch, event)
@@ -383,7 +384,7 @@ function panel.create(parent)
         cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, node)
     end
 
-    width = width + leftX_widget
+    width = width
     self.displayInfoNode:setContentSize(cc.size(width, self:getContentSize().height))
     self.displayInfoNode:setAnchorPoint(cc.p(0, 0))
     self.displayInfoNode:setPosition(cc.p(gk.display.leftWidth, 0))
@@ -415,6 +416,19 @@ function panel:handleEvent()
                 x = cc.clampf(x, gk.display.leftWidth - (self.displayInfoNode:getContentSize().width - gk.display:accuWinSize().width), gk.display.leftWidth)
                 self.displayInfoNode:setPosition(x, y)
                 self.lastDisplayInfoOffset = cc.p(x, y)
+
+                if not self.scrollBar then
+                    self.scrollBar = cc.LayerColor:create(cc.c3b(102, 102, 102), 0, 0)
+                    self.scrollBar:setPositionY(2)
+                    self:addChild(self.scrollBar)
+                end
+                local barSize = gk.display:accuWinSize().width * gk.display:accuWinSize().width / self.displayInfoNode:getContentSize().width
+                self.scrollBar:setContentSize(cc.size(barSize, 1.5))
+                x = x - gk.display.leftWidth
+                self.scrollBar:setPositionX(-x / self.displayInfoNode:getContentSize().width * gk.display:accuWinSize().width + gk.display.leftWidth)
+                self.scrollBar:stopAllActions()
+                self.scrollBar:setOpacity(255)
+                self.scrollBar:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.FadeOut:create(0.5)))
             end
         end
     end, cc.Handler.EVENT_MOUSE_SCROLL)

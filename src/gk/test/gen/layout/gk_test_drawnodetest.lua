@@ -1,4 +1,5 @@
 return {
+	_fold = true,
 	_id = "drawNodeTest1",
 	_type = "DrawNodeTest",
 	height = "$fill",

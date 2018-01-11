@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	_id = "shaderTest1",
 	_type = "ShaderTest",
 	height = "$fill",
@@ -12,7 +12,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 480,
-	      y = 618,
+	      y = 600,
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -24,7 +24,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 306,
-	      y = 618,
+	      y = 600,
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -36,7 +36,7 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 660,
-	      y = 618,
+	      y = 600,
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
@@ -47,12 +47,12 @@ return {
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
 	      x = 130,
-	      y = 618,
+	      y = 600,
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      _id = "button1",
 	      _type = "SpriteButton",
 	      disabledGLProgram = "ShaderUIGrayScale",
@@ -84,7 +84,7 @@ return {
 	            fontFile = {
 	               en = "Arial"}}}},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      _id = "button2",
 	      _type = "SpriteButton",
 	      disabledGLProgram = "ShaderUIGrayScale",
@@ -211,7 +211,7 @@ return {
 	            x = 121,
 	            y = 25}}},
 	   {
-	      _fold = false,
+	      _fold = true,
 	      _id = "button5",
 	      _type = "SpriteButton",
 	      cascadeGLProgramEnabled = 0,
@@ -267,7 +267,7 @@ return {
 	      string = "None",
 	      width = 0,
 	      x = 130,
-	      y = 720,
+	      y = 690,
 	      fontFile = {
 	         en = "Arial"},
 	      scaleXY = {
@@ -283,7 +283,7 @@ return {
 	      string = "Highlight",
 	      width = 0,
 	      x = 306,
-	      y = 720,
+	      y = 690,
 	      fontFile = {
 	         en = "Arial"},
 	      scaleXY = {
@@ -299,7 +299,7 @@ return {
 	      string = "GrayScale",
 	      width = 0,
 	      x = 480,
-	      y = 720,
+	      y = 690,
 	      fontFile = {
 	         en = "Arial"},
 	      scaleXY = {
@@ -315,7 +315,7 @@ return {
 	      string = "Freeze",
 	      width = 0,
 	      x = 660,
-	      y = 720,
+	      y = 690,
 	      fontFile = {
 	         en = "Arial"},
 	      scaleXY = {
