@@ -634,37 +634,35 @@ function panel:displayNode(node)
         end
     end
 
-    if not isScrollView then
-        if is3d then
-            createInputTriple("Scale", "X", "Y", "Z", "scaleX", "scaleY", "scaleZ", "number", 1, 1, 1)
-            createInputTriple("Rotation", "X", "Y", "Z", "rotation3D.x", "rotation3D.y", "rotation3D.z", "number", 0, 0, 0)
-            --            createInputMiddle("RotationQuat", "X", "Y", "rotationQuat.x", "rotationQuat.y", "number")
-            --            createInputMiddle("", "Z", "W", "rotationQuat.z", "rotationQuat.w", "number")
-        else
-            -- scale
-            self:createLabel("Scale", leftX, topY - stepY * yIndex)
-            local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
-            local s = tostring(node.__info.scaleX)
-            if not table.indexof(scales, s) then
-                table.insert(scales, s)
-            end
-            self:createLabel("X", inputMiddleTextX1, topY - stepY * yIndex)
-            self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
-                editBox:setInput(self:modifyByInput(node, "scaleX", input, "number"))
-            end, gk.editorConfig.defValues["scaleX"])
-            self:createLabel("Y", inputMiddleTextX2, topY - stepY * yIndex)
-            local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
-            local s = tostring(node.__info.scaleY)
-            if not table.indexof(scales, s) then
-                table.insert(scales, s)
-            end
-            self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
-                editBox:setInput(self:modifyByInput(node, "scaleY", input, "number"))
-            end, gk.editorConfig.defValues["scaleY"])
-            yIndex = yIndex + 1
-
-            createInputMiddle("Skew", "X", "Y", "skewX", "skewY", "number", gk.editorConfig.defValues["skewX"], gk.editorConfig.defValues["skewY"])
+    if is3d then
+        createInputTriple("Scale", "X", "Y", "Z", "scaleX", "scaleY", "scaleZ", "number", 1, 1, 1)
+        createInputTriple("Rotation", "X", "Y", "Z", "rotation3D.x", "rotation3D.y", "rotation3D.z", "number", 0, 0, 0)
+        --            createInputMiddle("RotationQuat", "X", "Y", "rotationQuat.x", "rotationQuat.y", "number")
+        --            createInputMiddle("", "Z", "W", "rotationQuat.z", "rotationQuat.w", "number")
+    else
+        -- scale
+        self:createLabel("Scale", leftX, topY - stepY * yIndex)
+        local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
+        local s = tostring(node.__info.scaleX)
+        if not table.indexof(scales, s) then
+            table.insert(scales, s)
         end
+        self:createLabel("X", inputMiddleTextX1, topY - stepY * yIndex)
+        self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX1, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "scaleX", input, "number"))
+        end, gk.editorConfig.defValues["scaleX"])
+        self:createLabel("Y", inputMiddleTextX2, topY - stepY * yIndex)
+        local scales = { "1", "$xScale", "$scaleiPX", "$yScale", "$minScale", "$maxScale" }
+        local s = tostring(node.__info.scaleY)
+        if not table.indexof(scales, s) then
+            table.insert(scales, s)
+        end
+        self:createSelectAndInput(s, scales, table.indexof(scales, s), inputMiddleX2, topY - stepY * yIndex, inputMiddleWidth, function(editBox, input)
+            editBox:setInput(self:modifyByInput(node, "scaleY", input, "number"))
+        end, gk.editorConfig.defValues["scaleY"])
+        yIndex = yIndex + 1
+
+        createInputMiddle("Skew", "X", "Y", "skewX", "skewY", "number", gk.editorConfig.defValues["skewX"], gk.editorConfig.defValues["skewY"])
     end
     if (isLabel or isSprite or isZoomButton or isSpriteButton) and not isLayerColor then
         -- color3B

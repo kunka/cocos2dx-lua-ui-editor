@@ -4,13 +4,10 @@ return {
 	_type = "TableCell1",
 	height = 100,
 	ignoreAnchor = 1,
-	width = 1280,
+	width = 640,
 	anchor = {
 	   x = 0,
 	   y = 0},
-	scaleSize = {
-	   h = "$minScale",
-	   w = "$xScale"},
 	_children = {	   {
 	      _id = "Member",
 	      _type = "cc.LayerColor",
@@ -31,8 +28,6 @@ return {
 	            file = "avatar.png",
 	            flippedX = 1,
 	            ignoreAnchor = 1,
-	            scaleX = "$minScale",
-	            scaleY = "$minScale",
 	            x = 20,
 	            y = 60,
 	            anchor = {
@@ -40,10 +35,7 @@ return {
 	               y = 1},
 	            blendFunc = {
 	               dst = 771,
-	               src = 1},
-	            scaleXY = {
-	               x = "$scaleX",
-	               y = "1"}},
+	               src = 1}},
 	         {
 	            _id = "pop_left",
 	            _type = "ccui.Scale9Sprite",
@@ -174,8 +166,6 @@ return {
 	            height = 80,
 	            ignoreAnchor = 1,
 	            renderingType = 1,
-	            scaleX = "$minScale",
-	            scaleY = "$minScale",
 	            state = 0,
 	            width = 250,
 	            x = 1170,

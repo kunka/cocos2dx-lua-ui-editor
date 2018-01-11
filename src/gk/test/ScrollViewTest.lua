@@ -10,9 +10,8 @@ local ScrollViewTest = class("ScrollViewTest", gk.Layer)
 
 function ScrollViewTest:ctor()
     ScrollViewTest.super.ctor(self)
-    if self.scrollView1 then
-        --        self.scrollView1:setContentSize(cc.size(200 * gk.display:xScale(), 600 * gk.display:yScale()))
-    end
+    gk.util:drawNode(self.scrollView1)
+    gk.util:drawNode(self.label1, cc.c4f(0.5, 1, 0.5, 1))
 end
 
 function ScrollViewTest:onScrollViewDidScroll()
