@@ -105,6 +105,28 @@ function injector:init()
     end)
 end
 
+function injector:inflateContainer(path, ...)
+    local clazz = gk.resource:require(path)
+    if clazz then
+        local container
+        local var = { ... }
+        local status, _ = xpcall(function()
+            container = clazz:create(unpack(var))
+        end, function(msg)
+            local msg = debug.traceback(msg, 3)
+            gk.util:reportError(msg)
+            return nil
+        end)
+        if status then
+            container.__path = path
+            return container
+        end
+    else
+        gk.log("inflateContainer %s error, return nil", path)
+        return nil
+    end
+end
+
 function injector:inflateNode(path, ...)
     local clazz = gk.resource:require(path)
     if clazz then

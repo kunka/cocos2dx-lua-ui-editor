@@ -184,7 +184,16 @@ function panel.create(parent)
     self:addChild(self.clippingNode)
 
     -- cc nodes and gk nodes and ex nodes
-    self.widgets = clone(gk.editorConfig.supportNodes)
+    self.widgets = {}
+    if gk.resource.isDisplayInternalNodes then
+        self.widgets = clone(gk.editorConfig.supportNodes)
+    else
+        for _, node in ipairs(gk.editorConfig.supportNodes) do
+            if not node._internal then
+                table.insert(self.widgets, node)
+            end
+        end
+    end
     for _, node in ipairs(self.widgets) do
         if node._type:find("%.") == nil then
             node._isGKNode = true
@@ -193,7 +202,9 @@ function panel.create(parent)
     -- self pre defined widget
     local keys = table.keys(gk.resource.genNodes)
     local total = clone(gk.resource.genNodes)
-    table.merge(total, gk.resource.genNodesInternal)
+    if gk.resource.isDisplayInternalNodes then
+        table.merge(total, gk.resource.genNodesInternal)
+    end
     local keys = table.keys(total)
     table.sort(keys, function(k1, k2) return k1 < k2 end)
     for _, key in ipairs(keys) do

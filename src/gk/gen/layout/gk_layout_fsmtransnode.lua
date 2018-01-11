@@ -11,17 +11,10 @@ return {
 	      _id = "quadBezierNode1",
 	      _type = "QuadBezierNode",
 	      _children = {	         {
-	            _id = "nameLabel",
-	            _type = "cc.Label",
-	            fontSize = 28,
-	            scaleX = 0.5,
-	            scaleY = 0.5,
-	            string = "label"},
-	         {
 	            _id = "drawPolygon1",
 	            _lock = 0,
 	            _type = "DrawPolygon",
-	            borderWidth = 0.5,
+	            borderWidth = 0,
 	            lineWidth = 1,
 	            pointsNum = 3,
 	            fillColor = {
@@ -33,11 +26,22 @@ return {
 	                  x = 0,
 	                  y = 0},
 	               {
-	                  x = 10,
-	                  y = 4},
+	                  x = 11,
+	                  y = 5},
 	               {
-	                  x = 10,
-	                  y = -4},
+	                  x = 11,
+	                  y = -5},
 	               {
 	                  x = 150,
-	                  y = 50}}}}}}}
+	                  y = 50}}},
+	         {
+	            _id = "button1",
+	            _type = "ZoomButton",
+	            _children = {	               {
+	                  _id = "nameLabel",
+	                  _lock = 0,
+	                  _type = "cc.Label",
+	                  fontSize = 28,
+	                  scaleX = 0.5,
+	                  scaleY = 0.5,
+	                  string = "label"}}}}}}}

@@ -10,14 +10,46 @@ local FSMEditor = class("FSMEditor", gk.Layer)
 
 function FSMEditor:ctor(...)
     FSMEditor.super.ctor(self, ...)
-    self:scheduleUpdate(function(delta)
-        self:update(delta)
-    end)
+    if gk.mode == gk.MODE_EDIT then
+        self:scheduleUpdate(function(delta)
+            self:update(delta)
+        end)
+    end
 end
 
 function FSMEditor:onEnter()
     FSMEditor.super.onEnter(self)
     self:update(0)
+    if gk.mode == gk.MODE_RELEASE_CURRENT then
+        if self.__path then
+            self.fsm = gk.injector:inflateFSM(self.__path)
+            self:updateDisplay()
+            for k, v in pairs(self.trans) do
+                v.button1:onClicked(function()
+                    self.fsm[v.action]()
+                    self:updateDisplay()
+                end)
+            end
+        end
+    end
+end
+
+function FSMEditor:updateDisplay()
+    for k, v in pairs(self.states) do
+        v:setSelected(self.fsm:is(k))
+    end
+    for k, v in pairs(self.trans) do
+        if v.from == self.fsm:getState() then
+            local to = self.fsm:can(v.action)
+            if to and to == v.to then
+                v:setTransabled(true)
+            else
+                v:setTransabled(false)
+            end
+        else
+            v:setTransabled(false)
+        end
+    end
 end
 
 function FSMEditor:update(delta)

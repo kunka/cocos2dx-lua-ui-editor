@@ -14,16 +14,9 @@ function config3D:register(config)
         function(node, var) node:setPositionZ(var) end)
     config:registerFloatProp("scaleZ")
     config:registerProp("rotation3D")
-    --    config:registerProp("rotationQuat")
-    --    config:registerEditableProp("rotateX", function(_) return 0 end,
-    --        function(node, var) node:setRotation(cc.vec3(var, node.__info.rotateY, node.__info.rotateZ)) end)
-    --    config:registerEditableProp("rotateY", function(_) return 0 end,
-    --        function(node, var) node:setRotation(cc.vec3(node.__info.rotateX, var, node.__info.rotateZ)) end)
-    --    config:registerEditableProp("rotateZ", function(node) return 0 end,
-    --        function(node, var) node:setRotation(cc.vec3(node.__info.rotateX, node.__info.rotateY, var)) end)
 
     ----------------------------- cc.Sprite3D -----------------------------------
-    config:registerSupportNode({ _type = "cc.Sprite3D", modelPath = "gk/res/3d/orc.c3b", _is3d = true })
+    config:registerSupportNode({ _type = "cc.Sprite3D", modelPath = "gk/res/3d/orc.c3b", _is3d = true, _internal = true })
     config:registerPlaneProp("modelPath")
     config:registerDisplayProps({
         _type = "cc.Sprite3D",

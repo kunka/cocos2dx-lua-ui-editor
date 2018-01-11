@@ -48,7 +48,7 @@ function CubicBezierNode:getMovablePoints()
     table.insert(ps, self.origin)
     for i, dst in ipairs(self.destination) do
         if i > self.curvesNum then
-            return
+            return {}
         end
         table.insert(ps, dst.c1)
         table.insert(ps, dst.c2)

@@ -22,4 +22,8 @@ function FSMNode:setState(state)
     end
 end
 
+function FSMNode:setSelected(select)
+    self.layerColor1:setColor(select and cc.c3b(151, 205, 0) or cc.c3b(153, 153, 153))
+end
+
 return FSMNode

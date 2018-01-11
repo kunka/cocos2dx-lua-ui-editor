@@ -24,7 +24,7 @@ function FSMTransNode:ctor(...)
         local t = 0.5
         p.x = math.pow(1 - t, 2) * origin.x + 2.0 * (1 - t) * t * c1.x + t * t * destination.x
         p.y = math.pow(1 - t, 2) * origin.y + 2.0 * (1 - t) * t * c1.y + t * t * destination.y
-        self.nameLabel:setPosition(p)
+        self.button1:setPosition(p)
     end
 end
 
@@ -32,7 +32,15 @@ function FSMTransNode:setAction(action)
     self.action = action
     if self.nameLabel then
         self.nameLabel:setString(action)
+        self.button1:setContentNode(self.nameLabel)
     end
+end
+
+function FSMTransNode:setTransabled(transable)
+    self.quadBezierNode1:setC4f(transable and cc.c4f(0, 1, 0, 1) or cc.c4f(153 / 255, 153 / 255, 153 / 255, 1))
+    self.drawPolygon1:setFillColor(transable and cc.c4f(0, 1, 0, 1) or cc.c4f(153 / 255, 153 / 255, 153 / 255, 1))
+    self.quadBezierNode1:draw()
+    self.drawPolygon1:draw()
 end
 
 return FSMTransNode

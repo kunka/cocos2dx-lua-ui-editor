@@ -1345,7 +1345,7 @@ config:registerDisplayProps({
 })
 
 -- gk.CubicBezierNode
-config:registerSupportNode({ _type = "CubicBezierNode" })
+config:registerSupportNode({ _type = "CubicBezierNode", _internal = true })
 config:registerGKNodeCreator("CubicBezierNode")
 config:registerProp("origin")
 config:registerProp("destination")
@@ -1353,11 +1353,11 @@ config:registerFloatProp("segments")
 config:registerFloatProp("curvesNum")
 
 -- gk.QuadBezierNode
-config:registerSupportNode({ _type = "QuadBezierNode" })
+config:registerSupportNode({ _type = "QuadBezierNode", _internal = true })
 config:registerGKNodeCreator("QuadBezierNode")
 
 -- gk.DrawPoint
-config:registerSupportNode({ _type = "DrawPoint" })
+config:registerSupportNode({ _type = "DrawPoint", _internal = true })
 config:registerGKNodeCreator("DrawPoint")
 config:registerProp("pointSize")
 config:registerBoolProp("dot")
@@ -1373,7 +1373,7 @@ config:registerDisplayProps({
 })
 
 -- gk.DrawLine
-config:registerSupportNode({ _type = "DrawLine" })
+config:registerSupportNode({ _type = "DrawLine", _internal = true })
 config:registerGKNodeCreator("DrawLine")
 config:registerProp("from")
 config:registerProp("to")
@@ -1399,7 +1399,7 @@ config:registerDisplayProps({
 })
 
 -- gk.DrawNodeCircle
-config:registerSupportNode({ _type = "DrawNodeCircle" })
+config:registerSupportNode({ _type = "DrawNodeCircle", _internal = true })
 config:registerGKNodeCreator("DrawNodeCircle")
 --config:registerProp("radius")
 --config:registerProp("angle")
@@ -1419,7 +1419,7 @@ config:registerDisplayProps({
 })
 
 -- gk.DrawPolygon
-config:registerSupportNode({ _type = "DrawPolygon" })
+config:registerSupportNode({ _type = "DrawPolygon", _internal = true })
 config:registerGKNodeCreator("DrawPolygon")
 config:registerFloatProp("borderWidth")
 config:registerProp("fillColor")
@@ -1451,7 +1451,7 @@ config:registerDisplayProps({
 })
 
 -- gk.DrawCardinalSpline
-config:registerSupportNode({ _type = "DrawCardinalSpline" })
+config:registerSupportNode({ _type = "DrawCardinalSpline", _internal = true })
 config:registerGKNodeCreator("DrawCardinalSpline")
 config:registerFloatProp("tension")
 --config:registerFloatProp("segments")

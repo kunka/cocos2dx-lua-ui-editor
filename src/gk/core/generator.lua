@@ -152,6 +152,16 @@ function generator:inflateFSM(info, fsmName)
                 return function(_) return state end
             elseif key == "is" then
                 return function(_, st) return state == st end
+            elseif key == "can" then
+                return function(_, action)
+                    local ts = trans[action]
+                    for _, tran in ipairs(ts) do
+                        if tran.from == state then
+                            return tran.to
+                        end
+                    end
+                    return nil
+                end
             elseif trans[key] then
                 local ts = trans[key]
                 for _, tran in ipairs(ts) do

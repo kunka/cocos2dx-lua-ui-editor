@@ -38,7 +38,7 @@ function drawPolygon:getMovablePoints()
     local ps = {}
     for i, p in ipairs(self.points) do
         if i > self.pointsNum then
-            return
+            return {}
         end
         table.insert(ps, p)
     end

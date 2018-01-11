@@ -12,42 +12,28 @@ SceneManager.sceneStack = gk.List.new()
 function SceneManager:createScene(layerName, ...)
     -- init scene at first, need create edit panel on edit mode
     local scene = gk.Scene:create(layerName)
-    local clazz = gk.resource:require(layerName)
-    if clazz then
-        local layer
-        local var = { ... }
-        local status, _ = xpcall(function()
-            gk.profile:start("SceneManager:createScene")
-            layer = clazz:create(unpack(var))
-            gk.profile:stop("SceneManager:createScene", layerName)
-        end, function(msg)
-            local msg = debug.traceback(msg, 3)
-            gk.util:reportError(msg)
-        end)
-        if status then
-            if gk.mode ~= gk.MODE_RELEASE or gk.display:iPhoneX() then
-                -- wrap node in editor panel
-                local node = cc.Node:create()
-                node:addChild(layer)
-                node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2 + gk.display.iPhoneXExtWidth / 2, gk.display.bottomHeight))
-                scene:addChild(node)
-            else
-                scene:addChild(layer)
-            end
-            scene.layer = layer
-            if gk.mode ~= gk.MODE_RELEASE then
-                gk.event:post("displayNode", layer)
-                gk.event:post("displayDomTree")
-            end
-            return scene, true
+    gk.profile:start("SceneManager:createScene")
+    local layer = gk.injector:inflateContainer(layerName, ...)
+    gk.profile:stop("SceneManager:createScene", layerName)
+    if layer then
+        if gk.mode ~= gk.MODE_RELEASE or gk.display:iPhoneX() then
+            -- wrap node in editor panel
+            local node = cc.Node:create()
+            node:addChild(layer)
+            node:setPosition(cc.p(gk.display.leftWidth + gk.display.extWidth / 2 + gk.display.iPhoneXExtWidth / 2, gk.display.bottomHeight))
+            scene:addChild(node)
         else
-            gk.log("SceneManager:createScene error, create layer --> %s failed", layerName)
-            return scene, false
+            scene:addChild(layer)
         end
-    else
-        gk.log("SceneManager:createScene error, create layer class --> %s failed", layerName)
-        return scene, false
+        scene.layer = layer
+        if gk.mode ~= gk.MODE_RELEASE then
+            gk.event:post("displayNode", layer)
+            gk.event:post("displayDomTree")
+        end
+        return scene, true
     end
+    gk.log("SceneManager:createScene error, create layer class --> %s failed", layerName)
+    return scene, false
 end
 
 -- layerName:must inherit from Layer
