@@ -275,6 +275,20 @@ function panel:createHintSelectBox(items, index, x, y, width, callback, defValue
     return box
 end
 
+function panel:createAnchorChooseBox(items, index, x, y, width, callback, defValue)
+    local hint_width = 16
+--    local box = self:createSelectBox(items, index, x, y, width, callback, defValue)
+--    box.bg:hide()
+--    box.label:hide()
+--    box.bg:setContentSize(cc.size(hint_width / scale, box.bg:getContentSize().height))
+--    box.bgButton:setContentNode(box.bg)
+--    box.bgButton:setPositionX(box:getContentSize().width)
+--    box.bgButton:setAnchorPoint(1, 0.5)
+--    box.noneMouseMoveEffect = true
+--    box.focusable = false
+--    return box
+end
+
 function panel:createLine(y)
     y = y + 12
     gk.util:drawLineOnNode(self.displayInfoNode, cc.p(10, y), cc.p(self.contentSize.width - 10, y), cc.c4f(102 / 255, 102 / 255, 102 / 255, 1), -999)
@@ -361,7 +375,7 @@ function panel:displayNode(node)
         if type(ret) == "number" then
             ret = math.shrink(ret, 3)
         end
-        return ret
+        return ret or ""
     end
 
     local function createInputLong(title, key, tp, default, height)
@@ -569,7 +583,7 @@ function panel:displayNode(node)
     if not is3d then
         local scaleXs = { "1", "$scaleX", "$minScale", "$maxScale", "$scaleRT", "$scaleLT" }
         local scaleYs = { "1", "$scaleY", "$minScale", "$maxScale", "$scaleTP", "$scaleBT" }
-        createSelectBox("ScalePos", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
+        createSelectBox("ScalePosition", "X", "Y", "scaleXY.x", "scaleXY.y", scaleXs, scaleYs, "string",
             gk.editorConfig.defValues["scaleXY"].x, gk.editorConfig.defValues["scaleXY"].y)
 
         createInputMiddle("AnchorPoint", "X", "Y", "anchor.x", "anchor.y", "number")
@@ -586,9 +600,12 @@ function panel:displayNode(node)
                 index = i
             end
         end
-        self:createHintSelectBox(vs, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+        self:createAnchorChooseBox(index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
             self:modifyValue(node, "anchor", vars[index])
         end)
+        --        self:createHintSelectBox(vs, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
+        --            self:modifyValue(node, "anchor", vars[index])
+        --        end)
 
         createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
         -- size
@@ -802,7 +819,7 @@ function panel:displayNode(node)
 
     if isToggleButton then
         createTitle("gk.ToggleButton(Tag:1~n continuous)")
-        createCheckBox("AutoToggle", "autoToggle")
+        createCheckBox("AutoToggle(switch tag btw 1~n)", "autoToggle")
         -- event
         self:createLabel("SelectedTag", leftX, topY - stepY * yIndex)
         local tags = { 0 }
@@ -1088,9 +1105,9 @@ function panel:displayNode(node)
             createSelectBox("ScaleOffset", "X", "Y", "scaleOffset.x", "scaleOffset.y", scaleWs, scaleHs, "string", "1", "1")
         end
 
-        createCheckBox("ClipToBD", "clipToBD")
+        createCheckBox("ClipToBound", "clipToBD")
         createCheckBox("Bounceable", "bounceable")
-        createCheckBox("Enabled", "touchEnabled")
+        createCheckBox("TouchEnabled", "touchEnabled")
         if isTableView then
             createFunc("NumOfCells", "cellNums", "cell")
             createFunc("CellSizeForIndex", "cellSizeForIndex", "cell")

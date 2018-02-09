@@ -1,5 +1,5 @@
 return {
+	_id = "dialog11",
+	_type = "Dialog1",
 	height = "$fill",
-	id = "dialog11",
-	type = "Dialog1",
 	width = "$fill"}

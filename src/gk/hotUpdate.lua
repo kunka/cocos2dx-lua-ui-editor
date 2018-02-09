@@ -20,7 +20,7 @@ function hotUpdate:init(originVersion)
     end
     local ret = self:compareVersion(curVersion, originVersion)
     if ret == 1 then
-        -- current is new, hot update exist
+        -- current is bigger than origin, use hot update
         print(string.format("curVersion = %s is big than originVersion = %s, use hot update", curVersion, originVersion))
         if not cc.FileUtils:getInstance():isDirectoryExist(DOC_ROOT .. curVersion .. "/") then
             print(string.format("hot update dir not exist = %s, need redownload hotupdate", DOC_ROOT .. curVersion .. "/"))
@@ -38,18 +38,14 @@ function hotUpdate:init(originVersion)
         -- big version, remove old files
         print(string.format("big version = %s, remove old version = %s", originVersion, curVersion))
         self:removeOldVersion(curVersion)
-        curVersion = originVersion
-        cc.UserDefault:getInstance():setStringForKey("gk_currentVersion", curVersion)
+        cc.UserDefault:getInstance():setStringForKey("gk_currentVersion", originVersion)
         cc.UserDefault:getInstance():flush()
     else
         -- equal, do nothing
-        curVersion = originVersion
         print(string.format("same version = %s, no hotupdate", curVersion))
         cc.UserDefault:getInstance():setStringForKey("gk_currentVersion", curVersion)
         cc.UserDefault:getInstance():flush()
     end
-
-    return DOC_ROOT
 end
 
 -- return 1:version1 > version2
@@ -100,7 +96,7 @@ function hotUpdate:removeOldVersion(oldVersion)
 end
 
 function hotUpdate:updateToNewVersion(newVersion)
-    print(string.format("update newVersion = %s", newVersion))
+    print(string.format("update to newVersion = %s", newVersion))
     cc.UserDefault:getInstance():setStringForKey("gk_currentVersion", newVersion)
     cc.UserDefault:getInstance():flush()
     local DOC_ROOT = cc.FileUtils:getInstance():getWritablePath()

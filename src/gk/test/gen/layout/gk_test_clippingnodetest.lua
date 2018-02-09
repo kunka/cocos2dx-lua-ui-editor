@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	_id = "ClippingNodeTest",
 	_type = "ClippingNodeTest",
 	height = "$fill",

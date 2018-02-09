@@ -35,11 +35,11 @@ function ButtonTest:onSpriteBtnEnableChanged(button, enabled)
     self.label2:setColor(enabled and cc.c3b(255, 255, 255) or cc.c3b(128, 128, 128))
 end
 
-function ButtonTest:onSelectedTagChanged(button, index)
-    gk.log("onSelectedTagChanged %s --> %d", button, index)
-    if index >= 1 and index <= 3 then
+function ButtonTest:onSelectedTagChanged(button, tag)
+    gk.log("onSelectedTagChanged %s --> %d", button, tag)
+    if tag >= 1 and tag <= 3 then
         local colors = { cc.c3b(255, 0, 0), cc.c3b(0, 255, 0), cc.c3b(0, 0, 255) }
-        self.label3:setColor(colors[index])
+        self.label3:setColor(colors[tag])
     end
 end
 

@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	_id = "LabelTest",
 	_type = "LabelTest",
 	height = "$fill",
@@ -7,6 +7,9 @@ return {
 	popOnBack = 1,
 	swallowTouches = 1,
 	width = "$fill",
+	anchor = {
+	   x = 0.5,
+	   y = 0.5},
 	_children = {	   {
 	      _id = "label_sys",
 	      _type = "cc.Label",

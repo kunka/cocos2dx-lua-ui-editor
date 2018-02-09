@@ -244,6 +244,7 @@ config.defValues = {
     visible = 0,
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
+    clickedSid = "",
 
     -- centerRect = cc.rect(0, 0, 0, 0),
     -- Layer

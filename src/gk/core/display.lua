@@ -8,9 +8,9 @@
 local display = {}
 
 display.deviceSizes = {
-    { size = cc.size(1280, 720), desc = "1280x720(16:9)" },
-    { size = cc.size(1280, 960), desc = "1280x960(4:3)" },
     { size = cc.size(720, 1280), desc = "720x1280(9:16)" },
+    { size = cc.size(1280, 720), desc = "1280x720(16:9)" },
+    { size = cc.size(1280, 960), desc = "1280x960(4:3 iPad)" },
     { size = cc.size(2436, 1125), desc = "2436x1125(iPhoneX)" },
 }
 
@@ -58,7 +58,7 @@ function display:initWithDesignSize(size, resolutionPolicy)
     if platform == 2 then
         -- fix deviceSizes, avoid out of screen
         local maxGLViewSize = cc.size(1400, 840)
-        local minDesignWinWidth = 500
+        local minDesignWinWidth = 570
         for _, s in ipairs(self.deviceSizes) do
             local rateX = (maxGLViewSize.width - leftMargin - rightMargin) / s.size.width
             local rateY = (maxGLViewSize.height - topMargin - bottomMargin) / s.size.height
