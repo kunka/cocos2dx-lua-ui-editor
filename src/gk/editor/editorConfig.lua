@@ -1269,7 +1269,7 @@ config:registerBoolProp("enabled")
 config:registerProp("clickedSid")
 config:registerProp("selectedGLProgram")
 config:registerProp("disabledGLProgram")
-config:registerBoolProp("cascadeGLProgramEnabled")
+--config:registerBoolProp("cascadeGLProgramEnabled")
 
 -- gk.ZoomButton
 config:registerProp("zoomScale")

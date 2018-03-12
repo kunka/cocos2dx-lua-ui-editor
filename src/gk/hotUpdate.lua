@@ -8,7 +8,7 @@
 
 local hotUpdate = {}
 
--- cannot be hot updated
+-- this file cannot be hot updated
 -- must init this in main.lua before require any other modules
 -- use for instance run on mac, or hot update on other platform
 function hotUpdate:init(originVersion)

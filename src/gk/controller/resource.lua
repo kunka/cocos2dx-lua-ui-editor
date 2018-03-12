@@ -127,8 +127,8 @@ function resource:getDefaultFont(lan)
 end
 
 ----------------------------- gen node search path -----------------------------------
-function resource:setGenSrcPath(path)
-    gk.log("resource:setGenSrcPath \"%s\"", path)
+function resource:setCodeDir(path)
+    gk.log("resource:setCodeDir \"%s\"", path)
     self.genSrcPath = path
 end
 

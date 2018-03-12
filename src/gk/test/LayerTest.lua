@@ -13,7 +13,6 @@ function LayerTest:ctor()
 
     gk.util:drawNode(self.layer2, nil, -3)
     gk.util:drawNode(self.layer3, nil, -3)
-    gk.util:drawNode(self.layer4, nil, -3)
     gk.util:drawNode(self.layer5, nil, -3)
 end
 

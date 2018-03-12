@@ -3,21 +3,21 @@ if jit and jit.status() then
     jit.off()
     jit.flush()
 end
-print("main(notice:main.lua gk/hotUpdate.lua version.lua cannot be reloaded when running!)")
+print("main(main.lua gk/hotUpdate.lua gk/instanceRun version.lua cannot be reloaded when running!)")
 
 -- init default search path
 cc.FileUtils:getInstance():addSearchPath("src/")
 cc.FileUtils:getInstance():addSearchPath("res/")
 cc.FileUtils:getInstance():setPopupNotify(false)
 -- keep orign package path
-local orignPackage = package.path
+local orignPackagePath = package.path
 
 local function clearModules()
     print("clearModules")
     local __g = _G
     setmetatable(__g, {})
 
-    package.path = orignPackage
+    package.path = orignPackagePath
 
     local whitelist = {
         ["string"] = true,
@@ -34,29 +34,30 @@ local function clearModules()
         ["jit"] = true,
         ["jit.util"] = true,
         ["jit.opt"] = true,
-        ["main"] = true,
         ["lfs"] = true,
+        ["main"] = true,
+        ["gk.instanceRun"] = true,
+        ["version"] = true,
     }
 
     for p, _ in pairs(package.loaded) do
         if not whitelist[p] then
+            print (p)
             package.loaded[p] = nil
         end
     end
 end
 
-print(package.path)
+print(string.format("package.path = \"%s\"", package.path))
 local searchPath = cc.FileUtils:getInstance():getSearchPaths()
 print("app search paths:")
 for _, v in ipairs(searchPath) do
-    print("searchPath:\"" .. v .. "\"")
+    print(string.format("searchPath:\"%s\"", v))
 end
 
-local MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME -- only used by editor
-local function initInstanceRun()
-    local android_package_name = "com.demo.gk"
+local function initInstanceRun(android_package_name)
     local instanceRun = require("gk.instanceRun")
-    MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME = instanceRun:init(android_package_name)
+    instanceRun:init(android_package_name)
 end
 
 local function initHotUpdate()
@@ -66,18 +67,14 @@ local function initHotUpdate()
 end
 
 local function startGame(mode)
-    return require("init"):startGame(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
+    return require("init"):startGame(mode)
 end
 
 -- will be called in some other place to restart game
 function restartGame(mode)
     print("restartGame")
     clearModules()
-    if cc.Application:getInstance():getTargetPlatform() == 2 then
-        startGame(mode)
-    else
-        startGame(0)
-    end
+    startGame(mode)
 end
 
 -- 0: release mode
@@ -85,11 +82,11 @@ end
 if cc.Application:getInstance():getTargetPlatform() == 2 then
     --- mac default run with edit mode with instance run enabled
     initInstanceRun() -- instance run on Mac, with ui editor
-    startGame(1) -- default run with edit mode
-    -- initHotUpdate()
+    startGame(1)
+    -- initHotUpdate() -- enable hot update on Mac
     -- startGame(0)
 else
-    -- initInstanceRun() -- instance run on Android, disabled this before publish
-    initHotUpdate()
+    -- initInstanceRun("com.demo.gk) -- instance run on Android, disabled this before publish
+    initHotUpdate() -- enable hot update on Android
     startGame(0)
 end

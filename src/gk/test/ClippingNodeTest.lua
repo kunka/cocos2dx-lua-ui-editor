@@ -26,6 +26,10 @@ function ClippingNodeTest:ctor()
         stencil:setScale(0.5)
         self.clippingNode2:setStencil(stencil)
     end
+    gk.util:drawNodeBounds(self.clippingNode1, nil, -3)
+    gk.util:drawNodeBounds(self.node2, nil, -3)
+    gk.util:drawNodeBounds(self.clippingRectNode1, nil, -3)
+    gk.util:drawNodeBounds(self.clippingRectNode2, nil, -3)
 end
 
 return ClippingNodeTest

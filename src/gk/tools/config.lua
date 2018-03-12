@@ -78,7 +78,7 @@ function config:dump()
             end
         end
     end
-    gk.log("#")
+    gk.log("# gk.config #")
 end
 
 local fontSize = 20

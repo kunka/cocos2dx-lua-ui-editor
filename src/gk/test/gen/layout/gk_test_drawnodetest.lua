@@ -96,40 +96,6 @@ return {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
 	   {
-	      _id = "drawLine1",
-	      _type = "DrawLine",
-	      scaleX = "$minScale",
-	      scaleY = "$minScale",
-	      segment = 1,
-	      x = 160,
-	      y = 234,
-	      from = {
-	         x = -40,
-	         y = 0},
-	      scaleXY = {
-	         x = "$scaleX",
-	         y = "$scaleY"},
-	      to = {
-	         x = 40,
-	         y = 50}},
-	   {
-	      _id = "drawLine2",
-	      _type = "DrawLine",
-	      scaleX = "$minScale",
-	      scaleY = "$minScale",
-	      segment = 0,
-	      x = 160,
-	      y = 99,
-	      from = {
-	         x = -40,
-	         y = 0},
-	      scaleXY = {
-	         x = "$scaleX",
-	         y = "$scaleY"},
-	      to = {
-	         x = 40,
-	         y = 50}},
-	   {
 	      _id = "drawNodeCircle2",
 	      _type = "DrawNodeCircle",
 	      angle = 0,
@@ -193,6 +159,40 @@ return {
 	      scaleXY = {
 	         x = "$scaleX",
 	         y = "$scaleY"}},
+	   {
+	      _id = "drawLine2",
+	      _type = "DrawLine",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      segment = 0,
+	      x = 160,
+	      y = 99,
+	      from = {
+	         x = -40,
+	         y = 0},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"},
+	      to = {
+	         x = 40,
+	         y = 50}},
+	   {
+	      _id = "drawLine1",
+	      _type = "DrawLine",
+	      scaleX = "$minScale",
+	      scaleY = "$minScale",
+	      segment = 1,
+	      x = 160,
+	      y = 234,
+	      from = {
+	         x = -40,
+	         y = 0},
+	      scaleXY = {
+	         x = "$scaleX",
+	         y = "$scaleY"},
+	      to = {
+	         x = 40,
+	         y = 50}},
 	   {
 	      _id = "drawPolygon3",
 	      _type = "DrawPolygon",

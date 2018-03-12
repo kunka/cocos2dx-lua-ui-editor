@@ -259,14 +259,17 @@ function panel.create(parent)
         gk.set_label_color(label, cc.c3b(166, 166, 166))
         self:runAction(cc.Sequence:create(cc.DelayTime:create(0.02), cc.CallFunc:create(function()
             gk.set_label_color(label, cc.c3b(50, 255, 50))
-            local packageName = gk.editorConfig.ANDROID_PACKAGE_NAME or ""
+            local instanceRun = require("gk.instanceRun")
+            local MAC_ROOT = instanceRun.MAC_ROOT
+            local ANDROID_ROOT = instanceRun.ANDROID_ROOT
+            local ANDROID_PACKAGE_NAME = instanceRun.ANDROID_PACKAGE_NAME
             local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
-            if packageName == "" then
+            if ANDROID_PACKAGE_NAME == "" then
                 gk.log("must set packageName")
                 return
             end
-            if not gk.editorConfig.ANDROID_ROOT or gk.editorConfig.ANDROID_ROOT == "/" then
-                gk.log("must set gk.ANDROID_ROOT")
+            if not ANDROID_ROOT or ANDROID_ROOT == "/" then
+                gk.log("must set ANDROID_ROOT")
                 return
             end
             local sdk = cc.UserDefault:getInstance():getStringForKey("gk_android_sdk_location")
@@ -276,12 +279,12 @@ function panel.create(parent)
             end
             gk.log("----------------------------------")
             gk.log("Cleaning ......")
-            local dir = gk.editorConfig.MAC_ROOT .. "gen"
-            gk.log("remove dir %s", dir)
-            cc.FileUtils:getInstance():removeDirectory(dir)
+            --            local dir = MAC_ROOT .. "gen"
+            --            gk.log("remove dir %s", dir)
+            --            cc.FileUtils:getInstance():removeDirectory(dir)
             local adb = sdk .. "/platform-tools/adb"
-            gk.log("remove dir %s", gk.editorConfig.ANDROID_ROOT)
-            local handle = io.popen(adb .. " shell rm -rf " .. gk.editorConfig.ANDROID_ROOT)
+            gk.log("remove dir %s", ANDROID_ROOT)
+            local handle = io.popen(adb .. " shell rm -rf " .. ANDROID_ROOT)
             local result = handle:read("*a")
             handle:close()
             gk.log("Clean finished!")
@@ -305,12 +308,13 @@ function panel.create(parent)
     gk.util:drawNodeBg(node, cc.c4f(0.5, 0.5, 0.5, 1), -2)
     button:setAnchorPoint(0, 0.5)
     button:onClicked(function()
-        local packageName = gk.editorConfig.ANDROID_PACKAGE_NAME or ""
-        local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
-        if packageName == "" then
+        local instanceRun = require("gk.instanceRun")
+        local ANDROID_PACKAGE_NAME = instanceRun.ANDROID_PACKAGE_NAME
+        if ANDROID_PACKAGE_NAME == "" then
             gk.log("must set packageName")
             return
         end
+        local defaultActivity = cc.UserDefault:getInstance():getStringForKey("gk_android_default_activity", "org.cocos2dx.lua.AppActivity")
         if defaultActivity == "" then
             gk.log("must set defaultActivity")
             return

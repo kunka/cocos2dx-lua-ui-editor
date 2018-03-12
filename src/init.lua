@@ -5,7 +5,6 @@ require "gk.init"
 local init = {}
 
 local function getConfig(entry)
-    entry = entry or 1
     return entry == 0 and {
         -- run demo app
         entry = entry,
@@ -31,17 +30,17 @@ local function getConfig(entry)
     }
 end
 
-local config = getConfig()
+local config = getConfig(1)
 
--- mode 1 --> Press F1 to restart app with debug mode at current designing scene.
+-- mode 1 --> Press F1 to restart app with edit mode at current designing scene.
 -- mode 2 --> Press F2 to restart app with release mode at current designing scene.
 -- mode 0 --> Press F3 to restart app with release mode at default launch entry.
-function init:startGame(mode, ...)
+function init:startGame(mode)
     mode = mode or 0
     local curVersion = cc.UserDefault:getInstance():getStringForKey("gk_currentVersion")
     local codeVersion = require("version")
     printf("init:startGame with mode %d, curVersion = %s, codeVersion = %s", mode, curVersion, codeVersion)
-    self:initGameKit(mode, ...)
+    self:initGameKit(mode)
 
     gk.lastLaunchEntryKey = config.launchEntryKey -- remember last entry by editor
     local platform = cc.Application:getInstance():getTargetPlatform()
@@ -49,22 +48,17 @@ function init:startGame(mode, ...)
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         local _, ret = gk.SceneManager:replace(path)
         if not ret then
-            -- reset to default
+            -- reset to default entry
             cc.UserDefault:getInstance():setStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         end
     else
         gk.SceneManager:replace(config.launchEntry)
     end
 
-    --    gk.resource:testAllGenNodes()
+    -- gk.resource:testAllGenNodes()
 end
 
-function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
-    -- init code root
-    gk.editorConfig.MAC_ROOT = MAC_ROOT or ""
-    gk.editorConfig.ANDROID_ROOT = ANDROID_ROOT or ""
-    gk.editorConfig.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME or ""
-
+function init:initGameKit(mode)
     -- use custom log func
     gk.log = function(format, ...)
         if gk.config.CFG_LOG_OPEN then
@@ -81,20 +75,15 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     self:initConfig()
     cc.Director:getInstance():setDisplayStats(gk.config.CFG_SHOW_FPS)
 
-    -- print code root
-    gk.log("# MAC_ROOT                     = " .. gk.editorConfig.MAC_ROOT)
-    gk.log("# ANDROID_ROOT                 = " .. gk.editorConfig.ANDROID_ROOT)
-    gk.log("# ANDROID_PACKAGE_NAME         = " .. gk.editorConfig.ANDROID_PACKAGE_NAME)
-
     -- print runtime version
     gk.log("runtime version = %s", gk:getRuntimeVersion())
 
     -- dump package path
-    gk.util:dump(package.path)
+    gk.log("package.path = \"%s\"", package.path)
     local searchPath = cc.FileUtils:getInstance():getSearchPaths()
     gk.log("app search paths:")
     for _, v in ipairs(searchPath) do
-        gk.log("searchPath:\"" .. v .. "\"")
+        gk.log("searchPath:\"%s\"", v)
     end
 
     -- optional: custom profile func, such as calculate execute time
@@ -107,13 +96,12 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- init lua gamekit
     gk.mode = mode
-    -- optional: add custom desigin size for editor
-    gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
+    gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)") -- optional: add custom desigin size for editor
     gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.UNIVERSAL)
-    gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
+    gk.resource.defaultSprite = DEBUG > 0 and gk.defaultSpriteDebug or gk.defaultSpriteRelease
     gk.resource:setTextureDir(config.textureDir)
     gk.resource:setFontDir(config.fontDir)
-    gk.resource:setGenSrcPath(config.codeDir)
+    gk.resource:setCodeDir(config.codeDir)
     gk.resource:setShaderDir(config.shaderDir)
     gk.resource:setGenDir(config.genDir)
 
@@ -122,29 +110,143 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         en = require(config.genDir .. "value/strings"),
         cn = require(config.genDir .. "value/strings_cn"),
     }
+    local defaultFontForLans = {
+        en = "Klee.fnt", -- en as the default for others
+        cn = "Arial",
+    }
     gk.resource:setSupportLans(table.keys(strings), "en")
+    gk.resource:setDefaultFontForLans(defaultFontForLans)
     gk.resource:setStringGetFunc(function(key, lan)
         lan = lan or gk.resource:getCurrentLan()
         return strings[lan][key] or ("@" .. key)
     end)
 
     -- optional: auto complete string input on edit mode
-    --    local k1 = { "@strings" }
-    --    local maxTipsCount = 16
-    --    gk.resource:setAutoCompleteFunc(function(key)
-    --        if key == "@" then
-    --            return k1
-    --        end
-    --        if key:len() > 1 and key:sub(1, 1) == "@" then
-    --            -- TODO:
-    --        end
-    --        return {}
-    --    end)
+    local k1 = { "@strings" }
+    local maxTipsCount = 16
+    -- return items, prefix, tips, key
+    gk.resource:setAutoCompleteFunc(function(key)
+        local file = strings[gk.resource:getCurrentLan()]
+        local all = table.keys(file)
+        table.sort(all)
+        if key == "@" then
+            local items = {}
+            for i = 1, maxTipsCount do
+                table.insert(items, all[i])
+            end
+            local tips = {}
+            for i = #items, 1, -1 do
+                table.insert(tips, file[items[i]])
+            end
+            return items, "@", tips
+        elseif key:sub(1, 1) == "@" then
+            key = key:sub(2, #key)
+            local items = {}
+            -- starts
+            for _, k in ipairs(all) do
+                k = tostring(k)
+                if k:starts(key) then
+                    table.insert(items, k)
+                end
+                if #items >= maxTipsCount then
+                    break
+                end
+            end
+            if #items < maxTipsCount then
+                local cts = {}
+                -- contains
+                for _, k in ipairs(all) do
+                    k = tostring(k)
+                    if k:find(key) and not table.indexof(items, k) and not table.indexof(cts, k) then
+                        table.insert(cts, k)
+                    end
+                    if #items + #cts >= maxTipsCount then
+                        break
+                    end
+                end
+                table.sort(cts, function(s1, s2)
+                    return s1:find(key) < s2:find(key)
+                end)
+                table.insertto(items, cts)
+            else
+                table.sort(items)
+            end
+            local tips = {}
+            for i = #items, 1, -1 do
+                local k = items[i]
+                if not file[k] then
+                    k = tonumber(items[i])
+                end
+                if file[k] and file[k] then
+                    table.insert(tips, file[k])
+                end
+            end
+            return items, "@", tips, key
+        end
+        --        if keys[2] == "" then
+        --            local items = {}
+        --            for i = 1, maxTipsCount do
+        --                table.insert(items, all[i])
+        --            end
+        --            table.sort(items)
+        --            local tips = {}
+        --            for i = #items, 1, -1 do
+        --                table.insert(tips, file[items[i]]["string"])
+        --            end
+        --            return items, keys[1] .. ".", tips
+        --        else
+        --            local items = {}
+        --            -- starts
+        --            for _, k in ipairs(all) do
+        --                k = tostring(k)
+        --                if k:starts(keys[2]) then
+        --                    table.insert(items, k)
+        --                end
+        --                if #items >= maxTipsCount then
+        --                    break
+        --                end
+        --            end
+        --            if #items < maxTipsCount then
+        --                local cts = {}
+        --                -- contains
+        --                for _, k in ipairs(all) do
+        --                    k = tostring(k)
+        --                    if k:find(keys[2]) and not table.indexof(items, k) and not table.indexof(cts, k) then
+        --                        table.insert(cts, k)
+        --                    end
+        --                    if #items + #cts >= maxTipsCount then
+        --                        break
+        --                    end
+        --                end
+        --                table.sort(cts, function(s1, s2)
+        --                    return s1:find(keys[2]) < s2:find(keys[2])
+        --                end)
+        --                table.insertto(items, cts)
+        --            else
+        --                table.sort(items)
+        --            end
+        --            local tips = {}
+        --            for i = #items, 1, -1 do
+        --                local k = items[i]
+        --                if not file[k] then
+        --                    k = tonumber(items[i])
+        --                end
+        --                if file[k] and file[k]["string"] then
+        --                    table.insert(tips, file[k]["string"])
+        --                end
+        --            end
+        --            return items, keys[1] .. ".", tips, keys[2]
+        --        end
+        return {}
+    end)
 
     -- call before restart
     gk.util:registerOnRestartGameCallback(function()
         -- release resource here
-        -- cc.Director:getInstance():purgeCachedData()
+        if cc.Application:getInstance():getTargetPlatform() ~= cc.PLATFORM_OS_MAC then
+            -- Mac do not purge cache to speed up restart
+            cc.Director:getInstance():purgeCachedData()
+        end
     end)
     -- did restart func
     gk.util:registerRestartGameCallback(function(...)
@@ -155,12 +257,13 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
         gk.ErrorReporter:reportException(msg)
     end)
 
-    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT and MAC_ROOT then
+    if cc.Application:getInstance():getTargetPlatform() == cc.PLATFORM_OS_MAC and gk.mode == gk.MODE_EDIT then
         -- mac scan files on edit mode
-        local root = MAC_ROOT
-        gk.resource:scanGenNodes(root .. "src/")
-        gk.resource:scanFontFiles(root .. config.fontDir)
-        gk.resource:flush(root .. "src/" .. config.genDir .. "config.lua")
+        local instanceRun = require("gk.instanceRun")
+        local MAC_ROOT = instanceRun.MAC_ROOT
+        gk.resource:scanGenNodes(MAC_ROOT .. "src/")
+        gk.resource:scanFontFiles(MAC_ROOT .. config.fontDir)
+        gk.resource:flush(MAC_ROOT .. "src/" .. config.genDir .. "config.lua")
     else
         gk.resource:load(config.genDir .. "config.lua")
     end
@@ -168,8 +271,6 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     gk.resource:displayInternalNodes()
 
     ---------------------- for edtior ----------------------
-    --- editor ex ---
-
     -- shaders
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/Freeze.fsh")
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/HighLight.fsh")
@@ -178,9 +279,10 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     -- hint c3bs
     gk.editorConfig:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
     gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 0), "Green")
-    gk.editorConfig:registerHintColor3B(cc.c3b(0, 255, 255), "Yellow")
+    gk.editorConfig:registerHintColor3B(cc.c3b(0, 0, 255), "Blue")
+    gk.editorConfig:registerHintColor3B(cc.c3b(160, 160, 160), "Gray")
 
-    -- hint contentSizes or button size
+    -- hint contentSize or button size
     gk.editorConfig:registerHintContentSize(cc.size(200, 50))
 
     -- hint fontSizes

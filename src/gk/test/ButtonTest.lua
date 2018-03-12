@@ -13,32 +13,29 @@ function ButtonTest:ctor()
 end
 
 function ButtonTest:onZoomBtnClicked(button)
-    gk.log("onZoomBtnClicked %s", button)
-    self.spriteButton:setEnabled(not self.spriteButton.enabled)
+    gk.log("onZoomBtnClicked")
 end
 
 function ButtonTest:onZoomBtnLongPressed(button)
-    gk.log("onZoomBtnLongPressed %s", button)
+    gk.log("onZoomBtnLongPressed")
 end
 
 function ButtonTest:onSpriteBtnClicked(button)
-    gk.log("onSpriteBtnClicked %s", button)
+    gk.log("onSpriteBtnClicked")
 end
 
 function ButtonTest:onSpriteBtnSelectChanged(button, selected)
-    gk.log("onSpriteBtnSelectChanged %s --> %s", button, selected)
-    self.label2:setColor(selected and cc.c3b(255, 0, 0) or cc.c3b(255, 255, 255))
+    gk.log("onSpriteBtnSelectChanged %s", selected)
 end
 
 function ButtonTest:onSpriteBtnEnableChanged(button, enabled)
-    gk.log("onSpriteBtnEnableChanged %s --> %s", button, enabled)
-    self.label2:setColor(enabled and cc.c3b(255, 255, 255) or cc.c3b(128, 128, 128))
+    gk.log("onSpriteBtnEnableChanged %s", enabled)
 end
 
 function ButtonTest:onSelectedTagChanged(button, tag)
-    gk.log("onSelectedTagChanged %s --> %d", button, tag)
+    gk.log("onSelectedTagChanged %d", tag)
     if tag >= 1 and tag <= 3 then
-        local colors = { cc.c3b(255, 0, 0), cc.c3b(0, 255, 0), cc.c3b(0, 0, 255) }
+        local colors = { cc.c3b(255, 255, 255), cc.c3b(0, 255, 0), cc.c3b(0, 0, 255) }
         self.label3:setColor(colors[tag])
     end
 end

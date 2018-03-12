@@ -277,16 +277,16 @@ end
 
 function panel:createAnchorChooseBox(items, index, x, y, width, callback, defValue)
     local hint_width = 16
---    local box = self:createSelectBox(items, index, x, y, width, callback, defValue)
---    box.bg:hide()
---    box.label:hide()
---    box.bg:setContentSize(cc.size(hint_width / scale, box.bg:getContentSize().height))
---    box.bgButton:setContentNode(box.bg)
---    box.bgButton:setPositionX(box:getContentSize().width)
---    box.bgButton:setAnchorPoint(1, 0.5)
---    box.noneMouseMoveEffect = true
---    box.focusable = false
---    return box
+    --    local box = self:createSelectBox(items, index, x, y, width, callback, defValue)
+    --    box.bg:hide()
+    --    box.label:hide()
+    --    box.bg:setContentSize(cc.size(hint_width / scale, box.bg:getContentSize().height))
+    --    box.bgButton:setContentNode(box.bg)
+    --    box.bgButton:setPositionX(box:getContentSize().width)
+    --    box.bgButton:setAnchorPoint(1, 0.5)
+    --    box.noneMouseMoveEffect = true
+    --    box.focusable = false
+    --    return box
 end
 
 function panel:createLine(y)
@@ -789,7 +789,7 @@ function panel:displayNode(node)
         createInputLong("ClickSoundId", "clickedSid", "string", "")
         createSelectBoxLong("SelectedGLPgm", shaders, "selectedGLProgram", "string", "ShaderPositionTextureColor_noMVP")
         createSelectBoxLong("DisabledGLPgm", shaders, "disabledGLProgram", "string", "ShaderPositionTextureColor_noMVP")
-        createCheckBox("CascadeGLProgramEnabled", "cascadeGLProgramEnabled")
+        --        createCheckBox("CascadeGLProgramEnabled", "cascadeGLProgramEnabled")
     end
     if isZoomButton then
         createTitle("gk.ZoomButton")

@@ -28,7 +28,7 @@ function Button:ctor(contentNode)
     self.autoSelected = true -- auto select and unselect when touch
     self.clickedSid = nil -- sound id, when clicked
     self.cacheProgram = {}
-    self.cascadeGLProgramEnabled = true -- set shader of all children(only cc.Sprite)
+    --    self.cascadeGLProgramEnabled = true -- set shader of all children(only cc.Sprite)
     self.selectedGLProgram = nil
     self.disabledGLProgram = nil
 
@@ -160,10 +160,6 @@ function Button:onLongPressed(callback)
     self.longPressdCallback = callback
 end
 
-function Button:setDisabledProgram(program)
-    self.disabledProgram = program
-end
-
 function Button:activate()
     if self.enabled then
         if self.clickedSid and self.clickedSid ~= "" then
@@ -191,7 +187,7 @@ function Button:setSelected(selected)
     if self.enabled and self.selected ~= selected then
         self.selected = selected
         if self.enabled and self.selectedGLProgram then
-            self:setCascadeProgram(self, selected and self.selectedGLProgram)
+            self:setCascadeGLProgram(self, selected and self.selectedGLProgram)
         end
         if self.onSelectChangedCallback and self:isRunning() then
             self.onSelectChangedCallback(self, self.selected)
@@ -207,7 +203,11 @@ function Button:setEnabled(enabled)
     if self.enabled ~= enabled then
         self.enabled = enabled
         if self.disabledGLProgram then
-            self:setCascadeProgram(self, (not enabled) and self.disabledGLProgram)
+            if self.enabled then
+                self:setCascadeGLProgram(self, nil)
+            else
+                self:setCascadeGLProgram(self, self.disabledGLProgram)
+            end
         end
         if self.onEnableChangedCallback and self:isRunning() then
             self.onEnableChangedCallback(self, self.enabled)
@@ -336,13 +336,13 @@ function Button:onExit()
     end
 end
 
-function Button:isCascadeGLProgramEnabled()
-    return self.cascadeGLProgramEnabled
-end
-
-function Button:setCascadeGLProgramEnabled(var)
-    self.cascadeGLProgramEnabled = var
-end
+--function Button:isCascadeGLProgramEnabled()
+--    return self.cascadeGLProgramEnabled
+--end
+--
+--function Button:setCascadeGLProgramEnabled(var)
+--    self.cascadeGLProgramEnabled = var
+--end
 
 function Button:getSelectedGLProgram()
     return self.selectedGLProgram
@@ -351,8 +351,8 @@ end
 function Button:setSelectedGLProgram(var)
     if self.selectedGLProgram ~= var then
         self.selectedGLProgram = var
-        if self.enabled and self.selected then
-            self:setCascadeProgram(self, self.selectedGLProgram)
+        if self.enabled and self.selected and var then
+            self:setCascadeGLProgram(self, self.selectedGLProgram)
         end
     end
 end
@@ -364,47 +364,28 @@ end
 function Button:setDisabledGLProgram(var)
     if self.disabledGLProgram ~= var then
         self.disabledGLProgram = var
-        if not self.enabled then
-            self:setCascadeProgram(self, self.disabledGLProgram)
+        if not self.enabled and var then
+            self:setCascadeGLProgram(self, self.disabledGLProgram)
         end
     end
 end
 
-function Button:setCascadeProgram(node, var)
-    if var then
-        if node ~= self and gk.util:instanceof(node, "cc.Sprite") then
-            local pgm = node:getGLProgram()
-            if pgm then
-                self.cacheProgram[node] = pgm
-            end
-            local program = cc.GLProgramState:getOrCreateWithGLProgramName(var)
-            if program then
-                node:setGLProgramState(program)
-            end
-        end
-        if self.cascadeGLProgramEnabled or node == self then
-            local children = node:getChildren()
-            for _, c in pairs(children) do
-                self:setCascadeProgram(c, var)
-            end
-        end
-    else
-        self:restoreCascadeProgram(node)
+function Button:setCascadeGLProgram(node, var)
+    if not self:isRunning() then
+        self:onNodeEvent("enter", function()
+            self:setCascadeGLProgram(node, var)
+        end)
+        return
     end
-end
-
-function Button:restoreCascadeProgram(node)
     if node ~= self and gk.util:instanceof(node, "cc.Sprite") then
-        local pgm = self.cacheProgram[node]
-        if pgm then
-            node:setGLProgram(pgm)
+        local program = cc.GLProgramState:getOrCreateWithGLProgramName(var or "ShaderPositionTextureColor_noMVP")
+        if program then
+            node:setGLProgramState(program)
         end
     end
-    if self.cascadeGLProgramEnabled or node == self then
-        local children = node:getChildren()
-        for _, c in pairs(children) do
-            self:restoreCascadeProgram(c)
-        end
+    local children = node:getChildren()
+    for _, c in pairs(children) do
+        self:setCascadeGLProgram(c, var)
     end
 end
 

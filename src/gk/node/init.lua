@@ -38,7 +38,7 @@ gk.injector:widget_ctor_method_swizz(gk.Widget, "ctor")
 -- name : sprite name or spriteFrame name
 local function create_sprite(name)
     if not name or name == "" then
-        return cc.Sprite:create(gk.resource.defaultSpritePath)
+        return cc.Sprite:create(gk.resource.defaultSprite)
     end
     local spriteFrame = cc.SpriteFrameCache:getInstance():getSpriteFrame(name)
     if spriteFrame then
@@ -54,12 +54,12 @@ local function create_sprite(name)
         return cc.Sprite:createWithTexture(texture), true
     end
     gk.log("gk.create_sprite(%s) file not found, use default sprite!", name)
-    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureDir .. gk.resource.defaultSpritePath)
+    texture = cc.Director:getInstance():getTextureCache():addImage(gk.resource.textureDir .. gk.resource.defaultSprite)
     if texture then
         return cc.Sprite:createWithTexture(texture)
     end
     -- absolute path
-    return cc.Sprite:create(gk.resource.defaultSpritePath)
+    return cc.Sprite:create(gk.resource.defaultSprite)
     -- even god cannot save u here!
 end
 

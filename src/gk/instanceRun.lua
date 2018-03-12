@@ -15,21 +15,20 @@ function instanceRun:init(androidPackageName)
     local MAC_ROOT = ""
     local ANDROID_PACKAGE_NAME = androidPackageName
     local ANDROID_ROOT = "/sdcard/" .. androidPackageName .. "/"
-    print("android root = \"" .. ANDROID_PACKAGE_NAME .. "\"")
 
     local platform = cc.Application:getInstance():getTargetPlatform()
     -- mac use local search path for restart instantly
     if platform == 2 then
-        print("initInstanceRun on macos")
         local path = cc.FileUtils:getInstance():fullPathForFilename("src/main.lua")
         MAC_ROOT = string.sub(path, 1, string.find(path, "runtime/mac") - 1)
-        print("mac root = \"" .. MAC_ROOT .. "\"")
+        print(string.format("initInstanceRun on Mac, MAC_ROOT = \"%s\"", MAC_ROOT))
         cc.FileUtils:getInstance():setSearchPaths({})
         cc.FileUtils:getInstance():addSearchPath(MAC_ROOT .. "src/")
         cc.FileUtils:getInstance():addSearchPath(MAC_ROOT .. "res/")
         cc.FileUtils:getInstance():addSearchPath(MAC_ROOT)
     elseif platform == 3 and androidPackageName ~= "" then
-        print("initInstanceRun on android")
+        print(string.format("Android package name  = \"%s\"", ANDROID_PACKAGE_NAME))
+        print(string.format("initInstanceRun on Android, ANDROID_ROOT = \"%s\"", ANDROID_ROOT))
         if not cc.FileUtils:getInstance():isDirectoryExist(ANDROID_PACKAGE_NAME) then
             cc.FileUtils:getInstance():createDirectory(ANDROID_PACKAGE_NAME)
         end
@@ -41,7 +40,9 @@ function instanceRun:init(androidPackageName)
         cc.FileUtils:getInstance():addSearchPath("res/")
     end
 
-    return MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME
+    self.MAC_ROOT = MAC_ROOT
+    self.ANDROID_ROOT = ANDROID_ROOT
+    self.ANDROID_PACKAGE_NAME = ANDROID_PACKAGE_NAME
 end
 
 return instanceRun

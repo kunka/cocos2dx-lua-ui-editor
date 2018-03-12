@@ -10,7 +10,6 @@ local shader = {}
 
 shader.cachedGLPrograms = {}
 function shader:addGLProgram(vPath, fPath)
-    self.cachedGLPrograms = self.cachedGLPrograms or {}
     local glProgram = cc.GLProgram:createWithFilenames(vPath, fPath)
     if glProgram then
         local ps = string.split(fPath, "/")
@@ -22,22 +21,26 @@ function shader:addGLProgram(vPath, fPath)
 end
 
 function shader:getCachedGLProgram(key)
-    return self.cachedGLPrograms[key] and self.cachedGLPrograms[key].shader or nil
+    return cc.GLProgramCache:getInstance():getGLProgram(key)
+    --    return self.cachedGLPrograms[key] and self.cachedGLPrograms[key].shader or nil
 end
 
 function shader:reloadOnRenderRecreated()
     if not self.recreateListener then
         local eventDispatcher = cc.Director:getInstance():getEventDispatcher()
         local customListener = cc.EventListenerCustom:create("event_renderer_recreated", function(event)
-            for _, info in pairs(self.cachedGLPrograms) do
-                local shader = info.shader
-                shader:reset()
-                shader:initWithFilenames(info.vPath, info.fPath)
-                shader:bindAttribLocation(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION)
-                shader:bindAttribLocation(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR)
-                shader:bindAttribLocation(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORD)
-                shader:link()
-                shader:updateUniforms()
+            gk.log("reload shader onRenderRecreated")
+            if self.cachedGLPrograms then
+                for _, info in pairs(self.cachedGLPrograms) do
+                    local shader = info.shader
+                    shader:reset()
+                    shader:initWithFilenames(info.vPath, info.fPath)
+                    shader:bindAttribLocation(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION)
+                    shader:bindAttribLocation(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR)
+                    shader:bindAttribLocation(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORD)
+                    shader:link()
+                    shader:updateUniforms()
+                end
             end
         end)
 
@@ -46,7 +49,7 @@ function shader:reloadOnRenderRecreated()
     end
 end
 
-function shader:removeListener()
+function shader:removeRecreateListener()
     if self.recreateListener then
         local eventDispatcher = cc.Director:getInstance():getEventDispatcher()
         eventDispatcher:removeEventListener(self.recreateListener)

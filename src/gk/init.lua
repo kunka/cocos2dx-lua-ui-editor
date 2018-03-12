@@ -6,19 +6,16 @@
 -- To change this template use File | Settings | File Templates.
 
 gk = {}
--- KEY_F1: debug mode, restart with current editing entry
-gk.MODE_EDIT = 1
--- KEY_F1: release mode, restart with current entry
-gk.MODE_RELEASE_CURRENT = 2
--- KEY_F3: release mode, restart with default entry
-gk.MODE_RELEASE = 0
+gk.MODE_EDIT = 1 -- KEY_F1: debug mode, restart with current editing entry
+gk.MODE_RELEASE_CURRENT = 2 -- KEY_F2: release mode, restart with current entry
+gk.MODE_RELEASE = 0 -- KEY_F3: release mode, restart with default entry
 
 gk.mode = gk.MODE_RELEASE
-gk.defaultSpritePathDebug = "gk/res/texture/default_debug.png"
-gk.defaultSpritePathRelease = "gk/res/texture/default_release.png"
+gk.defaultSpriteDebug = "gk/res/texture/default_debug.png"
+gk.defaultSpriteRelease = "gk/res/texture/default_release.png"
 gk.errorOccurs = false -- disable sync when error occurs
 gk.displayRuntimeVersion = true -- display runtime version on scene's right-bottom corner
-gk.exNodeDisplayer = {}
+gk.exNodeDisplayer = {} -- for custom nodes
 
 -- export global variable
 local __g = _G
