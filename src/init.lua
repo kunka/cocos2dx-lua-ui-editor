@@ -18,7 +18,7 @@ local function getConfig(entry)
         launchEntryKey = "gk_launchEntry_1", -- remember last entry when restart
         designSize = cc.size(720, 1280),
     } or {
-        -- run test demo
+        -- run gk test
         entry = entry,
         codeDir = "gk/test/",
         fontDir = "gk/test/res/font/",
@@ -45,7 +45,7 @@ function init:startGame(mode, ...)
 
     gk.lastLaunchEntryKey = config.launchEntryKey -- remember last entry by editor
     local platform = cc.Application:getInstance():getTargetPlatform()
-    if platform == 2 and mode ~= gk.MODE_RELEASE then
+    if platform == cc.PLATFORM_OS_MAC and mode ~= gk.MODE_RELEASE then
         local path = cc.UserDefault:getInstance():getStringForKey(gk.lastLaunchEntryKey, config.launchEntry)
         local _, ret = gk.SceneManager:replace(path)
         if not ret then
@@ -107,7 +107,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
 
     -- init lua gamekit
     gk.mode = mode
-    -- optional: custom desigin size for editor
+    -- optional: add custom desigin size for editor
     gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)")
     gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.UNIVERSAL)
     gk.resource.defaultSpritePath = DEBUG > 0 and gk.defaultSpritePathDebug or gk.defaultSpritePathRelease
@@ -173,6 +173,7 @@ function init:initGameKit(mode, MAC_ROOT, ANDROID_ROOT, ANDROID_PACKAGE_NAME)
     -- shaders
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/Freeze.fsh")
     gk.shader:addGLProgram("gk/res/shader/NoMvp.vsh", "gk/res/shader/HighLight.fsh")
+    gk.shader:reloadOnRenderRecreated()
 
     -- hint c3bs
     gk.editorConfig:registerHintColor3B(cc.c3b(255, 0, 0), "Red")
