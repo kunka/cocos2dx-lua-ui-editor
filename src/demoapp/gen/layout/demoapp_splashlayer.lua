@@ -1,19 +1,20 @@
 return {
+	_id = "SplashLayer",
+	_type = "SplashLayer",
 	enableKeyPad = 1,
 	height = "$fill",
-	id = "SplashLayer",
 	ignoreAnchor = 0,
 	popOnBack = 1,
-	type = "SplashLayer",
 	width = "$fill",
-	children = {	   {
+	_children = {	   {
+	      _fold = true,
+	      _id = "sprite1",
+	      _type = "cc.Sprite",
 	      file = "splash/arc.jpg",
 	      flippedX = 1,
-	      id = "sprite1",
 	      ignoreAnchor = 1,
 	      scaleX = "$minScale",
 	      scaleY = "$minScale",
-	      type = "cc.Sprite",
 	      x = 360,
 	      y = 640,
 	      blendFunc = {

@@ -1,7 +1,7 @@
 return {
-	fontDir = "src/demoapp/res/font/",
+	fontDir = "demoapp/res/font/",
 	genDir = "demoapp/gen/",
-	shaderDir = "res/shader/",
+	shaderDir = "demoapp/shader/",
 	fontFiles = {},
 	genNodes = {
 	   ChatCell = {

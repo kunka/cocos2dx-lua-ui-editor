@@ -49,11 +49,7 @@ function C3DLayerTest:onEnter()
     C3DLayerTest.super.onEnter(self)
 
     self:createSkyBox()
-
-
     self.label1:setPositionZ(-244)
-
-
 
     local scene = cc.Director:getInstance():getRunningScene()
     local defaultCamera = scene:getDefaultCamera()
@@ -71,47 +67,12 @@ function C3DLayerTest:onEnter()
     gk.log("minZ = %f", eye.z - (zeye + winSize.height / 2))
     camera:lookAt(center, up)
 
-    --    local visibleSize = cc.Director:getInstance():getVisibleSize()
-    --    local camera = cc.Camera:createPerspective(60, visibleSize.width / visibleSize.height, 0.1, 1000)
     camera:setCameraFlag(cc.CameraFlag.USER2)
     --    camera:lookAt(cc.vec3(0.0, 0.0, 0.0), cc.vec3(0.0, 1.0, 0.0))
     self:addChild(camera)
-    --    dump(winSize)
-    --    dump(visibleSize)
-    --    dump(defaultCamera:getPosition3D())
-    --    dump(defaultCamera:getRotation3D())
-    --- -    camera:setPosition3D(defaultCamera:getPosition3D())
-    -- dump(camera:getPosition3D())
-    -- camera:setRotation3D(cc.vec3(-45, 0, 0))
     camera:setDepth(1)
 
-    --    float zeye = Director::getInstance()->getZEye();
-    --    initPerspective(60, (GLfloat)size.width / size.height, 10, zeye + size.height / 2.0f);
-    --    Vec3 eye(size.width/2, size.height/2.0f, zeye), center(size.width/2, size.height/2, 0.0f), up(0.0f, 1.0f, 0.0f);
-    --    setPosition3D(eye);
-    --    lookAt(center, up);
-
-
-    --
     local size = self:getContentSize()
-    --    local sprite = cc.Sprite3D:create("3d/girl.c3b")
-    --    sprite:setCameraMask(2)
-    --    --    sprite:setScale(0.08)
-    --    sprite:setGlobalZOrder(20)
-    --    sprite:setPosition(cc.p(size.width / 2, size.height / 2))
-    --    --    sprite:setPosition3D(cc.vec3(size.width / 2, size.height / 2, 50))
-    --    self:addChild(sprite)
-
-    --    local sprite = cc.Sprite3D:create("3d/boss1.obj")
-    --    sprite:setScale(3.0)
-    --    sprite:setTexture("3d/boss.png")
-    --    self:addChild(sprite)
-
-    --    local ambientLight = cc.AmbientLight:create(cc.c3b(200, 200, 200))
-    --    ambientLight:setEnabled(true)
-    --    self:addChild(ambientLight)
-
-
     local sprite = cc.Sprite3D:create("3d/girl.c3b")
     sprite:setRotation3D({ x = 0, y = 0, z = 0 })
     sprite:setPosition3D(cc.vec3(size.width * 3 / 4, size.height / 2, 10))
@@ -124,7 +85,6 @@ function C3DLayerTest:onEnter()
         local animate = cc.Animate3D:create(animation)
         sprite:runAction(cc.RepeatForever:create(animate))
     end
-
 
     local sprite = cc.Sprite3D:create("3d/orc.c3b")
     sprite:setScale(3)
@@ -143,14 +103,6 @@ function C3DLayerTest:onEnter()
     sprite:setPosition3D(cc.vec3(size.width / 2, size.height - 50, 10))
     self:addChild(sprite)
     sprite:setCameraMask(cc.CameraFlag.USER2)
-
-    --        sprite:setGlobalZOrder(1)
-
-    --    local scene = cc.Director:getInstance():getRunningScene()
-    --    local ca = scene:getDefaultCamera()
-    --    dump(ca:getPosition3D())
-    --    ca:setCameraFlag(cc.CameraFlag.USER2)
-    --    ca:setDepth(0)
 end
 
 return C3DLayerTest

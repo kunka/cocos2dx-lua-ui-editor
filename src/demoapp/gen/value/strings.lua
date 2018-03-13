@@ -8,6 +8,10 @@
 
 return {
     app_name = "WeChat",
+    chats = "Chats",
+    contacts = "Contacts",
+    discover = "Discover",
+    me = "Me",
 }
 
 

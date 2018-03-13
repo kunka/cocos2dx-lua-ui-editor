@@ -12,4 +12,12 @@ function Dialog1:ctor()
     Dialog1.super.ctor(self)
 end
 
+function Dialog1:onCancelClicked()
+    self:pop()
+end
+
+function Dialog1:onConfirmClicked()
+    self:showDialog("gk.test.dialog.Dialog1")
+end
+
 return Dialog1

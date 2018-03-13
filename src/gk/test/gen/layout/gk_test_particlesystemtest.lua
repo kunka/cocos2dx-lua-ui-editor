@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	_id = "particleSystemTest1",
 	_type = "ParticleSystemTest",
 	height = "$fill",

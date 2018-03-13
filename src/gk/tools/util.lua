@@ -174,10 +174,10 @@ util.tags = util.tags and util.tags or {
     drawParentTag = 0xFFF1,
     labelTag = 0xFFF2,
     boundsTag = 0xFFF3,
-    coordinateTag = 0xFFF5,
-    versionTag = 0xFFF6,
-    buttonOverlayTag = 0xFFF7,
-    dialogTag = 0xFFF8,
+    coordinateTag = 0xFFF4,
+    versionTag = 0xFFF5,
+    buttonOverlayTag = 0xFFF6,
+    dialogTag = 0xFFF7,
 }
 
 function util:isDebugNode(node)

@@ -1,5 +1,5 @@
 return {
-	_fold = true,
+	_fold = false,
 	_id = "c3DLayerTest1",
 	_type = "C3DLayerTest",
 	height = "$fill",

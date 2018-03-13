@@ -10,6 +10,9 @@ local MainLayer = class("MainLayer", gk.Layer)
 
 function MainLayer:ctor()
     MainLayer.super.ctor(self)
+    -- calculate height
+    local height = (gk.display:designSize().height * gk.display:yScale() - 112 * 2 * gk.display:minScale()) / gk.display:xScale()
+    self.tableView1:setViewSize(cc.size(self.tableView1:getViewSize().width, height))
     self:setDataSource()
 end
 
@@ -32,6 +35,7 @@ function MainLayer:cellAtIndex(table, idx)
     if nil == cell then
         cell = gk.injector:inflateNode("demoapp.ChatCell")
     end
+    cell:setScale(1)
     cell.title:setString(tostring(idx))
     return cell
 end
@@ -41,7 +45,7 @@ function MainLayer:getDataSource()
 end
 
 function MainLayer:setDataSource()
-    self.data = { {}, {}, {}, {}, {}, {}, {}, {}, {}, {} }
+    self.data = { {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {} }
     self.tableView1:reloadData()
 end
 

@@ -44,7 +44,7 @@ return {
 	            ignoreAnchor = 1,
 	            onClicked = "&onZoomBtnClicked",
 	            onLongPressed = "&onZoomBtnLongPressed",
-	            y = -50,
+	            y = -60,
 	            zoomEnabled = 0,
 	            zoomScale = 0.925,
 	            anchor = {
@@ -89,7 +89,7 @@ return {
 	            onLongPressed = "&onZoomBtnLongPressed",
 	            selectedGLProgram = "HighLight",
 	            x = 200,
-	            y = -50,
+	            y = -60,
 	            zoomEnabled = 1,
 	            zoomScale = 0.925,
 	            anchor = {
@@ -134,7 +134,7 @@ return {
 	            onLongPressed = "&onZoomBtnLongPressed",
 	            selectedGLProgram = "HighLight",
 	            x = 400,
-	            y = -50,
+	            y = -60,
 	            zoomEnabled = 0,
 	            zoomScale = 0.925,
 	            anchor = {
@@ -175,7 +175,7 @@ return {
 	      scaleY = "$minScale",
 	      string = "@sprite_button",
 	      x = 60,
-	      y = 575,
+	      y = 570,
 	      anchor = {
 	         x = 0,
 	         y = 0.5},
