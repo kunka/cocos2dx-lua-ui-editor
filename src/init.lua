@@ -183,60 +183,6 @@ function init:initGameKit(mode)
             end
             return items, "@", tips, key
         end
-        --        if keys[2] == "" then
-        --            local items = {}
-        --            for i = 1, maxTipsCount do
-        --                table.insert(items, all[i])
-        --            end
-        --            table.sort(items)
-        --            local tips = {}
-        --            for i = #items, 1, -1 do
-        --                table.insert(tips, file[items[i]]["string"])
-        --            end
-        --            return items, keys[1] .. ".", tips
-        --        else
-        --            local items = {}
-        --            -- starts
-        --            for _, k in ipairs(all) do
-        --                k = tostring(k)
-        --                if k:starts(keys[2]) then
-        --                    table.insert(items, k)
-        --                end
-        --                if #items >= maxTipsCount then
-        --                    break
-        --                end
-        --            end
-        --            if #items < maxTipsCount then
-        --                local cts = {}
-        --                -- contains
-        --                for _, k in ipairs(all) do
-        --                    k = tostring(k)
-        --                    if k:find(keys[2]) and not table.indexof(items, k) and not table.indexof(cts, k) then
-        --                        table.insert(cts, k)
-        --                    end
-        --                    if #items + #cts >= maxTipsCount then
-        --                        break
-        --                    end
-        --                end
-        --                table.sort(cts, function(s1, s2)
-        --                    return s1:find(keys[2]) < s2:find(keys[2])
-        --                end)
-        --                table.insertto(items, cts)
-        --            else
-        --                table.sort(items)
-        --            end
-        --            local tips = {}
-        --            for i = #items, 1, -1 do
-        --                local k = items[i]
-        --                if not file[k] then
-        --                    k = tonumber(items[i])
-        --                end
-        --                if file[k] and file[k]["string"] then
-        --                    table.insert(tips, file[k]["string"])
-        --                end
-        --            end
-        --            return items, keys[1] .. ".", tips, keys[2]
-        --        end
         return {}
     end)
 
