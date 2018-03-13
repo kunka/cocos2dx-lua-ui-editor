@@ -285,7 +285,7 @@ function util:drawNode(node, c4f, tag)
         rect.y = originSize.height - rect.y - rect.height
         rect.width = size.width - (originSize.width - rect.width)
         rect.height = size.height - (originSize.height - rect.height)
-        self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(0, 1, 1, 0.2), tg)
+        self:drawSegmentRectOnNode(node, rect, 5, cc.c4f(1, 0, 0.5, 0.5), tg)
     end
     if self:instanceof(node, "DrawNode") and type(node.getMovablePoints) == "function" then
         local ps = node:getMovablePoints()

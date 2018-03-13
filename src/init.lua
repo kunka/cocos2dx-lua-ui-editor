@@ -24,7 +24,7 @@ local function getConfig(entry)
         shaderDir = "",
         genDir = "gk/test/gen/",
         textureDir = "gk/test/res/texture/",
-        launchEntry = "gk/test/MainLayer",
+        launchEntry = "gk/test/NodeTest",
         launchEntryKey = "gk_launchEntry_2", -- remember last entry when restart
         designSize = cc.size(1280, 720),
     }

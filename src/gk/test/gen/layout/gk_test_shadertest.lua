@@ -1,5 +1,5 @@
 return {
-	_fold = false,
+	_fold = true,
 	_id = "shaderTest1",
 	height = "$fill",
 	width = "$fill",

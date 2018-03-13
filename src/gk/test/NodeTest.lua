@@ -10,6 +10,8 @@ local NodeTest = class("NodeTest", gk.Layer)
 
 function NodeTest:ctor()
     NodeTest.super.ctor(self)
+    gk.util:drawNodeBounds(self.layer1, nil, -3)
+    gk.util:drawNodeBounds(self.scrollView1, nil, -3)
 end
 
 return NodeTest
