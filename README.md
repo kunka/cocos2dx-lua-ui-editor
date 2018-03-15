@@ -1,5 +1,6 @@
 # cocos2dx-lua-ui-editor
 A lightweight ui editor for cocos2d-x-lua implemented by pure lua code, less than 10000 lines of code.
+[![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Tencent/xLua/blob/master/LICENSE.TXT)
 
 ### LabelTest
 ![alt tag](snapshots/ss1.png)
