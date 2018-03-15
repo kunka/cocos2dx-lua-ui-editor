@@ -245,14 +245,12 @@ config.defValues = {
     cascadeOpacityEnabled = 1,
     cascadeColorEnabled = 1,
     clickedSid = "",
-
     -- centerRect = cc.rect(0, 0, 0, 0),
     -- Layer
     swallowTouches = 0,
     touchEnabled = 0,
     enableKeyPad = 0,
     popOnBack = 0,
-
     -- Dialog
     popOnTouchOutsideBg = 1,
     popOnTouchInsideBg = 1,
@@ -261,7 +259,6 @@ config.defValues = {
     GLProgram = "ShaderPositionTextureColor_noMVP",
     selectedGLProgram = "ShaderPositionTextureColor_noMVP",
     disabledGLProgram = "ShaderPositionTextureColor_noMVP",
-
     -- scrollView
     bounceable = 0,
     clipToBD = 0,
@@ -283,27 +280,9 @@ config.defValues = {
     outlineSize = 0,
     enableWrap = 0,
     lineBreakWithoutSpace = 1,
-    shadow = {
-        a = 0,
-        b = 0,
-        g = 0,
-        h = 0,
-        r = 0,
-        radius = 0,
-        w = 0
-    },
-    textColor = {
-        a = 255,
-        b = 255,
-        g = 255,
-        r = 255,
-    },
-    effectColor = {
-        a = 255,
-        b = 0,
-        g = 0,
-        r = 0
-    },
+    shadow = { a = 0, b = 0, g = 0, h = 0, r = 0, radius = 0, w = 0 },
+    textColor = { a = 255, b = 255, g = 255, r = 255, },
+    effectColor = { a = 255, b = 0, g = 0, r = 0 },
     onClicked = "-",
     onSelectChanged = "-",
     onEnableChanged = "-",
@@ -321,7 +300,7 @@ config.macroFuncs = {
     scaleX = function(key, node, ...) return gk.display:scaleX(...) end,
     scaleY = function(key, node, ...) return gk.display:scaleY(...) end,
     scaleiPX = function(key, node, ...) return gk.display:scaleiPX(...) end,
-    scaleXRvs = function(key, node, ...) return gk.display:scaleXRvs(...) end,
+    scaleXRvs = function(key, node, ...) return gk.display:scaleXRvs(...) end, -- iPhoneX scale
     scaleYRvs = function(key, node, ...) return gk.display:scaleYRvs(...) end,
     scaleTP = function(key, node, ...) return gk.display:scaleTP(...) end,
     scaleBT = function(key, node, ...) return gk.display:scaleBT(...) end,
@@ -329,8 +308,8 @@ config.macroFuncs = {
     scaleRT = function(key, node, ...) return gk.display:scaleRT(...) end,
     ["win.w"] = function() return gk.display:winSize().width end,
     ["win.h"] = function() return gk.display:winSize().height end,
-    ["accuWin.w"] = function() return gk.display:accuWinSize().width end,
-    ["accuWin.h"] = function() return gk.display:accuWinSize().height end,
+    ["accuWin.w"] = function() return gk.display:accuWinSize().width end, -- iPhoneX width
+    ["accuWin.h"] = function() return gk.display:accuWinSize().height end, -- iPhoneX height
     -- contentSize, ViewSize(fill-parent)
     fill = function(key, node)
         local parent
@@ -730,10 +709,8 @@ config.editableProps = {
         setter = function(node, var)
             if var == 0 then
                 node.__info.enableOutline = 1
-                gk.log("enableGlow")
                 node:enableGlow(node.__info.effectColor)
             else
-                --            gk.log("disableEffect")
                 node:disableEffect(cc.LabelEffect.GLOW)
             end
         end
@@ -976,39 +953,6 @@ function config:registerBoolProp(key, alias, onlyGetter)
             end
         end)
 end
-
---function config:registerCustomFloatProp(tp, key)
---    local alias = string.upper(key:sub(1, 1)) .. key:sub(2, key:len())
---    self:registerEditableProp(tp and (tp .. "." .. key) or key,
---        function(node)
---            -- custom prop, try find out the getter
---            local var
---            local getter = "get" .. alias
---            if type(node[getter]) == "function" then
---                var = node[getter](node)
---            else
---                gk.log("no getter found for custom prop %s - %s", node.__info._type, key)
---            end
---            return var and math.shrink(var, 3) or nil
---        end,
---        function(node, var)
---            local v = gk.generator:parseValue(key, node, var)
---            -- custom prop, try find out the setter
---            local setter = "set" .. alias
---            if type(node[setter]) == "function" then
---                -- delay execute custom prop
---                if node:isRunning() then
---                    node[setter](node, tonumber(v))
---                else
---                    node:onNodeEvent("enter", function()
---                        node[setter](node, tonumber(v))
---                    end)
---                end
---            else
---                gk.log("no setter found for custom prop %s - %s", node.__info._type, key)
---            end
---        end)
---end
 
 function config:registerFuncProp(key)
     self:registerEditableProp(key, function(node) return "-" end,
@@ -1469,7 +1413,5 @@ config:registerDisplayProps({
         { key = "points", numProp = { key = "pointsNum", default = 4 }, titles = { "P%d", "X", "Y" }, keys = { "points.%d.x", "points.%d.y" }, },
     },
 })
-
-
 
 return config

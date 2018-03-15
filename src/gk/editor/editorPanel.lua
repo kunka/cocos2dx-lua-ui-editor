@@ -68,7 +68,6 @@ function panel.create(scene)
 
     if gk.mode == gk.MODE_EDIT then
         self:handleEvent()
-
         bg:setOpacity(0)
         local breathAction = gk.BreathAction:create(cc.FadeTo:create(6, 255))
         breathAction:start(bg)
@@ -231,11 +230,6 @@ function panel:onNodeCreate(node)
                 end
             end
             if hit then
-                --                if self.displayingNode and self.displayingNode ~= self.scene.layer and node ~= self.displayingNode and gk.util:hitTest(self.displayingNode,
-                --                    touch) then
-                --                    -- priority use pre displayingNode
-                --                    return false
-                --                end
                 local location = touch:getLocation()
                 local p = node:getParent():convertToNodeSpace(location)
                 self._touchBegainPos = cc.p(p)
@@ -582,7 +576,6 @@ function panel:displayNode(node, noneCoordinate)
     end
     local displayCoordinate = not noneCoordinate
     gk.log("displayNode --------------------- %s", node.__info._id)
-    --    gk.profile:start("displayNode")
     self:undisplayNode()
     self.displayingNode = node
     if node ~= self.scene.layer or node.class._isWidget then
@@ -594,7 +587,6 @@ function panel:displayNode(node, noneCoordinate)
         self:drawNodeCoordinate(node)
     end
     self.rightPanel:displayNode(node)
-    --    gk.profile:stop("displayNode")
 end
 
 function panel:handleEvent()
@@ -750,43 +742,6 @@ function panel:handleEvent()
     listener:registerScriptHandler(onKeyPressed, cc.Handler.EVENT_KEYBOARD_PRESSED)
     listener:registerScriptHandler(onKeyReleased, cc.Handler.EVENT_KEYBOARD_RELEASED)
     cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
-
-    -- TODO: mouse move event
-    local listener = cc.EventListenerMouse:create()
-    --    listener:registerScriptHandler(function(touch, event)
-    --    end, cc.Handler.EVENT_MOUSE_DOWN)
-    --    listener:registerScriptHandler(function(touch, event)
-    --    end, cc.Handler.EVENT_MOUSE_UP)
-    listener:registerScriptHandler(function(touch, event)
-        local location = touch:getLocationInView()
-        --        location.y = -location.y
-        location.y = cc.Director:getInstance():getWinSize().height + location.y
-        -- find node
-        if self.sortedChildren == nil then
-            self:sortChildrenOfSceneGraphPriority(self.scene.layer)
-        end
-        local children = self.sortedChildren
-        for i = #children, 1, -1 do
-            local node = children[i]
-            if node then
-                local s = node:getContentSize()
-                local rect = { x = 0, y = 0, width = s.width, height = s.height }
-                local p = node:convertToNodeSpace(location)
-                if cc.rectContainsPoint(rect, p) then
-                    local type = node.__cname and node.__cname or tolua.type(node)
-                    if self._mouseHoverNode ~= node then
-                        self._mouseHoverNode = node
-                        --                    gk.event:post("displayNode", node)
-                        --                    gk.event:post("displayDomTree")
-                    end
-                    break
-                end
-            end
-        end
-    end, cc.Handler.EVENT_MOUSE_MOVE)
-    --    listener:registerScriptHandler(function(touch, event)
-    --    end, cc.Handler.EVENT_MOUSE_SCROLL)
-    --    cc.Director:getInstance():getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self)
 end
 
 function panel:resetIds(info)

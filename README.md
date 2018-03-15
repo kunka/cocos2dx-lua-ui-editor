@@ -31,11 +31,6 @@ A lightweight ui editor for cocos2d-x-lua implemented by pure lua code, less tha
 ```lua
 local ChatCell = class("ChatCell", gk.TableViewCell)
 
--- must have a __cname and ctor to be injected
-function ChatCell:ctor()
-    ChatCell.super.ctor(self)
-end
-
 return ChatCell
 ```
 

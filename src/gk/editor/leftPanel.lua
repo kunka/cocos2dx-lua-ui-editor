@@ -707,14 +707,6 @@ function panel:createTitle(content, x, y, type, layerDepth)
     label:setPosition(x, y)
     label:setTag(1)
     gk.util:addMouseMoveEffect(label)
-    -- select
-    --    if self.parent.displayingNode == node then
-    --        self.displayingDomDepth = self.domDepth
-    --        --            label:runAction(cc.Sequence:create(cc.DelayTime:create(0.2), cc.CallFunc:create(function()
-    --        gk.util:drawNodeBg(label, cc.c4f(0.5, 0.5, 0.5, 0.5), -2)
-    --        --            end)))
-    --        self.selectedNode = label
-    --    end
     return label
 end
 

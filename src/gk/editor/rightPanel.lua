@@ -603,9 +603,6 @@ function panel:displayNode(node)
         self:createAnchorChooseBox(index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
             self:modifyValue(node, "anchor", vars[index])
         end)
-        --        self:createHintSelectBox(vs, index, inputMiddleX1, topY - stepY * (yIndex - 1), inputLongWidth, function(index)
-        --            self:modifyValue(node, "anchor", vars[index])
-        --        end)
 
         createCheckBox("IgnoreAnchorPoint", "ignoreAnchor")
         -- size
