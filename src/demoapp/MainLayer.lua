@@ -36,7 +36,7 @@ function MainLayer:cellAtIndex(table, idx)
         cell = gk.injector:inflateNode("demoapp.ChatCell")
     end
     cell:setScale(1)
-    cell.title:setString(tostring(idx))
+    cell.nickName:setString(tostring(idx))
     return cell
 end
 
