@@ -18,7 +18,7 @@ A lightweight ui editor for cocos2d-x-lua implemented by pure lua code, less tha
  * Completely compatible with ui created by code.
  * Layout files are generated as lua code, no parser.
  * Screen adapt policy: FIXED_WIDTH, FIXED_HEIGHT, UNIVERSAL(Scale coordinates and nodes separately), support iPhoneX.
- * FSM Editor;
+ * FSM Editor, BehaviorTree Editor;
   
  ## How to use
  1. Create an empty lua-project by cocos2d-x 3.15.
