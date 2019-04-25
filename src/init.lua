@@ -30,7 +30,7 @@ local function getConfig(entry)
     }
 end
 
-local config = getConfig(0)
+local config = getConfig(1)
 
 -- mode 1 --> Press F1 to restart app with edit mode at current designing scene.
 -- mode 2 --> Press F2 to restart app with release mode at current designing scene.

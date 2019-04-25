@@ -64,6 +64,11 @@ return {
 	      genPath = "gk/test/gen/layout/gk_test_particlesystemtest.lua",
 	      genSrcPath = "gk/test/",
 	      path = "gk/test/ParticleSystemTest"},
+	   Path = {
+	      cname = "Path",
+	      genPath = "gk/test/gen/layout/gk_test_path.lua",
+	      genSrcPath = "gk/test/",
+	      path = "gk/test/Path"},
 	   PopupBg = {
 	      cname = "PopupBg",
 	      genPath = "gk/test/gen/layout/gk_test_widget_popupbg.lua",
