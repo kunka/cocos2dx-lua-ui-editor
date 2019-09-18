@@ -60,7 +60,7 @@ function string.replaceChar(str, index, char)
     return str
 end
 
--- insert before the index
+-- insert before the indexinit
 function string.insertChar(str, index, char)
     if index >= 1 and index <= str:len() + 1 then
         str = index == 1 and char .. str or (str:sub(1, index - 1) .. char .. str:sub(index, str:len()))

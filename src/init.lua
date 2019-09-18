@@ -26,7 +26,8 @@ local function getConfig(entry)
         textureDir = "gk/test/res/texture/",
         launchEntry = "gk/test/NodeTest",
         launchEntryKey = "gk_launchEntry_2", -- remember last entry when restart
-        designSize = cc.size(1280, 720),
+--        designSize = cc.size(1280, 720),
+        designSize = cc.size(750, 1334),
     }
 end
 
@@ -97,6 +98,7 @@ function init:initGameKit(mode)
     -- init lua gamekit
     gk.mode = mode
     gk.display:registerCustomDeviceSize(cc.size(1280, 768), "1280x768(5:3)") -- optional: add custom desigin size for editor
+    gk.display:registerCustomDeviceSize(cc.size(750, 1334), "750x1334(ip6)") -- optional: add custom desigin size for editor
     gk.display:initWithDesignSize(config.designSize, cc.ResolutionPolicy.UNIVERSAL)
     gk.resource.defaultSprite = DEBUG > 0 and gk.defaultSpriteDebug or gk.defaultSpriteRelease
     gk.resource:setTextureDir(config.textureDir)
